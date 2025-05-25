@@ -10,9 +10,10 @@ import {
 import { take } from 'rxjs';
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.scss',
+    selector: 'app-register',
+    templateUrl: './register.component.html',
+    styleUrl: './register.component.scss',
+    standalone: false
 })
 export class RegisterComponent extends FormBaseComponent implements OnInit {
   registerForm: FormGroup = new FormGroup({});

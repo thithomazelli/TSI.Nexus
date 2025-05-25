@@ -3,9 +3,10 @@ import { AccountService, User } from '@friday/core';
 import { Observable } from 'rxjs';
 
 @Component({
-  selector: 'app-navbar',
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.scss',
+    selector: 'app-navbar',
+    templateUrl: './navbar.component.html',
+    styleUrl: './navbar.component.scss',
+    standalone: false
 })
 export class NavbarComponent {
   constructor(private accountService: AccountService) {}
