@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@angular/cli": "^18.2.12",
+    "node": "^19.8.1"
+  }
+}

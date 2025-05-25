@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TSI.Friday.Contracts\src\TSI.Friday.Contracts\TSI.Friday.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Friday.Data\src\TSI.Friday.Data\TSI.Friday.Data.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Friday.IoC\src\TSI.Friday.IoC\TSI.Friday.IoC.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Friday.IoC\tests\TSI.Friday.IoC.Tests\TSI.Friday.IoC.Tests.csproj" />
+  </ItemGroup>
+
+</Project>
