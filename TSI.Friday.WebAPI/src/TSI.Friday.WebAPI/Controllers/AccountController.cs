@@ -37,5 +37,29 @@ namespace TSI.Friday.WebAPI.Controllers
         {
             return await _userManagerService.Register(model);
         }
+
+        [HttpPut("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto model)
+        {
+            return await _userManagerService.ConfirmEmail(model);
+        }
+
+        [HttpPost("resend-email-confirmation/{email}")]
+        public async Task<IActionResult> ResendEmailConfirmation(string email)
+        {
+            return await _userManagerService.ResendEmailConfirmation(email);
+        }
+
+        [HttpPost("forgot-username-or-password/{email}")]
+        public async Task<IActionResult> ForgotUsernameOrPassword(string email)
+        {
+            return await _userManagerService.ForgotUsernameOrPassword(email);
+        }
+
+        [HttpPut("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+        {
+            return await _userManagerService.ResetPassword(model);
+        }
     }
 }

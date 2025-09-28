@@ -10,10 +10,10 @@ import {
 import { take } from 'rxjs';
 
 @Component({
-    selector: 'app-register',
-    templateUrl: './register.component.html',
-    styleUrl: './register.component.scss',
-    standalone: false
+  selector: 'app-register',
+  templateUrl: './register.component.html',
+  styleUrl: './register.component.scss',
+  standalone: false,
 })
 export class RegisterComponent extends FormBaseComponent implements OnInit {
   registerForm: FormGroup = new FormGroup({});
@@ -91,11 +91,11 @@ export class RegisterComponent extends FormBaseComponent implements OnInit {
         );
         this.router.navigateByUrl('account/login');
       },
-      error: (error) => {
-        if (error.error.errors) {
-          this.errorMessages = error.error.errors;
+      error: (response) => {
+        if (response.error.errors) {
+          this.errorMessages = response.error.errors;
         } else {
-          this.errorMessages.push(error.error);
+          this.errorMessages.push(response.error);
         }
       },
     });

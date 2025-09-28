@@ -10,10 +10,10 @@ import {
 import { take } from 'rxjs';
 
 @Component({
-    selector: 'app-login',
-    templateUrl: './login.component.html',
-    styleUrl: './login.component.scss',
-    standalone: false
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
+  standalone: false,
 })
 export class LoginComponent extends FormBaseComponent implements OnInit {
   loginForm: FormGroup = new FormGroup({});
@@ -55,7 +55,7 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
     });
   }
 
-  login() {
+  login(): void {
     this.submitted = true;
     this.errorMessages = [];
 
@@ -71,13 +71,17 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
           this.router.navigateByUrl('');
         }
       },
-      error: (error) => {
-        if (error.error.errors) {
-          this.errorMessages = error.error.errors;
+      error: (response) => {
+        if (response.error.errors) {
+          this.errorMessages = response.error.errors;
         } else {
-          this.errorMessages.push(error.error);
+          this.errorMessages.push(response.error);
         }
       },
     });
+  }
+
+  resendEmailConfirmation(): void {
+    this.router.navigateByUrl('/account/send-email/resend-email-confirmation');
   }
 }

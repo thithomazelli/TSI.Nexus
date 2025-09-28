@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
-import { ApiService, Login, Register, User } from '@friday/core';
+import {
+  ApiService,
+  ConfirmEmail,
+  Login,
+  Register,
+  ResetPassword,
+  User,
+} from '@friday/core';
 import { map, Observable, of, ReplaySubject } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { HttpHeaders } from '@angular/common/http';
@@ -37,7 +44,29 @@ export class AccountService {
     return this.apiService.post('account/register', model);
   }
 
-  login(model: Login) {
+  confirmEmail(model: ConfirmEmail) {
+    return this.apiService.put('account/confirm-email', model);
+  }
+
+  resendEmailConfirmation(email: string) {
+    return this.apiService.post(
+      `account/resend-email-confirmation/${email}`,
+      {}
+    );
+  }
+
+  forgotUsernameOrPassword(email: string): Observable<void> {
+    return this.apiService.post(
+      `account/forgot-username-or-password/${email}`,
+      {}
+    );
+  }
+
+  resetPassword(model: ResetPassword): Observable<void> {
+    return this.apiService.put('account/reset-password', model);
+  }
+
+  login(model: Login): Observable<void> {
     return this.apiService.post<User>('account/login', model).pipe(
       map((user: User) => {
         this.setUser(user);

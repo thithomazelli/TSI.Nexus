@@ -8,10 +8,10 @@ import { AuthorizationGuard } from './core';
 const routes: Routes = [
   { path: '', component: HomeComponent },
   {
-    path: '',
+    path: 'play',
+    component: PlayComponent,
     runGuardsAndResolvers: 'always',
     canActivate: [AuthorizationGuard],
-    children: [{ path: 'play', component: PlayComponent }],
   },
   // Implementing lazy loading by the following format
   {

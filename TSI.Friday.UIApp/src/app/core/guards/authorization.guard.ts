@@ -5,7 +5,7 @@ import {
 } from '@angular/router';
 import { AccountService, ModalService } from '../services';
 import { map, Observable } from 'rxjs';
-import { User } from '../models';
+import { User } from '../models/account';
 import { Injectable } from '@angular/core';
 
 @Injectable({

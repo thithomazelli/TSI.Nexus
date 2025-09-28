@@ -23,8 +23,8 @@ export class ApiService {
     );
   }
 
-  put<T>() {
-    return;
+  put<T>(apiUrl: string, model: any): Observable<T> {
+    return this.httpClient.put<T>(`${environment.appUrl}/api/${apiUrl}`, model);
   }
 
   delete<T>() {

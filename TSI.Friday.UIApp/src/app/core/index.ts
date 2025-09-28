@@ -1,4 +1,4 @@
-export * from './models/index';
+export * from './models/account/index';
 export * from './services/index';
 export * from './base/index';
 

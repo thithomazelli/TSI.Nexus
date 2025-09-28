@@ -17,6 +17,7 @@ namespace TSI.Friday.IoC
             
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IUserManagerService, UserManagerService>();
+            services.AddScoped<IEmailService, EmailService>();
 
             #endregion Services
 
