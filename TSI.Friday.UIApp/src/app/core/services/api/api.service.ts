@@ -27,7 +27,9 @@ export class ApiService {
     return this.httpClient.put<T>(`${environment.appUrl}/api/${apiUrl}`, model);
   }
 
-  delete<T>() {
-    return;
+  delete<T>(apiUrl: string, id: any) {
+    return this.httpClient.delete<T>(
+      `${environment.appUrl}/api/${apiUrl}/${id}`
+    );
   }
 }

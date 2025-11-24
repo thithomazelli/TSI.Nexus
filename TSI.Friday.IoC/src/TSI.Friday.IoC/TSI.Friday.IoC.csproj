@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\TSI.Friday.Contracts\src\TSI.Friday.Contracts\TSI.Friday.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Friday.Repository\src\TSI.Friday.Repository\TSI.Friday.Repository.csproj" />
     <ProjectReference Include="..\..\..\TSI.Friday.Services\src\TSI.Friday.Services\TSI.Friday.Services.csproj" />
   </ItemGroup>
 

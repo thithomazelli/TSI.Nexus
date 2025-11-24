@@ -11,7 +11,5 @@ namespace TSI.Friday.Contracts.Models
 
         [Required]
         public string LastName { get; set; }
-
-        public DateTime DateCreated { get; set; } = DateTime.UtcNow;
     }
 }

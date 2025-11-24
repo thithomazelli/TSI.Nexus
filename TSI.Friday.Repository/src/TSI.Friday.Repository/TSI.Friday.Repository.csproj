@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TSI.Friday.Contracts\src\TSI.Friday.Contracts\TSI.Friday.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Friday.Data\src\TSI.Friday.Data\TSI.Friday.Data.csproj" />
+  </ItemGroup>
+
 </Project>

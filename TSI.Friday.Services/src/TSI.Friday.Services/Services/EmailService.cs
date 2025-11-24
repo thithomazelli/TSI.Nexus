@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
 
-namespace TSI.Friday.Services.Services
+namespace TSI.Friday.Services
 {
     public class EmailService : IEmailService
     {

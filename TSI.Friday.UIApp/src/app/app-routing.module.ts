@@ -1,15 +1,24 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
+
+import { AuthorizationGuard } from './core';
+
 import { NotFoundComponent } from './shared/components/errors/not-found/not-found.component';
 import { PlayComponent } from './play/play.component';
-import { AuthorizationGuard } from './core';
+import { HomeComponent } from './home/home.component';
+import { ProductsComponent } from './products/products.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
   {
     path: 'play',
     component: PlayComponent,
+    runGuardsAndResolvers: 'always',
+    canActivate: [AuthorizationGuard],
+  },
+  {
+    path: 'products',
+    component: ProductsComponent,
     runGuardsAndResolvers: 'always',
     canActivate: [AuthorizationGuard],
   },

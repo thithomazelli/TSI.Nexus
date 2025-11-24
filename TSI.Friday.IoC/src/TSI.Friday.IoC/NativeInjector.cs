@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using TSI.Friday.Contracts.Interfaces;
+using TSI.Friday.Contracts.Models;
+using TSI.Friday.Repository;
 using TSI.Friday.Services;
 using TSI.Friday.Services.Services;
 
@@ -18,12 +20,19 @@ namespace TSI.Friday.IoC
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IUserManagerService, UserManagerService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IAddressService, AddressService>();
+            services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IIndividualService, IndividualService>();
+            services.AddScoped<IProductService, ProductService>();
 
             #endregion Services
 
             #region Repositories
 
-            //services.AddScoped<IRepository<Person>, Repository<Person>>();
+            services.AddScoped<IRepository<Address>, Repository<Address>>();
+            services.AddScoped<IRepository<Company>, Repository<Company>>();
+            services.AddScoped<IRepository<Individual>, Repository<Individual>>();
+            services.AddScoped<IRepository<Product>, Repository<Product>>();
 
             #endregion Repositories
         }

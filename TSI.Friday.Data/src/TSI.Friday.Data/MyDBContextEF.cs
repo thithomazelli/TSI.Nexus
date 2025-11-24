@@ -15,6 +15,11 @@ namespace TSI.Friday.Data
         #region DbSets
 
         public DbSet<User> User { get; set; }
+        //public DbSet<Person> Person { get; set; }
+        //public DbSet<Individual> Individual { get; set; }
+        //public DbSet<Company> Company { get; set; }
+        //public DbSet<Address> Address { get; set; }
+        public DbSet<Product> Product { get; set; }
 
         #endregion DbSets
 
@@ -24,6 +29,14 @@ namespace TSI.Friday.Data
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //modelBuilder.Ignore<Person>();
+            //modelBuilder.Entity<Individual>().ToTable("Individual");
+            //modelBuilder.Entity<Company>().ToTable("Company");
+            //modelBuilder.Entity<Person>()
+            //    .HasDiscriminator<string>("PersonType")
+            //    .HasValue<Individual>("Individual")
+            //    .HasValue<Company>("Company");
+
             base.OnModelCreating(modelBuilder);
         }
     }

@@ -2,14 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Configuration;
 using System.Text;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 
-namespace TSI.Friday.Services.Services
+namespace TSI.Friday.Services
 {
     public class UserManagerService : ControllerBase, IUserManagerService
     {

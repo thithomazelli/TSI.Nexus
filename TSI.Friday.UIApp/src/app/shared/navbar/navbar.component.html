@@ -27,6 +27,15 @@
               >Play</a
             >
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              routerLink="/products"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              >Products</a
+            >
+          </li>
         </ul>
 
         <ul *ngIf="!(user$ | async)" class="navbar-nav">
