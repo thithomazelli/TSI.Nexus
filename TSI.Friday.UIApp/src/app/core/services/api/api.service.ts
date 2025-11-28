@@ -27,9 +27,9 @@ export class ApiService {
     return this.httpClient.put<T>(`${environment.appUrl}/api/${apiUrl}`, model);
   }
 
-  delete<T>(apiUrl: string, id: any) {
-    return this.httpClient.delete<T>(
-      `${environment.appUrl}/api/${apiUrl}/${id}`
-    );
+  delete<T>(apiUrl: string, model: any): Observable<T> {
+    return this.httpClient.delete<T>(`${environment.appUrl}/api/${apiUrl}`, {
+      body: model,
+    });
   }
 }

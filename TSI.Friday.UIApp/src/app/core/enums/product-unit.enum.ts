@@ -1,5 +1,5 @@
 export enum ProductUnit {
-  Unit,
-  Kilogram,
-  Gram,
+  Unit = 'Unit',
+  Kilogram = 'Kilogram',
+  Gram = 'Gram',
 }

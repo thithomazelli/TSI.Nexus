@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 using TSI.Friday.Contracts.Models;
 
 namespace TSI.Friday.Data
@@ -38,6 +40,16 @@ namespace TSI.Friday.Data
             //    .HasValue<Company>("Company");
 
             base.OnModelCreating(modelBuilder);
+        }
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            base.ConfigureConventions(configurationBuilder);
+
+            // Store all enums as strings globally
+            configurationBuilder
+                .Properties<Enum>()
+                .HaveConversion<string>();
         }
     }
 }

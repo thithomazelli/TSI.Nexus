@@ -3,7 +3,7 @@ using Moq;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
-using TSI.Friday.Contracts.Utitlities;
+using TSI.Friday.Contracts.Utilities;
 using TSI.Friday.WebAPI.Controllers;
 
 namespace TSI.Friday.WebAPI.Tests.Controllers

@@ -4,40 +4,38 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TSI.Friday.WebAPI", "TSI.Friday.WebAPI", "{47F6532D-D78E-4C9D-82D4-8CD1FB1613BD}"
+	ProjectSection(SolutionItems) = preProject
+		TSI.Friday.Services\src\TSI.Friday.Services\Services\JwtService.cs = TSI.Friday.Services\src\TSI.Friday.Services\Services\JwtService.cs
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSI.Friday.WebAPI", "TSI.Friday.WebAPI\src\TSI.Friday.WebAPI\TSI.Friday.WebAPI.csproj", "{FDEE635A-BFB9-45B8-8850-ACC4193783E5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSI.Friday.WebAPI.Tests", "TSI.Friday.WebAPI\tests\TSI.Friday.WebAPI.Tests\TSI.Friday.WebAPI.Tests.csproj", "{A3809196-EB3D-4AD3-9CFF-3567C6DBC7EB}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TSI.Friday.Data", "TSI.Friday.Data", "{1C68BFE1-B500-4527-B83C-270F17FD2161}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSI.Friday.Data", "TSI.Friday.Data\src\TSI.Friday.Data\TSI.Friday.Data.csproj", "{F53AAE21-C45D-43CB-B11D-B72B202BAF23}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSI.Friday.Data.Tests", "TSI.Friday.Data\tests\TSI.Friday.Data.Tests\TSI.Friday.Data.Tests.csproj", "{86975BD1-A185-4554-9EEE-636227C68147}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TSI.Friday.Contracts", "TSI.Friday.Contracts", "{BC554D7C-7DE5-47D8-8FE0-BD1923EE4398}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSI.Friday.Contracts", "TSI.Friday.Contracts\src\TSI.Friday.Contracts\TSI.Friday.Contracts.csproj", "{6E40549F-32C6-4BEA-9F2C-C656CBEE6B34}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSI.Friday.Contracts.Tests", "TSI.Friday.Contracts\tests\TSI.Friday.Contracts.Tests\TSI.Friday.Contracts.Tests.csproj", "{E4076FC1-DBE2-4B29-82DD-01DC04694AB0}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TSI.Friday.IoC", "TSI.Friday.IoC", "{5C8B8139-3139-44C3-A9BA-29D70330622B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSI.Friday.IoC", "TSI.Friday.IoC\src\TSI.Friday.IoC\TSI.Friday.IoC.csproj", "{22F39031-28E3-4C44-8CD6-43390D8FE50D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSI.Friday.IoC.Tests", "TSI.Friday.IoC\tests\TSI.Friday.IoC.Tests\TSI.Friday.IoC.Tests.csproj", "{A81F98F3-4D47-4BD8-BACA-6C40A604300A}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TSI.Friday.Repository", "TSI.Friday.Repository", "{9AEB94F5-36EF-49AA-B8B0-24223EFC3134}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSI.Friday.Repository", "TSI.Friday.Repository\src\TSI.Friday.Repository\TSI.Friday.Repository.csproj", "{8CFF80FD-D6CF-41D5-8711-4C9D8710FC33}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSI.Friday.Repository.Tests", "TSI.Friday.Repository\tests\TSI.Friday.Repository.Tests\TSI.Friday.Repository.Tests.csproj", "{7B630882-F031-4ABF-9E0C-C950908D4A67}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TSI.Friday.Services", "TSI.Friday.Services", "{2AFB41F3-34B5-41CD-84B8-1382F7A4651B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSI.Friday.Services", "TSI.Friday.Services\src\TSI.Friday.Services\TSI.Friday.Services.csproj", "{63510D1A-9E72-443E-AF6A-7F71581A88C4}"

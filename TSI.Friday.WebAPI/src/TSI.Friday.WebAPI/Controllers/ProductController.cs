@@ -32,7 +32,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("Add")]
-        public IActionResult Add([FromBody] Product product)
+        public IActionResult Add(Product product)
         {
             if (!ModelState.IsValid)
             {
@@ -48,7 +48,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// </summary>
         /// <param name="product">Object to be updated</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPut]
         [Route("Update")]
         public IActionResult Update([FromBody] Product product)
         {

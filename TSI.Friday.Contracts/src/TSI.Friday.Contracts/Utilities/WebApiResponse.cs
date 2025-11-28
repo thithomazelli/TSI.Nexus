@@ -1,6 +1,6 @@
 ﻿using TSI.Friday.Contracts.Enums;
 
-namespace TSI.Friday.Contracts.Utitlities
+namespace TSI.Friday.Contracts.Utilities
 {
     public class WebApiResponse<T> where T : class
     {

@@ -1,100 +1,13 @@
 <div class="container mt-4">
-  <h2 class="text-center">Products</h2>
-  <div class="d-flex justify-content-between mb-3">
-    <button class="btn btn-primary" (click)="openAddModal(modalTemplate)">
-      Add Product
-    </button>
-    <button class="btn btn-secondary" (click)="refreshProducts()">
-      Refresh Products
-    </button>
-  </div>
-  <div class="mb-3">
-    <input
-      type="text"
-      class="form-control"
-      placeholder="Search products..."
-      (input)="onFilterTextBoxChanged($event)"
-    />
-  </div>
-  <ag-grid-angular
-    class="ag-theme-alpine"
+  <h2 class="text-center">Produtos</h2>
+
+  <app-grid
+    [className]="'Produtos'"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [defaultColDef]="defaultColDef"
-    [pagination]="true"
-    [paginationPageSize]="20"
-    [animateRows]="true"
-    [overlayNoRowsTemplate]="noRowsOverlayTemplate"
-    [localeText]="localeText"
-    (gridReady)="onGridReady($event)"
-  >
-  </ag-grid-angular>
-
-  <!-- Add/Edit Product Modal -->
-  <ng-template #modalTemplate>
-    <div class="modal-header">
-      <h5 class="modal-title">
-        {{ isEditMode ? "Edit Product" : "Add Product" }}
-      </h5>
-      <button
-        type="button"
-        class="btn-close"
-        (click)="modalRef?.hide()"
-      ></button>
-    </div>
-    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
-      <div class="modal-body">
-        <div class="mb-3">
-          <label for="sku" class="form-label">SKU</label>
-          <input id="sku" class="form-control" formControlName="sku" />
-        </div>
-        <div class="mb-3">
-          <label for="name" class="form-label">Name</label>
-          <input id="name" class="form-control" formControlName="name" />
-        </div>
-        <div class="mb-3">
-          <label for="description" class="form-label">Description</label>
-          <textarea
-            id="description"
-            class="form-control"
-            formControlName="description"
-          ></textarea>
-        </div>
-        <div class="mb-3">
-          <label for="price" class="form-label">Price</label>
-          <input
-            id="price"
-            type="number"
-            class="form-control"
-            formControlName="price"
-          />
-        </div>
-        <div class="mb-3">
-          <label for="unit" class="form-label">Unit</label>
-          <input id="unit" class="form-control" formControlName="unit" />
-        </div>
-        <div class="mb-3">
-          <label for="quantityInStock" class="form-label">Quantity</label>
-          <input
-            id="quantityInStock"
-            type="number"
-            class="form-control"
-            formControlName="quantityInStock"
-          />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="modalRef?.hide()"
-        >
-          Cancel
-        </button>
-        <button type="submit" class="btn btn-primary">
-          {{ isEditMode ? "Save Changes" : "Add Product" }}
-        </button>
-      </div>
-    </form>
-  </ng-template>
+    [modalDetails]="modalDetails"
+    [baseEndPoint]="'product'"
+    [refresh]="refreshProducts.bind(this)"
+    [delete]="deleteProduct.bind(this)"
+  ></app-grid>
 </div>

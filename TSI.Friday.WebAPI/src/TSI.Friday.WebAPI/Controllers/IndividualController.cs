@@ -48,7 +48,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// </summary>
         /// <param name="individual">Object to be updated</param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPut]
         [Route("Update")]
         public IActionResult Update([FromBody] Individual individual)
         {

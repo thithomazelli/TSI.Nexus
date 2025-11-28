@@ -20,19 +20,24 @@ import { PlayComponent } from './play/play.component';
 import { ProductsComponent } from './products/products.component';
 import { JwtInterceptor } from './core';
 
-import { AgGridModule } from 'ag-grid-angular';
+import { ProductDetailsComponent } from './products/product-details/product-details.component';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @NgModule({
-  declarations: [AppComponent, HomeComponent, PlayComponent, ProductsComponent],
+  declarations: [
+    AppComponent,
+    HomeComponent,
+    PlayComponent,
+    ProductsComponent,
+    ProductDetailsComponent,
+  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     SharedModule,
-    AgGridModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

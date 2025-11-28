@@ -1,0 +1,115 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ isEditMode ? "Edit Product" : "Add Product" }}
+  </h5>
+  <button type="button" class="btn-close" (click)="closeModal()"></button>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="modal-body">
+    <div class="mb-3" *ngIf="isEditMode" hidden>
+      <label for="id" class="form-label">Id</label>
+      <input id="id" class="form-control" formControlName="id" />
+      <div
+        *ngIf="form.get('id')?.invalid && form.get('id')?.touched"
+        class="text-danger"
+      >
+        ID is required
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="sku" class="form-label">SKU</label>
+      <input id="sku" class="form-control" formControlName="sku" />
+      <div
+        *ngIf="form.get('sku')?.invalid && form.get('sku')?.touched"
+        class="text-danger"
+      >
+        SKU is required
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input id="name" class="form-control" formControlName="name" />
+      <div
+        *ngIf="form.get('name')?.invalid && form.get('name')?.touched"
+        class="text-danger"
+      >
+        Name is required
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea
+        id="description"
+        class="form-control"
+        formControlName="description"
+      ></textarea>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label for="price" class="form-label">Price</label>
+        <input
+          id="price"
+          type="number"
+          class="form-control"
+          formControlName="price"
+        />
+        <div
+          *ngIf="form.get('price')?.invalid && form.get('price')?.touched"
+          class="text-danger"
+        >
+          Price is required
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label for="unit" class="form-label">Unit</label>
+        <select id="unit" class="form-select" formControlName="unit">
+          <option value="">Select a unit</option>
+          <option *ngFor="let option of unitOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+        <div
+          *ngIf="form.get('unit')?.invalid && form.get('unit')?.touched"
+          class="text-danger"
+        >
+          Unit is required
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label for="quantityInStock" class="form-label">Quantity</label>
+        <input
+          id="quantityInStock"
+          type="number"
+          class="form-control"
+          formControlName="quantityInStock"
+        />
+        <div
+          *ngIf="
+            form.get('quantityInStock')?.invalid &&
+            form.get('quantityInStock')?.touched
+          "
+          class="text-danger"
+        >
+          Quantity is required
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="closeModal()"
+    >
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-outline-success">
+      {{ isEditMode ? "Save Changes" : "Add Product" }}
+    </button>
+  </div>
+</form>

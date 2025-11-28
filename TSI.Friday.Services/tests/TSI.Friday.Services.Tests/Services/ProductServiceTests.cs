@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
-using TSI.Friday.Contracts.Utitlities;
+using TSI.Friday.Contracts.Utilities;
 using TSI.Friday.Services.Services;
 
 namespace TSI.Friday.Services.Tests.Services

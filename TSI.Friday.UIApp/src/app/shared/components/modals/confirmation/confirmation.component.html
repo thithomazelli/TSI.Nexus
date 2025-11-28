@@ -1,15 +1,10 @@
-<div
-  class="modal-header"
-  [ngClass]="{ 'bg-success': isSuccess, 'bg-danger': !isSuccess }"
->
+<div class="modal-header bg-danger">
   <h5 class="modal-title pull-left">{{ title }}</h5>
   <button
     type="button"
     class="btn-close close pull-right"
     (click)="modalService.hideModal()"
-  >
-    <span aria-hidden="true" class="visually-hidden">&times;</span>
-  </button>
+  ></button>
 </div>
 <div class="modal-body">
   {{ message }}
@@ -17,9 +12,16 @@
 <div class="modal-footer">
   <button
     type="button"
-    class="btn btn-outline-primary"
+    class="btn btn-outline-secondary"
     (click)="modalService.hideModal()"
   >
-    Ok
+    Cancelar
+  </button>
+  <button
+    type="button"
+    class="btn btn-outline-danger"
+    (click)="confirmDelete()"
+  >
+    Excluir
   </button>
 </div>
