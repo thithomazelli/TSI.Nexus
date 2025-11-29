@@ -11,6 +11,7 @@ import { NotificationComponent } from './components/modals/notification/notifica
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { GridComponent } from './grid/grid.component';
 import { ConfirmationComponent } from './components/modals/confirmation/confirmation.component';
+import { SidebarComponent } from './sidebar/sidebar.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { ConfirmationComponent } from './components/modals/confirmation/confirma
     NotificationComponent,
     GridComponent,
     ConfirmationComponent,
+    SidebarComponent,
   ],
   imports: [
     CommonModule,
@@ -31,6 +33,7 @@ import { ConfirmationComponent } from './components/modals/confirmation/confirma
   ],
   exports: [
     NavbarComponent,
+    SidebarComponent,
     FooterComponent,
     RouterModule,
     ReactiveFormsModule,

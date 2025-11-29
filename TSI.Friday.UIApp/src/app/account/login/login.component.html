@@ -1,42 +1,50 @@
-<div class="d-flex justify-content-center align-items-center">
-  <div class="col-12 col-lg-5">
-    <main class="for-signin">
-      <form [formGroup]="loginForm" (ngSubmit)="login()" autocomplete="off">
-        <div class="text-center mb-4">
-          <h3 class="mb-3 font-weight-normal">Login</h3>
+<div class="login-box">
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a class="link-dark" routerLink="/">
+        <h1 class="mb-0"><b>Admin</b>LTE</h1>
+      </a>
+    </div>
+    <div class="card-body login-card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
+        <div class="input-group mb-1">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="userName"
+              type="text"
+              placeholder="Email"
+              class="form-control"
+              [class.is-invalid]="canDisplayInputErrors('userName', loginForm)"
+            />
+            <label for="userName">Email</label>
+            <span
+              class="text-danger"
+              *ngIf="inputHasError('userName', 'required', loginForm)"
+              >Email is required
+            </span>
+          </div>
+          <div class="input-group-text"><i class="bi bi-envelope"></i></div>
         </div>
-        <div class="text-center mb-4">
-          <h3 class="mb-3 font-weight-normal"></h3>
-        </div>
-        <div class="form-floating mb-3">
-          <input
-            formControlName="userName"
-            type="text"
-            placeholder="Email"
-            class="form-control"
-            [class.is-invalid]="canDisplayInputErrors('userName', loginForm)"
-          />
-          <label for="userName">Email</label>
-          <span
-            class="text-danger"
-            *ngIf="inputHasError('userName', 'required', loginForm)"
-            >Email is required
-          </span>
-        </div>
-        <div class="form-floating mb-3">
-          <input
-            formControlName="password"
-            type="password"
-            placeholder="Password"
-            class="form-control"
-            [class.is-invalid]="canDisplayInputErrors('password', loginForm)"
-          />
-          <label for="password">Password</label>
-          <span
-            class="text-danger"
-            *ngIf="inputHasError('password', 'required', loginForm)"
-            >Password is required
-          </span>
+
+        <div class="input-group mb-1">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="password"
+              type="password"
+              placeholder="Password"
+              class="form-control"
+              [class.is-invalid]="canDisplayInputErrors('password', loginForm)"
+            />
+            <label for="password">Password</label>
+            <span
+              class="text-danger"
+              *ngIf="inputHasError('password', 'required', loginForm)"
+              >Password is required
+            </span>
+          </div>
+          <div class="input-group-text"><i class="bi bi-lock-fill"></i></div>
         </div>
 
         <div class="form-floating" *ngIf="errorMessages">
@@ -45,19 +53,52 @@
           ></app-validation-messages>
         </div>
 
-        <div class="d-grid mt-4 px-1">
-          <button class="btn btn-lg btn-info" type="submit">Log in</button>
+        <div class="row mb-2">
+          <div class="col-8 d-inline-flex align-items-center">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="remember"
+                formControlName="remember"
+              />
+              <label class="form-check-label" for="remember">
+                Remember Me
+              </label>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="d-grid">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="loginForm.invalid"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
         </div>
       </form>
 
-      <div class="mt-4 text-center">
-        <a
-          class="btn btn-link"
-          routerLink="/account/send-email/forgot-username-or-password"
+      <div class="social-auth-links text-center mb-3 d-grid gap-2">
+        <p>- OR -</p>
+        <a class="btn btn-primary"
+          ><i class="bi bi-facebook me-2"></i> Sign in using Facebook</a
         >
-          <h6>Forgot username or password?</h6>
-        </a>
+        <a class="btn btn-danger"
+          ><i class="bi bi-google me-2"></i> Sign in using Google+</a
+        >
       </div>
-    </main>
+
+      <p class="mb-1">
+        <a routerLink="/account/reset-password">I forgot my password</a>
+      </p>
+      <p class="mb-0">
+        <a routerLink="/account/register" class="link-primary"
+          >Register a new membership</a
+        >
+      </p>
+    </div>
   </div>
 </div>

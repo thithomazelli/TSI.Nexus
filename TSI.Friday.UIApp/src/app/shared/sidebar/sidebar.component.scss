@@ -1,0 +1,13 @@
+/* transição idêntica para entrada/saída (fallback) */
+.nav-treeview {
+  display: none; /* JS controla display durante animação */
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* quando aberto via classe (caso JS não rode) */
+.nav-item.menu-open > .nav-treeview {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
