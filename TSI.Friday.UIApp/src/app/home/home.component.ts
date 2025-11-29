@@ -127,45 +127,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
           } catch (err) {
             console.warn('jsVectorMap instantiation failed', err);
           }
-
-          // MOVE TOOLTIP PARA BODY e posicione manualmente seguindo o cursor
-          requestAnimationFrame(() => {
-            const tip = document.querySelector(
-              '.jvectormap-tip'
-            ) as HTMLElement | null;
-            if (tip) {
-              if (tip.parentElement !== document.body) {
-                document.body.appendChild(tip);
-              }
-              tip.style.position = 'fixed';
-              tip.style.pointerEvents = 'none';
-              tip.style.zIndex = '9999';
-              this.tipEl = tip;
-
-              // manual positioning to avoid layout/transform/overflow issues
-              const onMove = (ev: MouseEvent) => {
-                if (!this.tipEl) return;
-                const offsetX = 12;
-                const offsetY = 12;
-                const x = Math.min(
-                  window.innerWidth - this.tipEl.offsetWidth - 4,
-                  ev.clientX + offsetX
-                );
-                const y = Math.min(
-                  window.innerHeight - this.tipEl.offsetHeight - 4,
-                  ev.clientY + offsetY
-                );
-                this.tipEl.style.left = `${x}px`;
-                this.tipEl.style.top = `${y}px`;
-              };
-
-              document.addEventListener('mousemove', onMove);
-              this.tipMousemoveUnlisten = () =>
-                document.removeEventListener('mousemove', onMove);
-            } else {
-              console.warn('.jvectormap-tip not found after init');
-            }
-          });
         } else {
           console.warn(
             'jsVectorMap global not found. Verifique angular.json scripts.'

@@ -9,7 +9,18 @@ import { HomeComponent } from './home/home.component';
 import { ProductsComponent } from './products/products.component';
 
 const routes: Routes = [
-  { path: '', component: HomeComponent },
+  {
+    path: '',
+    component: HomeComponent,
+    runGuardsAndResolvers: 'always',
+    canActivate: [AuthorizationGuard],
+  },
+  {
+    path: 'home',
+    redirectTo: '',
+    runGuardsAndResolvers: 'always',
+    canActivate: [AuthorizationGuard],
+  },
   {
     path: 'play',
     component: PlayComponent,

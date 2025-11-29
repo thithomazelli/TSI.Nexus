@@ -2,7 +2,12 @@
   <!--begin::Sidebar Brand-->
   <div class="sidebar-brand">
     <!--begin::Brand Link-->
-    <a href="./index.html" class="brand-link">
+    <a
+      routerLink="home"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="brand-link"
+    >
       <!--begin::Brand Image-->
       <img
         src="./assets/img/AdminLTELogo.png"
@@ -29,6 +34,42 @@
         data-accordion="false"
         id="navigation"
       >
+        <li class="nav-item">
+          <a
+            routerLink="home"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-house"></i>
+            <p>Home</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            routerLink="play"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-play-circle"></i>
+            <p>Play</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            routerLink="products"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-box-seam"></i>
+            <p>Produtos</p>
+          </a>
+        </li>
+
         <li class="nav-item menu-open">
           <a href="#" class="nav-link active">
             <i class="nav-icon bi bi-speedometer"></i>

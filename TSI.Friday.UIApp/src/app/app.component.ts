@@ -25,6 +25,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.refreshUser();
     this.sub = this.router.events
       .pipe(filter((evt) => evt instanceof NavigationEnd))
       .subscribe((evt: NavigationEnd) => {
@@ -40,6 +41,11 @@ export class AppComponent implements OnInit {
       });
   }
 
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    this.applied.forEach((c) => this.renderer.removeClass(document.body, c));
+  }
+
   private updateBodyClass(classes: string[]) {
     this.applied.forEach((c) => this.renderer.removeClass(document.body, c));
     this.applied = [];
@@ -49,8 +55,18 @@ export class AppComponent implements OnInit {
     });
   }
 
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
-    this.applied.forEach((c) => this.renderer.removeClass(document.body, c));
+  private refreshUser(): void {
+    const jwt = this.accountService.getJWT();
+
+    if (jwt) {
+      this.accountService.refreshUser(jwt).subscribe({
+        next: (_) => {},
+        error: (_) => {
+          this.accountService.logout();
+        },
+      });
+    } else {
+      this.accountService.refreshUser(null).subscribe();
+    }
   }
 }
