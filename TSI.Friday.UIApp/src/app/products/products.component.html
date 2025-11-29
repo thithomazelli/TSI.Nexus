@@ -1,6 +1,12 @@
-<div class="container mt-4">
-  <h2 class="text-center">Produtos</h2>
+<app-header
+  title="Produtos"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Produtos', link: '' }
+  ]"
+></app-header>
 
+<div class="app-content">
   <app-grid
     [className]="'Produtos'"
     [rowData]="rowData"

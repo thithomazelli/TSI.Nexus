@@ -12,6 +12,7 @@ import { ModalModule } from 'ngx-bootstrap/modal';
 import { GridComponent } from './grid/grid.component';
 import { ConfirmationComponent } from './components/modals/confirmation/confirmation.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
+import { HeaderComponent } from './header/header.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
     GridComponent,
     ConfirmationComponent,
     SidebarComponent,
+    HeaderComponent,
   ],
   imports: [
     CommonModule,
@@ -39,6 +41,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
     ReactiveFormsModule,
     ValidationMessagesComponent,
     GridComponent,
+    HeaderComponent,
   ],
 })
 export class SharedModule {}
