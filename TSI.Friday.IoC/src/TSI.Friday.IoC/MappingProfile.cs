@@ -1,0 +1,70 @@
+﻿using AutoMapper;
+using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Models.DTOs;
+
+namespace TSI.Friday.IoC
+{
+    public class MappingProfile : Profile
+    {
+        public MappingProfile()
+        {
+            // Address mappings
+            CreateMap<Address, AddressDto>();
+            CreateMap<AddressDto, Address>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+
+            // Client mappings
+            // Map DTO directly to concrete types first
+            CreateMap<ClientDto, Individual>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            CreateMap<ClientDto, Company>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // Map Client -> ClientDto (reading from DB)
+            CreateMap<Client, ClientDto>()
+                .ForMember(dest => dest.SocialSecurityCard, opt => opt.MapFrom(src => (src as Individual) != null ? ((Individual)src).SocialSecurityCard : null))
+                .ForMember(dest => dest.Birthday, opt => opt.MapFrom(src => (src as Individual) != null ? ((Individual)src).Birthday : default))
+                .ForMember(dest => dest.NationalRegistry, opt => opt.MapFrom(src => (src as Company) != null ? ((Company)src).NationalRegistry : null));
+
+            // Construct Client (base) from DTO by dispatching to concrete maps
+            CreateMap<ClientDto, Client>().ConstructUsing((src, ctx) =>
+            {
+                var type = (src?.Type ?? string.Empty).Trim().ToLowerInvariant();
+
+                return type switch
+                {
+                    "física" or "fisica" => ctx.Mapper.Map<Individual>(src),
+                    "jurídica" or "juridica" => ctx.Mapper.Map<Company>(src),
+                    // If you prefer to default to a specific type when Type is missing, change the next line.
+                    _ => throw new InvalidOperationException($"Unknown client type: '{src?.Type}'")
+                };
+            })
+            // keep null-value filtering for member updates if needed
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // User mappings
+            CreateMap<UserDto, User>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            CreateMap<User, UserDto>();
+
+            // Order mappings
+            CreateMap<Order, OrderDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice));
+            CreateMap<OrderDto, Order>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // OrderProduct mappings
+            CreateMap<OrderProduct, OrderProductDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice));
+            CreateMap<OrderProductDto, OrderProduct>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // Payment mappings
+            CreateMap<Payment, PaymentDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice));
+            CreateMap<PaymentDto, Payment>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        }
+    }
+}

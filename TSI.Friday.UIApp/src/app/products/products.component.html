@@ -8,11 +8,11 @@
 
 <div class="app-content">
   <app-grid
+    [baseEndPoint]="baseEndPoint"
     [className]="'Produtos'"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [modalDetails]="modalDetails"
-    [baseEndPoint]="'product'"
     [refresh]="refreshProducts.bind(this)"
     [delete]="deleteProduct.bind(this)"
   ></app-grid>

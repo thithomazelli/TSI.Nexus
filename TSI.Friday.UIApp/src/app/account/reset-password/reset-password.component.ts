@@ -20,7 +20,6 @@ export class ResetPasswordComponent
   extends FormBaseComponent
   implements OnInit
 {
-  resetPasswordForm: FormGroup = new FormGroup({});
   token: string | undefined;
   email: string | undefined;
   hasTokenAndEmail: boolean = false;
@@ -47,10 +46,10 @@ export class ResetPasswordComponent
               this.email = params.get('email');
 
               if (!(this.token && this.email)) {
-                this.modalService.showNotification(
-                  false,
+                this.modalService.showSweetNotification(
                   'Error',
-                  'Invalid token or email'
+                  'Invalid token or email',
+                  'error'
                 );
                 this.router.navigateByUrl('/account/login');
                 return;
@@ -66,7 +65,7 @@ export class ResetPasswordComponent
 
   initializeForm(userName: string): void {
     this.hasTokenAndEmail = this.token && this.email ? true : false;
-    this.resetPasswordForm = this.formBuilder.group({
+    this.form = this.formBuilder.group({
       email: [{ value: this.email, disabled: true }],
       newPassword: [
         '',
@@ -83,22 +82,22 @@ export class ResetPasswordComponent
     this.submitted = true;
     this.errorMessages = [];
 
-    if (!(this.resetPasswordForm.valid && this.token && this.email)) {
+    if (!(this.form.valid && this.token && this.email)) {
       return;
     }
 
     const resetPassword = <ResetPassword>{
       token: this.token,
       email: this.email,
-      newPassword: this.resetPasswordForm.get('newPassword')?.value,
+      newPassword: this.form.get('newPassword')?.value,
     };
 
     this.accountService.resetPassword(resetPassword).subscribe({
       next: (response: any) => {
-        this.modalService.showNotification(
-          true,
+        this.modalService.showSweetNotification(
           response.value.title,
-          response.value.message
+          response.value.message,
+          'success'
         );
         this.router.navigateByUrl('/account/login');
       },

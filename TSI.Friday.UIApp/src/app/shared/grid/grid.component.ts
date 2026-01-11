@@ -1,6 +1,7 @@
 import { AG_GRID_LOCALE_BR } from '@ag-grid-community/locale';
 import { Component, Input, OnInit } from '@angular/core';
-import { GridService, ModalService, Product } from '@friday/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ApiType, GridService, ModalService, Product } from '@friday/core';
 import {
   CellClickedEvent,
   ColDef,
@@ -11,22 +12,25 @@ import { ModalOptions } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-grid',
-  standalone: false,
   templateUrl: './grid.component.html',
   styleUrl: './grid.component.scss',
+  standalone: false,
 })
 export class GridComponent<T> implements OnInit {
   @Input()
+  baseEndPoint: string = '';
+
+  @Input()
   className: string = '';
+
+  @Input()
+  compactView: boolean = false;
 
   @Input()
   rowData: T[] = [];
 
   @Input()
   columnDefs: ColDef[] = [];
-
-  @Input()
-  baseEndPoint: string = '';
 
   @Input()
   modalDetails!: any;
@@ -37,6 +41,10 @@ export class GridComponent<T> implements OnInit {
   @Input()
   delete!: (data: T) => void;
 
+  @Input()
+  update!: (data: T) => void;
+
+  gridStyle: string = '';
   gridApi!: GridApi;
   quickFilter = '';
   localeText = AG_GRID_LOCALE_BR;
@@ -50,9 +58,20 @@ export class GridComponent<T> implements OnInit {
     resizable: true,
   };
 
+  private _parentId: number | null = null;
+  private readonly _actionsMap: {
+    [key: string]: (data: any) => void;
+  } = {
+    edit: this.editAction.bind(this),
+    view: this.viewAction.bind(this),
+    delete: this.deleteAction.bind(this),
+    update: this.updateAction.bind(this),
+  };
   constructor(
     private gridService: GridService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private routerService: Router,
+    private activatedRoute: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -67,6 +86,11 @@ export class GridComponent<T> implements OnInit {
         this.editData(response.data);
       }
     });
+
+    this.gridStyle = this.compactView ? 'compact-view' : 'regular-view';
+
+    this._parentId =
+      Number(this.activatedRoute.snapshot.paramMap.get('id')) ?? null;
   }
 
   onGridReady(params: GridReadyEvent): void {
@@ -85,44 +109,60 @@ export class GridComponent<T> implements OnInit {
     }
 
     const action = target.getAttribute('data-action');
-    if (!action) {
+    if (!action || !(action in this._actionsMap)) {
       return;
     }
 
-    const data = event.data;
-
-    if (action === 'edit') {
-      this.openEditModal(data);
-    } else if (action === 'delete') {
-      const initialState: ModalOptions = {
-        initialState: {
-          selectedItem: data,
-          confirmDelete: this.confirmDelete.bind(this, data),
-        },
-      };
-      this.modalService.showConfirmation(initialState);
-    }
+    this._actionsMap[action](event.data);
   }
 
   openAddModal(): void {
     const initialState: ModalOptions = {
       initialState: {
-        isEditMode: false,
-        currentId: null,
+        isEdit: false,
+        id: null,
+        parentId: this._parentId,
       },
     };
     this.modalService.showTemplateModal(this.modalDetails, initialState);
   }
 
-  openEditModal(product: Product): void {
+  private editAction(data: any): void {
     const initialState: ModalOptions = {
       initialState: {
-        isEditMode: true,
-        currentId: product.id,
-        data: product,
+        isEdit: true,
+        data: data,
+        id: data.id,
+        parentId: this._parentId,
       },
     };
     this.modalService.showTemplateModal(this.modalDetails, initialState);
+  }
+
+  private viewAction(data: any): void {
+    if (this.baseEndPoint === ApiType.Clients) {
+      this.baseEndPoint = data.type === 'Física' ? 'individuals' : 'companies';
+    }
+
+    this.routerService.navigateByUrl(`/${this.baseEndPoint}/${data.id}`);
+  }
+
+  private deleteAction(data: any): void {
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este item?',
+        'question'
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.confirmDelete(data);
+        }
+      });
+  }
+
+  private updateAction(data: any): void {
+    this.update(data);
   }
 
   private addData(data: T): void {
@@ -141,7 +181,6 @@ export class GridComponent<T> implements OnInit {
     }
 
     this.delete(data);
-    this.modalService.hideModal();
   }
 
   private updateNoRowsOverlay(): void {

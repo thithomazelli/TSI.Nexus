@@ -1,0 +1,19 @@
+<app-header
+  title="Usuários"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Usuários', link: '' }
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [baseEndPoint]="baseEndPoint"
+    [className]="'Usuários'"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [modalDetails]="modalDetails"
+    [refresh]="refreshUsers.bind(this)"
+    [delete]="deleteUser.bind(this)"
+  ></app-grid>
+</div>

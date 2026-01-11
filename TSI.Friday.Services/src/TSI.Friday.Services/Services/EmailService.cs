@@ -34,6 +34,5 @@ namespace TSI.Friday.Services
 
             return response.Messages?.FirstOrDefault()?.Status == "success";
         }
-
     }
 }

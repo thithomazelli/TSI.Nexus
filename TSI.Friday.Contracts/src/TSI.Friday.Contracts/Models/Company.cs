@@ -2,10 +2,8 @@
 
 namespace TSI.Friday.Contracts.Models
 {
-    public class Company : Person
+    public class Company : Client
     {
-        public PersonType Type { get; } = PersonType.Company;
-
         public string NationalRegistry  { get; set; }
 
         public string StateRegistration { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace TSI.Friday.WebAPI.Controllers
 {
@@ -10,7 +11,7 @@ namespace TSI.Friday.WebAPI.Controllers
     public class PlayController : Controller
     {
         [HttpGet("get-players")]
-        public IActionResult Players()
+        public async Task<IActionResult> Players()
         {
             return Ok(new JsonResult(new { message = "Only authorized users can view players"}));
         }

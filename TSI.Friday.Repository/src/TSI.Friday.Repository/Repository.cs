@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1;
 using System.Linq.Expressions;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -29,7 +30,7 @@ namespace TSI.Friday.Repository
         }
 
         /// <inheritdoc />
-        public void Add(T entity) 
+        public async Task AddAsync(T entity) 
         {
             if (entity is BaseModel baseModel)
             {
@@ -37,12 +38,12 @@ namespace TSI.Friday.Repository
                 baseModel.ModifyUserId = 0;
             }
 
-            _myDbContext.Set<T>().Add(entity);
-            SaveChanges();
+            await _myDbContext.Set<T>().AddAsync(entity);
+            await SaveChangesAsync();
         }
 
         /// <inheritdoc />
-        public void Update(T entity)
+        public async Task UpdateAsync(T entity)
         {
             if (entity is BaseModel baseModel)
             {
@@ -51,20 +52,27 @@ namespace TSI.Friday.Repository
             }
 
             _myDbContext.Entry(entity).State = EntityState.Modified;
-            SaveChanges();
+            await SaveChangesAsync();
         }
 
         /// <inheritdoc />
-        public void Remove(T entity)
+        public async Task UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            _myDbContext.UpdateRange(entities);
+            await SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task RemoveAsync(T entity)
         {
             _myDbContext.Set<T>().Remove(entity);
-            SaveChanges();
+            await SaveChangesAsync();
         }
 
         /// <inheritdoc />
-        public T GetById(int? id)
+        public async Task<T> GetByIdAsync(object id)
         {
-            var entity = _myDbContext.Set<T>().Find(id);
+            var entity = await _myDbContext.Set<T>().FindAsync(id);
 
             return entity == null
                 ? throw new KeyNotFoundException($"Entity '{id}' not found.")
@@ -72,25 +80,37 @@ namespace TSI.Friday.Repository
         }
 
         /// <inheritdoc />
-        public T GetByName(string name)
+        public async Task<T> GetByNameAsync(string name)
         {
-            var entity = _myDbContext.Set<T>().Find(name);
-
+            var entity = await _myDbContext.Set<T>().FindAsync(name);
             return entity == null
                 ? throw new KeyNotFoundException($"Entity '{name}' not found.")
                 : entity;
         }
 
         /// <inheritdoc />
-        public IList<T> Query(Expression<Func<T, bool>> filter)
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter)
         {
-            return _myDbContext.Set<T>().Where(filter).ToList();
+            return await _myDbContext.Set<T>().AnyAsync(filter);
         }
 
         /// <inheritdoc />
-        public IList<T> GetAll()
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter)
         {
-            return _myDbContext.Set<T>().ToList();
+            return await _myDbContext.Set<T>().FirstOrDefaultAsync(filter)
+                ?? throw new InvalidOperationException("No entity found matching the filter.");
+        }
+
+        /// <inheritdoc />
+        public async Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter)
+        {
+            return await _myDbContext.Set<T>().Where(filter).ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IList<T>> GetAllAsync()
+        {
+            return await _myDbContext.Set<T>().ToListAsync();
         }
 
         #endregion Public methods
@@ -100,9 +120,9 @@ namespace TSI.Friday.Repository
         /// <summary>
         /// This function should be commit the changes on the database.
         /// </summary>
-        private void SaveChanges()
+        private async Task SaveChangesAsync()
         {
-            _myDbContext.SaveChanges();
+            await _myDbContext.SaveChangesAsync();
         }
 
         #endregion Private methods

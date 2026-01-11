@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   AccountService,
   FormBaseComponent,
   ModalService,
   User,
+  WebApiResponse,
 } from '@friday/core';
 import { take } from 'rxjs';
 
@@ -16,8 +17,6 @@ import { take } from 'rxjs';
   standalone: false,
 })
 export class RegisterComponent extends FormBaseComponent implements OnInit {
-  registerForm: FormGroup = new FormGroup({});
-
   constructor(
     private accountService: AccountService,
     private modalService: ModalService,
@@ -39,7 +38,7 @@ export class RegisterComponent extends FormBaseComponent implements OnInit {
   }
 
   initializeForm(): void {
-    this.registerForm = this.formBuilder.group({
+    this.form = this.formBuilder.group({
       firstName: [
         '',
         [
@@ -78,17 +77,18 @@ export class RegisterComponent extends FormBaseComponent implements OnInit {
     this.submitted = true;
     this.errorMessages = [];
 
-    if (!this.registerForm.valid) {
+    if (!this.form.valid) {
       return;
     }
 
-    this.accountService.register(this.registerForm.value).subscribe({
-      next: (response: any) => {
-        this.modalService.showNotification(
-          true,
-          response.value.title,
-          response.value.message
+    this.accountService.register(this.form.value).subscribe({
+      next: (response: WebApiResponse<User>) => {
+        this.modalService.showSweetNotification(
+          'Usuário registrado',
+          response.message,
+          'success'
         );
+
         this.router.navigateByUrl('account/login');
       },
       error: (response) => {

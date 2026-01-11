@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using TSI.Friday.Contracts.Models;
+using System.Threading.Tasks;
+using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Contracts.Interfaces
@@ -9,36 +10,36 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <summary>
         /// Add a new Address based on the object received.
         /// </summary>
-        /// <param name="address">The address object defined.</param>
+        /// <param name="addressDto">The address object defined.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
-        public WebApiResponse<Address> Add(Address address);
+        Task<WebApiResponse<AddressDto>> Add(AddressDto addressDto);
 
         /// <summary>
         /// Update an Address based on the object received.
         /// </summary>
-        /// <param name="address">The address object updated.</param>
+        /// <param name="addressDto">The address object updated.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
-        public WebApiResponse<Address> Update(Address address);
+        Task<WebApiResponse<AddressDto>> Update(AddressDto addressDto);
 
         /// <summary>
         /// Remove an Address based on the object received.
         /// </summary>
-        /// <param name="address">The address object to be removed.</param>
+        /// <param name="addressDto">The address object to be removed.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
-        public WebApiResponse<Address> Remove(Address address);
+        Task<WebApiResponse<AddressDto>> Remove(AddressDto addressDto);
 
         /// <summary>
         /// Method responsible to get only one Address based on the ID received as parameter.
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One address object according to the ID defined as parameter.</returns>
-        public WebApiResponse<Address> FindById(int? id);
+        Task<WebApiResponse<AddressDto>> FindById(int? id);
 
         /// <summary>
-        /// Method responsible to get an list of Addresses based on the PersonID received as parameter.
+        /// Method responsible to get a list of Addresses based on the ClientID received as parameter.
         /// </summary>
-        /// <param name="id">The ID to be used on the search.</param>
-        /// <returns>List of address according to the PersonID defined as parameter.</returns>
-        public WebApiResponse<IEnumerable<Address>> FindByPersonId(int? personId);
+        /// <param name="clientId">The ClientID to be used on the search.</param>
+        /// <returns>List of address according to the ClientID defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<AddressDto>>> FindByClientId(int? clientId);
     }
 }

@@ -1,9 +1,6 @@
-import { PersonType } from '../enums/person-type.enum';
-import { Person } from './person.model';
+import { Client } from './client.model';
 
-export interface Company extends Person {
-  type: PersonType;
-  nationalRegistry: string;
+export interface Company extends Client {
   stateRegistration: string;
   businessName: string;
 }

@@ -1,0 +1,19 @@
+<app-header
+  title="Clientes"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Clientes', link: '' }
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [className]="'Clientes'"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [modalDetails]="modalDetails"
+    [baseEndPoint]="'clients'"
+    [refresh]="refreshClients.bind(this)"
+    [delete]="deleteClient.bind(this)"
+  ></app-grid>
+</div>

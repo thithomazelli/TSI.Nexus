@@ -3,7 +3,6 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Repository;
 using TSI.Friday.Services;
-using TSI.Friday.Services.Services;
 
 namespace TSI.Friday.IoC
 {
@@ -15,24 +14,41 @@ namespace TSI.Friday.IoC
         /// <param name="services">Service collection received when the startup is executed</param>
         public static void RegisterServices(IServiceCollection services)
         {
+            #region Mapping Profiles
+
+            services.AddAutoMapper(typeof(MappingProfile).Assembly);
+
+            #endregion
+
             #region Services
-            
-            services.AddScoped<IJwtService, JwtService>();
-            services.AddScoped<IUserManagerService, UserManagerService>();
-            services.AddScoped<IEmailService, EmailService>();
+
             services.AddScoped<IAddressService, AddressService>();
+            services.AddScoped<IClientService, ClientService>();
             services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IIndividualService, IndividualService>();
+            services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IOrderProductService, OrderProductService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IProductPhotoService, ProductPhotoService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IUserManagerService, UserManagerService>();
 
             #endregion Services
 
             #region Repositories
 
             services.AddScoped<IRepository<Address>, Repository<Address>>();
+            services.AddScoped<IRepository<Client>, Repository<Client>>();
             services.AddScoped<IRepository<Company>, Repository<Company>>();
             services.AddScoped<IRepository<Individual>, Repository<Individual>>();
+            services.AddScoped<IRepository<Order>, Repository<Order>>();
+            services.AddScoped<IRepository<OrderProduct>, Repository<OrderProduct>>();
+            services.AddScoped<IRepository<Payment>, Repository<Payment>>();
             services.AddScoped<IRepository<Product>, Repository<Product>>();
+            services.AddScoped<IRepository<ProductPhoto>, Repository<ProductPhoto>>();
+            services.AddScoped<IRepository<User>, Repository<User>>();
 
             #endregion Repositories
         }

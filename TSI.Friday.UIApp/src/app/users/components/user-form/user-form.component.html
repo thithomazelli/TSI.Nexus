@@ -1,0 +1,161 @@
+<div class="product-form-wrapper" [ngClass]="{ compact: compact }">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="row g-2 mb-1">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="firstName"
+              type="text"
+              placeholder="First name"
+              class="form-control"
+              [class.is-invalid]="isInvalid('firstName')"
+            />
+            <label for="firstName">First name</label>
+            <span
+              class="text-danger"
+              *ngIf="inputHasError('firstName', 'required')"
+              >First name is required
+            </span>
+            <span
+              class="text-danger"
+              *ngIf="
+                inputHasError('firstName', 'minlength') ||
+                inputHasError('firstName', 'maxlength')
+              "
+              >First name must be at least 3, and maximum 15 characters
+            </span>
+          </div>
+          <div class="input-group-text"><i class="bi bi-person"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="lastName"
+              type="text"
+              placeholder="Last name"
+              class="form-control"
+              [class.is-invalid]="isInvalid('lastName')"
+            />
+            <label for="lastName">Last name</label>
+            <span
+              class="text-danger"
+              *ngIf="inputHasError('lastName', 'required')"
+              >Last name is required
+            </span>
+            <span
+              class="text-danger"
+              *ngIf="
+                inputHasError('lastName', 'minlength') ||
+                inputHasError('lastName', 'maxlength')
+              "
+              >Last name must be at least 3, and maximum 30 characters
+            </span>
+          </div>
+          <div class="input-group-text"><i class="bi bi-person"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="email"
+          type="text"
+          placeholder="Email"
+          class="form-control"
+          [class.is-invalid]="isInvalid('email')"
+          [class.disabled]="isEdit"
+          [readonly]="isEdit"
+        />
+        <label for="email">Email</label>
+        <span class="text-danger" *ngIf="inputHasError('email', 'required')"
+          >Email is required
+        </span>
+        <span class="text-danger" *ngIf="inputHasError('email', 'pattern')"
+          >Invalid email address
+        </span>
+      </div>
+      <div class="input-group-text"><i class="bi bi-envelope"></i></div>
+    </div>
+
+    <div *ngIf="isEdit" class="form-check">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        formControlName="emailConfirmed"
+      />
+      <label> Email confirmed </label>
+    </div>
+
+    <div *ngIf="!isEdit" class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="password"
+          type="password"
+          placeholder="Password"
+          class="form-control"
+          [class.is-invalid]="isInvalid('password')"
+        />
+        <label for="password">Password</label>
+        <span class="text-danger" *ngIf="inputHasError('password', 'required')"
+          >Password is required
+        </span>
+        <span
+          class="text-danger"
+          *ngIf="
+            inputHasError('password', 'minlength') ||
+            inputHasError('password', 'maxlength')
+          "
+          >Password must be at least 6, and maximum 15 characters
+        </span>
+      </div>
+      <div class="input-group-text"><i class="bi bi-lock-fill"></i></div>
+    </div>
+
+    <div class="form-floating" *ngIf="errors">
+      <app-validation-messages
+        [errorMessages]="errors"
+      ></app-validation-messages>
+    </div>
+
+    <div *ngIf="!isEdit; else loggedActions" class="row">
+      <div class="col-8 d-inline-flex align-items-center">
+        <div class="form-check" hidden>
+          <input class="form-check-input" type="checkbox" id="agree" />
+          <label class="form-check-label" for="agree">
+            I agree to the <a href="#">terms</a>
+          </label>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="d-grid">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="form.invalid"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #loggedActions>
+      <div class="d-flex justify-content-end mt-3">
+        <button
+          type="button"
+          class="btn btn-secondary me-2"
+          (click)="doCancel()"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+          Save
+        </button>
+      </div>
+    </ng-template>
+  </form>
+</div>

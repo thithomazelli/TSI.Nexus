@@ -1,0 +1,151 @@
+<div class="client-form-wrapper" [ngClass]="{ compact: compact }">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <!-- Campos de telefone e celular ao final do formulário -->
+    <!-- Campos comuns do client.model -->
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          #firstInput
+          formControlName="name"
+          type="text"
+          placeholder="Name"
+          class="form-control"
+          [class.is-invalid]="isInvalid('name')"
+        />
+        <label for="name">Name</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-person"></i></div>
+    </div>
+
+    <!-- Tipo de cliente e CPF/CNPJ na mesma linha -->
+    <div class="row g-2 mb-1">
+      <div class="col-12 col-md-6">
+        <div class="form-floating">
+          <select formControlName="type" class="form-select">
+            <option value="Física">Pessoa Física</option>
+            <option value="Jurídica">Pessoa Jurídica</option>
+          </select>
+          <label for="type">Tipo de Cliente</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <ng-container
+          *ngIf="form.get('type')?.value === 'Física'; else cnpjField"
+        >
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="socialSecurityCard"
+                type="text"
+                placeholder="CPF"
+                class="form-control"
+                [class.is-invalid]="isInvalid('socialSecurityCard')"
+                [class.is-valid]="isValid('socialSecurityCard')"
+                mask="000.000.000-00"
+                (blur)="markAsTouched('socialSecurityCard')"
+              />
+              <label for="socialSecurityCard">CPF</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-card-text"></i></div>
+          </div>
+        </ng-container>
+        <ng-template #cnpjField>
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="nationalRegistry"
+                type="text"
+                placeholder="CNPJ"
+                class="form-control"
+                [class.is-invalid]="isInvalid('nationalRegistry')"
+                [class.is-valid]="isValid('nationalRegistry')"
+                mask="00.000.000/0000-00"
+                (blur)="markAsTouched('nationalRegistry')"
+                [disabled]="isEdit"
+              />
+              <label for="nationalRegistry">CNPJ</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-building"></i></div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Campos específicos para Individual -->
+    <div *ngIf="form.get('type')?.value === 'Física'">
+      <div class="input-group mb-1">
+        <div class="form-floating">
+          <input
+            formControlName="birthday"
+            type="date"
+            placeholder="Data de Nascimento"
+            class="form-control"
+            [class.is-invalid]="isInvalid('birthday')"
+          />
+          <label for="birthday">Data de Nascimento</label>
+        </div>
+        <div class="input-group-text"><i class="bi bi-calendar"></i></div>
+      </div>
+      <!-- Adicione outros campos específicos de Individual aqui -->
+    </div>
+
+    <!-- Campo de email -->
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="Email"
+          class="form-control"
+          [class.is-invalid]="isInvalid('email')"
+        />
+        <label for="email">Email</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-envelope"></i></div>
+    </div>
+
+    <div class="row g-2 mb-1">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-grow-1">
+            <input
+              formControlName="phone"
+              type="text"
+              placeholder="Telefone"
+              class="form-control"
+              mask="(00) 0000-0000"
+              [class.is-invalid]="isInvalid('phone')"
+            />
+            <label for="phone">Telefone</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-telephone"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-grow-1">
+            <input
+              formControlName="mobile"
+              type="text"
+              placeholder="Celular"
+              class="form-control"
+              mask="(00) 0 0000-0000"
+              [class.is-invalid]="isInvalid('mobile')"
+            />
+            <label for="mobile">Celular</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-phone"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+        Save
+      </button>
+    </div>
+  </form>
+</div>

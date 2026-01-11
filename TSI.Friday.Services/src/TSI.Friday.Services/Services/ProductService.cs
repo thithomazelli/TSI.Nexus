@@ -3,7 +3,7 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Utilities;
 
-namespace TSI.Friday.Services.Services
+namespace TSI.Friday.Services
 {
     public class ProductService : IProductService
     {
@@ -28,13 +28,13 @@ namespace TSI.Friday.Services.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Product> Add(Product product)
+        public async Task<WebApiResponse<Product>> Add(Product product)
         {
             WebApiResponse<Product> result = new();
 
             try
             {
-                var productDuplicatedMessage = CheckIfProductIsDuplicatedAndGetErrorMessage(product);
+                var productDuplicatedMessage = await CheckIfProductIsDuplicatedAndGetErrorMessage(product);
 
                 if (!string.IsNullOrEmpty(productDuplicatedMessage))
                 {
@@ -43,7 +43,7 @@ namespace TSI.Friday.Services.Services
                     return result;
                 }
 
-                _repository.Add(product);
+                await _repository.AddAsync(product);
 
                 result.Data = product;
                 result.Status = ResponseStatus.Success;
@@ -59,22 +59,22 @@ namespace TSI.Friday.Services.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Product> Update(Product product)
+        public async Task<WebApiResponse<Product>> Update(Product product)
         {
             WebApiResponse<Product> result = new();
 
             try
             {
-                var ProductDuplicatedMessage = CheckIfProductIsDuplicatedAndGetErrorMessage(product);
+                var productDuplicatedMessage = await CheckIfProductIsDuplicatedAndGetErrorMessage(product);
 
-                if (!string.IsNullOrEmpty(ProductDuplicatedMessage))
+                if (!string.IsNullOrEmpty(productDuplicatedMessage))
                 {
                     result.Status = ResponseStatus.Error;
-                    result.Message = ProductDuplicatedMessage;
+                    result.Message = productDuplicatedMessage;
                     return result;
                 }
 
-                _repository.Update(product);
+                await _repository.UpdateAsync(product);
 
                 result.Data = product;
                 result.Status = ResponseStatus.Success;
@@ -90,13 +90,13 @@ namespace TSI.Friday.Services.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Product> Remove(Product product)
+        public async Task<WebApiResponse<Product>> Remove(Product product)
         {
             WebApiResponse<Product> result = new();
 
             try
             {
-                _repository.Remove(product);
+                await _repository.RemoveAsync(product);
 
                 result.Data = product;
                 result.Status = ResponseStatus.Success;
@@ -112,13 +112,13 @@ namespace TSI.Friday.Services.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<IEnumerable<Product>> FindAll()
+        public async Task<WebApiResponse<IEnumerable<Product>>> FindAll()
         {
             WebApiResponse<IEnumerable<Product>> result = new();
 
             try
             {
-                result.Data = _repository.GetAll();
+                result.Data = await _repository.GetAllAsync();
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
             }
@@ -132,13 +132,13 @@ namespace TSI.Friday.Services.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Product> FindById(int? id)
+        public async Task<WebApiResponse<Product>> FindById(int? id)
         {
             WebApiResponse<Product> result = new();
 
             try
             {
-                result.Data = _repository.GetById(id);
+                result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
                 result.Message = result.Data != null
                     ? $"Produto {result.Data.Name} encontrado com sucesso"
@@ -154,13 +154,13 @@ namespace TSI.Friday.Services.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Product> FindBySku(string sku)
+        public async Task<WebApiResponse<Product>> FindBySku(string sku)
         {
             WebApiResponse<Product> result = new();
 
             try
             {
-                result.Data = _repository.Query(_ => _.Sku.Contains(sku))?.FirstOrDefault();
+                result.Data = await _repository.FirstOrDefaultAsync(_ => _.Sku.Equals(sku));
                 result.Status = ResponseStatus.Success; result.Message = result.Data != null
                     ? $"Produto {result.Data.Name} encontrado com sucesso"
                     : $"Nenhum Produto com Sku {sku} foi encontrado";
@@ -181,18 +181,18 @@ namespace TSI.Friday.Services.Services
         /// <summary>
         /// Should verify if the Product is already being registered on the database.
         /// </summary>
-        /// <param name="Product">The Product object that is being added or updated.</param>
+        /// <param name="product">The Product object that is being added or updated.</param>
         /// <returns>The error message when Product is duplicated. Otherwise an empty string.</returns>
-        private string CheckIfProductIsDuplicatedAndGetErrorMessage(Product Product)
+        private async Task<string> CheckIfProductIsDuplicatedAndGetErrorMessage(Product product)
         {
-            if (IsNameDuplicated(Product))
+            if (await IsNameDuplicated(product))
             {
-                return $"Já existe um Produto cadastrado com Nome {Product.Name}.";
+                return $"Já existe um Produto cadastrado com Nome {product.Name}.";
             }
 
-            if (IsSkuDuplicated(Product))
+            if (await IsSkuDuplicated(product))
             {
-                return $"Já existe um Produto cadastrado com Sku {Product.Sku}.";
+                return $"Já existe um Produto cadastrado com Sku {product.Sku}.";
             }
 
 
@@ -202,25 +202,23 @@ namespace TSI.Friday.Services.Services
         /// <summary>
         /// Should verify if the Product name is already being used by another register on the database.
         /// </summary>
-        /// <param name="Product">The Product object that is being added or updated.</param>
+        /// <param name="product">The Product object that is being added or updated.</param>
         /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private bool IsNameDuplicated(Product Product)
+        private Task<bool> IsNameDuplicated(Product product)
         {
             return _repository
-                .Query(_ => _.Id != Product.Id && _.Name == Product.Name)
-                .Any();
+                .AnyAsync(_ => _.Id != product.Id && _.Name == product.Name);
         }
 
         /// <summary>
         /// Should verify if the Product sku is already being used by another register on the database.
         /// </summary>
-        /// <param name="Product">The Product object that is being added or updated.</param>
+        /// <param name="product">The Product object that is being added or updated.</param>
         /// <returns>True when the sku is duplicated; Otherwise false.</returns>
-        private bool IsSkuDuplicated(Product Product)
+        private Task<bool> IsSkuDuplicated(Product product)
         {
             return _repository
-                .Query(_ => _.Id != Product.Id && !string.IsNullOrEmpty(_.Sku) && _.Sku == Product.Sku)
-                .Any();
+                .AnyAsync(_ => _.Id != product.Id && !string.IsNullOrEmpty(_.Sku) && _.Sku == product.Sku);
         }
 
         #endregion Private methods

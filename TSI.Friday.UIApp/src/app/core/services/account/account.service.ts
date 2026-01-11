@@ -6,6 +6,7 @@ import {
   Register,
   ResetPassword,
   User,
+  WebApiResponse,
 } from '@friday/core';
 import { map, Observable, of, ReplaySubject } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
@@ -40,7 +41,7 @@ export class AccountService {
       );
   }
 
-  register(model: Register): Observable<Object> {
+  register(model: Register): Observable<WebApiResponse<User>> {
     return this.apiService.post('account/register', model);
   }
 
@@ -75,9 +76,15 @@ export class AccountService {
   }
 
   logout(): void {
-    localStorage.removeItem(environment.userKey);
-    this._userSource.next(null);
-    this.router.navigateByUrl('/account/login');
+    // Navigate to the logout route first so UI can show a logout view,
+    // then clear client state and navigate to the login page.
+    this.router
+      .navigateByUrl('/account/logout', { replaceUrl: true })
+      .then(() => {
+        localStorage.removeItem(environment.userKey);
+        this._userSource.next(null);
+        this.router.navigateByUrl('/account/login');
+      });
   }
 
   getJWT(): string | null {

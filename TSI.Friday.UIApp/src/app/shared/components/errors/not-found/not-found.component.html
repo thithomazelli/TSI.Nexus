@@ -1,2 +1,27 @@
-<p class="h1">Page not found</p>
-<button class="btn btn-primary" routerLink="/">Go home</button>
+<app-header
+  title="404 Error Page"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: '404 Error Page', link: '' }
+  ]"
+></app-header>
+
+<section class="content">
+  <div class="error-page">
+    <h2 class="headline text-danger">404</h2>
+
+    <div class="error-content">
+      <h3>
+        <i class="fas fa-exclamation-triangle text-danger"></i> Oops! Page not
+        found.
+      </h3>
+
+      <p>
+        We could not find the page you were looking for. Meanwhile, you may
+        <a routerLink="/">return to dashboard</a> or try using the search form.
+      </p>
+    </div>
+    <!-- /.error-content -->
+  </div>
+  <!-- /.error-page -->
+</section>

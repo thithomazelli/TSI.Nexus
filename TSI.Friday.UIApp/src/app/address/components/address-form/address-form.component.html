@@ -1,0 +1,127 @@
+<div class="address-form-wrapper" [ngClass]="{ compact: compact }">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <!-- 1ª linha: tipo + cep -->
+    <div class="row g-2 mb-1">
+      <div class="col-12 col-md-6">
+        <div class="form-floating">
+          <select
+            formControlName="type"
+            class="form-select"
+            [class.is-invalid]="isInvalid('type')"
+          >
+            <option [ngValue]="null">Selecione o tipo</option>
+            <option [ngValue]="'Home'">Residencial</option>
+            <option [ngValue]="'Office'">Escritório</option>
+            <option [ngValue]="'Postal'">Postal</option>
+            <option [ngValue]="'Billing'">Cobrança</option>
+            <option [ngValue]="'Shipping'">Entrega</option>
+          </select>
+          <label for="type">Tipo de Endereço</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-floating position-relative">
+          <input
+            formControlName="zipCode"
+            type="text"
+            class="form-control"
+            placeholder="CEP"
+            maxlength="9"
+            mask="00000-000"
+            [class.is-invalid]="isInvalid('zipCode')"
+          />
+          <label for="zipCode">CEP</label>
+          <div
+            *ngIf="loadingCep"
+            class="position-absolute top-50 end-0 translate-middle-y me-3"
+          >
+            <span class="spinner-border spinner-border-sm text-primary"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 2ª linha: rua + número -->
+    <div class="row g-2 mb-1">
+      <div class="col-12 col-md-8">
+        <div class="form-floating">
+          <input
+            formControlName="street"
+            type="text"
+            class="form-control"
+            placeholder="Rua"
+            [class.is-invalid]="isInvalid('street')"
+          />
+          <label for="street">Rua</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="form-floating">
+          <input
+            formControlName="number"
+            type="number"
+            class="form-control"
+            placeholder="Número"
+            [class.is-invalid]="isInvalid('number')"
+          />
+          <label for="number">Número</label>
+        </div>
+      </div>
+    </div>
+    <!-- 3ª linha: estado + cidade -->
+    <div class="row g-2 mb-1">
+      <div class="col-12 col-md-6">
+        <div class="form-floating">
+          <select
+            formControlName="state"
+            class="form-select"
+            [class.is-invalid]="isInvalid('state')"
+          >
+            <option [ngValue]="null">Selecione o estado</option>
+            <option *ngFor="let estado of estados" [value]="estado.sigla">
+              {{ estado.nome }}
+            </option>
+          </select>
+          <label for="state">Estado</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="form-floating">
+          <select
+            formControlName="city"
+            class="form-select"
+            [class.is-invalid]="isInvalid('city')"
+          >
+            <option [ngValue]="null">Selecione a cidade</option>
+            <option *ngFor="let cidade of cidades" [value]="cidade.nome">
+              {{ cidade.nome }}
+            </option>
+          </select>
+          <label for="city">Cidade</label>
+        </div>
+      </div>
+    </div>
+    <!-- 4ª linha: comentários -->
+    <div class="row g-2 mb-1">
+      <div class="col-12">
+        <div class="form-floating">
+          <input
+            formControlName="comments"
+            type="text"
+            class="form-control"
+            placeholder="Comentários"
+          />
+          <label for="comments">Comentários</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+        Save
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,115 @@
+import { Component } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import {
+  ApiService,
+  ApiType,
+  GridService,
+  NotificationService,
+  Product,
+  WebApiResponse,
+} from '@friday/core';
+
+@Component({
+  selector: 'app-product-details-page',
+  templateUrl: './product-details-page.component.html',
+  styleUrl: './product-details-page.component.scss',
+  standalone: false,
+})
+export class ProductDetailsPageComponent {
+  isEdit = false;
+  data?: Product | null = null;
+  id: number | null = null;
+  loading = false;
+  activeTab: 'form' | 'image' | 'extra' = 'form';
+
+  private _baseEndPoint: ApiType = ApiType.Products;
+
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private apiService: ApiService,
+    private routerService: Router,
+    private gridService: GridService,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    const idParam = this.activatedRoute.snapshot.paramMap.get('id');
+
+    if (idParam && idParam !== 'new') {
+      const numericId = Number(idParam);
+      if (isNaN(numericId)) {
+        this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+        return;
+      }
+      this.isEdit = true;
+      this.id = numericId;
+      this.loadProduct(numericId);
+    } else {
+      this.isEdit = false;
+      this.data = null;
+    }
+  }
+
+  save(product: Product): void {
+    if (this.isEdit && this.id) {
+      this.apiService
+        .put<WebApiResponse<Product>>(`${this._baseEndPoint}/update`, product)
+        .subscribe((response: WebApiResponse<Product>) => {
+          this.gridService.gridDataChanged(response.data, this.id);
+          this.notificationService.showMessage(
+            response.status,
+            response.message
+          );
+        });
+    } else {
+      this.apiService
+        .post<WebApiResponse<Product>>(`${this._baseEndPoint}/add`, product)
+        .subscribe((response: WebApiResponse<Product>) => {
+          this.gridService.gridDataChanged(response.data, null);
+          this.routerService.navigateByUrl(
+            `/${this._baseEndPoint}/${response.data.id}`
+          );
+        });
+    }
+  }
+
+  cancel(): void {
+    this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+  }
+
+  onImageChange(fileOrNull: File | null): void {
+    // fileOrNull is selected/captured image. you can upload it to server here.
+    if (!fileOrNull) {
+      // remove on server if needed
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('file', fileOrNull);
+    if (this.id) fd.append('productId', String(this.id));
+    // example upload endpoint - adapt as needed
+    this.apiService.post('products/uploadImage', fd).subscribe();
+  }
+
+  private loadProduct(id: number): void {
+    this.loading = true;
+    this.apiService
+      .get<WebApiResponse<Product>>(`products/getById/${id}`)
+      .subscribe({
+        next: (response: WebApiResponse<Product>) => {
+          this.loading = false;
+
+          if (response.data == null) {
+            this.routerService.navigateByUrl('/not-found');
+            return;
+          }
+
+          this.data = response.data;
+        },
+        error: () => {
+          this.loading = false;
+          this.routerService.navigateByUrl('/not-found');
+        },
+      });
+  }
+}

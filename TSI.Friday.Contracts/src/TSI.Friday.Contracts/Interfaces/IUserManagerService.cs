@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
+using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Contracts.Interfaces
 {
@@ -25,7 +28,7 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <returns>
         /// An <see cref="IActionResult"/> indicating the result of the registration process.
         /// </returns>
-        Task<IActionResult> Register(RegisterDto model);
+        Task<ActionResult<WebApiResponse<User>>> Register(RegisterDto model);
 
         /// <summary>
         /// Refreshes the authentication token for a user.
@@ -69,5 +72,33 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="model"></param>
         /// <returns></returns>
         Task<IActionResult> ResetPassword(ResetPasswordDto model);
+
+        /// <summary>
+        /// Update an User based on the object received.
+        /// </summary>
+        /// <param name="user">The user object updated.</param>
+        /// <returns>Return an WebApiReponse with the results for this operation.</returns>
+        Task<WebApiResponse<User>> Update(User user);
+
+        /// <summary>
+        /// Remove an User based on the object received.
+        /// </summary>
+        /// <param name="user">The user object to be removed.</param>
+        /// <returns>Return an WebApiReponse with the results for this operation.</returns>
+        Task<WebApiResponse<User>> Remove(User user);
+
+
+        /// <summary>
+        /// Method responsible to get all registers available in the Users data table.
+        /// </summary>
+        /// <returns>All registers found in the Users data table.</returns>
+        Task<WebApiResponse<IEnumerable<User>>> FindAll();
+
+        /// <summary>
+        /// Method responsible to get only one User based in the ID received as parameter.
+        /// </summary>
+        /// <param name="id">The ID to be used on the search.</param>
+        /// <returns>One User object according to the ID defined as parameter.</returns>
+        Task<WebApiResponse<User>> FindById(string id);
     }
 }

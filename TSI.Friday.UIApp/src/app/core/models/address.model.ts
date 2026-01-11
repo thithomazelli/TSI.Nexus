@@ -9,6 +9,7 @@ export interface Address {
   zipCode?: string | null;
   country?: string | null;
   comments?: string | null;
-  addressType?: AddressType;
-  personId?: number | null;
+  type?: AddressType | null;
+  clientId?: number | null;
+  isDefault?: boolean | null;
 }

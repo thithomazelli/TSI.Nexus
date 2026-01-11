@@ -1,10 +1,13 @@
-﻿using FluentAssertions;
+﻿using AutoMapper;
+using FluentAssertions;
 using Moq;
 using System.Linq.Expressions;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
+using TSI.Friday.IoC;
 
 namespace TSI.Friday.Services.Tests.Services
 {
@@ -12,32 +15,41 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly AddressService _addressService;
         private readonly Mock<IRepository<Address>> _repository;
-        private readonly IList<Address> _addressListMock;
+        private readonly IList<AddressDto> _addressListMock;
+        private readonly IMapper _mapper;
 
         public AddressServiceTests()
         {
-            _repository = new Mock<IRepository<Address>>();
-            _addressService = new AddressService(_repository.Object);
-            _addressListMock = new List<Address>
+            // Configure AutoMapper for tests (map Client -> ClientDto, including derived-type fields)
+            var config = new MapperConfiguration(cfg =>
             {
-                new Address
+                cfg.AddProfile<MappingProfile>();
+            });
+            _mapper = config.CreateMapper();
+
+            _repository = new Mock<IRepository<Address>>();
+            _addressService = new AddressService(_repository.Object, _mapper);
+            _addressListMock = new List<AddressDto>
+            {
+                new AddressDto
                 {
                     Id = 1,
-                    PersonId = 1,
-                    AddressType = AddressType.Home,
+                    ClientId = 1,
+                    Type = AddressType.Home,
                     Country = "Brasil",
                     City = "Santo André",
                     State = "SP",
                     ZipCode = "09190-620",
                     Street = "Rua Juazeiro",
                     Number = 303,
-                    Comments = "Apto 21"
+                    Comments = "Apto 21",
+                    IsDefault = true,
                 },
-                new Address
+                new AddressDto
                 {
                     Id = 2,
-                    PersonId = 1,
-                    AddressType = AddressType.Office,
+                    ClientId = 1,
+                    Type = AddressType.Office,
                     Country = "Brasil",
                     City = "Santo André",
                     State = "SP",
@@ -50,21 +62,21 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public void AddressService_Add_ShouldAddAddressSuccessfully_WhenMethodIsCalledWithAValidObject()
+        public async Task AddressService_Add_ShouldAddAddressSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
             var addressMock = _addressListMock.FirstOrDefault();
-            var expectedResult = new WebApiResponse<Address>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
                 Message = "Endereço cadastrado com sucesso."
             };
 
-            _repository.Setup(_ => _.Add(It.IsAny<Address>()));
+            _repository.Setup(_ => _.AddAsync(It.IsAny<Address>()));
 
             // Act
-            var result = _addressService.Add(addressMock);
+            var result = await _addressService.Add(addressMock);
 
             // Assert
             Assert.Equal(expectedResult.Data, addressMock);
@@ -72,27 +84,27 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Add(It.IsAny<Address>()), Times.Once);
+            _repository.Verify(_ => _.AddAsync(It.IsAny<Address>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_Add_ShouldNotAddAddressAndReturnAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task AddressService_Add_ShouldNotAddAddressAndReturnAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             var exception = new Exception();
             var addressMock = _addressListMock.FirstOrDefault();
-            var expectedResult = new WebApiResponse<Address>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = null,
                 Status = ResponseStatus.Error,
                 Message = $"Não foi possível cadastrar o Endereço na base de dados. Erro: {exception.Message}"
             };
 
-            _repository.Setup(_ => _.Add(It.IsAny<Address>()))
-                .Throws(exception);
+            _repository.Setup(_ => _.AddAsync(It.IsAny<Address>()))
+                .ThrowsAsync(exception);
 
             // Act
-            var result = _addressService.Add(addressMock);
+            var result = await _addressService.Add(addressMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -100,25 +112,25 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Add(It.IsAny<Address>()), Times.Once);
+            _repository.Verify(_ => _.AddAsync(It.IsAny<Address>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_Update_ShouldUpdateAddressSuccessfully_WhenMethodIsCalledWithAValidObject()
+        public async Task AddressService_Update_ShouldUpdateAddressSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
             var addressMock = _addressListMock.FirstOrDefault();
-            var expectedResult = new WebApiResponse<Address>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
                 Message = "Endereço atualizado com sucesso."
             };
 
-            _repository.Setup(_ => _.Update(It.IsAny<Address>()));
+            _repository.Setup(_ => _.UpdateAsync(It.IsAny<Address>()));
 
             // Act
-            var result = _addressService.Update(addressMock);
+            var result = await _addressService.Update(addressMock);
 
             // Assert
             Assert.Equal(expectedResult.Data, addressMock);
@@ -126,27 +138,27 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Update(It.IsAny<Address>()), Times.Once);
+            _repository.Verify(_ => _.UpdateAsync(It.IsAny<Address>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_Update_ShouldNotUpdateAddressAndReturnAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task AddressService_Update_ShouldNotUpdateAddressAndReturnAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             var exception = new Exception();
             var addressMock = _addressListMock.FirstOrDefault();
-            var expectedResult = new WebApiResponse<Address>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = null,
                 Status = ResponseStatus.Error,
                 Message = $"Não foi possível atualizar o Endereço na base de dados. Erro: {exception.Message}"
             };
 
-            _repository.Setup(_ => _.Update(It.IsAny<Address>()))
-                .Throws(exception);
+            _repository.Setup(_ => _.UpdateAsync(It.IsAny<Address>()))
+                .ThrowsAsync(exception);
 
             // Act
-            var result = _addressService.Update(addressMock);
+            var result = await _addressService.Update(addressMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -154,25 +166,25 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Update(It.IsAny<Address>()), Times.Once);
+            _repository.Verify(_ => _.UpdateAsync(It.IsAny<Address>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_Remove_ShouldRemoveAddressSuccessfully_WhenMethodIsCalledWithAValidObject()
+        public async Task AddressService_Remove_ShouldRemoveAddressSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
             var addressMock = _addressListMock.FirstOrDefault();
-            var expectedResult = new WebApiResponse<Address>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
                 Message = "Endereço removido com sucesso."
             };
 
-            _repository.Setup(_ => _.Remove(It.IsAny<Address>()));
+            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Address>()));
 
             // Act
-            var result = _addressService.Remove(addressMock);
+            var result = await _addressService.Remove(addressMock);
 
             // Assert
             Assert.Equal(expectedResult.Data, addressMock);
@@ -180,27 +192,27 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Remove(It.IsAny<Address>()), Times.Once);
+            _repository.Verify(_ => _.RemoveAsync(It.IsAny<Address>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_Remove_ShouldNotRemoveAddressAndReturnAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task AddressService_Remove_ShouldNotRemoveAddressAndReturnAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             var exception = new Exception();
             var addressMock = _addressListMock.FirstOrDefault();
-            var expectedResult = new WebApiResponse<Address>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = null,
                 Status = ResponseStatus.Error,
                 Message = $"Não foi possível remover o Endereço na base de dados. Erro: {exception.Message}"
             };
 
-            _repository.Setup(_ => _.Remove(It.IsAny<Address>()))
-                .Throws(exception);
+            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Address>()))
+                .ThrowsAsync(exception);
 
             // Act
-            var result = _addressService.Remove(addressMock);
+            var result = await _addressService.Remove(addressMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -208,54 +220,53 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Remove(It.IsAny<Address>()), Times.Once);
+            _repository.Verify(_ => _.RemoveAsync(It.IsAny<Address>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_FindById_ShouldReturnAnAddressSuccessfully_WhenIdIsValid()
+        public async Task AddressService_FindById_ShouldReturnAnAddressSuccessfully_WhenIdIsValid()
         {
             // Arrange
             const int idMock = 1;
-            var addressMock = _addressListMock.FirstOrDefault(_ => idMock.Equals(_.PersonId));
-            var expectedResult = new WebApiResponse<Address>
+            var addressMock = _addressListMock.FirstOrDefault(_ => idMock.Equals(_.ClientId));
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
                 Message = "Endereço foi encontrado com sucesso"
             };
 
-            _repository.Setup(_ => _.GetById(idMock))
-                .Returns(addressMock);
+            _repository.Setup(_ => _.GetByIdAsync(idMock))
+                .ReturnsAsync(_mapper.Map<Address>(addressMock));
 
             // Act
-            var result = _addressService.FindById(idMock);
+            var result = await _addressService.FindById(idMock);
 
             // Assert
-            Assert.Equal(expectedResult.Data, result.Data);
+            expectedResult.Should().BeEquivalentTo(result);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetById(idMock), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(idMock), Times.Once);
         }
 
         [Fact]
-        public void AddressService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenIdIsInvalid()
+        public async Task AddressService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenIdIsInvalid()
         {
             // Arrange
             const int idMock = 10;
-            var expectedResult = new WebApiResponse<Address>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = null,
                 Status = ResponseStatus.Success,
                 Message = $"Nenhum Endereço com o ID {idMock} foi encontrado"
             };
 
-            _repository.Setup(_ => _.GetById(idMock))
-                .Returns(value: null);
+            _repository.Setup(_ => _.GetByIdAsync(idMock))
+                .ReturnsAsync(value: null);
 
             // Act
-            var result = _addressService.FindById(idMock);
+            var result = await _addressService.FindById(idMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -263,26 +274,26 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetById(idMock), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(idMock), Times.Once);
         }
 
         [Fact]
-        public void AddressService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task AddressService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             const int idMock = 1;
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<Person>
+            var expectedResult = new WebApiResponse<AddressDto>
             {
                 Status = ResponseStatus.Error,
                 Message = $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {exception.Message}"
             };
 
-            _repository.Setup(_ => _.GetById(idMock))
-                .Throws(exception);
+            _repository.Setup(_ => _.GetByIdAsync(idMock))
+                .ThrowsAsync(exception);
 
             // Act
-            var result = _addressService.FindById(idMock);
+            var result = await _addressService.FindById(idMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -290,53 +301,52 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetById(idMock), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(idMock), Times.Once);
         }
 
         [Fact]
-        public void AddressService_FindByPersonId_ShouldReturnALisfOfAddressesSuccessfully_WhenPersonIdIsValid()
+        public async Task AddressService_FindByClientId_ShouldReturnALisfOfAddressesSuccessfully_WhenClientIdIsValid()
         {
             // Arrange
-            const int personIdMock = 1;
-            var expectedResult = new WebApiResponse<IEnumerable<Address>>
+            const int clientIdMock = 1;
+            var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
                 Data = _addressListMock,
                 Status = ResponseStatus.Success,
                 Message = $"{_addressListMock.Count} registro(s) encontrado(s)."
             };
 
-            _repository.Setup(_ => _.Query(It.IsAny<Expression<Func<Address, bool>>>()))
-                .Returns(_addressListMock);
+            _repository.Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+                .ReturnsAsync(_mapper.Map<IList<Address>>(_addressListMock));
 
             // Act
-            var result = _addressService.FindByPersonId(personIdMock);
+            var result = await _addressService.FindByClientId(clientIdMock);
 
             // Assert
-            Assert.Equal(expectedResult.Data, result.Data);
+            expectedResult.Should().BeEquivalentTo(result);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Query(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
+            _repository.Verify(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_FindByPersonId_ShouldReturnAnEmptyData_WhenPersonIdIsInvalid()
+        public async Task AddressService_FindByClientId_ShouldReturnAnEmptyData_WhenClientIdIsInvalid()
         {
             // Arrange
-            const int personIdMock = 10;
-            var expectedResult = new WebApiResponse<IEnumerable<Address>>
+            const int clientIdMock = 10;
+            var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
-                Data = new List<Address>(),
+                Data = new List<AddressDto>(),
                 Status = ResponseStatus.Success,
                 Message = $"{0} registro(s) encontrado(s)."
             };
 
-            _repository.Setup(_ => _.Query(It.IsAny<Expression<Func<Address, bool>>>()))
-                .Returns(new List<Address>());
+            _repository.Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+                .ReturnsAsync(new List<Address>());
 
             // Act
-            var result = _addressService.FindByPersonId(personIdMock);
+            var result = await _addressService.FindByClientId(clientIdMock);
 
             // Assert
             Assert.Equal(expectedResult.Data, result.Data);
@@ -344,26 +354,26 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Query(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
+            _repository.Verify(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
         }
 
         [Fact]
-        public void AddressService_FindByPersonId_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task AddressService_FindByClientId_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
-            const int personIdMock = 1;
+            const int clientIdMock = 1;
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<Person>
+            var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
                 Status = ResponseStatus.Error,
                 Message = $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {exception.Message}"
             };
 
-            _repository.Setup(_ => _.Query(It.IsAny<Expression<Func<Address, bool>>>()))
-                .Throws(exception);
+            _repository.Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+                .ThrowsAsync(exception);
 
             // Act
-            var result = _addressService.FindByPersonId(personIdMock);
+            var result = await _addressService.FindByClientId(clientIdMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -371,7 +381,7 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.Query(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
+            _repository.Verify(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
         }
 
     }

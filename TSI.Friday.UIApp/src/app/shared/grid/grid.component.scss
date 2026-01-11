@@ -1,0 +1,62 @@
+.grid-host.compact-view {
+  height: calc(95vh - 300px);
+}
+
+@media (max-width: 1200px) {
+  .grid-host.compact-view {
+    height: calc(90vh - 300px);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-host.compact-view {
+    height: calc(89vh - 240px);
+  }
+}
+
+@media (max-width: 576px) {
+  .grid-host.compact-view {
+    height: calc(80vh - 200px);
+  }
+}
+/* Grid host: use viewport-based height on large screens and media queries for smaller ones */
+.grid-host {
+  height: calc(95vh - 220px);
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-host .grid-full {
+  flex: 1 1 auto;
+  min-height: 200px;
+}
+
+/* Tweak heights for different breakpoints so responsive mode doesn't 'break' */
+@media (max-width: 1200px) {
+  .grid-host {
+    height: calc(90vh - 200px);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-host {
+    height: calc(89vh - 160px);
+  }
+}
+
+@media (max-width: 576px) {
+  .grid-host {
+    height: calc(80vh - 140px);
+  }
+}
+
+/* Ensure ag-grid fills the host container */
+.ag-theme-alpine.grid-full {
+  width: 100%;
+  height: 100% !important;
+}
+
+.compact-view {
+  width: 100%;
+  height: calc(95vh - 300px);
+}

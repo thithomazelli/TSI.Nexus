@@ -3,10 +3,8 @@ using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models
 {
-    public class Individual : Person
+    public class Individual : Client
     {
-        public PersonType Type { get; } = PersonType.Individual;
-
         public string SocialSecurityCard { get; set; }
 
         public string NationalIdCard { get; set; }

@@ -1,0 +1,19 @@
+<app-header
+  title="Pedidos"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Pedidos', link: '' }
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [className]="'Pedidos'"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [modalDetails]="modalDetails"
+    [baseEndPoint]="'order'"
+    [refresh]="refreshOrders.bind(this)"
+    [delete]="deleteOrder.bind(this)"
+  ></app-grid>
+</div>

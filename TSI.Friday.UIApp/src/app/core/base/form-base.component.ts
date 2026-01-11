@@ -1,14 +1,39 @@
 import { FormGroup } from '@angular/forms';
 
 export class FormBaseComponent {
+  form!: FormGroup;
   submitted = false;
   errorMessages: string[] = [];
 
-  canDisplayInputErrors(fieldName: string, form: FormGroup): boolean {
-    return this.submitted && form.get(fieldName)?.errors != null;
+  isInvalid(fieldName: string): boolean {
+    const control = this.form.get(fieldName);
+    return (
+      !!control &&
+      control.invalid &&
+      control.touched &&
+      control.value &&
+      control.value.toString().trim() !== ''
+    );
   }
 
-  inputHasError(fieldName: string, validator: string, form: FormGroup) {
-    return this.submitted && form.get(fieldName)?.hasError(validator);
+  isValid(fieldName: string): boolean {
+    const control = this.form.get(fieldName);
+    return (
+      !!control &&
+      control.valid &&
+      control.touched &&
+      control.value &&
+      control.value.toString().trim() !== ''
+    );
+  }
+
+  inputHasError(fieldName: string, validator: string): boolean {
+    return (
+      this.submitted && this.form.get(fieldName)?.hasError(validator) === true
+    );
+  }
+
+  markAsTouched(fieldName: string): void {
+    this.form.get(fieldName)?.markAsTouched();
   }
 }

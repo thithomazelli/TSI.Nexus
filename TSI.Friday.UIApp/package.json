@@ -30,8 +30,11 @@
     "bootswatch": "^5.3.3",
     "jsvectormap": "^1.7.0",
     "ngx-bootstrap": "^19.0.2",
+    "ngx-mask": "^20.0.3",
+    "ngx-toastr": "^19.1.0",
     "overlayscrollbars": "^2.13.0",
     "rxjs": "~7.8.0",
+    "sweetalert2": "^11.26.17",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.1"
   },

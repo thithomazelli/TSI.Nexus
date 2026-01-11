@@ -1,15 +1,7 @@
-import { PersonType } from '../enums/person-type.enum';
 import { Address } from './address.model';
-import { Person } from './person.model';
+import { Client } from './client.model';
 
-export interface Individual extends Person {
-  id: number;
-  name: string;
-  email?: string | null;
-  phone?: string | null;
-  addresses?: Address[] | null;
-  type: PersonType;
-  socialSecurityCard?: string | null;
+export interface Individual extends Client {
   nationalIdCard?: string | null;
   birthday: Date;
 }

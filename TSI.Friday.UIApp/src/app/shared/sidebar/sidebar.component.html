@@ -48,13 +48,25 @@
 
         <li class="nav-item">
           <a
-            routerLink="/play"
+            routerLink="/clients"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
             class="nav-link"
           >
-            <i class="nav-icon bi bi-play-circle"></i>
-            <p>Play</p>
+            <i class="nav-icon bi bi-buildings"></i>
+            <p>Clientes</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            routerLink="/orders"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-receipt-cutoff"></i>
+            <p>Pedidos</p>
           </a>
         </li>
 
@@ -69,6 +81,19 @@
             <p>Produtos</p>
           </a>
         </li>
+
+        <li class="nav-header">Admin</li>
+        <li class="nav-item">
+          <a
+            routerLink="/users"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-people"></i>
+            <p>Usuários</p>
+          </a>
+          <!-- </li>
 
         <li class="nav-header">Admin LTE</li>
         <li class="nav-item menu-open">
@@ -500,8 +525,10 @@
             <i class="nav-icon bi bi-circle text-info"></i>
             <p>Informational</p>
           </a>
+        </li> -->
         </li>
       </ul>
+
       <!--end::Sidebar Menu-->
     </nav>
   </div>

@@ -21,11 +21,13 @@ namespace TSI.Friday.Contracts.Models
 
         public string Comments { get; set; }
 
-        public AddressType AddressType { get; set; }
+        public AddressType Type { get; set; }
 
-        [ForeignKey("Person")]
-        public int PersonId { get; set; }
+        public bool IsDefault { get; set; }
 
-        public Person Person { get; set; }
+        [ForeignKey("Client")]
+        public int ClientId { get; set; }
+
+        public Client Client { get; set; }
     }
 }

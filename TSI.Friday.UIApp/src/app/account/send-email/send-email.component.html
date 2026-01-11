@@ -2,7 +2,7 @@
   <div class="col-12 col-lg-5">
     <main class="form-signin">
       <form
-        [formGroup]="emailForm"
+        [formGroup]="form"
         class="form-signin"
         (ngSubmit)="sendEmail()"
         autocomplete="off"
@@ -24,17 +24,13 @@
             type="text"
             placeholder="Email"
             class="form-control"
-            [class.is-invalid]="canDisplayInputErrors('email', emailForm)"
+            [class.is-invalid]="isInvalid('email')"
           />
           <label for="email">Email</label>
-          <span
-            class="text-danger"
-            *ngIf="inputHasError('email', 'required', emailForm)"
+          <span class="text-danger" *ngIf="inputHasError('email', 'required')"
             >Email is required
           </span>
-          <span
-            class="text-danger"
-            *ngIf="inputHasError('email', 'pattern', emailForm)"
+          <span class="text-danger" *ngIf="inputHasError('email', 'pattern')"
             >Invalid email address
           </span>
         </div>

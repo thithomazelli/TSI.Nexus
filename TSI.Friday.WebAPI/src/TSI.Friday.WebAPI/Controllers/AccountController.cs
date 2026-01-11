@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Interfaces;
+using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
+using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.WebAPI.Controllers
 {
@@ -27,13 +29,13 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<UserDto>> Login(LoginDto model)
+        public async Task<ActionResult<UserDto>> Login(LoginDto model)  
         {
             return await _userManagerService.Login(model);
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto model)
+        public async Task<ActionResult<WebApiResponse<User>>> Register(RegisterDto model)
         {
             return await _userManagerService.Register(model);
         }

@@ -34,19 +34,19 @@ export class ConfirmEmailComponent implements OnInit {
 
               this.accountService.confirmEmail(confirmEmail).subscribe({
                 next: (response: any) => {
-                  this.modalService.showNotification(
-                    true,
+                  this.modalService.showSweetNotification(
                     response.value.title,
-                    response.value.message
+                    response.value.message,
+                    'success'
                   );
                 },
                 error: (response: any) => {
                   this.success = false;
 
-                  this.modalService.showNotification(
-                    false,
+                  this.modalService.showSweetNotification(
                     'Failed',
-                    response.error
+                    response.error,
+                    'error'
                   );
                 },
               });

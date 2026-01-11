@@ -1,8 +1,8 @@
 /* transição idêntica para entrada/saída (fallback) */
 .nav-treeview {
-  display: none; /* JS controla display durante animação */
   opacity: 0;
   transform: translateY(-6px);
+  transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
 }
 
 /* quando aberto via classe (caso JS não rode) */
@@ -10,4 +10,25 @@
   display: block;
   opacity: 1;
   transform: translateY(0);
+}
+
+.brand-link {
+  font-size: 1.25rem;
+  line-height: 1.5;
+  padding: 0.8125rem;
+  transition: width 0.3s ease-in-out;
+  white-space: nowrap;
+}
+
+.main-sidebar .brand-text,
+.main-sidebar .logo-xl,
+.main-sidebar .logo-xs,
+.sidebar .nav-link p,
+.sidebar .user-panel .info,
+.nav-link {
+  transition: margin-left 0.3s linear, opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-brand {
+  justify-content: start;
 }

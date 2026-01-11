@@ -16,8 +16,9 @@ import { take } from 'rxjs';
   standalone: false,
 })
 export class LoginComponent extends FormBaseComponent implements OnInit {
-  loginForm: FormGroup = new FormGroup({});
   returnUrl: string | null = null;
+  // toggle show/hide password
+  passwordVisible = false;
 
   constructor(
     private accountService: AccountService,
@@ -49,7 +50,7 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
   }
 
   initializeForm(): void {
-    this.loginForm = this.formBuilder.group({
+    this.form = this.formBuilder.group({
       userName: ['', [Validators.required]],
       password: ['', [Validators.required]],
     });
@@ -59,11 +60,11 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
     this.submitted = true;
     this.errorMessages = [];
 
-    if (!this.loginForm.valid) {
+    if (!this.form.valid) {
       return;
     }
 
-    this.accountService.login(this.loginForm.value).subscribe({
+    this.accountService.login(this.form.value).subscribe({
       next: (response: any) => {
         if (this.returnUrl) {
           this.router.navigateByUrl(this.returnUrl);
@@ -83,5 +84,9 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
 
   resendEmailConfirmation(): void {
     this.router.navigateByUrl('/account/send-email/resend-email-confirmation');
+  }
+
+  togglePasswordVisibility(): void {
+    this.passwordVisible = !this.passwordVisible;
   }
 }

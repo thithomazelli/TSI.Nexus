@@ -1,1 +1,64 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* entrada: slide do topo para posição final */
+.toast-slide {
+  /* garantir estado inicial fora da tela */
+  transform: translateY(-100%);
+  opacity: 0;
+  animation: tz-slide-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* opcional: animação de saída — ngx-toastr pode remover o elemento antes da animação,
+   mas se sua versão aplicar uma classe de "hide" você pode usá-la */
+.toast-slide.toast-hide,
+.toast-slide.ng-animate.ng-leave {
+  animation: tz-slide-out 280ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes tz-slide-in {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tz-slide-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/* ajuste visual (opcional) */
+.toast-top-center {
+  top: 1rem;
+}
+
+.list-group-item {
+  position: relative;
+  display: block;
+  padding: 0.75rem 1.25rem;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Ensure ag-grid injected anchors show pointer even without href
+   Put this in global styles because ag-Grid injects HTML outside
+   of component style scope (ViewEncapsulation). */
+.ag-link {
+  cursor: pointer;
+}
+
+/* SweetAlert2: warning icon cor igual à fonte */
+.swal2-popup-small .swal2-icon.swal2-warning {
+  color: #212529 !important;
+  border-color: #212529 !important;
+}

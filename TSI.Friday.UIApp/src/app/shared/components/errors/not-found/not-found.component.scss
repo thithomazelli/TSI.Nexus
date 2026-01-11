@@ -1,0 +1,20 @@
+.content {
+  padding: 0 0.5rem;
+  display: block;
+
+  .error-page {
+    margin: 20px auto 0;
+    width: 600px;
+
+    .headline {
+      float: left;
+      font-size: 100px;
+      font-weight: 300;
+    }
+
+    .error-content {
+      display: block;
+      margin-left: 190px;
+    }
+  }
+}

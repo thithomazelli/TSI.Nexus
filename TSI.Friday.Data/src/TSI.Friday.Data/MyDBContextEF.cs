@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Models;
 
 namespace TSI.Friday.Data
@@ -17,11 +17,10 @@ namespace TSI.Friday.Data
         #region DbSets
 
         public DbSet<User> User { get; set; }
-        //public DbSet<Person> Person { get; set; }
-        //public DbSet<Individual> Individual { get; set; }
-        //public DbSet<Company> Company { get; set; }
-        //public DbSet<Address> Address { get; set; }
+        public DbSet<Client> Client { get; set; }
+        public DbSet<Address> Address { get; set; }
         public DbSet<Product> Product { get; set; }
+        public DbSet<ProductPhoto> ProductPhoto { get; set; }
 
         #endregion DbSets
 
@@ -29,15 +28,19 @@ namespace TSI.Friday.Data
         /// Method responsible to create the entire model based on the preset settings
         /// </summary>
         /// <param name="modelBuilder"></param>
+        /// 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //modelBuilder.Ignore<Person>();
-            //modelBuilder.Entity<Individual>().ToTable("Individual");
-            //modelBuilder.Entity<Company>().ToTable("Company");
-            //modelBuilder.Entity<Person>()
-            //    .HasDiscriminator<string>("PersonType")
-            //    .HasValue<Individual>("Individual")
-            //    .HasValue<Company>("Company");
+            modelBuilder.Entity<Client>()
+                .HasDiscriminator(c => c.Type)
+                    .HasValue<Individual>("Física")
+                    .HasValue<Company>("Jurídica");
+
+            modelBuilder.Entity<Client>()
+                .Property("Type")
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .IsRequired();
 
             base.OnModelCreating(modelBuilder);
         }

@@ -1,10 +1,12 @@
 <div class="d-flex justify-content-between mb-3">
   <div>
-    <button class="btn btn-outline-success me-2" (click)="openAddModal()">
+    <button class="btn btn-success me-2" (click)="openAddModal()">
+      <i class="bi bi-plus-lg"></i>
       Add {{ className }}
     </button>
-    <button class="btn btn-outline-secondary" (click)="refresh()">
-      Refresh
+    <button class="btn btn-secondary" (click)="refresh()">
+      <i class="bi bi-arrow-clockwise"></i>
+      Atualizar
     </button>
   </div>
   <div style="width: 300px">
@@ -17,19 +19,21 @@
   </div>
 </div>
 
-<ag-grid-angular
-  class="ag-theme-alpine"
-  style="width: 100%; height: 500px"
-  [rowData]="rowData"
-  [columnDefs]="columnDefs"
-  [defaultColDef]="defaultColDef"
-  [pagination]="true"
-  [paginationPageSize]="20"
-  [animateRows]="true"
-  [overlayNoRowsTemplate]="noRowsOverlayTemplate"
-  [localeText]="localeText"
-  [quickFilterText]="quickFilter"
-  (gridReady)="onGridReady($event)"
-  (cellClicked)="onCellClicked($event)"
->
-</ag-grid-angular>
+<!-- Responsive grid wrapper: use calc(95vh - 220px) on desktop but adapt via CSS media queries -->
+<div class="grid-host" [ngClass]="{ 'compact-view': compactView }">
+  <ag-grid-angular
+    class="ag-theme-alpine grid-full"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [pagination]="true"
+    [paginationPageSize]="20"
+    [animateRows]="true"
+    [overlayNoRowsTemplate]="noRowsOverlayTemplate"
+    [localeText]="localeText"
+    [quickFilterText]="quickFilter"
+    (gridReady)="onGridReady($event)"
+    (cellClicked)="onCellClicked($event)"
+  >
+  </ag-grid-angular>
+</div>

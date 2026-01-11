@@ -1,50 +1,94 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { AuthorizationGuard } from './core';
-
-import { NotFoundComponent } from './shared/components/errors/not-found/not-found.component';
-import { PlayComponent } from './play/play.component';
+import { AuthorizationGuard } from './core/guards/authorization.guard';
 import { HomeComponent } from './home/home.component';
-import { ProductsComponent } from './products/products.component';
+import { NotFoundComponent } from './shared/components/errors/not-found/not-found.component';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: HomeComponent,
-    runGuardsAndResolvers: 'always',
-    canActivate: [AuthorizationGuard],
-  },
-  {
-    path: 'home',
-    redirectTo: '',
-    runGuardsAndResolvers: 'always',
-    canActivate: [AuthorizationGuard],
-  },
-  {
-    path: 'play',
-    component: PlayComponent,
-    runGuardsAndResolvers: 'always',
-    canActivate: [AuthorizationGuard],
-  },
-  {
-    path: 'products',
-    component: ProductsComponent,
-    runGuardsAndResolvers: 'always',
-    canActivate: [AuthorizationGuard],
-  },
-  // Implementing lazy loading by the following format
+  // =========================
+  // Rotas públicas
+  // =========================
   {
     path: 'account',
     loadChildren: () =>
-      import('./account/account.module').then((module) => module.AccountModule),
+      import('./account/account.module').then((m) => m.AccountModule),
   },
-  { path: 'not-found', component: NotFoundComponent },
-  { path: '**', component: NotFoundComponent, pathMatch: 'full' },
+
+  // =========================
+  // Rotas protegidas (lazy)
+  // =========================
+  {
+    path: 'clients',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./clients/clients.module').then((m) => m.ClientsModule),
+  },
+  {
+    path: 'companies',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./clients/clients.module').then((m) => m.ClientsModule),
+  },
+  {
+    path: 'individuals',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./clients/clients.module').then((m) => m.ClientsModule),
+  },
+  {
+    path: 'products',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./products/products.module').then((m) => m.ProductsModule),
+  },
+  {
+    path: 'orders',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./orders/orders.module').then((m) => m.OrdersModule),
+  },
+  {
+    path: 'users',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./users/users.module').then((m) => m.UsersModule),
+  },
+
+  // =========================
+  // Home protegida
+  // =========================
+  {
+    path: '',
+    canActivate: [AuthorizationGuard],
+    component: HomeComponent,
+  },
+  {
+    path: 'home',
+    canActivate: [AuthorizationGuard],
+    component: HomeComponent,
+  },
+
+  // =========================
+  // Not Found protegida
+  // =========================
+  {
+    path: 'not-found',
+    canActivate: [AuthorizationGuard],
+    component: NotFoundComponent,
+  },
+  {
+    path: '**',
+    redirectTo: 'not-found',
+  },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [
+    RouterModule.forRoot(routes, {
+      scrollPositionRestoration: 'enabled',
+    }),
+  ],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

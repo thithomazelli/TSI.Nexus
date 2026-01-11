@@ -27,10 +27,10 @@ export class AuthorizationGuard {
         if (user) {
           return true;
         } else {
-          this.modalService.showNotification(
-            false,
+          this.modalService.showSweetNotification(
             'Restricted Area',
-            'Leave immediately!'
+            'Leave immediately!',
+            'error'
           );
           this.router.navigate(['account/login'], {
             queryParams: { returnUrl: state.url },
@@ -41,3 +41,42 @@ export class AuthorizationGuard {
     );
   }
 }
+
+// import { Injectable } from '@angular/core';
+// import {
+//   CanActivate,
+//   CanActivateChild,
+//   Router,
+//   UrlTree,
+// } from '@angular/router';
+
+// @Injectable({
+//   providedIn: 'root',
+// })
+// export class AuthorizationGuard implements CanActivate, CanActivateChild {
+//   constructor(private router: Router) {}
+
+//   private isAuthorized(): boolean {
+//     // 🔁 Ajuste aqui para sua regra real:
+//     // token, session, api, store, etc
+//     const token = localStorage.getItem('token');
+//     return !!token;
+//   }
+
+//   canActivate(): boolean | UrlTree {
+//     return this.checkAccess();
+//   }
+
+//   canActivateChild(): boolean | UrlTree {
+//     return this.checkAccess();
+//   }
+
+//   private checkAccess(): boolean | UrlTree {
+//     if (this.isAuthorized()) {
+//       return true;
+//     }
+
+//     // 🚫 Bloqueia totalmente e redireciona
+//     return this.router.createUrlTree(['/login']);
+//   }
+// }

@@ -13,36 +13,44 @@ import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { JwtInterceptor } from './core';
+
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { ToastrModule } from 'ngx-toastr';
+
 import { HomeComponent } from './home/home.component';
 import { SharedModule } from './shared/shared.module';
 import { PlayComponent } from './play/play.component';
 
-import { ProductsComponent } from './products/products.component';
-import { JwtInterceptor } from './core';
-
-import { ProductDetailsComponent } from './products/product-details/product-details.component';
+import { CurrencyFormatDirective } from './core/directives/currency-format.directive';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HomeComponent,
-    PlayComponent,
-    ProductsComponent,
-    ProductDetailsComponent,
-  ],
+  declarations: [AppComponent, HomeComponent, PlayComponent],
   imports: [
-    BrowserModule,
     AppRoutingModule,
+    BrowserModule,
     BrowserAnimationsModule,
+    CurrencyFormatDirective,
     SharedModule,
+    NgxMaskDirective,
+    ToastrModule.forRoot({
+      positionClass: 'toast-top-right',
+      timeOut: 4000,
+      closeButton: true,
+      progressBar: true,
+      preventDuplicates: true,
+      toastClass: 'ngx-toastr toast-slide',
+    }),
   ],
   providers: [
+    provideNgxMask(),
     provideHttpClient(withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
   ],
   bootstrap: [AppComponent],
+  exports: [],
 })
 export class AppModule {}

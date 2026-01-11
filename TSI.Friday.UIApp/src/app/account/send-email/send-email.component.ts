@@ -16,7 +16,6 @@ import { take } from 'rxjs';
   styleUrl: './send-email.component.scss',
 })
 export class SendEmailComponent extends FormBaseComponent implements OnInit {
-  emailForm: FormGroup = new FormGroup({});
   mode: string | null = '';
 
   constructor(
@@ -43,7 +42,7 @@ export class SendEmailComponent extends FormBaseComponent implements OnInit {
   }
 
   initializeForm(): void {
-    this.emailForm = this.formBuilder.group({
+    this.form = this.formBuilder.group({
       email: [
         '',
         [
@@ -58,19 +57,19 @@ export class SendEmailComponent extends FormBaseComponent implements OnInit {
     this.submitted = true;
     this.errorMessages = [];
 
-    if (!(this.emailForm.valid && this.mode)) {
+    if (!(this.form.valid && this.mode)) {
       return;
     }
 
     if (this.mode.includes('resend-email-confirmation')) {
       this.accountService
-        .resendEmailConfirmation(this.emailForm.get('email')?.value)
+        .resendEmailConfirmation(this.form.get('email')?.value)
         .subscribe({
           next: (response: any) => {
-            this.modalService.showNotification(
-              true,
+            this.modalService.showSweetNotification(
               response.value.title,
-              response.value.message
+              response.value.message,
+              'success'
             );
             this.router.navigateByUrl('/account/login');
           },
@@ -84,13 +83,13 @@ export class SendEmailComponent extends FormBaseComponent implements OnInit {
         });
     } else if (this.mode.includes('forgot-username-or-password')) {
       this.accountService
-        .forgotUsernameOrPassword(this.emailForm.get('email')?.value)
+        .forgotUsernameOrPassword(this.form.get('email')?.value)
         .subscribe({
           next: (response: any) => {
-            this.modalService.showNotification(
-              true,
+            this.modalService.showSweetNotification(
               response.value.title,
-              response.value.message
+              response.value.message,
+              'success'
             );
             this.router.navigateByUrl('/account/login');
           },

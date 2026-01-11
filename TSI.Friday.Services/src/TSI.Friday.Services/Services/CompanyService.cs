@@ -1,6 +1,8 @@
-﻿using TSI.Friday.Contracts.Enums;
+﻿using AutoMapper;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Services
@@ -13,6 +15,7 @@ namespace TSI.Friday.Services
         /// Repository object created to access the Company registers on database using EntityFramework.
         /// </summary>
         private readonly IRepository<Company> _repository;
+        private readonly IMapper _mapper;
 
         #endregion Properties
 
@@ -22,105 +25,115 @@ namespace TSI.Friday.Services
         /// CompanyService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Company> object used to initialize the internal variable using Dependency Injection.</param>
-        public CompanyService(IRepository<Company> repository)
+        public CompanyService(IRepository<Company> repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Company> Add(Company Company)
+        public async Task<WebApiResponse<ClientDto>> Add(ClientDto clientDto)
         {
-            WebApiResponse<Company> result = new();
+            WebApiResponse<ClientDto> result = new();
 
             try
             {
-                var CompanyDuplicatedMessage = CheckIfCompanyIsDuplicatedAndGetErrorMessage(Company);
+                var companyEntity = _mapper.Map<Company>(clientDto);
+                var companyDuplicatedMessage = await CheckIfCompanyIsDuplicatedAndGetErrorMessage(companyEntity);
 
-                if (!string.IsNullOrEmpty(CompanyDuplicatedMessage))
+                if (!string.IsNullOrEmpty(companyDuplicatedMessage))
                 {
                     result.Status = ResponseStatus.Error;
-                    result.Message = CompanyDuplicatedMessage;
+                    result.Message = companyDuplicatedMessage;
                     return result;
                 }
 
-                _repository.Add(Company);
+                await _repository.AddAsync(companyEntity);
 
-                result.Data = Company;
+                result.Data = clientDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Cliente {Company.Name} cadastrado com sucesso.";
+                result.Message = $"Cliente {clientDto.Name} cadastrado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar o Cliente {Company.Name} na base de dados. Erro: {ex.Message}";
+                result.Message = $"Não foi possível cadastrar o Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Company> Update(Company Company)
+        public async Task<WebApiResponse<ClientDto>> Update(ClientDto clientDto)
         {
-            WebApiResponse<Company> result = new();
+            WebApiResponse<ClientDto> result = new();
 
             try
             {
-                var CompanyDuplicatedMessage = CheckIfCompanyIsDuplicatedAndGetErrorMessage(Company);
+                var companyEntity = _mapper.Map<Company>(clientDto);
+                var companyDuplicatedMessage = await CheckIfCompanyIsDuplicatedAndGetErrorMessage(companyEntity);
 
-                if (!string.IsNullOrEmpty(CompanyDuplicatedMessage))
+                if (!string.IsNullOrEmpty(companyDuplicatedMessage))
                 {
                     result.Status = ResponseStatus.Error;
-                    result.Message = CompanyDuplicatedMessage;
+                    result.Message = companyDuplicatedMessage;
                     return result;
                 }
 
-                _repository.Update(Company);
+                await _repository.UpdateAsync(companyEntity);
 
-                result.Data = Company;
+                result.Data = clientDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Cliente {Company.Name} atualizado com sucesso.";
+                result.Message = $"Cliente {clientDto.Name} atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados do Cliente {Company.Name} na base de dados. Erro: {ex.Message}";
+                result.Message = $"Não foi possível atualizar os dados do Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Company> Remove(Company Company)
+        public async Task<WebApiResponse<ClientDto>> Remove(ClientDto clientDto)
         {
-            WebApiResponse<Company> result = new();
+            WebApiResponse<ClientDto> result = new();
 
             try
             {
-                _repository.Remove(Company);
+                var companyEntity = await _repository.GetByIdAsync(clientDto.Id);
+                if (companyEntity == null)
+                {
+                    throw new Exception($"Cliente com Id {clientDto.Id} não encontrado.");
+                }
 
-                result.Data = Company;
+                await _repository.RemoveAsync(companyEntity);
+
+                result.Data = clientDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Cliente {Company.Name} removido com sucesso.";
+                result.Message = $"Cliente {companyEntity.Name} removido com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Cliente {Company.Name} da base de dados. Erro: {ex.Message}";
+                result.Message = $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public WebApiResponse<IEnumerable<Company>> FindAll()
+        public async Task<WebApiResponse<IEnumerable<ClientDto>>> FindAll()
         {
-            WebApiResponse<IEnumerable<Company>> result = new();
+            WebApiResponse<IEnumerable<ClientDto>> result = new();
 
             try
             {
-                result.Data = _repository.GetAll();
+                var clientEntityList = await _repository.GetAllAsync();
+                result.Data = _mapper.Map<IEnumerable<ClientDto>>(clientEntityList);
                 result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }
             catch (Exception ex)
             {
@@ -132,13 +145,14 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Company> FindById(int? id)
+        public async Task<WebApiResponse<ClientDto>> FindById(int? id)
         {
-            WebApiResponse<Company> result = new();
+            WebApiResponse<ClientDto> result = new();
 
             try
             {
-                result.Data = _repository.GetById(id);
+                var clientEntity = await _repository.GetByIdAsync(id);
+                result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = result.Data != null
                     ? $"Cliente {result.Data.Name} encontrado com sucesso"
@@ -154,15 +168,18 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<IEnumerable<Company>> FindByEmail(string email)
+        public async Task<WebApiResponse<ClientDto>> FindByNationalRegistry(string nationalRegistry)
         {
-            WebApiResponse<IEnumerable<Company>> result = new();
+            WebApiResponse<ClientDto> result = new();
 
             try
             {
-                result.Data = _repository.Query(_ => _.Email.Contains(email));
+                var clientEntity = await _repository.FirstOrDefaultAsync(x => x.NationalRegistry == nationalRegistry);
+                result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+                result.Message = result.Data != null
+                    ? $"Cliente {result.Data.Name} encontrado com sucesso."
+                    : $"Nenhum Cliente com o CNPJ {nationalRegistry} foi encontrado";
             }
             catch (Exception ex)
             {
@@ -174,17 +191,18 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Company> FindByNationalRegistry(string nationalRegistry)
+        public async Task<WebApiResponse<ClientDto>> FindByEmail(string email)
         {
-            WebApiResponse<Company> result = new();
+            WebApiResponse<ClientDto> result = new();
 
             try
             {
-                result.Data = _repository.Query(_ => _.NationalRegistry.Equals(nationalRegistry))?.FirstOrDefault();
+                var clientEntity = await _repository.FirstOrDefaultAsync(x => x.Email == email);
+                result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = result.Data != null
                     ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                    : $"Nenhum Cliente com o CNPJ {nationalRegistry} foi encontrado";
+                    : $"Nenhum Cliente com o E-mail {email} foi encontrado";
             }
             catch (Exception ex)
             {
@@ -202,23 +220,23 @@ namespace TSI.Friday.Services
         /// <summary>
         /// Should verify if the Company is already being registered on the database.
         /// </summary>
-        /// <param name="Company">The Company object that is being added or updated.</param>
+        /// <param name="company">The Company object that is being added or updated.</param>
         /// <returns>The error message when Company is duplicated. Otherwise an empty string.</returns>
-        private string CheckIfCompanyIsDuplicatedAndGetErrorMessage(Company Company)
+        private async Task<string> CheckIfCompanyIsDuplicatedAndGetErrorMessage(Company company)
         {
-            if (IsNameDuplicated(Company))
+            if (await IsNameDuplicated(company))
             {
-                return $"Já existe um Cliente cadastrado com Nome {Company.Name}.";
+                return $"Já existe um Cliente cadastrado com Nome {company.Name}.";
             }
 
-            if (IsEmailDuplicated(Company))
+            if (await IsEmailDuplicated(company))
             {
-                return $"Já existe um Cliente cadastrado com E-mail {Company.Email}.";
+                return $"Já existe um Cliente cadastrado com E-mail {company.Email}.";
             }
 
-            if (IsNationalRegistryDuplicated(Company))
+            if (await IsNationalRegistryDuplicated(company))
             {
-                return $"Já existe um Cliente cadastrado com o CNPJ {Company.NationalRegistry}.";
+                return $"Já existe um Cliente cadastrado com o CNPJ {company.NationalRegistry}.";
             }
 
             return string.Empty;
@@ -227,25 +245,23 @@ namespace TSI.Friday.Services
         /// <summary>
         /// Should verify if the Company email is already being used by another register on the database.
         /// </summary>
-        /// <param name="Company">The Company object that is being added or updated.</param>
+        /// <param name="company">The Company object that is being added or updated.</param>
         /// <returns>True when the Email is duplicated; Otherwise false.</returns>
-        private bool IsEmailDuplicated(Company Company)
+        private async Task<bool> IsEmailDuplicated(Company company)
         {
-            return _repository
-                .Query(_ => _.Id != Company.Id && !string.IsNullOrEmpty(_.Email) && _.Email == Company.Email)
-                .Any();
+            return await _repository
+                .AnyAsync(_ => _.Id != company.Id && !string.IsNullOrEmpty(_.Email) && _.Email == company.Email);
         }
 
         /// <summary>
         /// Should verify if the Company name is already being used by another register on the database.
         /// </summary>
-        /// <param name="Company">The Company object that is being added or updated.</param>
+        /// <param name="company">The Company object that is being added or updated.</param>
         /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private bool IsNameDuplicated(Company Company)
+        private async Task<bool> IsNameDuplicated(Company company)
         {
-            return _repository
-                .Query(_ => _.Id != Company.Id && _.Name == Company.Name)
-                .Any();
+            return await _repository
+                .AnyAsync(_ => _.Id != company.Id && _.Name == company.Name);
         }
 
         /// <summary>
@@ -253,12 +269,11 @@ namespace TSI.Friday.Services
         /// </summary>
         /// <param name="Company">The Company object that is being added or updated.</param>
         /// <returns>True when the NationalIDCard is duplicated; Otherwise false.</returns>
-        private bool IsNationalRegistryDuplicated(Company Company)
+        private async Task<bool> IsNationalRegistryDuplicated(Company company)
         {
-            return _repository
-                .Query(_ => _.Id != Company.Id && !string.IsNullOrEmpty(_.NationalRegistry) &&
-                            _.NationalRegistry == Company.NationalRegistry)
-                .Any();
+            return await _repository
+                .AnyAsync(_ => _.Id != company.Id && !string.IsNullOrEmpty(_.NationalRegistry) &&
+                            _.NationalRegistry == company.NationalRegistry);
         }
 
         #endregion Private methods

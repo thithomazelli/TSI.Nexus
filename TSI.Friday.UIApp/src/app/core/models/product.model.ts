@@ -9,4 +9,6 @@ export interface Product extends BaseModel {
   price: number;
   unit: ProductUnit;
   quantityInStock: number;
+  imageUrl: string | null;
+  mainPhoto: string;
 }

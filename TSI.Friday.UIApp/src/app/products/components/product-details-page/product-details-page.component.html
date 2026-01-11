@@ -1,0 +1,116 @@
+<app-header
+  [title]="isEdit ? 'Edit Product' : 'Add Product'"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Produtos', link: '/products' },
+    { label: isEdit ? 'Edit Product' : 'Add Product', link: '' }
+  ]"
+></app-header>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-3">
+        <!-- Profile Image -->
+        <div class="card card-secondary card-outline">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <app-photo
+                [imageUrl]="data?.imageUrl"
+                (imageChange)="onImageChange($event)"
+              ></app-photo>
+              <div class="box-profile">
+                <div class="text-center">
+                  <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                      <b>Followers</b> <a class="float-right">1,322</a>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Following</b> <a class="float-right">543</a>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Friends</b> <a class="float-right">13,287</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <!-- <img
+                class="profile-user-img img-fluid img-circle"
+                src="assets/img/user4-128x128.jpg"
+                alt="User profile picture"
+              /> -->
+            </div>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+        <div class="card card card-secondary card-outline">
+          <div class="card-body">
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <a
+                  class="nav-link active"
+                  [class.active]="activeTab === 'form'"
+                  (click)="activeTab = 'form'"
+                  data-toggle="tab"
+                  >Form</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'image'"
+                  (click)="activeTab = 'image'"
+                  data-toggle="tab"
+                  >Image</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'extra'"
+                  (click)="activeTab = 'extra'"
+                  data-toggle="tab"
+                  >Other</a
+                >
+              </li>
+            </ul>
+
+            <div *ngIf="loading" class="text-center py-4">Loading...</div>
+
+            <div *ngIf="!loading">
+              <div *ngIf="activeTab === 'form'">
+                <!-- data-form component: pass compact=true for page -->
+                <app-product-form
+                  [isEdit]="isEdit"
+                  [data]="data"
+                  [compact]="true"
+                  (save)="save($event)"
+                  (cancel)="cancel()"
+                ></app-product-form>
+              </div>
+
+              <div *ngIf="activeTab === 'image'">
+                <app-photo
+                  [imageUrl]="data?.imageUrl"
+                  (imageChange)="onImageChange($event)"
+                ></app-photo>
+              </div>
+
+              <div *ngIf="activeTab === 'extra'">
+                <p>Other sections go here (prices, history, notes...)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- /.nav-tabs-custom -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</section>

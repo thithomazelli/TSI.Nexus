@@ -14,7 +14,7 @@
           <i class="bi bi-list"></i>
         </a>
       </li>
-      <li class="nav-item d-none d-md-block">
+      <!-- <li class="nav-item d-none d-md-block">
         <a
           class="nav-link"
           routerLink="/home"
@@ -26,10 +26,19 @@
       <li class="nav-item d-none d-md-block">
         <a
           class="nav-link"
-          routerLink="/play"
+          routerLink="/clients"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
-          >Play</a
+          >Clientes</a
+        >
+      </li>
+      <li class="nav-item d-none d-md-block">
+        <a
+          class="nav-link"
+          routerLink="/orders"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >Pedidos</a
         >
       </li>
       <li class="nav-item d-none d-md-block">
@@ -38,9 +47,18 @@
           routerLink="/products"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
-          >Products</a
+          >Produtos</a
         >
       </li>
+      <li class="nav-item d-none d-md-block">
+        <a
+          class="nav-link"
+          routerLink="/users"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >Usuários</a
+        >
+      </li> -->
     </ul>
     <!--end::Start Navbar Links-->
 
@@ -237,10 +255,7 @@
           <!--begin::Menu Footer-->
           <li class="user-footer">
             <a class="btn btn-default btn-flat">Profile</a>
-            <a
-              href="#"
-              class="btn btn-default btn-flat float-end"
-              (click)="logout()"
+            <a class="btn btn-default btn-flat float-end" (click)="logout()"
               >Sign out</a
             >
           </li>

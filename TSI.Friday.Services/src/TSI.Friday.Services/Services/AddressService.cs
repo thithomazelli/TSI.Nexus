@@ -1,6 +1,8 @@
-﻿using TSI.Friday.Contracts.Enums;
+﻿using AutoMapper;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Services
@@ -13,6 +15,7 @@ namespace TSI.Friday.Services
         /// Repository object created to access the Addresses registers on database using EntityFramework.
         /// </summary>
         private readonly IRepository<Address> _repository;
+        private readonly IMapper _mapper;
 
         #endregion Properties
 
@@ -22,21 +25,26 @@ namespace TSI.Friday.Services
         /// AddressService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<StudentFrequentView> object used to initialize the internal variable using Dependency Injection.</param>
-        public AddressService(IRepository<Address> repository)
+        public AddressService(IRepository<Address> repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Address> Add(Address address)
+        public async Task<WebApiResponse<AddressDto>> Add(AddressDto addressDto)
         {
-            WebApiResponse<Address> result = new();
+            WebApiResponse<AddressDto> result = new();
 
             try
             {
-                _repository.Add(address);
+                var addressEntity = _mapper.Map<Address>(addressDto);
+                addressEntity.IsDefault = await SetDefaultAddress(addressDto);
 
-                result.Data = address;
+                await _repository.AddAsync(addressEntity);
+                var addressDtoUpdated = _mapper.Map<AddressDto>(addressEntity);
+
+                result.Data = addressDtoUpdated;
                 result.Status = ResponseStatus.Success;
                 result.Message = "Endereço cadastrado com sucesso.";
             }
@@ -50,15 +58,19 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Address> Update(Address address)
+        public async Task<WebApiResponse<AddressDto>> Update(AddressDto addressDto)
         {
-            WebApiResponse<Address> result = new();
+            WebApiResponse<AddressDto> result = new();
 
             try
             {
-                _repository.Update(address);
+                var addressEntity = _mapper.Map<Address>(addressDto);
 
-                result.Data = address;
+                CleanPreviousDefaultAddress(addressDto);
+
+                await _repository.UpdateAsync(addressEntity);
+
+                result.Data = addressDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = "Endereço atualizado com sucesso.";
             }
@@ -72,15 +84,16 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Address> Remove(Address address)
+        public async Task<WebApiResponse<AddressDto>> Remove(AddressDto addressDto)
         {
-            WebApiResponse<Address> result = new();
+            WebApiResponse<AddressDto> result = new();
 
             try
             {
-                _repository.Remove(address);
+                var addressEntity = _mapper.Map<Address>(addressDto);
+                await _repository.RemoveAsync(addressEntity);
 
-                result.Data = address;
+                result.Data = addressDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = "Endereço removido com sucesso.";
             }
@@ -94,13 +107,15 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<Address> FindById(int? id)
+        public async Task<WebApiResponse<AddressDto>> FindById(int? id)
         {
-            WebApiResponse<Address> result = new();
+            WebApiResponse<AddressDto> result = new();
 
             try
             {
-                result.Data = _repository.GetById(id);
+                var addressEntity = await _repository.GetByIdAsync(id);
+                var addressDto = _mapper.Map<AddressDto>(addressEntity);
+                result.Data = addressDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = result.Data != null
                     ? "Endereço foi encontrado com sucesso"
@@ -116,13 +131,16 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<IEnumerable<Address>> FindByPersonId(int? personId)
+        public async Task<WebApiResponse<IEnumerable<AddressDto>>> FindByClientId(int? clientId)
         {
-            WebApiResponse<IEnumerable<Address>> result = new();
+            WebApiResponse<IEnumerable<AddressDto>> result = new();
 
             try
             {
-                result.Data = _repository.Query(_ => _.PersonId.Equals(personId));
+                var addressesEntity = await _repository.QueryAsync(_ => _.ClientId.Equals(clientId));
+                var addressesDto = _mapper.Map<IEnumerable<AddressDto>>(addressesEntity).ToList();
+
+                result.Data = addressesDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
             }
@@ -138,6 +156,50 @@ namespace TSI.Friday.Services
         #endregion Public methods
 
         #region Private methods
+
+        private async Task<bool> SetDefaultAddress(AddressDto addressDto)
+        {
+            var addressEntity = _mapper.Map<Address>(addressDto);
+            var anyAddresses = await _repository.AnyAsync(a => a.ClientId == addressDto.ClientId);
+
+            if (!anyAddresses)
+            {
+                addressEntity.IsDefault = true;
+            }
+
+            else if (addressDto.IsDefault)
+            {
+                CleanPreviousDefaultAddress(addressDto);
+                addressEntity.IsDefault = true;
+            }
+
+            return addressEntity.IsDefault;
+        }
+
+        private async void CleanPreviousDefaultAddress(AddressDto addressDto)
+        {
+            if (!addressDto.IsDefault)
+            {
+                return;
+            }
+
+            var existingDefaults = await _repository
+                .QueryAsync(a =>
+                    a.ClientId == addressDto.ClientId &&
+                    a.Id != addressDto.Id && a.IsDefault);
+
+            if (!existingDefaults.Any())
+            {
+                return;
+            }
+
+            foreach (var d in existingDefaults)
+            {
+                d.IsDefault = false;
+            }
+
+            await _repository.UpdateRangeAsync(existingDefaults);
+        }
 
         #endregion Private methos
     }

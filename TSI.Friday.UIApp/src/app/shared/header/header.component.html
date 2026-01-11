@@ -1,0 +1,26 @@
+<div class="app-content-header">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-6">
+        <h3 class="mb-0">{{ title }}</h3>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-end">
+          <li
+            *ngFor="let menu of navigationMenus; last as isLast"
+            class="breadcrumb-item"
+            [class.active]="isLast"
+            aria-current="page"
+          >
+            <a
+              [routerLink]="isLast ? null : menu.link"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              >{{ menu.label }}</a
+            >
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>

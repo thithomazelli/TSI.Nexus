@@ -10,8 +10,7 @@ import {
   ValueFormatterParams,
   ICellRendererParams,
 } from 'ag-grid-community';
-import { BehaviorSubject } from 'rxjs';
-import { ProductDetailsComponent } from './product-details/product-details.component';
+import { ProductDetailsModalComponent } from './components/product-details-modal/product-details-modal.component';
 
 @Component({
   selector: 'app-products',
@@ -20,7 +19,7 @@ import { ProductDetailsComponent } from './product-details/product-details.compo
   styleUrl: './products.component.scss',
 })
 export class ProductsComponent implements OnInit {
-  private _baseEndPoint = 'product';
+  baseEndPoint = 'products';
 
   rowData: Product[] = [];
   columnDefs: ColDef[] = [
@@ -29,7 +28,7 @@ export class ProductsComponent implements OnInit {
       headerName: 'ID',
       sortable: true,
       filter: true,
-      minWidth: 80,
+      // minWidth: 80,
       hide: true,
     },
     {
@@ -37,8 +36,14 @@ export class ProductsComponent implements OnInit {
       headerName: 'SKU',
       sortable: true,
       filter: true,
-      width: 90,
+      // width: 90,
       resizable: false,
+      // minWidth: 150,
+      cellRenderer: (params: ValueFormatterParams) => {
+        const value = params.value ?? '';
+        // href="#" prevents full page reload; onCellClicked handles navigation
+        return `<a data-action="view" class="ag-link">${value}</a>`;
+      },
     },
     {
       field: 'name',
@@ -46,6 +51,12 @@ export class ProductsComponent implements OnInit {
       sortable: true,
       filter: true,
       flex: 1,
+      // minWidth: 150,
+      cellRenderer: (params: ValueFormatterParams) => {
+        const value = params.value ?? '';
+        // href="#" prevents full page reload; onCellClicked handles navigation
+        return `<a data-action="view" class="ag-link">${value}</a>`;
+      },
     },
     {
       field: 'description',
@@ -53,14 +64,15 @@ export class ProductsComponent implements OnInit {
       sortable: true,
       filter: true,
       flex: 2,
-      minWidth: 300,
+      // minWidth: 1500,
+      hide: true,
     },
     {
       field: 'price',
       headerName: 'Price',
       sortable: true,
       filter: true,
-      maxWidth: 120,
+      // maxWidth: 120,
       cellClass: 'text-start',
       valueFormatter: (params: ValueFormatterParams): string => {
         const v = params.value;
@@ -88,22 +100,32 @@ export class ProductsComponent implements OnInit {
       maxWidth: 120,
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
-      cellRenderer: (params: ICellRendererParams) => {
-        return `
-          <button class="btn btn-outline-primary btn-sm" data-action="edit">Edit</button>
-          <button class="btn btn-outline-danger btn-sm ms-2" data-action="delete">Delete</button>
-        `;
-      },
+      headerName: '',
       sortable: false,
       filter: false,
-      maxWidth: 150,
-      resizable: false,
+      maxWidth: 400,
+      resizable: true,
+      width: 280,
+      cellRenderer: (params: ICellRendererParams) => {
+        return `
+          <button class="btn btn-primary btn-sm" data-action="view">
+            <i class="fas fa-folder"></i>
+            View
+          </button>
+          <button class="btn btn-info btn-sm" data-action="edit">
+            <i class="fas fa-edit"></i>
+            Edit
+          </button>
+          <button class="btn btn-danger btn-sm" data-action="delete">
+            <i class="fas fa-trash"></i>  
+            Delete
+          </button>
+        `;
+      },
     },
   ];
 
-  modalDetails = ProductDetailsComponent;
+  modalDetails = ProductDetailsModalComponent;
 
   constructor(
     private apiService: ApiService,
@@ -120,22 +142,22 @@ export class ProductsComponent implements OnInit {
 
   deleteProduct(product: Product): void {
     this.apiService
-      .delete<WebApiResponse<Product>>(`${this._baseEndPoint}/remove`, product)
+      .delete<WebApiResponse<Product>>(`${this.baseEndPoint}/remove`, product)
       .subscribe((response: WebApiResponse<Product>) => {
         this.rowData = this.rowData.filter((p) => p.id !== product.id);
 
         this.modalService.hideModal();
-        this.modalService.showNotification(
-          true,
+        this.modalService.showSweetNotification(
           'Produto excluído',
-          response.message
+          response.message,
+          'success'
         );
       });
   }
 
   private getProducts(): void {
     this.apiService
-      .get<WebApiResponse<Product[]>>(`${this._baseEndPoint}/getAll`)
+      .get<WebApiResponse<Product[]>>(`${this.baseEndPoint}/getAll`)
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];
       });

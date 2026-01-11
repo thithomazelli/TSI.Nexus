@@ -13,7 +13,7 @@ export class GridService {
    *
    * @param data
    */
-  gridDataChanged(data: any, id: number | null): void {
+  gridDataChanged(data: any, id: number | string | null): void {
     this.data$.next({ data, id });
   }
 

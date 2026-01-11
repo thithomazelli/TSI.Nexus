@@ -8,7 +8,7 @@
     <div class="card-body register-card-body">
       <p class="register-box-msg">Register a new membership</p>
 
-      <form [formGroup]="registerForm" (ngSubmit)="register()" novalidate>
+      <form [formGroup]="form" (ngSubmit)="register()" novalidate>
         <div class="input-group mb-1">
           <div class="form-floating">
             <input
@@ -16,21 +16,19 @@
               type="text"
               placeholder="First name"
               class="form-control"
-              [class.is-invalid]="
-                canDisplayInputErrors('firstName', registerForm)
-              "
+              [class.is-invalid]="isInvalid('firstName')"
             />
             <label for="firstName">First name</label>
             <span
               class="text-danger"
-              *ngIf="inputHasError('firstName', 'required', registerForm)"
+              *ngIf="inputHasError('firstName', 'required')"
               >First name is required
             </span>
             <span
               class="text-danger"
               *ngIf="
-                inputHasError('firstName', 'minlength', registerForm) ||
-                inputHasError('firstName', 'maxlength', registerForm)
+                inputHasError('firstName', 'minlength') ||
+                inputHasError('firstName', 'maxlength')
               "
               >First name must be at least 3, and maximum 15 characters
             </span>
@@ -45,21 +43,19 @@
               type="text"
               placeholder="Last name"
               class="form-control"
-              [class.is-invalid]="
-                canDisplayInputErrors('lastName', registerForm)
-              "
+              [class.is-invalid]="isInvalid('lastName')"
             />
             <label for="lastName">Last name</label>
             <span
               class="text-danger"
-              *ngIf="inputHasError('lastName', 'required', registerForm)"
+              *ngIf="inputHasError('lastName', 'required')"
               >Last name is required
             </span>
             <span
               class="text-danger"
               *ngIf="
-                inputHasError('lastName', 'minlength', registerForm) ||
-                inputHasError('lastName', 'maxlength', registerForm)
+                inputHasError('lastName', 'minlength') ||
+                inputHasError('lastName', 'maxlength')
               "
               >Last name must be at least 3, and maximum 30 characters
             </span>
@@ -74,17 +70,13 @@
               type="text"
               placeholder="Email"
               class="form-control"
-              [class.is-invalid]="canDisplayInputErrors('email', registerForm)"
+              [class.is-invalid]="isInvalid('email')"
             />
             <label for="email">Email</label>
-            <span
-              class="text-danger"
-              *ngIf="inputHasError('email', 'required', registerForm)"
+            <span class="text-danger" *ngIf="inputHasError('email', 'required')"
               >Email is required
             </span>
-            <span
-              class="text-danger"
-              *ngIf="inputHasError('email', 'pattern', registerForm)"
+            <span class="text-danger" *ngIf="inputHasError('email', 'pattern')"
               >Invalid email address
             </span>
           </div>
@@ -98,21 +90,19 @@
               type="password"
               placeholder="Password"
               class="form-control"
-              [class.is-invalid]="
-                canDisplayInputErrors('password', registerForm)
-              "
+              [class.is-invalid]="isInvalid('password')"
             />
             <label for="password">Password</label>
             <span
               class="text-danger"
-              *ngIf="inputHasError('password', 'required', registerForm)"
+              *ngIf="inputHasError('password', 'required')"
               >Password is required
             </span>
             <span
               class="text-danger"
               *ngIf="
-                inputHasError('password', 'minlength', registerForm) ||
-                inputHasError('password', 'maxlength', registerForm)
+                inputHasError('password', 'minlength') ||
+                inputHasError('password', 'maxlength')
               "
               >Password must be at least 6, and maximum 15 characters
             </span>
@@ -145,7 +135,7 @@
               <button
                 type="submit"
                 class="btn btn-primary"
-                [disabled]="registerForm.invalid"
+                [disabled]="form.invalid"
               >
                 Sign Up
               </button>

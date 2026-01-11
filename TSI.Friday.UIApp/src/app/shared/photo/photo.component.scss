@@ -1,0 +1,136 @@
+// ...existing code...
+.profile-user-img {
+  border: 3px solid #adb5bd;
+  margin: 0 auto;
+  padding: 3px;
+  width: 130px;
+}
+
+.img-circle {
+  border-radius: 50%;
+}
+
+.profile-username {
+  font-size: 21px;
+  margin-top: 5px;
+}
+
+.photo-component {
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+
+  .photo-preview {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* Override global .profile-user-img when inside this component so
+     borders/padding from global styles don't alter the circular layout */
+  .profile-user-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    box-sizing: border-box;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .photo-preview.photo-clickable {
+    cursor: pointer;
+  }
+
+  .photo-wrapper {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .photo-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    box-sizing: border-box;
+  }
+
+  .photo-hover-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 160ms ease-in-out;
+    text-transform: none;
+    z-index: 3;
+    pointer-events: none; /* allow clicks to pass through to underlying button */
+    box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.55); /* inner shadow */
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  /* show overlay when hovering the whole preview area (works for video/preview/placeholder) */
+  .photo-preview.photo-clickable:hover .photo-hover-overlay,
+  .photo-preview.photo-clickable:focus .photo-hover-overlay,
+  .photo-preview.photo-clickable:active .photo-hover-overlay,
+  .photo-wrapper:hover .photo-hover-overlay {
+    opacity: 1;
+  }
+
+  .photo-img,
+  .placeholder,
+  .photo-video {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.05);
+    background: #f8f9fa;
+    display: block;
+  }
+
+  .photo-video {
+    /* ensure video fills circular area and is cropped */
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .placeholder-icon {
+    color: #6c757d;
+    opacity: 0.9;
+  }
+
+  .photo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .photo-component {
+    max-width: 220px;
+    .photo-preview {
+      width: 112px;
+      height: 112px;
+    }
+  }
+}
+
+.modal-body {
+  padding: 15px;
+  max-width: 100%;
+}

@@ -1,4 +1,5 @@
-﻿using TSI.Friday.Contracts.Enums;
+﻿using System.Collections.Generic;
+using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models
 {
@@ -17,5 +18,7 @@ namespace TSI.Friday.Contracts.Models
         public ProductUnit Unit { get; set; }
 
         public int QuantityInStock { get; set; }
+
+        public ICollection<ProductPhoto> ProductPhotos { get; set; }
     }
 }

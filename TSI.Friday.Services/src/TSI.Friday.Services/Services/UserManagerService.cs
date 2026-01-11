@@ -4,19 +4,30 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Text;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
+using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Services
 {
     public class UserManagerService : ControllerBase, IUserManagerService
     {
+        #region Properties
+
         private readonly IJwtService _jwtService;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
+
+        /// <summary>
+        /// Repository object created to access the Users registers on database using EntityFramework.
+        /// </summary>
+        private readonly IRepository<User> _repository;
+
+        #endregion Properties
 
         #region Public methods
 
@@ -25,13 +36,15 @@ namespace TSI.Friday.Services
             SignInManager<User> signInManager,
             UserManager<User> userManager,
             IEmailService emailService,
-            IConfiguration config)
+            IConfiguration config,
+            IRepository<User> repository    )
         {
             _jwtService = jwtService;
             _signInManager = signInManager;
             _userManager = userManager;
             _emailService = emailService;
             _config = config;
+            _repository = repository;
         }
 
         /// <inheritdoc />
@@ -59,7 +72,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<IActionResult> Register(RegisterDto model)
+        public async Task<ActionResult<WebApiResponse<User>>> Register(RegisterDto model)
         {
             if (await CheckEmailExistisAsync(model.Email))
             {
@@ -88,11 +101,12 @@ namespace TSI.Friday.Services
                     throw new Exception();
                 }
 
-                return Ok(new JsonResult(new
+                return Ok(new WebApiResponse<User>
                 {
-                    title = "Account Created",
-                    message = "Your account has been created, please confirm your email address",
-                }));
+                    Data = userToAdd,
+                    Status = ResponseStatus.Success,
+                    Message = "User registered successfully.",
+                });
             }
             catch(Exception ex)
             {
@@ -274,6 +288,114 @@ namespace TSI.Friday.Services
             }
         }
 
+        /// <inheritdoc />
+        public async Task<WebApiResponse<User>> Update(User user)
+        {
+            WebApiResponse<User> result = new();
+
+            try
+            {
+                if (string.IsNullOrEmpty(user.Email))
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = "Email inválido";
+                    return result;
+                }
+
+                var userDuplicatedMessage = await _repository
+                    .AnyAsync(_ => _.Id != user.Id && _.Email == user.Email.ToLower());
+
+                if (userDuplicatedMessage)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = "Já existe um usuário cadastrado com o email informado";
+                    return result;
+                }
+
+                var userToUpdate = await _repository.GetByIdAsync(user.Id);
+                userToUpdate.Email = user.Email;
+                userToUpdate.FirstName = user.FirstName;
+                userToUpdate.LastName = user.LastName;
+
+                await _repository.UpdateAsync(userToUpdate);
+
+                result.Data = user;
+                result.Status = ResponseStatus.Success;
+                result.Message = $"Usuário {user.UserName} atualizado com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message = $"Não foi possível atualizar os dados do Usuário {user.UserName} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<User>> Remove(User user)
+        {
+            WebApiResponse<User> result = new();
+
+            try
+            {
+                await _repository.RemoveAsync(user);
+
+                result.Data = user;
+                result.Status = ResponseStatus.Success;
+                result.Message = $"Usuário {user.UserName} removido com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message = $"Não foi possível remover o Usuário {user.UserName} da base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<User>>> FindAll()
+        {
+            WebApiResponse<IEnumerable<User>> result = new();
+
+            try
+            {
+                result.Data = await _repository.GetAllAsync();
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message = $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<User>> FindById(string id)
+        {
+            WebApiResponse<User> result = new();
+
+            try
+            {
+                result.Data = await _repository.GetByIdAsync(id);
+                result.Status = ResponseStatus.Success;
+                result.Message = result.Data != null
+                    ? $"Usuário {result.Data.UserName} encontrado com sucesso"
+                    : $"Nenhum Usuário com o ID {id} foi encontrado";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message = $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Private Helper Methods
@@ -282,6 +404,10 @@ namespace TSI.Friday.Services
         {
             return new UserDto
             {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                EmailConfirmed = user.EmailConfirmed,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 JWT = _jwtService.CreateJWT(user),

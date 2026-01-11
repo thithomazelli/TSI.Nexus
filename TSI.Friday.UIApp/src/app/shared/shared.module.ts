@@ -13,6 +13,7 @@ import { GridComponent } from './grid/grid.component';
 import { ConfirmationComponent } from './components/modals/confirmation/confirmation.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { HeaderComponent } from './header/header.component';
+import { PhotoComponent } from './photo/photo.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { HeaderComponent } from './header/header.component';
     ConfirmationComponent,
     SidebarComponent,
     HeaderComponent,
+    PhotoComponent,
   ],
   imports: [
     CommonModule,
@@ -42,6 +44,7 @@ import { HeaderComponent } from './header/header.component';
     ValidationMessagesComponent,
     GridComponent,
     HeaderComponent,
+    PhotoComponent,
   ],
 })
 export class SharedModule {}

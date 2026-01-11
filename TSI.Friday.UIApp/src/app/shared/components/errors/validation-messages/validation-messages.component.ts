@@ -1,10 +1,10 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-    selector: 'app-validation-messages',
-    templateUrl: './validation-messages.component.html',
-    styleUrl: './validation-messages.component.scss',
-    standalone: false
+  selector: 'app-validation-messages',
+  templateUrl: './validation-messages.component.html',
+  styleUrl: './validation-messages.component.scss',
+  standalone: false,
 })
 export class ValidationMessagesComponent {
   @Input()

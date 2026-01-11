@@ -1,0 +1,13 @@
+<div class="app-content">
+  <app-grid
+    [className]="'Endereços'"
+    [compactView]="true"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [modalDetails]="modalDetails"
+    [baseEndPoint]="'addresses'"
+    [refresh]="refreshAddresses.bind(this)"
+    [delete]="deleteAddress.bind(this)"
+    [update]="updateDefaultAddress.bind(this)"
+  ></app-grid>
+</div>
