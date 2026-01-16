@@ -80,6 +80,24 @@ namespace TSI.Friday.Repository
         }
 
         /// <inheritdoc />
+        public async Task<T> GetByIdAsync(object id, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _myDbContext.Set<T>().AsQueryable();
+
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                { 
+                    query = query.Include(include); 
+                }
+            }
+
+            var entity = await query.SingleOrDefaultAsync(e => EF.Property<object>(e, "Id").Equals(id));
+
+            return entity ?? throw new KeyNotFoundException($"Entity '{id}' not found.");
+        }
+
+        /// <inheritdoc />
         public async Task<T> GetByNameAsync(string name)
         {
             var entity = await _myDbContext.Set<T>().FindAsync(name);
@@ -105,6 +123,24 @@ namespace TSI.Friday.Repository
         public async Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter)
         {
             return await _myDbContext.Set<T>().Where(filter).ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _myDbContext.Set<T>().Where(filter);
+
+            if (includes != null && includes.Length >0)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            var list = await query.ToListAsync();
+
+            return list ?? new List<T>();
         }
 
         /// <inheritdoc />

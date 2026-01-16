@@ -45,6 +45,14 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<T> GetByIdAsync(object id);
 
         /// <summary>
+        /// This function will be receive the "ID" as parameter and should be returns the object found.
+        /// </summary>
+        /// <param name="id">The ID value to be used on the search.</param>
+        /// <param name="includes">The objects to be included in the search.</param>
+        /// <returns></returns>
+        Task<T> GetByIdAsync(object id, params Expression<Func<T, object>>[] includes);
+
+        /// <summary>
         /// This function will be receive the "Name" as parameter and should be returns the object found.
         /// </summary>
         /// <param name="name">The Name value to be used on the search.</param>
@@ -71,5 +79,13 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="filter">The filter expression to be used on the search.</param>
         /// <returns>Returns a list with the objects found on the execution.</returns>
         Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter);
+
+        /// <summary>
+        /// This function will be receive na expression as parameter and should be returns results from the execute.
+        /// </summary>
+        /// <param name="filter">The filter expression to be used on the search.</param>
+        /// <param name="includes">The objects to be included in the search.</param>
+        /// <returns>Returns a list with the objects found on the execution.</returns>
+        Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes);
     }
 }

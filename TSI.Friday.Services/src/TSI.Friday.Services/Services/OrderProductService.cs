@@ -107,7 +107,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var items = await _repository.QueryAsync(op => op.OrderId == orderId);
+                var items = await _repository.QueryAsync(op => op.OrderId == orderId, op => op.Order, op => op.Product);
                 result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";

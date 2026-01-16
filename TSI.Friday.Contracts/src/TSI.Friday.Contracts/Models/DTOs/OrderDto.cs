@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
@@ -17,5 +19,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public int ClientId { get; set; }
 
         public decimal TotalPrice { get; set; }
+
+        public string ClientName { get; set; }
     }
 }

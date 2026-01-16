@@ -128,7 +128,8 @@ namespace TSI.Friday.Services
 
             try
             {
-                var order = await _repository.GetByIdAsync(id);
+                var order = await _repository.GetByIdAsync(id, o => o.Client);
+
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;
                 result.Message = result.Data != null
