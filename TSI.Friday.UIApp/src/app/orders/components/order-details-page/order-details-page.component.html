@@ -1,1 +1,57 @@
-<p>order-details-page works!</p>
+<app-header
+  [title]="isEdit ? 'Editar Pedido' : 'Adicionar Pedido'"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Pedidos', link: '/orders' },
+    { label: isEdit ? 'Editar Pedido' : 'Adicionar Pedido', link: '' }
+  ]"
+></app-header>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Coluna de informações do pedido -->
+      <div class="col-md-3">
+        <div class="card card-secondary card-outline">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <i class="bi bi-receipt" style="font-size: 4rem"></i>
+              <div class="box-profile">
+                <div class="text-center">
+                  <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                      <b>Número do Pedido</b>
+                      <span class="float-right">{{ data?.orderNumber }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Status</b>
+                      <span class="float-right">{{ data?.status }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Cliente</b>
+                      <span class="float-right">{{ data?.clientName }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+        <div class="card card card-secondary card-outline">
+          <div class="card-body">
+            <app-order-form
+              [isEdit]="isEdit"
+              [data]="data"
+              (save)="onSave($event)"
+              (cancel)="onCancel()"
+              [compact]="false"
+              [errors]="errorMessages"
+            ></app-order-form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

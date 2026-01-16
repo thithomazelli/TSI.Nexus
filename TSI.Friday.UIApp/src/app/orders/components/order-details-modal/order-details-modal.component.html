@@ -1,1 +1,17 @@
-<p>order-details-modal works!</p>
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ isEdit ? "Editar Pedido" : "Adicionar Pedido" }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-order-form
+    [isEdit]="isEdit"
+    [data]="data"
+    (save)="save($event)"
+    (cancel)="close()"
+    [compact]="false"
+    [errors]="errorMessages"
+  ></app-order-form>
+</div>

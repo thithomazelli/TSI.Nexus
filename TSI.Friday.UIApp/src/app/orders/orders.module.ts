@@ -8,6 +8,7 @@ import { OrderDetailsPageComponent } from './components/order-details-page/order
 
 import { OrdersRoutingModule } from './orders-routing.module';
 import { SharedModule } from '../shared/shared.module';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @NgModule({
   declarations: [
@@ -16,6 +17,6 @@ import { SharedModule } from '../shared/shared.module';
     OrderDetailsModalComponent,
     OrderDetailsPageComponent,
   ],
-  imports: [CommonModule, OrdersRoutingModule, SharedModule],
+  imports: [CommonModule, OrdersRoutingModule, SharedModule, NgxMaskDirective],
 })
 export class OrdersModule {}

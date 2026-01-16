@@ -10,5 +10,7 @@ export * from './client.model';
 export * from './company.model';
 export * from './individual.model';
 export * from './order.model';
+export * from './order-product.model';
+export * from './payment.model';
 export * from './product.model';
 export * from './product-photo.model';

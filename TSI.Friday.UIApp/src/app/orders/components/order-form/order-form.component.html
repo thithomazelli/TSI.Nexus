@@ -1,1 +1,103 @@
-<p>order-form works!</p>
+<div class="order-form-wrapper">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          #firstInput
+          formControlName="clientId"
+          type="number"
+          placeholder="Client ID"
+          class="form-control"
+        />
+        <label for="clientId">Client ID</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-person-badge"></i></div>
+    </div>
+
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="clientName"
+          type="text"
+          placeholder="Client Name"
+          class="form-control"
+        />
+        <label for="clientName">Client Name</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-person"></i></div>
+    </div>
+
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="orderNumber"
+          type="text"
+          placeholder="Order Number"
+          class="form-control"
+        />
+        <label for="orderNumber">Order Number</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-hash"></i></div>
+    </div>
+
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <select formControlName="status" class="form-select">
+          <option *ngFor="let s of orderStatusOptions" [value]="s.value">
+            {{ s.label }}
+          </option>
+        </select>
+        <label for="status">Status</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-list-check"></i></div>
+    </div>
+
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="description"
+          type="text"
+          placeholder="Description"
+          class="form-control"
+        />
+        <label for="description">Description</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-card-text"></i></div>
+    </div>
+
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="discount"
+          type="number"
+          placeholder="Discount"
+          class="form-control"
+        />
+        <label for="discount">Discount</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-percent"></i></div>
+    </div>
+
+    <div class="input-group mb-1">
+      <div class="form-floating">
+        <input
+          formControlName="totalPrice"
+          type="number"
+          placeholder="Total Price"
+          class="form-control"
+        />
+        <label for="totalPrice">Total Price</label>
+      </div>
+      <div class="input-group-text"><i class="bi bi-cash"></i></div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+        Cancelar
+      </button>
+      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+        Salvar
+      </button>
+    </div>
+  </form>
+</div>

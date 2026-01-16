@@ -31,13 +31,6 @@ export class ClientFormComponent
 {
   @ViewChild('firstInput') firstInput!: ElementRef;
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      if (this.firstInput?.nativeElement) {
-        this.firstInput.nativeElement.focus();
-      }
-    }, 0);
-  }
   @Input()
   isEdit = false;
 
@@ -58,6 +51,14 @@ export class ClientFormComponent
 
   constructor(private formBuilder: FormBuilder) {
     super();
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      if (this.firstInput?.nativeElement) {
+        this.firstInput.nativeElement.focus();
+      }
+    }, 0);
   }
 
   ngOnInit(): void {

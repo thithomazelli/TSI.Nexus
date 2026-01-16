@@ -9,7 +9,6 @@ import {
   Individual,
   Company,
   NotificationService,
-  ResponseStatus,
 } from '@friday/core';
 
 @Component({

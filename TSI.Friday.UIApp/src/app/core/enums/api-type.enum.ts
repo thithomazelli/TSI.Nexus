@@ -2,7 +2,8 @@ export enum ApiType {
   Addresses = 'addresses',
   Clients = 'clients',
   Companies = 'companies',
-  Individuals = 'Individuals',
+  Individuals = 'individuals',
+  Orders = 'orders',
   Products = 'products',
   Users = 'users',
 }
