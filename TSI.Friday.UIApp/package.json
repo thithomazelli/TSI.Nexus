@@ -29,7 +29,6 @@
     "bootstrap-icons": "^1.13.1",
     "bootswatch": "^5.3.3",
     "jsvectormap": "^1.7.0",
-    "ngx-bootstrap": "^19.0.2",
     "ngx-mask": "^20.0.3",
     "ngx-toastr": "^19.1.0",
     "overlayscrollbars": "^2.13.0",
