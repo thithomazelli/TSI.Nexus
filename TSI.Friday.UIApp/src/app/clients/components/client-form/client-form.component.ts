@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
@@ -27,7 +26,7 @@ import { Company, FormBaseComponent, Individual } from '@friday/core';
 })
 export class ClientFormComponent
   extends FormBaseComponent
-  implements OnInit, OnChanges, AfterViewInit
+  implements OnInit, OnChanges
 {
   @ViewChild('firstInput') firstInput!: ElementRef;
 
@@ -53,13 +52,13 @@ export class ClientFormComponent
     super();
   }
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      if (this.firstInput?.nativeElement) {
-        this.firstInput.nativeElement.focus();
-      }
-    }, 0);
-  }
+  // ngAfterViewInit() {
+  //   setTimeout(() => {
+  //     if (this.firstInput?.nativeElement) {
+  //       this.firstInput.nativeElement.focus();
+  //     }
+  //   }, 0);
+  // }
 
   ngOnInit(): void {
     this.initForm();

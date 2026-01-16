@@ -19,11 +19,16 @@ export class ModalService {
     componentOrTemplate: TemplateRef<T> | Type<T>,
     data?: any
   ): MatDialogRef<any> {
+    // Garante que id seja incluído em data
+    const dialogData = { ...data };
+    if (data?.id !== undefined) {
+      dialogData.id = data.id;
+    }
     return this.dialog.open(componentOrTemplate as any, {
-      data,
+      data: dialogData,
       width: data?.width || '500px',
       disableClose: !!data?.disableClose,
-      panelClass: data?.panelClass || '',
+      panelClass: 'custom-modal',
     });
   }
 
@@ -31,7 +36,7 @@ export class ModalService {
     return this.dialog.open(NotificationComponent, {
       data: { isSuccess, title, message },
       width: '400px',
-      panelClass: isSuccess ? 'mat-dialog-success' : 'mat-dialog-error',
+      panelClass: 'custom-modal',
     });
   }
 
@@ -53,7 +58,7 @@ export class ModalService {
     return this.dialog.open(ConfirmationComponent, {
       data,
       width: '400px',
-      panelClass: 'mat-dialog-confirm',
+      panelClass: 'custom-modal',
     });
   }
 

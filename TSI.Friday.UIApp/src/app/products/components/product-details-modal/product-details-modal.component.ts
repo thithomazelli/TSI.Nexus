@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   ApiService,
   ApiType,
@@ -15,13 +16,8 @@ import {
   styleUrl: './product-details-modal.component.scss',
 })
 export class ProductDetailsModalComponent {
-  @Input()
   isEdit = false;
-
-  @Input()
   data?: Product | null = null;
-
-  @Input()
   id: number | null = null;
 
   private _baseEndPoint: ApiType = ApiType.Products;
@@ -29,8 +25,15 @@ export class ProductDetailsModalComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
-    private gridService: GridService
-  ) {}
+    private gridService: GridService,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
+  ) {
+    if (dialogData) {
+      this.isEdit = dialogData.isEdit ?? false;
+      this.data = dialogData.data ?? null;
+      this.id = dialogData.id ?? null;
+    }
+  }
 
   save(product: Product): void {
     if (this.isEdit && this.id) {
@@ -39,9 +42,8 @@ export class ProductDetailsModalComponent {
         .subscribe((response: WebApiResponse<Product>) => {
           this.gridService.gridDataChanged(response.data, this.id);
           this.modalService.hideModal();
-
           this.modalService.showSweetNotification(
-            'Produto cadastrado',
+            '',
             response.message,
             'success'
           );

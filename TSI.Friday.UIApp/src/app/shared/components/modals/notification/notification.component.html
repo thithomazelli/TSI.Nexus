@@ -1,12 +1,10 @@
-<h2
-  mat-dialog-title
-  [ngClass]="{ 'bg-success': isSuccess, 'bg-danger': !isSuccess }"
->
-  {{ title }}
-</h2>
-<mat-dialog-content>
+<div style="position: relative">
+  <span class="modal-title">{{ title }}</span>
+  <button class="close" (click)="dialogRef.close()">&times;</button>
+</div>
+<div>
   {{ message }}
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button color="primary" (click)="dialogRef.close()">Ok</button>
-</mat-dialog-actions>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-secondary" (click)="dialogRef.close()">Ok</button>
+</div>

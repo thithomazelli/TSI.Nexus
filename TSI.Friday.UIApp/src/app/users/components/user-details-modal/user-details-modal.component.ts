@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   ApiService,
   ApiType,
@@ -16,13 +17,8 @@ import {
   styleUrl: './user-details-modal.component.scss',
 })
 export class UserDetailsModalComponent extends FormBaseComponent {
-  @Input()
   isEdit = false;
-
-  @Input()
   data?: User | null = null;
-
-  @Input()
   id: number | null = null;
 
   private _baseEndPoint: ApiType = ApiType.Users;
@@ -30,9 +26,15 @@ export class UserDetailsModalComponent extends FormBaseComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
-    private gridService: GridService
+    private gridService: GridService,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
   ) {
     super();
+    if (dialogData) {
+      this.isEdit = dialogData.isEdit ?? false;
+      this.data = dialogData.data ?? null;
+      this.id = dialogData.id ?? null;
+    }
   }
 
   save(user: User): void {
@@ -43,7 +45,7 @@ export class UserDetailsModalComponent extends FormBaseComponent {
           this.gridService.gridDataChanged(response.data, this.id);
           this.modalService.hideModal();
           this.modalService.showSweetNotification(
-            'Usuário cadastrado',
+            '',
             response.message,
             'success'
           );

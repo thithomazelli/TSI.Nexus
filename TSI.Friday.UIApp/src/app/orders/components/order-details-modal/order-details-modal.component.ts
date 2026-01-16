@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   FormBaseComponent,
   Order,
@@ -17,13 +18,8 @@ import {
   styleUrl: './order-details-modal.component.scss',
 })
 export class OrderDetailsModalComponent extends FormBaseComponent {
-  @Input()
   isEdit = false;
-
-  @Input()
   data?: Order | null = null;
-
-  @Input()
   id: number | null = null;
 
   private _baseEndPoint: ApiType = ApiType.Orders;
@@ -32,9 +28,15 @@ export class OrderDetailsModalComponent extends FormBaseComponent {
     private apiService: ApiService,
     private notificationService: NotificationService,
     private gridService: GridService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
   ) {
     super();
+    if (dialogData) {
+      this.isEdit = dialogData.isEdit ?? false;
+      this.data = dialogData.data ?? null;
+      this.id = dialogData.id ?? null;
+    }
   }
 
   save(order: Order): void {

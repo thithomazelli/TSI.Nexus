@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
   ApiService,
   ApiType,
@@ -18,13 +19,8 @@ import {
   styleUrl: './client-details-modal.component.scss',
 })
 export class ClientDetailsModalComponent extends FormBaseComponent {
-  @Input()
   isEdit = false;
-
-  @Input()
   data?: Individual | Company | null = null;
-
-  @Input()
   id: number | null = null;
 
   private _baseEndPoint: ApiType = ApiType.Clients;
@@ -33,9 +29,16 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
     private apiService: ApiService,
     private modalService: ModalService,
     private notificationService: NotificationService,
-    private gridService: GridService
+    private gridService: GridService,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
   ) {
     super();
+    // Recebe dados do modal
+    if (dialogData) {
+      this.isEdit = dialogData.isEdit ?? false;
+      this.data = dialogData.data ?? null;
+      this.id = dialogData.id ?? null;
+    }
   }
 
   save(client: Individual | Company): void {
@@ -50,10 +53,12 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
         )
         .subscribe((response: WebApiResponse<Company | Individual>) => {
           this.gridService.gridDataChanged(response.data, this.id);
-          this.notificationService.showMessage(
-            response.status,
-            response.message
+          this.modalService.showSweetNotification(
+            '',
+            response.message,
+            'success'
           );
+          this.modalService.hideModal();
         });
     } else {
       this.apiService
