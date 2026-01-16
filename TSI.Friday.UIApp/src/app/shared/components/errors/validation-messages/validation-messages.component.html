@@ -1,5 +1,9 @@
-<ul class="text-danger" *ngIf="errorMessages">
-  <li *ngFor="let error of errorMessages">
-    {{ error }}
-  </li>
-</ul>
+@if (errorMessages) {
+  <ul class="text-danger">
+    @for (error of errorMessages; track error) {
+      <li>
+        {{ error }}
+      </li>
+    }
+  </ul>
+}

@@ -8,7 +8,6 @@ import {
   GridApi,
   GridReadyEvent,
 } from 'ag-grid-community';
-import { ModalOptions } from 'ngx-bootstrap/modal';
 
 @Component({
   selector: 'app-grid',
@@ -117,24 +116,20 @@ export class GridComponent<T> implements OnInit {
   }
 
   openAddModal(): void {
-    const initialState: ModalOptions = {
-      initialState: {
-        isEdit: false,
-        id: null,
-        parentId: this._parentId,
-      },
+    const initialState = {
+      isEdit: false,
+      id: null,
+      parentId: this._parentId,
     };
     this.modalService.showTemplateModal(this.modalDetails, initialState);
   }
 
   private editAction(data: any): void {
-    const initialState: ModalOptions = {
-      initialState: {
-        isEdit: true,
-        data: data,
-        id: data.id,
-        parentId: this._parentId,
-      },
+    const initialState = {
+      isEdit: true,
+      data: data,
+      id: data.id,
+      parentId: this._parentId,
     };
     this.modalService.showTemplateModal(this.modalDetails, initialState);
   }

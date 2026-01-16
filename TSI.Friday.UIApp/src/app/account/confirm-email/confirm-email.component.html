@@ -1,19 +1,24 @@
-<div *ngIf="success; else failureTemplate">
-  <ng-container *ngTemplateOutlet="successTemplate"></ng-container>
-</div>
+@if (success) {
+  <div>
+    <ng-container *ngTemplateOutlet="successTemplate"></ng-container>
+  </div>
+} @else {
+  @if (!success) {
+    <div class="container text-center">
+      <a class="btn btn-link" (click)="resendEmailConfirmation()">
+        <i class="fa fa-envelope"></i> Resend Email Confirmation
+      </a>
+    </div>
+  }
+}
 
 <ng-template #successTemplate>
-  <div class="container text-center" *ngIf="success">
-    <a class="btn btn-primary" routerLink="/account/login">
-      <i class="fa fa-arrow-left"></i> Login
-    </a>
-  </div>
+  @if (success) {
+    <div class="container text-center">
+      <a class="btn btn-primary" routerLink="/account/login">
+        <i class="fa fa-arrow-left"></i> Login
+      </a>
+    </div>
+  }
 </ng-template>
 
-<ng-template #failureTemplate>
-  <div class="container text-center" *ngIf="!success">
-    <a class="btn btn-link" (click)="resendEmailConfirmation()">
-      <i class="fa fa-envelope"></i> Resend Email Confirmation
-    </a>
-  </div>
-</ng-template>

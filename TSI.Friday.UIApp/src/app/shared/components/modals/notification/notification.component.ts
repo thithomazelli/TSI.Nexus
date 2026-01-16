@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { ModalService } from '@friday/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'modal-notification',
   templateUrl: './notification.component.html',
@@ -7,9 +7,16 @@ import { ModalService } from '@friday/core';
   standalone: false,
 })
 export class NotificationComponent {
-  isSuccess: boolean = true;
-  title: string = '';
-  message: string = '';
+  isSuccess: boolean;
+  title: string;
+  message: string;
 
-  constructor(public modalService: ModalService) {}
+  constructor(
+    public dialogRef: MatDialogRef<NotificationComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.isSuccess = data.isSuccess;
+    this.title = data.title;
+    this.message = data.message;
+  }
 }

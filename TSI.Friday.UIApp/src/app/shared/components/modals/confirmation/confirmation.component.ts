@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { ModalService } from '@friday/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-confirmation',
@@ -8,10 +8,19 @@ import { ModalService } from '@friday/core';
   styleUrl: './confirmation.component.scss',
 })
 export class ConfirmationComponent<T> {
-  title: string = 'Confirmação';
-  message: string = 'Tem certeza que deseja excluir este item?';
+  title: string;
+  message: string;
   data: T | undefined;
   confirmDelete!: () => void;
 
-  constructor(public modalService: ModalService) {}
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmationComponent<T>>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
+  ) {
+    this.title = dialogData.title || 'Confirmação';
+    this.message =
+      dialogData.message || 'Tem certeza que deseja excluir este item?';
+    this.data = dialogData.data;
+    this.confirmDelete = dialogData.confirmDelete;
+  }
 }

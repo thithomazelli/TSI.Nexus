@@ -1,6 +1,10 @@
-import { Injectable, TemplateRef, Type } from '@angular/core';
+import { Injectable, TemplateRef, Type, Inject } from '@angular/core';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import Swal from 'sweetalert2';
-import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
 import { NotificationComponent } from '../../../shared/components/modals/notification/notification.component';
 import { ConfirmationComponent } from '../../../shared/components/modals/confirmation/confirmation.component';
 
@@ -8,31 +12,27 @@ import { ConfirmationComponent } from '../../../shared/components/modals/confirm
   providedIn: 'root',
 })
 export class ModalService {
-  private bsModalRef?: BsModalRef;
-
-  constructor(private bsModalService: BsModalService) {}
+  // Removido suporte a ngx-bootstrap/modal
+  constructor(private dialog: MatDialog) {}
 
   showTemplateModal<T>(
-    template: TemplateRef<T> | Type<T>,
-    initialState?: ModalOptions<T>
-  ) {
-    this.bsModalRef = this.bsModalService.show(template, initialState);
-    return this.bsModalRef;
+    componentOrTemplate: TemplateRef<T> | Type<T>,
+    data?: any
+  ): MatDialogRef<any> {
+    return this.dialog.open(componentOrTemplate as any, {
+      data,
+      width: data?.width || '500px',
+      disableClose: !!data?.disableClose,
+      panelClass: data?.panelClass || '',
+    });
   }
 
   showNotification(isSuccess: boolean, title: string, message: string) {
-    const initialState: ModalOptions = {
-      initialState: {
-        isSuccess,
-        title,
-        message,
-      },
-    };
-
-    this.bsModalRef = this.bsModalService.show(
-      NotificationComponent,
-      initialState
-    );
+    return this.dialog.open(NotificationComponent, {
+      data: { isSuccess, title, message },
+      width: '400px',
+      panelClass: isSuccess ? 'mat-dialog-success' : 'mat-dialog-error',
+    });
   }
 
   // SweetAlert2: Alert simples
@@ -49,11 +49,12 @@ export class ModalService {
     });
   }
 
-  showConfirmation(initialState: ModalOptions) {
-    this.bsModalRef = this.bsModalService.show(
-      ConfirmationComponent,
-      initialState
-    );
+  showConfirmation(data: any) {
+    return this.dialog.open(ConfirmationComponent, {
+      data,
+      width: '400px',
+      panelClass: 'mat-dialog-confirm',
+    });
   }
 
   // SweetAlert2: Confirmação
@@ -77,6 +78,6 @@ export class ModalService {
   }
 
   hideModal(): void {
-    this.bsModalRef?.hide();
+    this.dialog.closeAll();
   }
 }

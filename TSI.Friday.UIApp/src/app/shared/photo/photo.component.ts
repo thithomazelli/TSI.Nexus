@@ -18,7 +18,7 @@ import {
   User,
   WebApiResponse,
 } from '@friday/core';
-import { ModalOptions } from 'ngx-bootstrap/modal';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-photo',
@@ -74,7 +74,8 @@ export class PhotoComponent implements OnInit, OnDestroy {
   constructor(
     private cd: ChangeDetectorRef,
     private modalService: ModalService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -307,19 +308,16 @@ export class PhotoComponent implements OnInit, OnDestroy {
     if (this.isModal) {
       return;
     }
-
-    const initialState: ModalOptions = {
-      initialState: {
+    this.dialog.open(PhotoComponent, {
+      data: {
         isEdit: true,
         isModal: true,
         imageUrl: this.previewDataUrl,
         entityClass: this.entityClass,
         filenamePrefix: this.filenamePrefix,
       },
-    };
-
-    // Open the same component as a modal so modal-specific controls are available
-    this.modalService.showTemplateModal(PhotoComponent, initialState);
+      width: '500px',
+    });
   }
 
   close(): void {

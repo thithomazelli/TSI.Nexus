@@ -43,9 +43,11 @@
     <div class="input-group mb-1">
       <div class="form-floating">
         <select formControlName="status" class="form-select">
-          <option *ngFor="let s of orderStatusOptions" [value]="s.value">
+          @for (s of orderStatusOptions; track s) {
+          <option [value]="s.value">
             {{ s.label }}
           </option>
+          }
         </select>
         <label for="status">Status</label>
       </div>

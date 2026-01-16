@@ -1,27 +1,10 @@
-<div class="modal-header bg-danger">
-  <h5 class="modal-title pull-left">{{ title }}</h5>
-  <button
-    type="button"
-    class="btn-close close pull-right"
-    (click)="modalService.hideModal()"
-  ></button>
-</div>
-<div class="modal-body">
+<h2 mat-dialog-title class="bg-danger">{{ title }}</h2>
+<mat-dialog-content>
   {{ message }}
-</div>
-<div class="modal-footer">
-  <button
-    type="button"
-    class="btn btn-outline-secondary"
-    (click)="modalService.hideModal()"
-  >
-    Cancelar
-  </button>
-  <button
-    type="button"
-    class="btn btn-outline-danger"
-    (click)="confirmDelete()"
-  >
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button (click)="dialogRef.close()">Cancelar</button>
+  <button mat-button color="warn" (click)="confirmDelete(); dialogRef.close()">
     Excluir
   </button>
-</div>
+</mat-dialog-actions>

@@ -1,6 +1,6 @@
 <!--begin::App Wrapper-->
 <div [ngClass]="(isLoggedIn$ | async) ? 'app-wrapper' : 'login-box'">
-  <ng-container *ngIf="isLoggedIn$ | async">
+  @if (isLoggedIn$ | async) {
     <!--begin::Header-->
     <app-navbar class="app-header main-header"></app-navbar>
     <!--end::Header-->
@@ -9,14 +9,14 @@
       class="app-sidebar main-sidebar bg-body-secondary shadow elevation-4"
       data-bs-theme="dark"
     ></app-sidebar>
-  </ng-container>
+  }
   <!--end::Sidebar-->
   <!--begin::App Main-->
   <main class="app-main">
     <router-outlet></router-outlet>
   </main>
   <!--end::App Main-->
-  <ng-container *ngIf="isLoggedIn$ | async">
+  @if (isLoggedIn$ | async) {
     <!--begin::Footer-->
     <footer class="app-footer">
       <!--begin::To the end-->
@@ -27,12 +27,12 @@
         Copyright &copy; 2014-2025&nbsp;
         <a href="https://adminlte.io" class="text-decoration-none"
           >AdminLTE.io</a
-        >.
-      </strong>
-      All rights reserved.
-      <!--end::Copyright-->
-    </footer>
-  </ng-container>
-  <!--end::Footer-->
-</div>
-<!--end::App Wrapper-->
+          >.
+        </strong>
+        All rights reserved.
+        <!--end::Copyright-->
+      </footer>
+    }
+    <!--end::Footer-->
+  </div>
+  <!--end::App Wrapper-->

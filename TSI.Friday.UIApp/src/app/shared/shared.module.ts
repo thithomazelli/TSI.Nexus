@@ -1,3 +1,4 @@
+import { MatDialogModule } from '@angular/material/dialog';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridModule } from 'ag-grid-angular';
@@ -8,7 +9,6 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NotificationComponent } from './components/modals/notification/notification.component';
-import { ModalModule } from 'ngx-bootstrap/modal';
 import { GridComponent } from './grid/grid.component';
 import { ConfirmationComponent } from './components/modals/confirmation/confirmation.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
@@ -33,18 +33,20 @@ import { PhotoComponent } from './photo/photo.component';
     RouterModule,
     ReactiveFormsModule,
     AgGridModule,
-    ModalModule.forRoot(),
+    MatDialogModule,
   ],
   exports: [
     NavbarComponent,
     SidebarComponent,
     FooterComponent,
     RouterModule,
+    MatDialogModule,
     ReactiveFormsModule,
     ValidationMessagesComponent,
     GridComponent,
     HeaderComponent,
     PhotoComponent,
+    MatDialogModule,
   ],
 })
 export class SharedModule {}

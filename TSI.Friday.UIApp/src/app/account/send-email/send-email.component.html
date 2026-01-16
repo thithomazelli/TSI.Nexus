@@ -1,68 +1,76 @@
-<div *ngIf="mode" class="d-flex justify-content-center">
-  <div class="col-12 col-lg-5">
-    <main class="form-signin">
-      <form
-        [formGroup]="form"
-        class="form-signin"
-        (ngSubmit)="sendEmail()"
-        autocomplete="off"
-      >
-        <div class="text-center mb-4">
-          <h1 class="mb-3 font-weight-normal">
-            <span *ngIf="mode.includes('resend-email-confirmation')">
-              Resend email confirmation
-            </span>
-            <span *ngIf="mode.includes('forgot-username-or-password')">
-              Retrieve username or password
-            </span>
-          </h1>
-        </div>
-
-        <div class="form-floating mb-3">
-          <input
-            formControlName="email"
-            type="text"
-            placeholder="Email"
-            class="form-control"
-            [class.is-invalid]="isInvalid('email')"
-          />
-          <label for="email">Email</label>
-          <span class="text-danger" *ngIf="inputHasError('email', 'required')"
-            >Email is required
-          </span>
-          <span class="text-danger" *ngIf="inputHasError('email', 'pattern')"
-            >Invalid email address
-          </span>
-        </div>
-
-        <div class="form-floating" *ngIf="errorMessages">
-          <app-validation-messages
-            [errorMessages]="errorMessages"
-          ></app-validation-messages>
-        </div>
-
-        <div class="row">
-          <div class="col-6">
-            <div class="d-grid">
-              <button class="btn btn-block btn-success" type="submit">
-                Send
-              </button>
-            </div>
+@if (mode) {
+  <div class="d-flex justify-content-center">
+    <div class="col-12 col-lg-5">
+      <main class="form-signin">
+        <form
+          [formGroup]="form"
+          class="form-signin"
+          (ngSubmit)="sendEmail()"
+          autocomplete="off"
+          >
+          <div class="text-center mb-4">
+            <h1 class="mb-3 font-weight-normal">
+              @if (mode.includes('resend-email-confirmation')) {
+                <span>
+                  Resend email confirmation
+                </span>
+              }
+              @if (mode.includes('forgot-username-or-password')) {
+                <span>
+                  Retrieve username or password
+                </span>
+              }
+            </h1>
           </div>
-
-          <div class="col-6">
-            <div class="d-grid">
-              <button
-                class="btn btn-block btn-danger"
-                type="button"
-                (click)="cancel()"
-              >
-                Cancel
-              </button>
+          <div class="form-floating mb-3">
+            <input
+              formControlName="email"
+              type="text"
+              placeholder="Email"
+              class="form-control"
+              [class.is-invalid]="isInvalid('email')"
+              />
+              <label for="email">Email</label>
+              @if (inputHasError('email', 'required')) {
+                <span class="text-danger"
+                  >Email is required
+                </span>
+              }
+              @if (inputHasError('email', 'pattern')) {
+                <span class="text-danger"
+                  >Invalid email address
+                </span>
+              }
             </div>
-          </div>
-        </div>
-      </form>
-    </main>
-  </div>
-</div>
+            @if (errorMessages) {
+              <div class="form-floating">
+                <app-validation-messages
+                  [errorMessages]="errorMessages"
+                ></app-validation-messages>
+              </div>
+            }
+            <div class="row">
+              <div class="col-6">
+                <div class="d-grid">
+                  <button class="btn btn-block btn-success" type="submit">
+                    Send
+                  </button>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-grid">
+                  <button
+                    class="btn btn-block btn-danger"
+                    type="button"
+                    (click)="cancel()"
+                    >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+  }
