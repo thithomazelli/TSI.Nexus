@@ -13,6 +13,8 @@ namespace TSI.Friday.Contracts.Models
 
         public string Description { get; set; }
 
+        public string Photo { get; set; }
+
         public decimal Price { get; set; }
 
         public ProductUnit Unit { get; set; }

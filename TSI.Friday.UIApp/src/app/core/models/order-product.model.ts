@@ -1,12 +1,17 @@
+import { OrderProductType } from '../enums/order-product-type.enum';
+
 export interface OrderProduct {
   id: number;
   description?: string;
+  type?: OrderProductType;
+  readonly previousQuantity?: number;
   quantity?: number;
   price?: number;
   discount?: number;
   totalPrice?: number;
   orderId?: number;
-  productId?: number;
-  productName?: string;
   orderNumber?: string;
+  productId?: number;
+  productSku?: string;
+  productName?: string;
 }

@@ -16,7 +16,7 @@
     (keydown.enter)="onPhotoClick()"
     (keydown.space)="onPhotoClick()"
     aria-label="Clique para alterar foto"
-    >
+  >
     <!-- live camera when active -->
     @if (cameraActive) {
       <div class="photo-wrapper position-relative">
@@ -40,93 +40,99 @@
             class="profile-user-img img-fluid img-circle"
             [src]="previewDataUrl"
             alt="photo preview"
-            />
-            @if (!isModal) {
-              <div class="photo-hover-overlay" aria-hidden="true">
-                <span>clique para alterar</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="photo-wrapper position-relative">
-            <img
-              class="profile-user-img img-fluid img-circle"
-              src="assets/img/no_image.png"
-              alt="User profile picture"
-              />
-              @if (!isModal) {
-                <div class="photo-hover-overlay" aria-hidden="true">
-                  <span>clique para alterar</span>
-                </div>
-              }
+          />
+          @if (!isModal) {
+            <div class="photo-hover-overlay" aria-hidden="true">
+              <span>clique para alterar</span>
             </div>
           }
+        </div>
+      } @else if (imageUrl) {
+        <div class="photo-wrapper position-relative">
+          <img
+            class="profile-user-img img-fluid img-circle"
+            [src]="imageUrl"
+            alt="photo preview"
+          />
+          @if (!isModal) {
+            <div class="photo-hover-overlay" aria-hidden="true">
+              <span>clique para alterar</span>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <div class="box-profile">
+    <div class="text-center">
+      <h3 class="profile-username text-center">
+        {{ data?.name || data?.firstName }}
+      </h3>
+      <p class="text-muted text-center">{{ data?.sku || data?.email }}</p>
+    </div>
+
+    @if (isModal) {
+      <div class="photo-actions mt-2 d-flex gap-2 justify-content-center">
+        <input
+          #fileInput
+          type="file"
+          accept="image/*"
+          capture="environment"
+          class="d-none"
+          (change)="onFileSelected($event)"
+        />
+        <button
+          type="button"
+          class="btn btn-outline-primary btn-sm"
+          (click)="triggerFile()"
+        >
+          Upload
+        </button>
+        @if (!cameraActive) {
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm"
+            (click)="startCamera()"
+          >
+            Open Camera
+          </button>
         }
-
+        @if (cameraActive) {
+          <button
+            type="button"
+            class="btn btn-outline-success btn-sm"
+            (click)="capturePhoto()"
+          >
+            Take Photo
+          </button>
+        }
+        @if (cameraActive) {
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            (click)="stopCamera()"
+          >
+            Stop Camera
+          </button>
+        }
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm"
+          (click)="removePhoto()"
+        >
+          Remove
+        </button>
+        <button
+          type="button"
+          class="btn btn-success btn-sm"
+          (click)="savePhoto()"
+        >
+          Save
+        </button>
       </div>
+    }
 
-      <div class="box-profile">
-        <div class="text-center">
-          <h3 class="profile-username text-center">Nina Mcintire</h3>
-          <p class="text-muted text-center">Software Engineer</p>
-        </div>
-
-        @if (isModal) {
-          <div
-            class="photo-actions mt-2 d-flex gap-2 justify-content-center"
-            >
-            <input
-              #fileInput
-              type="file"
-              accept="image/*"
-              capture="environment"
-              class="d-none"
-              (change)="onFileSelected($event)"
-              />
-              <button
-                type="button"
-                class="btn btn-outline-primary btn-sm"
-                (click)="triggerFile()"
-                >
-                Upload
-              </button>
-              @if (!cameraActive) {
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm"
-                  (click)="startCamera()"
-                  >
-                  Open Camera
-                </button>
-              }
-              @if (cameraActive) {
-                <button
-                  type="button"
-                  class="btn btn-outline-success btn-sm"
-                  (click)="capturePhoto()"
-                  >
-                  Take Photo
-                </button>
-              }
-              @if (cameraActive) {
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  (click)="stopCamera()"
-                  >
-                  Stop Camera
-                </button>
-              }
-              <button
-                type="button"
-                class="btn btn-outline-danger btn-sm"
-                (click)="removePhoto()"
-                >
-                Remove
-              </button>
-            </div>
-          }
-
-          <canvas #canvasEl class="d-none"></canvas>
-        </div>
-      </div>
+    <canvas #canvasEl class="d-none"></canvas>
+  </div>
+</div>

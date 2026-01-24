@@ -1,7 +1,14 @@
 // ...existing code...
-import { AfterViewInit, Component, OnDestroy, Renderer2 } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+} from '@angular/core';
 import { Observable } from 'rxjs';
 import { AccountService, User } from '@friday/core';
+import { environment } from '../../../environments/environment.development';
 
 @Component({
   selector: 'app-navbar',
@@ -9,8 +16,10 @@ import { AccountService, User } from '@friday/core';
   styleUrls: ['./navbar.component.scss'],
   standalone: false,
 })
-export class NavbarComponent implements AfterViewInit, OnDestroy {
+export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isFullscreen = false;
+  imageUrl: string = './assets/img/user2-160x160.jpg';
+
   private mobileBreakpoint = 992;
   private resizeUnlisten: (() => void) | null = null;
 
@@ -20,7 +29,7 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private renderer: Renderer2,
-    private accountService: AccountService
+    private accountService: AccountService,
   ) {}
 
   get user$(): Observable<User | null> {
@@ -42,13 +51,24 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  ngOnInit(): void {
+    this.user$.subscribe((user) => {
+      const apiBase = environment.appUrl; // ajuste conforme seu ambiente
+      if (user && user.photo) {
+        this.imageUrl = `${apiBase}/uploads/User/${user.photo}`;
+        return;
+      }
+
+      this.imageUrl = 'assets/img/no_profile.png';
+    });
+  }
   ngAfterViewInit(): void {
     this.applyResponsiveState(window.innerWidth);
     this.resizeUnlisten = this.renderer.listen(
       'window',
       'resize',
       (ev: UIEvent) =>
-        this.applyResponsiveState((ev.target as Window).innerWidth)
+        this.applyResponsiveState((ev.target as Window).innerWidth),
     );
   }
 
@@ -65,7 +85,7 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
   toggleSidebar(): void {
     const body = document.body;
     const sidebarExists = !!document.querySelector(
-      '.app-sidebar, .main-sidebar, .sidebar'
+      '.app-sidebar, .main-sidebar, .sidebar',
     );
 
     if (window.innerWidth < this.mobileBreakpoint) {

@@ -1,11 +1,18 @@
 import { Component } from '@angular/core';
-import { ApiService, ModalService, User, WebApiResponse } from '@friday/core';
+import {
+  ApiService,
+  ApiType,
+  ModalService,
+  User,
+  WebApiResponse,
+} from '@friday/core';
 import {
   ColDef,
   ICellRendererParams,
   ValueFormatterParams,
 } from 'ag-grid-community';
 import { UserDetailsModalComponent } from './components/user-details-modal/user-details-modal.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-users',
@@ -14,7 +21,7 @@ import { UserDetailsModalComponent } from './components/user-details-modal/user-
   styleUrl: './users.component.scss',
 })
 export class UsersComponent {
-  baseEndPoint = 'users';
+  baseEndPoint = ApiType.Users;
 
   rowData: User[] = [];
   columnDefs: ColDef[] = [
@@ -26,6 +33,29 @@ export class UsersComponent {
       // minWidth: 80,
       hide: true,
       sortingOrder: ['asc', 'desc'],
+    },
+    {
+      field: 'photo',
+      headerName: '',
+      sortable: true,
+      filter: false,
+      width: 70,
+      resizable: true,
+      cellRenderer: (params: ValueFormatterParams) => {
+        const apiBase = environment.appUrl;
+        const imageUrl = params.value
+          ? `${apiBase}/uploads/user/${params.value}`
+          : 'assets/img/no_profile.png';
+        const userId = params.data?.id;
+        return `<div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
+          <a 
+            class="ag-link"
+            data-action="view"
+            routerLink="/${this.baseEndPoint}/${params.data.id}">
+            <img src="${imageUrl}" alt="User Photo" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+          </a>
+        </div>`;
+      },
     },
     {
       headerName: 'Full Name',
@@ -101,11 +131,9 @@ export class UsersComponent {
     },
   ];
 
-  modalDetails = UserDetailsModalComponent;
-
   constructor(
     private apiService: ApiService,
-    private modalService: ModalService
+    private modalService: ModalService,
   ) {}
 
   ngOnInit(): void {
@@ -126,9 +154,22 @@ export class UsersComponent {
         this.modalService.showSweetNotification(
           'Usuário excluído',
           response.message,
-          'success'
+          'success',
         );
       });
+  }
+
+  onOpenModal(initialState: any) {
+    const ref = this.modalService.showTemplateModal(
+      UserDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe(() => {
+        this.getUsers();
+        ref.close();
+      });
+    }
   }
 
   private getUsers(): void {

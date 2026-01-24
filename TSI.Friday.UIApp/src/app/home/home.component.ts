@@ -32,8 +32,16 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         if (revenueEl) {
           const sales_chart_options = {
             series: [
-              { name: 'Digital Goods', data: [28, 48, 40, 19, 86, 27, 90] },
-              { name: 'Electronics', data: [65, 59, 80, 81, 56, 55, 40] },
+              {
+                name: 'Locação',
+                data: [
+                  8000.0, 9000.0, 12000.0, 11000.0, 10000.0, 9000.0, 8000.0,
+                ],
+              },
+              {
+                name: 'Descarte',
+                data: [6500.0, 5900.0, 8000.0, 8100.0, 5600.0, 5500.0, 8000.0],
+              },
             ],
             chart: { height: 300, type: 'area', toolbar: { show: false } },
             legend: { show: false },
@@ -43,13 +51,13 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
             xaxis: {
               type: 'datetime',
               categories: [
-                '2023-01-01',
-                '2023-02-01',
-                '2023-03-01',
-                '2023-04-01',
-                '2023-05-01',
-                '2023-06-01',
-                '2023-07-01',
+                '2025-07-01',
+                '2025-08-01',
+                '2025-09-01',
+                '2025-10-01',
+                '2025-11-01',
+                '2025-12-01',
+                '2026-01-01',
               ],
             },
             tooltip: { x: { format: 'MMMM yyyy' } },
@@ -77,7 +85,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
           if (spark1El) {
             const spark1 = new Apex(
               spark1El,
-              sparkOptions([1000, 1200, 920, 927, 931, 1027, 819, 930, 1021])
+              sparkOptions([1000, 1200, 920, 927, 931, 1027, 819, 930, 1021]),
             );
             spark1.render();
             this.charts.push(spark1);
@@ -87,7 +95,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
               spark2El,
               sparkOptions([
                 515, 519, 520, 522, 652, 810, 370, 627, 319, 630, 921,
-              ])
+              ]),
             );
             spark2.render();
             this.charts.push(spark2);
@@ -95,7 +103,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
           if (spark3El) {
             const spark3 = new Apex(
               spark3El,
-              sparkOptions([15, 19, 20, 22, 33, 27, 31, 27, 19, 30, 21])
+              sparkOptions([15, 19, 20, 22, 33, 27, 31, 27, 19, 30, 21]),
             );
             spark3.render();
             this.charts.push(spark3);
@@ -129,7 +137,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
           }
         } else {
           console.warn(
-            'jsVectorMap global not found. Verifique angular.json scripts.'
+            'jsVectorMap global not found. Verifique angular.json scripts.',
           );
         }
       } catch (err) {

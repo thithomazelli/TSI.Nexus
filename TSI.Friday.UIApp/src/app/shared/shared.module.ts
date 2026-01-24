@@ -1,4 +1,8 @@
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatOptionModule } from '@angular/material/core';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridModule } from 'ag-grid-angular';
@@ -34,6 +38,10 @@ import { PhotoComponent } from './photo/photo.component';
     ReactiveFormsModule,
     AgGridModule,
     MatDialogModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatOptionModule,
   ],
   exports: [
     NavbarComponent,
@@ -47,6 +55,10 @@ import { PhotoComponent } from './photo/photo.component';
     HeaderComponent,
     PhotoComponent,
     MatDialogModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatOptionModule,
   ],
 })
 export class SharedModule {}

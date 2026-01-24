@@ -1,8 +1,14 @@
+// Garante que o SweetAlert2 fique acima dos modais do Angular Material
 /* Ajuste global para MDC Dialog: overflow e padding igual ao ngx-bootstrap */
 .mat-mdc-dialog-surface {
   overflow: hidden !important;
   padding: 15px !important;
 }
+
+:root {
+  --mat-autocomplete-background-color: #ffff; /* Your custom color */
+}
+
 .modal-divider {
   border: none;
   border-top: 1px solid #e0e0e0;
@@ -44,31 +50,6 @@
   box-shadow: none !important;
 }
 
-.custom-modal .modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
-  padding: 0;
-}
-
-.custom-modal .btn {
-  border-radius: 6px;
-  padding: 0.5rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border: none;
-}
-
-.custom-modal .btn-success {
-  background: #4caf50;
-  color: #fff;
-}
-
-.custom-modal .btn-secondary {
-  background: #6c757d;
-  color: #fff;
-}
 /* You can add global styles to this file, and also import other style files */
 
 /* entrada: slide do topo para posição final */
@@ -132,4 +113,8 @@
 .swal2-popup-small .swal2-icon.swal2-warning {
   color: #212529 !important;
   border-color: #212529 !important;
+}
+
+.navbar-nav > .user-menu > .dropdown-menu > li.user-header > img {
+  background-color: white;
 }

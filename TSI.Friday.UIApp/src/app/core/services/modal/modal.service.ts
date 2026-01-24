@@ -1,9 +1,5 @@
 import { Injectable, TemplateRef, Type, Inject } from '@angular/core';
-import {
-  MatDialog,
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-} from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { NotificationComponent } from '../../../shared/components/modals/notification/notification.component';
 import { ConfirmationComponent } from '../../../shared/components/modals/confirmation/confirmation.component';
@@ -17,18 +13,22 @@ export class ModalService {
 
   showTemplateModal<T>(
     componentOrTemplate: TemplateRef<T> | Type<T>,
-    data?: any
+    data?: any,
   ): MatDialogRef<any> {
     // Garante que id seja incluído em data
     const dialogData = { ...data };
     if (data?.id !== undefined) {
       dialogData.id = data.id;
     }
+    if (data?.parentId !== undefined) {
+      dialogData.parentId = data.parentId;
+    }
     return this.dialog.open(componentOrTemplate as any, {
       data: dialogData,
       width: data?.width || '500px',
       disableClose: !!data?.disableClose,
       panelClass: 'custom-modal',
+      autoFocus: false,
     });
   }
 
@@ -37,6 +37,7 @@ export class ModalService {
       data: { isSuccess, title, message },
       width: '400px',
       panelClass: 'custom-modal',
+      autoFocus: false,
     });
   }
 
@@ -44,7 +45,7 @@ export class ModalService {
   showSweetNotification(
     title: string,
     text: string,
-    icon: 'success' | 'error' | 'warning' | 'info' = 'info'
+    icon: 'success' | 'error' | 'warning' | 'info' = 'info',
   ) {
     return Swal.fire({
       title,
@@ -59,6 +60,7 @@ export class ModalService {
       data,
       width: '400px',
       panelClass: 'custom-modal',
+      autoFocus: false,
     });
   }
 
@@ -68,7 +70,7 @@ export class ModalService {
     text: string,
     icon: 'warning' | 'question' = 'question',
     confirmButtonText = 'Sim',
-    cancelButtonText = 'Cancelar'
+    cancelButtonText = 'Cancelar',
   ) {
     return Swal.fire({
       title,
@@ -82,7 +84,11 @@ export class ModalService {
     });
   }
 
-  hideModal(): void {
-    this.dialog.closeAll();
+  hideModal(dialogRef?: MatDialogRef<any>): void {
+    if (dialogRef) {
+      dialogRef.close();
+    } else {
+      this.dialog.closeAll();
+    }
   }
 }

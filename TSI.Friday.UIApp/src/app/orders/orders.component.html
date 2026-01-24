@@ -2,7 +2,7 @@
   title="Pedidos"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Pedidos', link: '' }
+    { label: 'Pedidos', link: '' },
   ]"
 ></app-header>
 
@@ -11,9 +11,9 @@
     [className]="'Pedidos'"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [modalDetails]="modalDetails"
-    [baseEndPoint]="'order'"
+    [baseEndPoint]="baseEndPoint"
     [refresh]="refreshOrders.bind(this)"
     [delete]="deleteOrder.bind(this)"
+    (openModal)="onOpenModal($event)"
   ></app-grid>
 </div>

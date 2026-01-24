@@ -1,15 +1,13 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   ApiService,
   ApiType,
   FormBaseComponent,
-  GridService,
   ModalService,
   WebApiResponse,
   Individual,
   Company,
-  NotificationService,
 } from '@friday/core';
 
 @Component({
@@ -19,6 +17,9 @@ import {
   styleUrl: './client-details-modal.component.scss',
 })
 export class ClientDetailsModalComponent extends FormBaseComponent {
+  @Output()
+  saved = new EventEmitter<void>();
+
   isEdit = false;
   data?: Individual | Company | null = null;
   id: number | null = null;
@@ -28,9 +29,8 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
-    private notificationService: NotificationService,
-    private gridService: GridService,
-    @Inject(MAT_DIALOG_DATA) public dialogData: any
+    public dialogRef: MatDialogRef<ClientDetailsModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     super();
     // Recebe dados do modal
@@ -47,38 +47,36 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
 
     if (this.isEdit && this.id) {
       this.apiService
-        .put<WebApiResponse<Company | Individual>>(
-          `${this._baseEndPoint}/update`,
-          client
-        )
+        .put<
+          WebApiResponse<Company | Individual>
+        >(`${this._baseEndPoint}/update`, client)
         .subscribe((response: WebApiResponse<Company | Individual>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
+          this.saved.emit();
           this.modalService.showSweetNotification(
             '',
             response.message,
-            'success'
+            'success',
           );
-          this.modalService.hideModal();
+          this.modalService.hideModal(this.dialogRef);
         });
     } else {
       this.apiService
-        .post<WebApiResponse<Company | Individual>>(
-          `${this._baseEndPoint}/add`,
-          client
-        )
+        .post<
+          WebApiResponse<Company | Individual>
+        >(`${this._baseEndPoint}/add`, client)
         .subscribe((response: WebApiResponse<Company | Individual>) => {
-          this.gridService.gridDataChanged(response.data, null);
-          this.modalService.hideModal();
+          this.saved.emit();
+          this.modalService.hideModal(this.dialogRef);
           this.modalService.showSweetNotification(
             '',
             response.message,
-            'success'
+            'success',
           );
         });
     }
   }
 
   close(): void {
-    this.modalService.hideModal();
+    this.modalService.hideModal(this.dialogRef);
   }
 }

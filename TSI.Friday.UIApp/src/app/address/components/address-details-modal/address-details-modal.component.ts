@@ -1,10 +1,10 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Inject, Output, EventEmitter } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import {
   ApiService,
   ApiType,
   FormBaseComponent,
-  GridService,
   ModalService,
   WebApiResponse,
   Address,
@@ -18,27 +18,28 @@ import {
   styleUrl: './address-details-modal.component.scss',
 })
 export class AddressDetailsModalComponent extends FormBaseComponent {
-  @Input()
+  @Output() saved = new EventEmitter<void>();
+
   isEdit = false;
-
-  @Input()
   data?: Address | null = null;
-
-  @Input()
   id: number | null = null;
-
-  @Input()
   parentId: number | null = null;
-
   private _baseEndPoint: ApiType = ApiType.Addresses;
 
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
     private notificationService: NotificationService,
-    private gridService: GridService
+    public dialogRef: MatDialogRef<AddressDetailsModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     super();
+    if (dialogData) {
+      this.isEdit = dialogData.isEdit ?? false;
+      this.data = dialogData.data ?? null;
+      this.id = dialogData.id ?? null;
+      this.parentId = dialogData.parentId ?? null;
+    }
   }
 
   save(address: Address): void {
@@ -48,28 +49,28 @@ export class AddressDetailsModalComponent extends FormBaseComponent {
       this.apiService
         .put<WebApiResponse<Address>>(`${this._baseEndPoint}/update`, address)
         .subscribe((response: WebApiResponse<Address>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
-          this.modalService.hideModal();
+          this.saved.emit();
+          this.modalService.hideModal(this.dialogRef);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     } else {
       this.apiService
         .post<WebApiResponse<Address>>(`${this._baseEndPoint}/add`, address)
         .subscribe((response: WebApiResponse<Address>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
-          this.modalService.hideModal();
+          this.saved.emit();
+          this.modalService.hideModal(this.dialogRef);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     }
   }
 
   close(): void {
-    this.modalService.hideModal();
+    this.modalService.hideModal(this.dialogRef);
   }
 }

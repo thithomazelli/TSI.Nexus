@@ -2,7 +2,7 @@
   title="Usuários"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Usuários', link: '' }
+    { label: 'Usuários', link: '' },
   ]"
 ></app-header>
 
@@ -12,8 +12,8 @@
     [className]="'Usuários'"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [modalDetails]="modalDetails"
     [refresh]="refreshUsers.bind(this)"
     [delete]="deleteUser.bind(this)"
+    (openModal)="onOpenModal($event)"
   ></app-grid>
 </div>

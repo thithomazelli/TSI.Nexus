@@ -52,14 +52,6 @@ export class ClientFormComponent
     super();
   }
 
-  // ngAfterViewInit() {
-  //   setTimeout(() => {
-  //     if (this.firstInput?.nativeElement) {
-  //       this.firstInput.nativeElement.focus();
-  //     }
-  //   }, 0);
-  // }
-
   ngOnInit(): void {
     this.initForm();
     this.disableEditFields();
@@ -74,27 +66,6 @@ export class ClientFormComponent
       this.initForm();
       this.disableEditFields();
       this.patchFormWithData();
-    }
-  }
-
-  private disableEditFields(): void {
-    if (this.isEdit && this.form) {
-      this.form.get('type')?.disable();
-      this.form.get('socialSecurityCard')?.disable();
-      this.form.get('nationalRegistry')?.disable();
-    }
-  }
-
-  private patchFormWithData(): void {
-    if (this.data && this.form) {
-      const patch = { ...this.data };
-      if ('birthday' in patch && patch.birthday) {
-        const date = new Date((patch as any).birthday);
-        if (!isNaN(date.getTime())) {
-          (patch as any).birthday = date.toISOString().slice(0, 10);
-        }
-      }
-      this.form.patchValue(patch);
     }
   }
 
@@ -118,7 +89,7 @@ export class ClientFormComponent
         [
           Validators.required,
           Validators.pattern(
-            /^([\w!#$%&'*+\-/=?^`{|}~]+\.)*[\w!#$%&'*+\-/=?^`{|}~]+@((((([a-zA-Z0-9]{1}[a-zA-Z0-9\-]{0,62}[a-zA-Z0-9]{1})|[a-zA-Z])\.)+[a-zA-Z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$/
+            /^([\w!#$%&'*+\-/=?^`{|}~]+\.)*[\w!#$%&'*+\-/=?^`{|}~]+@((((([a-zA-Z0-9]{1}[a-zA-Z0-9\-]{0,62}[a-zA-Z0-9]{1})|[a-zA-Z])\.)+[a-zA-Z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$/,
           ),
         ],
       ],
@@ -128,6 +99,7 @@ export class ClientFormComponent
       socialSecurityCard: ['', this.cpfValidator()],
       nationalRegistry: ['', this.cnpjValidator()],
       birthday: [''],
+      photo: [''],
     };
 
     this.form = !this.isEdit
@@ -144,6 +116,27 @@ export class ClientFormComponent
     });
     // Inicializa validações corretas para o tipo atual
     this.updateFieldValidators(this.form.get('type')?.value, false);
+  }
+
+  private disableEditFields(): void {
+    if (this.isEdit && this.form) {
+      this.form.get('type')?.disable();
+      this.form.get('socialSecurityCard')?.disable();
+      this.form.get('nationalRegistry')?.disable();
+    }
+  }
+
+  private patchFormWithData(): void {
+    if (this.data && this.form) {
+      const patch = { ...this.data };
+      if ('birthday' in patch && patch.birthday) {
+        const date = new Date((patch as any).birthday);
+        if (!isNaN(date.getTime())) {
+          (patch as any).birthday = date.toISOString().slice(0, 10);
+        }
+      }
+      this.form.patchValue(patch);
+    }
   }
 
   private updateFieldValidators(type: string, clearBirthday: boolean): void {

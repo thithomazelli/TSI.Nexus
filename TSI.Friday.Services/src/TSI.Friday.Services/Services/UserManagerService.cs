@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System.Text;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -37,7 +37,8 @@ namespace TSI.Friday.Services
             UserManager<User> userManager,
             IEmailService emailService,
             IConfiguration config,
-            IRepository<User> repository    )
+            IRepository<User> repository
+        )
         {
             _jwtService = jwtService;
             _signInManager = signInManager;
@@ -76,7 +77,9 @@ namespace TSI.Friday.Services
         {
             if (await CheckEmailExistisAsync(model.Email))
             {
-                return BadRequest($"An existing account is using {model.Email}, email address. Please try with another email address");
+                return BadRequest(
+                    $"An existing account is using {model.Email}, email address. Please try with another email address"
+                );
             }
 
             var userToAdd = new User
@@ -101,16 +104,20 @@ namespace TSI.Friday.Services
                     throw new Exception();
                 }
 
-                return Ok(new WebApiResponse<User>
-                {
-                    Data = userToAdd,
-                    Status = ResponseStatus.Success,
-                    Message = "User registered successfully.",
-                });
+                return Ok(
+                    new WebApiResponse<User>
+                    {
+                        Data = userToAdd,
+                        Status = ResponseStatus.Success,
+                        Message = "User registered successfully.",
+                    }
+                );
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return BadRequest($"Failed to send email. Please contact admin. Error: {ex.Message}");
+                return BadRequest(
+                    $"Failed to send email. Please contact admin. Error: {ex.Message}"
+                );
             }
         }
 
@@ -139,11 +146,15 @@ namespace TSI.Friday.Services
 
             if (user.EmailConfirmed)
             {
-                return Ok(new JsonResult(new
-                {
-                    title = "Email is already confirmed",
-                    message = "Your email has been confirmed successfully. You can login now.",
-                }));
+                return Ok(
+                    new JsonResult(
+                        new
+                        {
+                            title = "Email is already confirmed",
+                            message = "Your email has been confirmed successfully. You can login now.",
+                        }
+                    )
+                );
             }
 
             try
@@ -158,18 +169,23 @@ namespace TSI.Friday.Services
                     throw new Exception("Invalid token. Please try again.");
                 }
 
-                return Ok(new JsonResult(new
-                {
-                    title = "Email Confirmed",
-                    message = "Your email has been confirmed successfully. You can login now.",
-                }));
+                return Ok(
+                    new JsonResult(
+                        new
+                        {
+                            title = "Email Confirmed",
+                            message = "Your email has been confirmed successfully. You can login now.",
+                        }
+                    )
+                );
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to confirm email. Please contact admin. Error: {ex.Message}");
+                return BadRequest(
+                    $"Failed to confirm email. Please contact admin. Error: {ex.Message}"
+                );
             }
         }
-
 
         /// <inheritdoc />
         public async Task<IActionResult> ResendEmailConfirmation(string email)
@@ -188,7 +204,9 @@ namespace TSI.Friday.Services
 
             if (user.EmailConfirmed)
             {
-                return BadRequest("Your email address was confirmed before. Please login to your account.");
+                return BadRequest(
+                    "Your email address was confirmed before. Please login to your account."
+                );
             }
 
             try
@@ -198,15 +216,21 @@ namespace TSI.Friday.Services
                     throw new Exception();
                 }
 
-                return Ok(new JsonResult(new
-                {
-                    title = "Confirmation link sent",
-                    message = "Please confirm your email address",
-                }));
+                return Ok(
+                    new JsonResult(
+                        new
+                        {
+                            title = "Confirmation link sent",
+                            message = "Please confirm your email address",
+                        }
+                    )
+                );
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to send email. Please contact admin. Error: {ex.Message}");
+                return BadRequest(
+                    $"Failed to send email. Please contact admin. Error: {ex.Message}"
+                );
             }
         }
 
@@ -237,15 +261,21 @@ namespace TSI.Friday.Services
                     throw new Exception();
                 }
 
-                return Ok(new JsonResult(new
-                {
-                    title = "Forgot username or password email sent",
-                    message = "Please check your email address",
-                }));
+                return Ok(
+                    new JsonResult(
+                        new
+                        {
+                            title = "Forgot username or password email sent",
+                            message = "Please check your email address",
+                        }
+                    )
+                );
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to send email. Please contact admin. Error: {ex.Message}");
+                return BadRequest(
+                    $"Failed to send email. Please contact admin. Error: {ex.Message}"
+                );
             }
         }
 
@@ -269,22 +299,32 @@ namespace TSI.Friday.Services
                 var decodedTokenBytes = WebEncoders.Base64UrlDecode(model.Token);
                 var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
 
-                var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
+                var result = await _userManager.ResetPasswordAsync(
+                    user,
+                    decodedToken,
+                    model.NewPassword
+                );
 
                 if (!result.Succeeded)
                 {
                     throw new Exception("Invalid token. Please try again.");
                 }
 
-                return Ok(new JsonResult(new
-                {
-                    title = "Password reset success",
-                    message = "Your password has been reset successfully.",
-                }));
+                return Ok(
+                    new JsonResult(
+                        new
+                        {
+                            title = "Password reset success",
+                            message = "Your password has been reset successfully.",
+                        }
+                    )
+                );
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to reset password. Please contact admin. Error: {ex.Message}");
+                return BadRequest(
+                    $"Failed to reset password. Please contact admin. Error: {ex.Message}"
+                );
             }
         }
 
@@ -302,8 +342,9 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
-                var userDuplicatedMessage = await _repository
-                    .AnyAsync(_ => _.Id != user.Id && _.Email == user.Email.ToLower());
+                var userDuplicatedMessage = await _repository.AnyAsync(_ =>
+                    _.Id != user.Id && _.Email == user.Email.ToLower()
+                );
 
                 if (userDuplicatedMessage)
                 {
@@ -326,7 +367,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados do Usuário {user.UserName} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar os dados do Usuário {user.UserName} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -348,7 +390,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Usuário {user.UserName} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Usuário {user.UserName} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -368,7 +411,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -383,14 +427,16 @@ namespace TSI.Friday.Services
             {
                 result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Usuário {result.Data.UserName} encontrado com sucesso"
-                    : $"Nenhum Usuário com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Usuário {result.Data.UserName} encontrado com sucesso"
+                        : $"Nenhum Usuário com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -411,6 +457,7 @@ namespace TSI.Friday.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 JWT = _jwtService.CreateJWT(user),
+                Photo = user.Photo,
             };
         }
 
@@ -423,14 +470,16 @@ namespace TSI.Friday.Services
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            var url = $"{_config["JWT:ClientUrl"]}/{_config["Email:ConfirmationEmailPath"]}?token={token}&email={user.Email}";
+            var url =
+                $"{_config["JWT:ClientUrl"]}/{_config["Email:ConfirmationEmailPath"]}?token={token}&email={user.Email}";
 
-            var body = $"<p>Hello {user.FirstName} {user.LastName}</p>" +
-            "<p>Please confirm your email by clicking on the following link.</p>" +
-            $"<p><a href=\"{url}\">Confirm Email</a></p>" +
-            "<p>Thank you</p>" +
-            $"<br>{_config["Email:ApplicationName"]}</p>";
-                
+            var body =
+                $"<p>Hello {user.FirstName} {user.LastName}</p>"
+                + "<p>Please confirm your email by clicking on the following link.</p>"
+                + $"<p><a href=\"{url}\">Confirm Email</a></p>"
+                + "<p>Thank you</p>"
+                + $"<br>{_config["Email:ApplicationName"]}</p>";
+
             var emailSend = new EmailSendDto(user.Email, "Confirm your email", body);
 
             return await _emailService.SendEmailAsync(emailSend);
@@ -440,20 +489,22 @@ namespace TSI.Friday.Services
         {
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            var url = $"{_config["JWT:ClientUrl"]}/{_config["Email:ResetPasswordPath"]}?token={token}&email={user.Email}";
+            var url =
+                $"{_config["JWT:ClientUrl"]}/{_config["Email:ResetPasswordPath"]}?token={token}&email={user.Email}";
 
-            var body = $"<p>Hello {user.FirstName} {user.LastName}</p>" +
-            $"<p>Username: {user.UserName}</p>" +
-            "<p>In order to reset your password, please click on the following link.</p>" +
-            $"<p><a href=\"{url}\">Reset password</a></p>" +
-            "<p>Thank you</p>" +
-            $"<br>{_config["Email:ApplicationName"]}</p>";
+            var body =
+                $"<p>Hello {user.FirstName} {user.LastName}</p>"
+                + $"<p>Username: {user.UserName}</p>"
+                + "<p>In order to reset your password, please click on the following link.</p>"
+                + $"<p><a href=\"{url}\">Reset password</a></p>"
+                + "<p>Thank you</p>"
+                + $"<br>{_config["Email:ApplicationName"]}</p>";
 
             var emailSend = new EmailSendDto(user.Email, "Reset password", body);
 
             return await _emailService.SendEmailAsync(emailSend);
         }
 
-        #endregion 
+        #endregion
     }
 }

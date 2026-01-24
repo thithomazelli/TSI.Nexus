@@ -6,5 +6,5 @@ export interface User {
   firstName: string;
   lastName: string;
   jwt: string;
-  mainPhoto: string;
+  photo: string;
 }

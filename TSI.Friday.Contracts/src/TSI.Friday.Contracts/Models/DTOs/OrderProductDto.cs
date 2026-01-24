@@ -8,6 +8,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal Quantity { get; set; }
 
+        public decimal PreviousQuantity { get; set; }
+
         public decimal Price { get; set; }
 
         public decimal Discount { get; set; }
@@ -16,10 +18,12 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public int OrderId { get; set; }
 
+        public string OrderNumber { get; set; }
+
         public int ProductId { get; set; }
 
         public string ProductName { get; set; }
 
-        public string OrderNumber { get; set; }
+        public string ProductSku { get; set; }
     }
 }

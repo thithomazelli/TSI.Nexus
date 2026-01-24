@@ -6,13 +6,13 @@ namespace TSI.Friday.Contracts.Models
     public abstract class BaseModel
     {
         [DataType(DataType.DateTime)]
-        public DateTime CreateDate { get; set; } = DateTime.UtcNow;
+        public DateTime CreateDate { get; set; }
 
-        public int CreateUserId { get; set; }
+        public string CreateUserId { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime ModifyDate { get; set; } = DateTime.UtcNow;
+        public DateTime ModifyDate { get; set; }
 
-        public int ModifyUserId { get; set; }
+        public string ModifyUserId { get; set; }
     }
 }

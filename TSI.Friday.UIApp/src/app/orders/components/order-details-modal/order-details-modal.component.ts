@@ -1,12 +1,11 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   FormBaseComponent,
   Order,
   ApiService,
   ApiType,
   NotificationService,
-  GridService,
   ModalService,
   WebApiResponse,
 } from '@friday/core';
@@ -18,18 +17,20 @@ import {
   styleUrl: './order-details-modal.component.scss',
 })
 export class OrderDetailsModalComponent extends FormBaseComponent {
+  @Output()
+  saved = new EventEmitter<void>();
+
   isEdit = false;
   data?: Order | null = null;
   id: number | null = null;
-
   private _baseEndPoint: ApiType = ApiType.Orders;
 
   constructor(
     private apiService: ApiService,
     private notificationService: NotificationService,
-    private gridService: GridService,
     private modalService: ModalService,
-    @Inject(MAT_DIALOG_DATA) public dialogData: any
+    public dialogRef: MatDialogRef<OrderDetailsModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     super();
     if (dialogData) {
@@ -44,28 +45,28 @@ export class OrderDetailsModalComponent extends FormBaseComponent {
       this.apiService
         .put<WebApiResponse<Order>>(`${this._baseEndPoint}/update`, order)
         .subscribe((response: WebApiResponse<Order>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
-          this.modalService.hideModal();
+          this.saved.emit();
+          this.modalService.hideModal(this.dialogRef);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     } else {
       this.apiService
         .post<WebApiResponse<Order>>(`${this._baseEndPoint}/add`, order)
         .subscribe((response: WebApiResponse<Order>) => {
-          this.gridService.gridDataChanged(response.data, null);
-          this.modalService.hideModal();
+          this.saved.emit();
+          this.modalService.hideModal(this.dialogRef);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     }
   }
 
   close(): void {
-    this.modalService.hideModal();
+    this.modalService.hideModal(this.dialogRef);
   }
 }

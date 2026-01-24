@@ -10,6 +10,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 export class ConfirmationComponent<T> {
   title: string;
   message: string;
+  cancelButtonText: string;
+  confirmButtonText: string;
   data: T | undefined;
   confirmDelete!: () => void;
 
@@ -21,6 +23,8 @@ export class ConfirmationComponent<T> {
     this.message =
       dialogData.message || 'Tem certeza que deseja excluir este item?';
     this.data = dialogData.data;
+    this.cancelButtonText = dialogData.cancelButtonText || 'Cancelar';
+    this.confirmButtonText = dialogData.confirmButtonText || 'Excluir';
     this.confirmDelete = dialogData.confirmDelete;
   }
 }

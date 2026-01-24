@@ -1,15 +1,18 @@
-<div style="position: relative">
-  <span class="modal-title">{{ title }}</span>
-  <button class="close" (click)="dialogRef.close()">&times;</button>
-</div>
-<div>
-  {{ message }}
-</div>
-<div class="modal-footer">
-  <button class="btn btn-secondary" (click)="dialogRef.close()">
-    Cancelar
-  </button>
-  <button class="btn btn-success" (click)="confirmDelete(); dialogRef.close()">
-    Excluir
-  </button>
+<div class="confirmation-modal-container">
+  <div class="swal2-icon swal2-question swal2-icon-show">
+    <div class="swal2-icon-content">?</div>
+  </div>
+  <div class="confirmation-modal-title">{{ title }}</div>
+  <div class="confirmation-modal-message">{{ message }}</div>
+  <div class="modal-footer">
+    <button
+      class="btn btn-success"
+      (click)="confirmDelete(); dialogRef.close()"
+    >
+      {{ confirmButtonText }}
+    </button>
+    <button class="btn btn-secondary" (click)="dialogRef.close()">
+      {{ cancelButtonText }}
+    </button>
+  </div>
 </div>

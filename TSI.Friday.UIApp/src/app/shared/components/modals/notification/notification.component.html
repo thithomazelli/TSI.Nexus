@@ -1,10 +1,23 @@
-<div style="position: relative">
-  <span class="modal-title">{{ title }}</span>
-  <button class="close" (click)="dialogRef.close()">&times;</button>
-</div>
-<div>
-  {{ message }}
-</div>
-<div class="modal-footer">
-  <button class="btn btn-secondary" (click)="dialogRef.close()">Ok</button>
+<div class="notification-modal">
+  <div class="notification-icon">
+    <ng-container *ngIf="isSuccess; else infoIcon">
+      <div
+        class="swal2-icon swal2-success swal2-icon-show"
+        style="display: flex"
+      >
+        <span class="swal2-success-line-tip"></span>
+        <span class="swal2-success-line-long"></span>
+        <div class="swal2-success-ring"></div>
+      </div>
+    </ng-container>
+    <ng-template #infoIcon>
+      <div class="swal2-icon swal2-info swal2-icon-show" style="display: flex">
+        <div class="swal2-icon-content">i</div>
+      </div>
+    </ng-template>
+  </div>
+
+  <div class="notification-title">{{ title }}</div>
+  <div class="notification-message">{{ message }}</div>
+  <button class="notification-btn" (click)="dialogRef.close()">OK</button>
 </div>

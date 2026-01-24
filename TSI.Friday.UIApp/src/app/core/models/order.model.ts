@@ -1,12 +1,15 @@
 import { OrderStatus } from '../enums/order-status.enum';
+import { OrderProduct } from './order-product.model';
 
 export interface Order {
   id: number;
   orderNumber: string;
+  clientId?: number;
+  clientName?: string;
   status: OrderStatus;
   description?: string;
   discount?: number;
-  clientId?: number;
+  price?: number;
   totalPrice?: number;
-  clientName?: string;
+  orderProducts?: OrderProduct[];
 }

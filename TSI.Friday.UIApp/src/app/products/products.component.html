@@ -2,7 +2,7 @@
   title="Produtos"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Produtos', link: '' }
+    { label: 'Produtos', link: '' },
   ]"
 ></app-header>
 
@@ -12,8 +12,8 @@
     [className]="'Produtos'"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [modalDetails]="modalDetails"
     [refresh]="refreshProducts.bind(this)"
     [delete]="deleteProduct.bind(this)"
+    (openModal)="onOpenModal($event)"
   ></app-grid>
 </div>

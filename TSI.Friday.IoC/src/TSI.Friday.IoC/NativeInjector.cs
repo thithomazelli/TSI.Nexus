@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
+using TSI.Friday.Data.Interceptors;
 using TSI.Friday.Repository;
 using TSI.Friday.Services;
+using TSI.Friday.Services.Services;
 
 namespace TSI.Friday.IoC
 {
@@ -20,6 +22,13 @@ namespace TSI.Friday.IoC
 
             #endregion
 
+            #region Singleton Services
+
+            services.AddSingleton<ICurrentUserService, CurrentUserService>();
+            services.AddSingleton<AuditingSaveChangesInterceptor>();
+
+            #endregion Singleton Services
+
             #region Services
 
             services.AddScoped<IAddressService, AddressService>();
@@ -31,9 +40,11 @@ namespace TSI.Friday.IoC
             services.AddScoped<IOrderProductService, OrderProductService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IProductPhotoService, ProductPhotoService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IUserManagerService, UserManagerService>();
+            services.AddScoped<ISequenceService, SequenceService>();
 
             #endregion Services
 
@@ -49,6 +60,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<Product>, Repository<Product>>();
             services.AddScoped<IRepository<ProductPhoto>, Repository<ProductPhoto>>();
             services.AddScoped<IRepository<User>, Repository<User>>();
+            services.AddScoped<IRepository<Sequence>, Repository<Sequence>>();
 
             #endregion Repositories
         }

@@ -14,6 +14,8 @@
 
         public string LastName { get; set; }
 
-        public string JWT { get; set; } 
+        public string JWT { get; set; }
+
+        public string Photo { get; set; }
     }
 }

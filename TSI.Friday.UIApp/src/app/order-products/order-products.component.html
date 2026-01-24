@@ -1,0 +1,12 @@
+<div class="app-content">
+  <app-grid
+    [className]="'Produtos do Pedido'"
+    [compactView]="true"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [baseEndPoint]="baseEndPoint"
+    [refresh]="refreshOrderProducts.bind(this)"
+    [delete]="deleteOrderProduct.bind(this)"
+    (openModal)="onOpenModal($event)"
+  ></app-grid>
+</div>

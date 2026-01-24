@@ -54,7 +54,7 @@ export class AddressFormComponent
   constructor(
     private formBuilder: FormBuilder,
     private http: HttpClient,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {
     super();
   }
@@ -74,6 +74,30 @@ export class AddressFormComponent
         this.form.get('clientId')?.disable();
       }
     }
+  }
+
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.save.emit(this.form.getRawValue() as Address);
+  }
+
+  doCancel(): void {
+    this.cancel.emit();
+  }
+
+  trackByEstadoId(
+    index: number,
+    estado: { id?: number; sigla: string; nome: string },
+  ) {
+    // Fallback para índice se id não existir
+    return estado.id != null ? estado.id : index;
+  }
+
+  trackByCidadeId(index: number, cidade: { id?: number; nome: string }) {
+    return cidade.id != null ? cidade.id : index;
   }
 
   private initForm(): void {
@@ -115,11 +139,17 @@ export class AddressFormComponent
           const estado = this.estados.find((e) => e.sigla === patch.state);
           if (estado) {
             this.http
-              .get<any[]>(
-                `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`
-              )
+              .get<
+                any[]
+              >(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`)
               .subscribe((cidades) => {
-                this.cidades = cidades || [];
+                // Remove duplicados pelo id
+                const uniqueCidades = (cidades || []).filter(
+                  (cidade: any, index: number, self: any[]) =>
+                    cidade.id != null &&
+                    index === self.findIndex((e) => e.id === cidade.id),
+                );
+                this.cidades = uniqueCidades;
                 const normalize = (str: string) =>
                   str
                     .normalize('NFD')
@@ -129,7 +159,7 @@ export class AddressFormComponent
                 const cityValue = patch.city ?? '';
                 // Busca cidade ignorando acentos e caixa
                 const cidadeMatch = this.cidades.find(
-                  (c) => normalize(c.nome) === normalize(cityValue)
+                  (c) => normalize(c.nome) === normalize(cityValue),
                 );
                 if (cidadeMatch) {
                   cidadeFinal = cidadeMatch.nome;
@@ -148,9 +178,9 @@ export class AddressFormComponent
       } else {
         // Aguarda estados serem carregados
         const estadosSub = this.http
-          .get<any[]>(
-            'https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome'
-          )
+          .get<
+            any[]
+          >('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
           .subscribe((estados) => {
             this.estados = estados;
             patchAndLoadCities();
@@ -182,12 +212,17 @@ export class AddressFormComponent
             return of([]);
           }
           return this.http.get<any[]>(
-            `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`
+            `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`,
           );
-        })
+        }),
       )
       .subscribe((cidades) => {
-        this.cidades = cidades || [];
+        // Remove duplicados pelo id
+        const uniqueCidades = (cidades || []).filter(
+          (cidade: any, index: number, self: any[]) =>
+            index === self.findIndex((e) => e.id === cidade.id),
+        );
+        this.cidades = uniqueCidades;
         let cidadeFinal = '';
         const cityControl = this.form.get('city');
         const normalize = (str: string) =>
@@ -199,7 +234,7 @@ export class AddressFormComponent
         if (
           cityControl?.value &&
           this.cidades.some(
-            (c) => normalize(c.nome) === normalize(cityControl.value)
+            (c) => normalize(c.nome) === normalize(cityControl.value),
           )
         ) {
           cidadeFinal = cityControl.value;
@@ -213,17 +248,22 @@ export class AddressFormComponent
       });
   }
 
-  getEstados() {
+  private getEstados() {
     this.http
-      .get<any[]>(
-        'https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome'
-      )
+      .get<
+        any[]
+      >('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
       .subscribe((estados) => {
-        this.estados = estados;
+        // Remove duplicados pelo id
+        const uniqueEstados = estados.filter(
+          (estado: any, index: number, self: any[]) =>
+            index === self.findIndex((e) => e.id === estado.id),
+        );
+        this.estados = uniqueEstados;
       });
   }
 
-  buscarEnderecoPorCep(cep: string) {
+  private buscarEnderecoPorCep(cep: string) {
     const cepLimpo = cep.replace(/\D/g, '');
     if (cepLimpo.length !== 8) return;
     this.loadingCep = true;
@@ -245,7 +285,7 @@ export class AddressFormComponent
             let cidadeFinal = '';
             if (res.localidade && this.cidades.length > 0) {
               const cidadeMatch = this.cidades.find(
-                (c) => normalize(c.nome) === normalize(res.localidade)
+                (c) => normalize(c.nome) === normalize(res.localidade),
               );
               if (cidadeMatch) cidadeFinal = cidadeMatch.nome;
             }
@@ -259,31 +299,19 @@ export class AddressFormComponent
         } else {
           this.notificationService.showMessage(
             ResponseStatus.Error,
-            'CEP não encontrado: O CEP informado não foi localizado.'
+            'CEP não encontrado: O CEP informado não foi localizado.',
           );
         }
       },
       error: () => {
         this.notificationService.showMessage(
           ResponseStatus.Error,
-          'Erro ao buscar CEP: Não foi possível consultar o CEP.'
+          'Erro ao buscar CEP: Não foi possível consultar o CEP.',
         );
       },
       complete: () => {
         this.loadingCep = false;
       },
     });
-  }
-
-  submit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-    this.save.emit(this.form.getRawValue() as Address);
-  }
-
-  doCancel(): void {
-    this.cancel.emit();
   }
 }

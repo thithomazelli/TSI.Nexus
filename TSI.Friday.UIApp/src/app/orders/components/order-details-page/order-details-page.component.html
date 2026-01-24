@@ -3,7 +3,7 @@
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
     { label: 'Pedidos', link: '/orders' },
-    { label: isEdit ? 'Editar Pedido' : 'Adicionar Pedido', link: '' }
+    { label: isEdit ? 'Editar Pedido' : 'Adicionar Pedido', link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -39,16 +39,53 @@
       </div>
       <!-- /.col -->
       <div class="col-md-9">
-        <div class="card card card-secondary card-outline">
+        <div class="card card-secondary card-outline">
           <div class="card-body">
-            <app-order-form
-              [isEdit]="isEdit"
-              [data]="data"
-              (save)="onSave($event)"
-              (cancel)="onCancel()"
-              [compact]="false"
-              [errors]="errorMessages"
-            ></app-order-form>
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'resumo'"
+                  (click)="activeTab = 'resumo'"
+                  >Resumo</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'produtos'"
+                  (click)="activeTab = 'produtos'"
+                  >Produtos</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'pagamentos'"
+                  (click)="activeTab = 'pagamentos'"
+                  >Pagamentos</a
+                >
+              </li>
+            </ul>
+            <div *ngIf="activeTab === 'resumo'">
+              <app-order-form
+                [isEdit]="isEdit"
+                [data]="data"
+                (save)="onSave($event)"
+                (cancel)="onCancel()"
+                [compact]="false"
+                [errors]="errorMessages"
+              ></app-order-form>
+            </div>
+            <div *ngIf="activeTab === 'produtos'">
+              <app-order-products
+                [parentOrderId]="data?.id"
+                (orderProductsUpdated)="onOrderProductsUpdated()"
+              ></app-order-products>
+            </div>
+            <div *ngIf="activeTab === 'pagamentos'">
+              <p>Pagamentos do pedido vão aqui.</p>
+            </div>
           </div>
         </div>
       </div>

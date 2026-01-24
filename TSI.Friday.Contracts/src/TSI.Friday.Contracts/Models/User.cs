@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace TSI.Friday.Contracts.Models
 {
@@ -11,5 +11,7 @@ namespace TSI.Friday.Contracts.Models
 
         [Required]
         public string LastName { get; set; }
+
+        public string Photo { get; set; }
     }
 }

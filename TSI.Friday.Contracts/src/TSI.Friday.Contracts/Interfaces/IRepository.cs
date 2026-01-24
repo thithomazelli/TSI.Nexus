@@ -38,6 +38,13 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<IList<T>> GetAllAsync();
 
         /// <summary>
+        /// This function will be not receive parameter and should be returns all registers found in this entity.
+        /// </summary>
+        /// <param name="includes">The objects to be included in the search.</param>
+        /// <returns>Returns all registers found in this entity.</returns>
+        Task<IList<T>> GetAllAsync(params Expression<Func<T, object>>[] includes);
+
+        /// <summary>
         /// This function will be receive the "ID" as parameter and should be returns the object found.
         /// </summary>
         /// <param name="id">The ID value to be used on the search.</param>

@@ -2,7 +2,7 @@
   title="Dashboard"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Dashboard', link: '' }
+    { label: 'Dashboard', link: '' },
   ]"
 ></app-header>
 
@@ -18,7 +18,7 @@
         <div class="small-box text-bg-primary">
           <div class="inner">
             <h3>150</h3>
-            <p>New Orders</p>
+            <p>Novos Pedidos</p>
           </div>
           <svg
             class="small-box-icon"
@@ -45,8 +45,8 @@
         <!--begin::Small Box Widget 2-->
         <div class="small-box text-bg-success">
           <div class="inner">
-            <h3>53<sup class="fs-5">%</sup></h3>
-            <p>Bounce Rate</p>
+            <h3>56<sup class="fs-5">%</sup></h3>
+            <p>Recebidos</p>
           </div>
           <svg
             class="small-box-icon"
@@ -73,8 +73,8 @@
         <!--begin::Small Box Widget 3-->
         <div class="small-box text-bg-warning">
           <div class="inner">
-            <h3>44</h3>
-            <p>User Registrations</p>
+            <h3>44%</h3>
+            <p>Aguardando Pagamento</p>
           </div>
           <svg
             class="small-box-icon"
@@ -102,7 +102,7 @@
         <div class="small-box text-bg-danger">
           <div class="inner">
             <h3>65</h3>
-            <p>Unique Visitors</p>
+            <p>Pedidos em atraso</p>
           </div>
           <svg
             class="small-box-icon"
@@ -137,10 +137,10 @@
     <!--begin::Row-->
     <div class="row">
       <!-- Start col -->
-      <div class="col-lg-7 connectedSortable">
+      <div class="col-lg-12 connectedSortable">
         <div class="card mb-4">
           <div class="card-header">
-            <h3 class="card-title">Sales Value</h3>
+            <h3 class="card-title">Painel de Vendas</h3>
           </div>
           <div class="card-body"><div id="revenue-chart"></div></div>
         </div>
@@ -434,10 +434,10 @@
       </div>
       <!-- /.Start col -->
       <!-- Start col -->
-      <div class="col-lg-5 connectedSortable">
+      <div class="col-lg-5 connectedSortable" hidden>
         <div class="card text-white bg-primary bg-gradient border-primary mb-4">
           <div class="card-header border-0">
-            <h3 class="card-title">Sales Value</h3>
+            <h3 class="card-title">Painel de Vendas</h3>
             <div class="card-tools">
               <button
                 type="button"

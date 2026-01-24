@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace TSI.Friday.Contracts.Interfaces
 {
@@ -10,6 +9,6 @@ namespace TSI.Friday.Contracts.Interfaces
         /// Saves the uploaded file and, if id provided, updates the entity's mainPhoto.
         /// Returns the stored filename/path to be returned to the client.
         /// </summary>
-        Task<string> UploadImageAsync(IFormFile file, string entityFolder, int? id = null, CancellationToken ct = default);
+        Task<string> UploadImageAsync(string entityFolder, string entityId, IFormFile file);
     }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   ApiService,
   ApiType,
@@ -19,9 +19,6 @@ import { AddressDetailsModalComponent } from './components/address-details-modal
 export class AddressComponent {
   @Input()
   parentData?: Client | null = null;
-
-  @Output()
-  addressUpdated = new EventEmitter<number>();
 
   private _baseEndPoint = ApiType.Addresses;
 
@@ -129,11 +126,9 @@ export class AddressComponent {
     },
   ];
 
-  modalDetails = AddressDetailsModalComponent;
-
   constructor(
     private apiService: ApiService,
-    private modalService: ModalService
+    private modalService: ModalService,
   ) {}
 
   ngOnInit(): void {
@@ -149,7 +144,7 @@ export class AddressComponent {
       this.modalService.showSweetNotification(
         '',
         'Não é possível excluir o endereço padrão.',
-        'warning'
+        'warning',
       );
       return;
     }
@@ -157,12 +152,12 @@ export class AddressComponent {
     this.apiService
       .delete<WebApiResponse<Address>>(`${this._baseEndPoint}/remove`, address)
       .subscribe((response: WebApiResponse<Address>) => {
-        this.getAddresses();
+        this.rowData = this.rowData.filter((p) => p.id !== address.id);
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
           response.message,
-          'success'
+          'success',
         );
       });
   }
@@ -176,17 +171,30 @@ export class AddressComponent {
         this.modalService.showSweetNotification(
           '',
           'Endereço padrão atualizado com sucesso.',
-          'success'
+          'success',
         );
         this.refreshAddresses();
       });
   }
 
+  onOpenModal(initialState: any) {
+    const ref = this.modalService.showTemplateModal(
+      AddressDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe(() => {
+        this.refreshAddresses();
+        ref.close();
+      });
+    }
+  }
+
   private getAddresses(): void {
     this.apiService
-      .get<WebApiResponse<Address[]>>(
-        `${this._baseEndPoint}/getAllByClientId/${this.parentData?.id}`
-      )
+      .get<
+        WebApiResponse<Address[]>
+      >(`${this._baseEndPoint}/getAllByClientId/${this.parentData?.id}`)
       .subscribe((response: WebApiResponse<Address[]>) => {
         this.rowData = response.data ?? [];
       });

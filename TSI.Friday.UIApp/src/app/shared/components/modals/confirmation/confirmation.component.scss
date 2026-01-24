@@ -1,0 +1,54 @@
+.confirmation-modal-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 32px 24px 32px;
+  background: #fff;
+  border-radius: 12px;
+  min-width: 350px;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.swal2-icon-show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swal2-icon-content {
+  animation: swal2-animate-question-mark 0.8s;
+}
+
+.confirmation-modal-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.confirmation-modal-message {
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 0;
+}
+
+.btn-success {
+  min-width: 100px;
+}
+
+.btn-secondary {
+  min-width: 100px;
+}
+
+.close {
+  display: none;
+}

@@ -125,11 +125,9 @@ export class ProductsComponent implements OnInit {
     },
   ];
 
-  modalDetails = ProductDetailsModalComponent;
-
   constructor(
     private apiService: ApiService,
-    private modalService: ModalService
+    private modalService: ModalService,
   ) {}
 
   ngOnInit(): void {
@@ -145,14 +143,26 @@ export class ProductsComponent implements OnInit {
       .delete<WebApiResponse<Product>>(`${this.baseEndPoint}/remove`, product)
       .subscribe((response: WebApiResponse<Product>) => {
         this.rowData = this.rowData.filter((p) => p.id !== product.id);
-
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           'Produto excluído',
           response.message,
-          'success'
+          'success',
         );
       });
+  }
+
+  onOpenModal(initialState: any) {
+    const ref = this.modalService.showTemplateModal(
+      ProductDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe(() => {
+        this.getProducts();
+        ref.close();
+      });
+    }
   }
 
   private getProducts(): void {

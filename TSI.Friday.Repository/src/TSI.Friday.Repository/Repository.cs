@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1;
-using System.Linq.Expressions;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Data;
 
 namespace TSI.Friday.Repository
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<T> : IRepository<T>
+        where T : class
     {
         #region Properties
 
@@ -30,14 +31,8 @@ namespace TSI.Friday.Repository
         }
 
         /// <inheritdoc />
-        public async Task AddAsync(T entity) 
+        public async Task AddAsync(T entity)
         {
-            if (entity is BaseModel baseModel)
-            {
-                baseModel.CreateUserId = 0;
-                baseModel.ModifyUserId = 0;
-            }
-
             await _myDbContext.Set<T>().AddAsync(entity);
             await SaveChangesAsync();
         }
@@ -45,12 +40,6 @@ namespace TSI.Friday.Repository
         /// <inheritdoc />
         public async Task UpdateAsync(T entity)
         {
-            if (entity is BaseModel baseModel)
-            {
-                baseModel.ModifyUserId = 0;
-                baseModel.ModifyDate = DateTime.Now;
-            }
-
             _myDbContext.Entry(entity).State = EntityState.Modified;
             await SaveChangesAsync();
         }
@@ -87,12 +76,14 @@ namespace TSI.Friday.Repository
             if (includes != null)
             {
                 foreach (var include in includes)
-                { 
-                    query = query.Include(include); 
+                {
+                    query = query.Include(include);
                 }
             }
 
-            var entity = await query.SingleOrDefaultAsync(e => EF.Property<object>(e, "Id").Equals(id));
+            var entity = await query.SingleOrDefaultAsync(e =>
+                EF.Property<object>(e, "Id").Equals(id)
+            );
 
             return entity ?? throw new KeyNotFoundException($"Entity '{id}' not found.");
         }
@@ -126,11 +117,14 @@ namespace TSI.Friday.Repository
         }
 
         /// <inheritdoc />
-        public async Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes)
+        public async Task<IList<T>> QueryAsync(
+            Expression<Func<T, bool>> filter,
+            params Expression<Func<T, object>>[] includes
+        )
         {
             IQueryable<T> query = _myDbContext.Set<T>().Where(filter);
 
-            if (includes != null && includes.Length >0)
+            if (includes != null && includes.Length > 0)
             {
                 foreach (var include in includes)
                 {
@@ -147,6 +141,22 @@ namespace TSI.Friday.Repository
         public async Task<IList<T>> GetAllAsync()
         {
             return await _myDbContext.Set<T>().ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IList<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _myDbContext.Set<T>().AsQueryable();
+
+            if (includes != null && includes.Length > 0)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.ToListAsync();
         }
 
         #endregion Public methods

@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import {
   ApiService,
-  Client,
+  ApiType,
   ModalService,
   Order,
+  OrderStatus,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -20,8 +21,7 @@ import { OrderDetailsModalComponent } from './components/order-details-modal/ord
   styleUrl: './orders.component.scss',
 })
 export class OrdersComponent {
-  private _baseEndPoint = 'order';
-
+  baseEndPoint = ApiType.Orders;
   rowData: Order[] = [];
   columnDefs: ColDef[] = [
     {
@@ -33,12 +33,12 @@ export class OrdersComponent {
       hide: true,
     },
     {
-      field: 'sku',
-      headerName: 'SKU',
+      field: 'orderNumber',
+      headerName: 'Order Number',
       sortable: true,
       filter: true,
-      // width: 90,
-      resizable: false,
+      width: 150,
+      resizable: true,
       // minWidth: 150,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
@@ -47,12 +47,11 @@ export class OrdersComponent {
       },
     },
     {
-      field: 'name',
-      headerName: 'Name',
+      field: 'clientName',
+      headerName: 'Client Name',
       sortable: true,
       filter: true,
       flex: 1,
-      // minWidth: 150,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         // href="#" prevents full page reload; onCellClicked handles navigation
@@ -65,15 +64,14 @@ export class OrdersComponent {
       sortable: true,
       filter: true,
       flex: 2,
-      // minWidth: 1500,
-      hide: true,
+      width: 200,
     },
     {
-      field: 'price',
-      headerName: 'Price',
+      field: 'totalPrice',
+      headerName: 'Total Price',
       sortable: true,
       filter: true,
-      // maxWidth: 120,
+      width: 120,
       cellClass: 'text-start',
       valueFormatter: (params: ValueFormatterParams): string => {
         const v = params.value;
@@ -87,18 +85,29 @@ export class OrdersComponent {
       },
     },
     {
-      field: 'unit',
-      headerName: 'Unit',
+      field: 'status',
+      headerName: 'Status',
       sortable: true,
       filter: true,
-      maxWidth: 120,
-    },
-    {
-      field: 'quantityInStock',
-      headerName: 'Quantity',
-      sortable: true,
-      filter: true,
-      maxWidth: 120,
+      flex: 2,
+      width: 80,
+      cellRenderer: (params: ICellRendererParams) => {
+        const value = params.value;
+        let color = 'secondary';
+        // Importar OrderStatus corretamente no topo do arquivo se necessário
+        let label = value;
+        if (value === 'Closed') {
+          color = 'success';
+          label = 'Fechado';
+        } else if (value === 'Open') {
+          color = 'info';
+          label = 'Em Aberto';
+        } else if (value === 'WaitingPayment' || value === 'Waiting payment') {
+          color = 'warning';
+          label = 'Aguardando Pagamento';
+        }
+        return `<span class="badge bg-${color}">${label}</span>`;
+      },
     },
     {
       headerName: '',
@@ -126,11 +135,9 @@ export class OrdersComponent {
     },
   ];
 
-  modalDetails = OrderDetailsModalComponent;
-
   constructor(
     private apiService: ApiService,
-    private modalService: ModalService
+    private modalService: ModalService,
   ) {}
 
   ngOnInit(): void {
@@ -143,21 +150,34 @@ export class OrdersComponent {
 
   deleteOrder(order: Order): void {
     this.apiService
-      .delete<WebApiResponse<Order>>(`${this._baseEndPoint}/remove`, order)
+      .delete<WebApiResponse<Order>>(`${this.baseEndPoint}/remove`, order)
       .subscribe((response: WebApiResponse<Order>) => {
         this.rowData = this.rowData.filter((p) => p.id !== order.id);
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           'Ordem excluída',
           response.message,
-          'success'
+          'success',
         );
       });
   }
 
+  onOpenModal(initialState: any) {
+    const ref = this.modalService.showTemplateModal(
+      OrderDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe(() => {
+        this.getOrders();
+        ref.close();
+      });
+    }
+  }
+
   private getOrders(): void {
     this.apiService
-      .get<WebApiResponse<Order[]>>(`${this._baseEndPoint}/getAll`)
+      .get<WebApiResponse<Order[]>>(`${this.baseEndPoint}/getAll`)
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
       });

@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   ApiService,
   ApiType,
-  GridService,
   NotificationService,
   User,
   WebApiResponse,
@@ -28,8 +27,7 @@ export class UserDetailsPageComponent {
     private activatedRoute: ActivatedRoute,
     private apiService: ApiService,
     private routerService: Router,
-    private gridService: GridService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -50,19 +48,17 @@ export class UserDetailsPageComponent {
       this.apiService
         .put<WebApiResponse<User>>(`${this._baseEndPoint}/update`, User)
         .subscribe((response: WebApiResponse<User>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     } else {
       this.apiService
         .post<WebApiResponse<User>>(`${this._baseEndPoint}/add`, User)
         .subscribe((response: WebApiResponse<User>) => {
-          this.gridService.gridDataChanged(response.data, null);
           this.routerService.navigateByUrl(
-            `/${this._baseEndPoint}/${response.data.id}`
+            `/${this._baseEndPoint}/${response.data.id}`,
           );
         });
     }

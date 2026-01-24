@@ -1,13 +1,14 @@
 import { AG_GRID_LOCALE_BR } from '@ag-grid-community/locale';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiType, GridService, ModalService, Product } from '@friday/core';
+import { ApiType, ModalService } from '@friday/core';
 import {
   CellClickedEvent,
   ColDef,
   GridApi,
   GridReadyEvent,
 } from 'ag-grid-community';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-grid',
@@ -32,9 +33,6 @@ export class GridComponent<T> implements OnInit {
   columnDefs: ColDef[] = [];
 
   @Input()
-  modalDetails!: any;
-
-  @Input()
   refresh!: () => void;
 
   @Input()
@@ -42,6 +40,8 @@ export class GridComponent<T> implements OnInit {
 
   @Input()
   update!: (data: T) => void;
+
+  @Output() openModal = new EventEmitter<any>();
 
   gridStyle: string = '';
   gridApi!: GridApi;
@@ -67,29 +67,19 @@ export class GridComponent<T> implements OnInit {
     update: this.updateAction.bind(this),
   };
   constructor(
-    private gridService: GridService,
     private modalService: ModalService,
     private routerService: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
-    this.gridService.gridDataObservable().subscribe((response) => {
-      if (!response) {
-        return;
-      }
-
-      if (response.id === null) {
-        this.addData(response.data);
-      } else {
-        this.editData(response.data);
-      }
-    });
-
     this.gridStyle = this.compactView ? 'compact-view' : 'regular-view';
 
-    this._parentId =
-      Number(this.activatedRoute.snapshot.paramMap.get('id')) ?? null;
+    this.activatedRoute.paramMap
+      .pipe(map((params) => params.get('id')))
+      .subscribe((id) => {
+        this._parentId = id ? Number(id) : null;
+      });
   }
 
   onGridReady(params: GridReadyEvent): void {
@@ -121,7 +111,7 @@ export class GridComponent<T> implements OnInit {
       id: null,
       parentId: this._parentId,
     };
-    this.modalService.showTemplateModal(this.modalDetails, initialState);
+    this.openModal.emit(initialState);
   }
 
   private editAction(data: any): void {
@@ -131,7 +121,7 @@ export class GridComponent<T> implements OnInit {
       id: data.id,
       parentId: this._parentId,
     };
-    this.modalService.showTemplateModal(this.modalDetails, initialState);
+    this.openModal.emit(initialState);
   }
 
   private viewAction(data: any): void {
@@ -147,7 +137,7 @@ export class GridComponent<T> implements OnInit {
       .showSweetConfirmation(
         '',
         'Deseja realmente excluir este item?',
-        'question'
+        'question',
       )
       .then((result: any) => {
         if (result.isConfirmed) {
@@ -158,16 +148,6 @@ export class GridComponent<T> implements OnInit {
 
   private updateAction(data: any): void {
     this.update(data);
-  }
-
-  private addData(data: T): void {
-    this.rowData = [...this.rowData, data];
-  }
-
-  private editData(data: any): void {
-    this.rowData = this.rowData.map((item: any) =>
-      item.id === data.id ? data : item
-    );
   }
 
   private confirmDelete(data: T): void {

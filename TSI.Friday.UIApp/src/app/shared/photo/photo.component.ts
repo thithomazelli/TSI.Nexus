@@ -3,22 +3,19 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Inject,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
+  Optional,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import {
-  ApiService,
-  Client,
-  ModalService,
-  PhotoType,
-  Product,
-  User,
-  WebApiResponse,
-} from '@friday/core';
-import { MatDialog } from '@angular/material/dialog';
+import { ApiService, ApiType, ModalService } from '@friday/core';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { environment } from '../../../environments/environment.development';
 
 @Component({
   selector: 'app-photo',
@@ -26,21 +23,15 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrls: ['./photo.component.scss'],
   standalone: false,
 })
-export class PhotoComponent implements OnInit, OnDestroy {
+export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   @Input()
-  baseEndPoint: string = '';
+  baseEndPoint: ApiType = ApiType.Photos;
 
   @Input()
-  data: Client | Product | User | null = null;
+  data: any;
 
   @Input()
-  imageUrl?: string | null = null;
-
-  @Input()
-  entityClass = 'produto';
-
-  @Input()
-  filenamePrefix?: string;
+  imageUrl?: string | null = null; // Mantém para compatibilidade, mas preview usa previewDataUrl
 
   @Input()
   placeholderIcon = true;
@@ -51,11 +42,14 @@ export class PhotoComponent implements OnInit, OnDestroy {
   @Input()
   isEdit = false;
 
-  @Output()
-  imageChange = new EventEmitter<File | null>();
+  @Input()
+  entityClass: string = '';
 
   @Output()
-  imageSaved = new EventEmitter<{ file: File; filename: string }>();
+  imageChange = new EventEmitter<{ fileName: string }>();
+
+  pendingFile: File | null = null;
+  previewDataUrl: string | null = null;
 
   @ViewChild('fileInput')
   fileInput!: ElementRef<HTMLInputElement>;
@@ -66,7 +60,6 @@ export class PhotoComponent implements OnInit, OnDestroy {
   @ViewChild('canvasEl')
   canvasEl!: ElementRef<HTMLCanvasElement>;
 
-  previewDataUrl?: string | null = null;
   cameraActive = false;
   private mediaStream?: MediaStream;
   private lastObjectUrl?: string;
@@ -75,16 +68,44 @@ export class PhotoComponent implements OnInit, OnDestroy {
     private cd: ChangeDetectorRef,
     private modalService: ModalService,
     private apiService: ApiService,
-    private dialog: MatDialog
-  ) {}
+    @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any,
+  ) {
+    if (dialogData) {
+      this.isEdit = dialogData.isEdit ?? false;
+      this.isModal = dialogData.isModal ?? false;
+      this.imageUrl = dialogData.imageUrl;
+      this.entityClass = dialogData.entityClass ?? '';
+      this.data = dialogData.data ?? null;
+    }
+  }
 
   ngOnInit(): void {
-    this.previewDataUrl = this.imageUrl ?? null;
+    this.previewDataUrl = this.getPhotoUrl();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['imageUrl'] && this.data && this.data.photo) {
+      this.previewDataUrl = this.getPhotoUrl();
+      this.imageChange.emit({ fileName: this.data.photo });
+    }
   }
 
   ngOnDestroy(): void {
     this.stopCamera();
     this.revokeLastObjectUrl();
+  }
+
+  getPhotoUrl(): string {
+    const apiBase = environment.appUrl; // ajuste conforme seu ambiente
+    if (this.data && this.data.photo && this.entityClass) {
+      return `${apiBase}/uploads/${this.entityClass}/${this.data.photo}`;
+    }
+    return 'assets/img/no_image.png';
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/img/no_image.png';
   }
 
   triggerFile(): void {
@@ -103,7 +124,6 @@ export class PhotoComponent implements OnInit, OnDestroy {
 
       // enable video placeholder in template so ViewChild is created
       this.cameraActive = true;
-      this.previewDataUrl = null;
       this.cd.detectChanges(); // make Angular render the video element
       await Promise.resolve(); // allow microtask tick so ViewChild binds
 
@@ -141,21 +161,12 @@ export class PhotoComponent implements OnInit, OnDestroy {
   onFileSelected(ev: Event): void {
     const input = ev.target as HTMLInputElement;
     const file = input.files && input.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) return;
-
+    if (!file || !file.type.startsWith('image/')) return;
     this.revokeLastObjectUrl();
     const reader = new FileReader();
     reader.onload = () => {
       this.previewDataUrl = String(reader.result);
-      const ext = '.' + this.getExtFromMime(file.type);
-      const suggested = this.buildFilename(ext);
-
-      if (this.baseEndPoint && this.data) {
-        this.uploadAndUpdate(file, suggested);
-      } else {
-        this.emitFile(file, suggested);
-      }
+      this.pendingFile = file;
     };
     reader.readAsDataURL(file);
     input.value = '';
@@ -175,34 +186,19 @@ export class PhotoComponent implements OnInit, OnDestroy {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, w, h);
-    // Use data URL for immediate preview, and still create a blob to emit the file
     try {
       const dataUrl = canvas.toDataURL('image/png');
-
-      // revoke previous object URL to avoid leaks
       this.revokeLastObjectUrl();
       this.previewDataUrl = dataUrl;
-
-      // emit a blob/file asynchronously
       canvas.toBlob((blob) => {
         if (!blob) return;
         const ext = blob.type.split('/').pop() ?? 'png';
-        const baseName = this.filenamePrefix
-          ? `${this.filenamePrefix}_${Date.now()}`
-          : `img_${Date.now()}`;
-        const suggested = `${this.entityClass}/${baseName}.${ext}`;
-        const file = new File([blob], baseName + '.' + ext, {
+        const fileName = `${this.data?.id}.${ext}`;
+        const file = new File([blob], fileName, {
           type: blob.type,
         });
-
-        if (this.baseEndPoint && this.data) {
-          this.uploadAndUpdate(file, suggested);
-        } else {
-          this.emitFile(file, suggested);
-        }
+        this.pendingFile = file;
       }, 'image/png');
-
-      // ensure view updates immediately and stop camera so preview is visible
       this.cd.detectChanges();
       this.stopCamera();
     } catch (err) {
@@ -211,10 +207,50 @@ export class PhotoComponent implements OnInit, OnDestroy {
     }
   }
 
+  savePhoto(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
+
+    if (
+      !this.pendingFile ||
+      !this.baseEndPoint ||
+      !this.data?.id ||
+      !this.entityClass
+    ) {
+      return;
+    }
+    const ext = this.pendingFile.type.split('/').pop() ?? 'png';
+    const fileName = `${this.data.id}.${ext}`;
+    const fd = new FormData();
+    fd.append('entity', this.entityClass); // 'clients', 'users', 'products'
+    fd.append('entityId', String(this.data.id));
+    fd.append('file', this.pendingFile, fileName);
+    this.apiService
+      .post<any>(`${this.baseEndPoint}/uploadPhoto`, fd)
+      .subscribe((response) => {
+        // fallback para fileName local caso a API não retorne
+        const fileName =
+          response?.fileName ||
+          (this.pendingFile ? this.pendingFile.name : undefined);
+        this.data.photo = fileName;
+        this.imageChange.emit({ fileName });
+        this.previewDataUrl = this.getPhotoUrl();
+        this.imageUrl = this.previewDataUrl;
+        this.pendingFile = null;
+        this.close({ fileName });
+        this.modalService.showSweetNotification(
+          'Foto atualizada',
+          'Upload realizado com sucesso!',
+          'success',
+        );
+      });
+  }
+
   removePhoto(): void {
     this.previewDataUrl = null;
-    this.imageChange.emit(null);
-    this.imageSaved.emit({ file: null as any, filename: '' });
+    this.pendingFile = null;
+    this.imageChange.emit({ fileName: '' });
     this.revokeLastObjectUrl();
 
     // update backend mainPhoto if context provided
@@ -222,27 +258,9 @@ export class PhotoComponent implements OnInit, OnDestroy {
       try {
         (this.data as any).mainPhoto = '';
       } catch {}
-      this.updateMainPhotoAndNotify('');
     }
 
     this.stopCamera();
-  }
-
-  private emitFile(file: File, filename: string): void {
-    this.imageChange.emit(file);
-    this.imageSaved.emit({ file, filename });
-  }
-
-  private buildFilename(extWithDot = '.png'): string {
-    const base = this.filenamePrefix
-      ? `${this.filenamePrefix}_${Date.now()}`
-      : `img_${Date.now()}`;
-    return `${this.entityClass}/${base}${extWithDot}`;
-  }
-
-  private getExtFromMime(mime: string): string {
-    const parts = mime.split('/');
-    return parts.length > 1 ? parts[1] : 'png';
   }
 
   private revokeLastObjectUrl(): void {
@@ -254,73 +272,32 @@ export class PhotoComponent implements OnInit, OnDestroy {
     }
   }
 
-  private uploadAndUpdate(file: File, suggestedFilename: string): void {
-    const fd = new FormData();
-    fd.append('file', file);
-    if (this.data && (this.data as any).id) {
-      fd.append('id', String((this.data as any).id));
-    }
-
-    const uploadEndpoint = `${this.baseEndPoint}/uploadImage`;
-
-    this.apiService.post<any>(uploadEndpoint, fd).subscribe(
-      (resp) => {
-        let filename = suggestedFilename;
-        try {
-          if (resp && resp.data) {
-            filename = resp.data.filename ?? resp.data.mainPhoto ?? resp.data;
-          } else if (resp && resp.filename) {
-            filename = resp.filename;
-          }
-        } catch {}
-
-        this.updateMainPhotoAndNotify(filename);
-        this.emitFile(file, filename);
-      },
-      () => {
-        this.updateMainPhotoAndNotify(suggestedFilename);
-        this.emitFile(file, suggestedFilename);
-      }
-    );
-  }
-
-  private updateMainPhotoAndNotify(filename: string): void {
-    if (!this.data || !this.baseEndPoint) return;
-
-    try {
-      (this.data as any).mainPhoto = filename;
-    } catch {}
-
-    const updateEndpoint = `${this.baseEndPoint}/update`;
-    this.apiService
-      .put<WebApiResponse<any>>(updateEndpoint, this.data)
-      .subscribe((response) => {
-        this.modalService.showSweetNotification(
-          'Foto atualizada',
-          response?.message ?? '',
-          'success'
-        );
-      });
-  }
-
   onPhotoClick(): void {
     // If this component is already in a modal, do not open another modal
     if (this.isModal) {
       return;
     }
-    this.dialog.open(PhotoComponent, {
-      data: {
-        isEdit: true,
-        isModal: true,
-        imageUrl: this.previewDataUrl,
-        entityClass: this.entityClass,
-        filenamePrefix: this.filenamePrefix,
-      },
-      width: '500px',
-    });
+    this.openPhotoModal();
   }
 
-  close(): void {
-    this.modalService.hideModal();
+  close(result?: any): void {
+    if (
+      this.dialogData?.dialogRef &&
+      typeof this.dialogData.dialogRef.close === 'function'
+    ) {
+      this.dialogData.dialogRef.close(result);
+    } else {
+      this.modalService.hideModal(this.dialogData?.dialogRef);
+    }
+  }
+
+  private openPhotoModal(): void {
+    this.modalService.showTemplateModal(PhotoComponent, {
+      data: this.data,
+      isEdit: true,
+      isModal: true,
+      imageUrl: this.data?.photo,
+      entityClass: this.entityClass,
+    });
   }
 }

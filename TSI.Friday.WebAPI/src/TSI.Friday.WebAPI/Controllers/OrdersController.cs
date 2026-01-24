@@ -33,7 +33,7 @@ namespace TSI.Friday.WebAPI.Controllers
         [Route("Add")]
         public async Task<IActionResult> Add([FromBody] OrderDto orderDto)
         {
-            if (!ModelState.IsValid)
+                if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }

@@ -39,7 +39,8 @@ namespace TSI.Friday.Services
             try
             {
                 var clientEntity = _mapper.Map<Individual>(clientDto);
-                var individualDuplicatedMessage = await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientEntity);
+                var individualDuplicatedMessage =
+                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientEntity);
 
                 if (!string.IsNullOrEmpty(individualDuplicatedMessage))
                 {
@@ -57,7 +58,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar o Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível cadastrar o Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -71,7 +73,8 @@ namespace TSI.Friday.Services
             try
             {
                 var clientEntity = _mapper.Map<Individual>(clientDto);
-                var IndividualDuplicatedMessage = await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientEntity);
+                var IndividualDuplicatedMessage =
+                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientEntity);
 
                 if (!string.IsNullOrEmpty(IndividualDuplicatedMessage))
                 {
@@ -89,7 +92,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados do Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar os dados do Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -112,7 +116,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -128,12 +133,13 @@ namespace TSI.Friday.Services
                 var clientEntityList = await _repository.GetAllAsync();
                 result.Data = _mapper.Map<IEnumerable<ClientDto>>(clientEntityList);
                 result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data?.Count() ??0} registro(s) encontrado(s).";
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -149,14 +155,16 @@ namespace TSI.Friday.Services
                 var clientEntity = await _repository.GetByIdAsync(id);
                 result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Cliente {result.Data.Name} encontrado com sucesso"
-                    : $"Nenhum Cliente com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Cliente {result.Data.Name} encontrado com sucesso"
+                        : $"Nenhum Cliente com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -169,40 +177,50 @@ namespace TSI.Friday.Services
 
             try
             {
-                var clientEntity = await _repository.FirstOrDefaultAsync(_ => _.Email.Equals(email));
+                var clientEntity = await _repository.FirstOrDefaultAsync(_ =>
+                    _.Email.Equals(email)
+                );
                 result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                    : $"Nenhum Cliente com o E-mail {email} foi encontrado.";
+                result.Message =
+                    result.Data != null
+                        ? $"Cliente {result.Data.Name} encontrado com sucesso."
+                        : $"Nenhum Cliente com o E-mail {email} foi encontrado.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> FindBySocialSecurityCard(string socialSecurityCard)
+        public async Task<WebApiResponse<ClientDto>> FindBySocialSecurityCard(
+            string socialSecurityCard
+        )
         {
             WebApiResponse<ClientDto> result = new();
 
             try
             {
-                var clientEntity = await _repository.FirstOrDefaultAsync(_ => _.SocialSecurityCard.Equals(socialSecurityCard));
+                var clientEntity = await _repository.FirstOrDefaultAsync(_ =>
+                    _.SocialSecurityCard.Equals(socialSecurityCard)
+                );
                 result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                    : $"Nenhum Cliente com o CPF {socialSecurityCard} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Cliente {result.Data.Name} encontrado com sucesso."
+                        : $"Nenhum Cliente com o CPF {socialSecurityCard} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -217,7 +235,9 @@ namespace TSI.Friday.Services
         /// </summary>
         /// <param name="individual">The Individual object that is being added or updated.</param>
         /// <returns>The error message when Individual is duplicated. Otherwise an empty string.</returns>
-        private async Task<string> CheckIfIndividualIsDuplicatedAndGetErrorMessage(Individual individual)
+        private async Task<string> CheckIfIndividualIsDuplicatedAndGetErrorMessage(
+            Individual individual
+        )
         {
             if (await IsNameDuplicated(individual))
             {
@@ -249,8 +269,11 @@ namespace TSI.Friday.Services
         /// <returns>True when the Email is duplicated; Otherwise false.</returns>
         private async Task<bool> IsEmailDuplicated(Individual individual)
         {
-            return await _repository
-                .AnyAsync(_ => _.Id != individual.Id && !string.IsNullOrEmpty(_.Email) && _.Email == individual.Email);
+            return await _repository.AnyAsync(_ =>
+                _.Id != individual.Id
+                && !string.IsNullOrEmpty(_.Email)
+                && _.Email == individual.Email
+            );
         }
 
         /// <summary>
@@ -260,8 +283,9 @@ namespace TSI.Friday.Services
         /// <returns>True when the Name is duplicated; Otherwise false.</returns>
         private async Task<bool> IsNameDuplicated(Individual individual)
         {
-            return await _repository
-                .AnyAsync(_ => _.Id != individual.Id && _.Name == individual.Name);
+            return await _repository.AnyAsync(_ =>
+                _.Id != individual.Id && _.Name == individual.Name
+            );
         }
 
         /// <summary>
@@ -271,9 +295,11 @@ namespace TSI.Friday.Services
         /// <returns>True when the NationalIDCard is duplicated; Otherwise false.</returns>
         private async Task<bool> IsNationalIDCardDuplicated(Individual individual)
         {
-            return await _repository
-                .AnyAsync(_ => _.Id != individual.Id && !string.IsNullOrEmpty(_.NationalIdCard) &&
-                            _.NationalIdCard == individual.NationalIdCard);
+            return await _repository.AnyAsync(_ =>
+                _.Id != individual.Id
+                && !string.IsNullOrEmpty(_.NationalIdCard)
+                && _.NationalIdCard == individual.NationalIdCard
+            );
         }
 
         /// <summary>
@@ -283,9 +309,11 @@ namespace TSI.Friday.Services
         /// <returns>True when the SocialSecurityCard is duplicated; Otherwise false.</returns>
         private async Task<bool> IsSocialSecurityCardDuplicated(Individual individual)
         {
-            return await _repository
-                .AnyAsync(_ => _.Id != individual.Id && !string.IsNullOrEmpty(_.SocialSecurityCard) &&
-                            _.SocialSecurityCard == individual.SocialSecurityCard);
+            return await _repository.AnyAsync(_ =>
+                _.Id != individual.Id
+                && !string.IsNullOrEmpty(_.SocialSecurityCard)
+                && _.SocialSecurityCard == individual.SocialSecurityCard
+            );
         }
 
         #endregion Private methods

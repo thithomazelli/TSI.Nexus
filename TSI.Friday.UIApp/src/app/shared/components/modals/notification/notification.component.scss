@@ -1,0 +1,59 @@
+.notification-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 32px 24px 32px;
+  background: #fff;
+  border-radius: 12px;
+  min-width: 350px;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.notification-icon .success {
+  color: #28a745;
+}
+.notification-icon .info {
+  color: #17a2b8;
+}
+
+.notification-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.notification-message {
+  font-size: 1rem;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.notification-btn {
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notification-btn:hover {
+  background: #5548c8;
+}
+
+.swal2-icon-show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: swal2-animate-error-icon 0.5s;
+}
+
+.swal2-icon-content {
+  animation: swal2-animate-i-mark 0.8s;
+}

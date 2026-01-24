@@ -25,5 +25,6 @@ import { AddressModule } from '../address/address.module';
     SharedModule,
     NgxMaskDirective,
   ],
+  exports: [ClientDetailsModalComponent],
 })
 export class ClientsModule {}

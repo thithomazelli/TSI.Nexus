@@ -8,7 +8,12 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { FormBaseComponent, Product, ProductUnit } from '@friday/core';
+import {
+  CurrencyService,
+  FormBaseComponent,
+  Product,
+  ProductUnit,
+} from '@friday/core';
 
 @Component({
   selector: 'app-product-form',
@@ -42,12 +47,16 @@ export class ProductFormComponent
     { label: 'Gram', value: ProductUnit.Gram },
   ];
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(
+    private formBuilder: FormBuilder,
+    private currencyService: CurrencyService,
+  ) {
     super();
   }
 
   ngOnInit(): void {
     this.initForm();
+    this.patchFormWithData();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -74,14 +83,27 @@ export class ProductFormComponent
     this.cancel.emit();
   }
 
+  onPriceBlur(): void {
+    const priceControl = this.form.get('priceFormatted');
+    if (!priceControl) {
+      return;
+    }
+
+    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
+    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
+    this.form.get('price')?.setValue(value);
+  }
+
   private initForm(): void {
     const commonControls = {
       sku: ['', Validators.required],
       name: ['', Validators.required],
       description: [''],
       price: [0, [Validators.required, Validators.min(0)]],
+      priceFormatted: [0, [Validators.required, Validators.min(0)]],
       unit: ['', Validators.required],
       quantityInStock: [0, [Validators.required, Validators.min(0)]],
+      photo: [''],
     };
 
     this.form = !this.isEdit
@@ -90,10 +112,15 @@ export class ProductFormComponent
           id: [''],
           ...commonControls,
         });
+  }
 
-    // aplicar data se já existir (não resetar o form)
-    if (this.data) {
-      this.form.patchValue(this.data);
+  private patchFormWithData(): void {
+    if (this.data && this.form) {
+      const patch = {
+        ...this.data,
+        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
+      };
+      this.form.patchValue(patch);
     }
   }
 }

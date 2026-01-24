@@ -14,20 +14,41 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly OrderProductService _service;
         private readonly Mock<IRepository<OrderProduct>> _repository;
+        private readonly Mock<IRepository<Order>> _orderRepository;
+        private readonly Mock<IRepository<Product>> _productRepository;
         private readonly IList<OrderProduct> _itemsMock;
         private readonly IMapper _mapper;
 
         public OrderProductServiceTests()
         {
             _repository = new Mock<IRepository<OrderProduct>>();
+            _orderRepository = new Mock<IRepository<Order>>();
+            _productRepository = new Mock<IRepository<Product>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
-            _service = new OrderProductService(_repository.Object, _mapper);
+            _service = new OrderProductService(
+                _repository.Object,
+                _orderRepository.Object,
+                _productRepository.Object,
+                _mapper
+            );
 
             _itemsMock = new List<OrderProduct>
             {
-                new OrderProduct { Id =1, Description = "Item1", OrderId =1, ProductId =1 },
-                new OrderProduct { Id =2, Description = "Item2", OrderId =1, ProductId =2 }
+                new OrderProduct
+                {
+                    Id = 1,
+                    Description = "Item1",
+                    OrderId = 1,
+                    ProductId = 1,
+                },
+                new OrderProduct
+                {
+                    Id = 2,
+                    Description = "Item2",
+                    OrderId = 1,
+                    ProductId = 2,
+                },
             };
         }
 
@@ -35,14 +56,22 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderProductService_Add_ShouldAddItemSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var itemDto = new OrderProductDto { Id =3, Description = "Item3", OrderId =2, ProductId =3 };
-            _repository.Setup(r => r.AddAsync(It.IsAny<OrderProduct>())).Returns(Task.CompletedTask);
+            var itemDto = new OrderProductDto
+            {
+                Id = 3,
+                Description = "Item3",
+                OrderId = 2,
+                ProductId = 3,
+            };
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<OrderProduct>()))
+                .Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<OrderProductDto>
             {
                 Data = itemDto,
                 Status = ResponseStatus.Success,
-                Message = $"Item do Pedido {itemDto.Description} cadastrado com sucesso."
+                Message = $"Item do Pedido {itemDto.Description} cadastrado com sucesso.",
             };
 
             // Act
@@ -58,13 +87,15 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var itemDto = _mapper.Map<OrderProductDto>(_itemsMock.First());
-            _repository.Setup(r => r.UpdateAsync(It.IsAny<OrderProduct>())).Returns(Task.CompletedTask);
+            _repository
+                .Setup(r => r.UpdateAsync(It.IsAny<OrderProduct>()))
+                .Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<OrderProductDto>
             {
                 Data = itemDto,
                 Status = ResponseStatus.Success,
-                Message = $"Item do Pedido {itemDto.Description} atualizado com sucesso."
+                Message = $"Item do Pedido {itemDto.Description} atualizado com sucesso.",
             };
 
             // Act
@@ -80,13 +111,15 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var itemDto = _mapper.Map<OrderProductDto>(_itemsMock.First());
-            _repository.Setup(r => r.RemoveAsync(It.IsAny<OrderProduct>())).Returns(Task.CompletedTask);
+            _repository
+                .Setup(r => r.RemoveAsync(It.IsAny<OrderProduct>()))
+                .Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<OrderProductDto>
             {
                 Data = itemDto,
                 Status = ResponseStatus.Success,
-                Message = $"Item do Pedido {itemDto.Description} removido com sucesso."
+                Message = $"Item do Pedido {itemDto.Description} removido com sucesso.",
             };
 
             // Act
@@ -101,16 +134,21 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderProductService_FindByOrderId_ShouldReturnItems_WhenOrderIdIsValid()
         {
             // Arrange
-            const int orderId =1;
+            const int orderId = 1;
             var items = _itemsMock.Where(i => i.OrderId == orderId).ToList();
-            _repository.Setup(r => r.QueryAsync(It.IsAny<System.Linq.Expressions.Expression<Func<OrderProduct, bool>>>() ))
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<Func<OrderProduct, bool>>>()
+                    )
+                )
                 .ReturnsAsync(items);
 
             var expected = new WebApiResponse<IEnumerable<OrderProductDto>>
             {
                 Data = _mapper.Map<IEnumerable<OrderProductDto>>(items),
                 Status = ResponseStatus.Success,
-                Message = $"{items.Count} registro(s) encontrado(s)."
+                Message = $"{items.Count} registro(s) encontrado(s).",
             };
 
             // Act
@@ -118,14 +156,20 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.QueryAsync(It.IsAny<System.Linq.Expressions.Expression<Func<OrderProduct, bool>>>()), Times.Once);
+            _repository.Verify(
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<System.Linq.Expressions.Expression<Func<OrderProduct, bool>>>()
+                    ),
+                Times.Once
+            );
         }
 
         [Fact]
         public async Task OrderProductService_FindById_ShouldReturnItem_WhenIdIsValid()
         {
             // Arrange
-            const int id =1;
+            const int id = 1;
             var item = _itemsMock.First(i => i.Id == id);
             _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(item);
 
@@ -133,7 +177,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = _mapper.Map<OrderProductDto>(item),
                 Status = ResponseStatus.Success,
-                Message = $"Item do Pedido {item.Description} encontrado com sucesso"
+                Message = $"Item do Pedido {item.Description} encontrado com sucesso",
             };
 
             // Act

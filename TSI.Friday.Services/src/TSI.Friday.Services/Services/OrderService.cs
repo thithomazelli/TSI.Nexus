@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using System.Text.RegularExpressions;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -15,6 +16,7 @@ namespace TSI.Friday.Services
         /// Repository object created to access the Order registers on database using EntityFramework.
         /// </summary>
         private readonly IRepository<Order> _repository;
+        private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
 
         #endregion Properties
@@ -25,9 +27,10 @@ namespace TSI.Friday.Services
         /// OrderService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
-        public OrderService(IRepository<Order> repository, IMapper mapper)
+        public OrderService(IRepository<Order> repository, ISequenceService sequenceService, IMapper mapper)
         {
             _repository = repository;
+            _sequenceService = sequenceService;
             _mapper = mapper;
         }
 
@@ -38,6 +41,10 @@ namespace TSI.Friday.Services
 
             try
             {
+                var prefix = BuildPrefixFromClientName(orderDto.ClientName);
+                var next = await _sequenceService.GetNextValue("OrderNumberSeq");
+                orderDto.OrderNumber = $"{prefix}-{next:D5}";
+
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);
 
@@ -107,7 +114,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orders = await _repository.GetAllAsync();
+                var orders = await _repository.GetAllAsync(o => o.Client);
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -211,5 +218,52 @@ namespace TSI.Friday.Services
         }
 
         #endregion Public methods
+
+        #region Private methods
+
+        private static string BuildPrefixFromClientName(string? clientName)
+        {
+            // Remove non-letter characters and whitespace, keep only A-Z letters
+            var cleaned = string.Empty;
+            if (!string.IsNullOrWhiteSpace(clientName))
+            {
+                cleaned = Regex.Replace(clientName.Normalize(), "[^A-Za-z]", string.Empty);
+                cleaned = cleaned.ToUpperInvariant();
+            }
+
+            var letters = cleaned ?? string.Empty;
+
+            char GetRandomLetter()
+            {
+                var rnd = Random.Shared;
+                return (char)('A' + rnd.Next(0, 26));
+            }
+
+            string prefix;
+
+            if (letters.Length >= 3)
+            {
+                var first = letters[0];
+                var middle = letters[letters.Length / 2];
+                var last = letters[letters.Length - 1];
+                prefix = string.Concat(first, middle, last);
+            }
+            else
+            {
+                var chars = new List<char>();
+                for (int i = 0; i < letters.Length; i++)
+                    chars.Add(letters[i]);
+
+                while (chars.Count < 3)
+                    chars.Add(GetRandomLetter());
+
+                prefix = new string(chars.ToArray());
+            }
+
+            return prefix;
+        }
+
+
+        #endregion Private methods
     }
 }

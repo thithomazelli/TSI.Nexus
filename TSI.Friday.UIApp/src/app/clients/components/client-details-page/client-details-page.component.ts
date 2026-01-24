@@ -5,7 +5,6 @@ import {
   ApiType,
   Client,
   Company,
-  GridService,
   Individual,
   NotificationService,
   WebApiResponse,
@@ -30,8 +29,7 @@ export class ClientDetailsPageComponent {
     private activatedRoute: ActivatedRoute,
     private apiService: ApiService,
     private routerService: Router,
-    private gridService: GridService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -61,24 +59,21 @@ export class ClientDetailsPageComponent {
 
     if (this.isEdit && this.id) {
       this.apiService
-        .put<WebApiResponse<Company | Individual>>(
-          `${this._baseEndPoint}/update`,
-          client
-        )
+        .put<
+          WebApiResponse<Company | Individual>
+        >(`${this._baseEndPoint}/update`, client)
         .subscribe((response: WebApiResponse<Company | Individual>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     } else {
       this.apiService
         .post<WebApiResponse<Client>>(`${this._baseEndPoint}/add`, client)
         .subscribe((response: WebApiResponse<Client>) => {
-          this.gridService.gridDataChanged(response.data, null);
           this.routerService.navigateByUrl(
-            `/${this._baseEndPoint}/${response.data.id}`
+            `/${this._baseEndPoint}/${response.data.id}`,
           );
         });
     }
@@ -88,22 +83,21 @@ export class ClientDetailsPageComponent {
     this.routerService.navigateByUrl('/clients');
   }
 
-  onImageChange(fileOrNull: File | null): void {
-    if (!fileOrNull) {
+  onImageChange(event: any): void {
+    if (!event?.fileName) {
       return;
     }
-    const fd = new FormData();
-    fd.append('file', fileOrNull);
-    if (this.id) fd.append('ClientId', String(this.id));
-    this.apiService.post(`${this._baseEndPoint}/uploadImage`, fd).subscribe();
+    this.data!.photo = event.fileName;
+    // Força atualização do ClientFormComponent
+    this.data = JSON.parse(JSON.stringify(this.data));
   }
 
   private loadClient(id: number): void {
     this.loading = true;
     this.apiService
-      .get<WebApiResponse<Company | Individual>>(
-        `${this._baseEndPoint}/getById/${id}`
-      )
+      .get<
+        WebApiResponse<Company | Individual>
+      >(`${this._baseEndPoint}/getById/${id}`)
       .subscribe({
         next: (response: WebApiResponse<Company | Individual>) => {
           this.loading = false;

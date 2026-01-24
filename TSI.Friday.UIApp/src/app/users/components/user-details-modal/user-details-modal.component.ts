@@ -1,10 +1,9 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, EventEmitter, Inject, Output } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   ApiService,
   ApiType,
   FormBaseComponent,
-  GridService,
   ModalService,
   User,
   WebApiResponse,
@@ -17,17 +16,19 @@ import {
   styleUrl: './user-details-modal.component.scss',
 })
 export class UserDetailsModalComponent extends FormBaseComponent {
+  @Output()
+  saved = new EventEmitter<void>();
+
   isEdit = false;
   data?: User | null = null;
   id: number | null = null;
-
   private _baseEndPoint: ApiType = ApiType.Users;
 
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
-    private gridService: GridService,
-    @Inject(MAT_DIALOG_DATA) public dialogData: any
+    public dialogRef: MatDialogRef<UserDetailsModalComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     super();
     if (dialogData) {
@@ -42,12 +43,12 @@ export class UserDetailsModalComponent extends FormBaseComponent {
       this.apiService
         .put<WebApiResponse<User>>(`${this._baseEndPoint}/update`, user)
         .subscribe((response: WebApiResponse<User>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
-          this.modalService.hideModal();
+          this.saved.emit();
+          this.modalService.hideModal(this.dialogRef);
           this.modalService.showSweetNotification(
             '',
             response.message,
-            'success'
+            'success',
           );
         });
     } else {
@@ -55,12 +56,12 @@ export class UserDetailsModalComponent extends FormBaseComponent {
         .post<WebApiResponse<User>>(`${this._baseEndPoint}/add`, user)
         .subscribe({
           next: (response: WebApiResponse<User>) => {
-            this.gridService.gridDataChanged(response.data, null);
-            this.modalService.hideModal();
+            this.saved.emit();
+            this.modalService.hideModal(this.dialogRef);
             this.modalService.showSweetNotification(
               'Usuário atualizado',
               response.message,
-              'success'
+              'success',
             );
           },
           error: (response) => {
@@ -75,6 +76,6 @@ export class UserDetailsModalComponent extends FormBaseComponent {
   }
 
   close(): void {
-    this.modalService.hideModal();
+    this.modalService.hideModal(this.dialogRef);
   }
 }

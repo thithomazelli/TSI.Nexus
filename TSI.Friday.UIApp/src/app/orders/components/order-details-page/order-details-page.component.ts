@@ -1,6 +1,12 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Order, ApiService, ApiType, NotificationService, GridService, WebApiResponse } from '@friday/core';
+import {
+  Order,
+  ApiService,
+  ApiType,
+  NotificationService,
+  WebApiResponse,
+} from '@friday/core';
 
 @Component({
   selector: 'app-order-details-page',
@@ -16,12 +22,13 @@ export class OrderDetailsPageComponent {
   errorMessages?: string[];
   private _baseEndPoint: ApiType = ApiType.Orders;
 
+  activeTab: 'resumo' | 'produtos' | 'pagamentos' = 'resumo';
+
   constructor(
     private activatedRoute: ActivatedRoute,
-    private router: Router,
+    private routerService: Router,
     private apiService: ApiService,
     private notificationService: NotificationService,
-    private gridService: GridService
   ) {}
 
   ngOnInit(): void {
@@ -29,7 +36,7 @@ export class OrderDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      // Aqui você pode buscar os dados do pedido pelo id
+      this.loadOrder(Number(idParam));
     } else {
       this.isEdit = false;
       this.data = null;
@@ -41,26 +48,52 @@ export class OrderDetailsPageComponent {
       this.apiService
         .put<WebApiResponse<Order>>(`${this._baseEndPoint}/update`, order)
         .subscribe((response: WebApiResponse<Order>) => {
-          this.gridService.gridDataChanged(response.data, this.id);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     } else {
       this.apiService
         .post<WebApiResponse<Order>>(`${this._baseEndPoint}/add`, order)
         .subscribe((response: WebApiResponse<Order>) => {
-          this.gridService.gridDataChanged(response.data, null);
           this.notificationService.showMessage(
             response.status,
-            response.message
+            response.message,
           );
         });
     }
   }
 
   onCancel(): void {
-    this.router.navigate(['/orders']);
+    this.routerService.navigate([`/${this._baseEndPoint}`]);
+  }
+
+  onOrderProductsUpdated() {
+    if (this.id) {
+      this.loadOrder(Number(this.id));
+    }
+  }
+
+  private loadOrder(id: number): void {
+    this.loading = true;
+    this.apiService
+      .get<WebApiResponse<Order>>(`${this._baseEndPoint}/getById/${id}`)
+      .subscribe({
+        next: (response: WebApiResponse<Order>) => {
+          this.loading = false;
+
+          if (response.data == null) {
+            this.routerService.navigateByUrl('/not-found');
+            return;
+          }
+
+          this.data = response.data;
+        },
+        error: () => {
+          this.loading = false;
+          this.routerService.navigateByUrl('/not-found');
+        },
+      });
   }
 }

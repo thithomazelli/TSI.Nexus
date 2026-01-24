@@ -70,7 +70,7 @@ export class ClientsComponent {
         } else if (type !== 'Física' && digits.length === 14) {
           return digits.replace(
             /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
-            '$1.$2.$3/$4-$5'
+            '$1.$2.$3/$4-$5',
           );
         }
         return value;
@@ -140,11 +140,9 @@ export class ClientsComponent {
     },
   ];
 
-  modalDetails = ClientDetailsModalComponent;
-
   constructor(
     private apiService: ApiService,
-    private modalService: ModalService
+    private modalService: ModalService,
   ) {}
 
   ngOnInit(): void {
@@ -163,9 +161,22 @@ export class ClientsComponent {
         this.modalService.showSweetNotification(
           '',
           response.message,
-          'success'
+          'success',
         );
       });
+  }
+
+  onOpenModal(initialState: any) {
+    const ref = this.modalService.showTemplateModal(
+      ClientDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe(() => {
+        this.refreshClients();
+        ref.close();
+      });
+    }
   }
 
   private getClients(): void {

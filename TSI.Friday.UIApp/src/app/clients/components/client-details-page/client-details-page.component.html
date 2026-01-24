@@ -3,7 +3,7 @@
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
     { label: 'Clients', link: '/clients' },
-    { label: isEdit ? 'Edit Clients' : 'Add Clients', link: '' }
+    { label: isEdit ? 'Edit Clients' : 'Add Clients', link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -15,6 +15,8 @@
           <div class="card-body box-profile">
             <div class="text-center">
               <app-photo
+                [data]="data"
+                [entityClass]="'Client'"
                 [imageUrl]="data?.photo"
                 (imageChange)="onImageChange($event)"
               ></app-photo>
@@ -56,83 +58,84 @@
                   (click)="activeTab = 'form'"
                   data-toggle="tab"
                   >Form</a
-                  >
-                </li>
-                <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    [class.active]="activeTab === 'address'"
-                    (click)="activeTab = 'address'"
-                    data-toggle="tab"
-                    >Address</a
-                    >
-                  </li>
-                  <li class="nav-item">
-                    <a
-                      class="nav-link"
-                      [class.active]="activeTab === 'image'"
-                      (click)="activeTab = 'image'"
-                      data-toggle="tab"
-                      >Image</a
-                      >
-                    </li>
-                    <li class="nav-item">
-                      <a
-                        class="nav-link"
-                        [class.active]="activeTab === 'extra'"
-                        (click)="activeTab = 'extra'"
-                        data-toggle="tab"
-                        >Other</a
-                        >
-                      </li>
-                    </ul>
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'address'"
+                  (click)="activeTab = 'address'"
+                  data-toggle="tab"
+                  >Address</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'image'"
+                  (click)="activeTab = 'image'"
+                  data-toggle="tab"
+                  >Image</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'extra'"
+                  (click)="activeTab = 'extra'"
+                  data-toggle="tab"
+                  >Other</a
+                >
+              </li>
+            </ul>
 
-                    @if (loading) {
-                      <div class="text-center py-4">Loading...</div>
-                    }
+            @if (loading) {
+              <div class="text-center py-4">Loading...</div>
+            }
 
-                    @if (!loading) {
-                      <div>
-                        @if (activeTab === 'form') {
-                          <div>
-                            <!-- data-form component: pass compact=true for page -->
-                            <app-client-form
-                              [isEdit]="isEdit"
-                              [data]="data"
-                              [compact]="true"
-                              (save)="save($event)"
-                              (cancel)="cancel()"
-                            ></app-client-form>
-                          </div>
-                        }
-                        @if (activeTab === 'address') {
-                          <div>
-                            <app-address [parentData]="data"> </app-address>
-                          </div>
-                        }
-                        @if (activeTab === 'image') {
-                          <div>
-                            <app-photo
-                              [imageUrl]="data?.photo"
-                              (imageChange)="onImageChange($event)"
-                            ></app-photo>
-                          </div>
-                        }
-                        @if (activeTab === 'extra') {
-                          <div>
-                            <p>Other sections go here (prices, history, notes...)</p>
-                          </div>
-                        }
-                      </div>
-                    }
+            @if (!loading) {
+              <div>
+                @if (activeTab === "form") {
+                  <div>
+                    <!-- data-form component: pass compact=true for page -->
+                    <app-client-form
+                      [isEdit]="isEdit"
+                      [data]="data"
+                      [compact]="true"
+                      (save)="save($event)"
+                      (cancel)="cancel()"
+                    ></app-client-form>
                   </div>
-                </div>
-
-                <!-- /.nav-tabs-custom -->
+                }
+                @if (activeTab === "address") {
+                  <div>
+                    <app-address [parentData]="data"> </app-address>
+                  </div>
+                }
+                @if (activeTab === "image") {
+                  <div>
+                    <app-photo
+                      [data]="data"
+                      [entityClass]="'Client'"
+                      [imageUrl]="data?.photo"
+                    ></app-photo>
+                  </div>
+                }
+                @if (activeTab === "extra") {
+                  <div>
+                    <p>Other sections go here (prices, history, notes...)</p>
+                  </div>
+                }
               </div>
-              <!-- /.col -->
-            </div>
-            <!-- /.row -->
+            }
           </div>
-          <!-- /.container-fluid -->
-        </section>
+        </div>
+
+        <!-- /.nav-tabs-custom -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</section>

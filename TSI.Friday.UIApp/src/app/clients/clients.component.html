@@ -2,7 +2,7 @@
   title="Clientes"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Clientes', link: '' }
+    { label: 'Clientes', link: '' },
   ]"
 ></app-header>
 
@@ -11,9 +11,9 @@
     [className]="'Clientes'"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [modalDetails]="modalDetails"
     [baseEndPoint]="'clients'"
     [refresh]="refreshClients.bind(this)"
     [delete]="deleteClient.bind(this)"
+    (openModal)="onOpenModal($event)"
   ></app-grid>
 </div>

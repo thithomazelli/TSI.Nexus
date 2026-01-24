@@ -13,13 +13,15 @@ namespace TSI.Friday.Contracts.Models
 
         public int Id { get; set; }
 
-        public string OrderNumber { get; set; }
+        public string OrderNumber { get; set; } = string.Empty;
 
         public OrderStatus Status { get; set; }
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
-        public decimal TotalPrice => (OrderProducts?.Sum(op => op.TotalPrice) ?? 0m) - Discount;
+        public decimal Price { get; set; }
+
+        public decimal TotalPrice { get; set; }
 
         public decimal Discount { get; set; }
 
@@ -30,15 +32,12 @@ namespace TSI.Friday.Contracts.Models
         public Client Client
         {
             get => _client;
-            set
-            {
-                _client = value ?? throw new ArgumentNullException(nameof(Client));
-            }
+            set { _client = value ?? throw new ArgumentNullException(nameof(Client)); }
         }
 
-        public ICollection<OrderProduct> OrderProducts { get; set; }
+        public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
 
-        public ICollection<Payment> Payments { get; set; }
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
         public Order() { }
 

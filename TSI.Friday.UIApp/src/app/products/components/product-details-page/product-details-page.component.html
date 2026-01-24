@@ -3,7 +3,7 @@
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
     { label: 'Produtos', link: '/products' },
-    { label: isEdit ? 'Edit Product' : 'Add Product', link: '' }
+    { label: isEdit ? 'Edit Product' : 'Add Product', link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -15,8 +15,9 @@
           <div class="card-body box-profile">
             <div class="text-center">
               <app-photo
-                [imageUrl]="data?.imageUrl"
-                (imageChange)="onImageChange($event)"
+                [data]="data"
+                [imageUrl]="data?.photo"
+                [entityClass]="'Product'"
               ></app-photo>
               <div class="box-profile">
                 <div class="text-center">
@@ -56,69 +57,70 @@
                   (click)="activeTab = 'form'"
                   data-toggle="tab"
                   >Form</a
-                  >
-                </li>
-                <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    [class.active]="activeTab === 'image'"
-                    (click)="activeTab = 'image'"
-                    data-toggle="tab"
-                    >Image</a
-                    >
-                  </li>
-                  <li class="nav-item">
-                    <a
-                      class="nav-link"
-                      [class.active]="activeTab === 'extra'"
-                      (click)="activeTab = 'extra'"
-                      data-toggle="tab"
-                      >Other</a
-                      >
-                    </li>
-                  </ul>
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'image'"
+                  (click)="activeTab = 'image'"
+                  data-toggle="tab"
+                  >Image</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'extra'"
+                  (click)="activeTab = 'extra'"
+                  data-toggle="tab"
+                  >Other</a
+                >
+              </li>
+            </ul>
 
-                  @if (loading) {
-                    <div class="text-center py-4">Loading...</div>
-                  }
+            @if (loading) {
+              <div class="text-center py-4">Loading...</div>
+            }
 
-                  @if (!loading) {
-                    <div>
-                      @if (activeTab === 'form') {
-                        <div>
-                          <!-- data-form component: pass compact=true for page -->
-                          <app-product-form
-                            [isEdit]="isEdit"
-                            [data]="data"
-                            [compact]="true"
-                            (save)="save($event)"
-                            (cancel)="cancel()"
-                          ></app-product-form>
-                        </div>
-                      }
-                      @if (activeTab === 'image') {
-                        <div>
-                          <app-photo
-                            [imageUrl]="data?.imageUrl"
-                            (imageChange)="onImageChange($event)"
-                          ></app-photo>
-                        </div>
-                      }
-                      @if (activeTab === 'extra') {
-                        <div>
-                          <p>Other sections go here (prices, history, notes...)</p>
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
+            @if (!loading) {
+              <div>
+                @if (activeTab === "form") {
+                  <div>
+                    <!-- data-form component: pass compact=true for page -->
+                    <app-product-form
+                      [isEdit]="isEdit"
+                      [data]="data"
+                      [compact]="true"
+                      (save)="save($event)"
+                      (cancel)="cancel()"
+                    ></app-product-form>
+                  </div>
+                }
+                @if (activeTab === "image") {
+                  <div>
+                    <app-photo
+                      [data]="data"
+                      [imageUrl]="data?.photo"
+                      [entityClass]="'Product'"
+                    ></app-photo>
+                  </div>
+                }
+                @if (activeTab === "extra") {
+                  <div>
+                    <p>Other sections go here (prices, history, notes...)</p>
+                  </div>
+                }
               </div>
-
-              <!-- /.nav-tabs-custom -->
-            </div>
-            <!-- /.col -->
+            }
           </div>
-          <!-- /.row -->
         </div>
-        <!-- /.container-fluid -->
-      </section>
+
+        <!-- /.nav-tabs-custom -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</section>
