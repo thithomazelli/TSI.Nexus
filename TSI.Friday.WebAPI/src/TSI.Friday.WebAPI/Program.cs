@@ -87,8 +87,16 @@ builder
             ValidateIssuer = true,
             // don't validate audience (angular side)
             ValidateAudience = false,
+            // ensure role claims are read from ClaimTypes.Role
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role,
         };
     });
+
+// Add authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("Admin"));
+});
 
 builder.Services.AddCors();
 builder.Services.Configure<ApiBehaviorOptions>(options =>

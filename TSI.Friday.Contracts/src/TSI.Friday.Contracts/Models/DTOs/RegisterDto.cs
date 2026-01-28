@@ -19,5 +19,10 @@ namespace TSI.Friday.Contracts.Models.DTOs
         [Required]
         [StringLength(15, MinimumLength = 6, ErrorMessage = "Password must be at least {2}, and maximum {1} characters")]
         public string Password { get; set; }
+
+        /// <summary>
+        /// Optional role to assign to the created user (e.g. "Admin" or "User").
+        /// </summary>
+        public string Role { get; set; }
     }
 }

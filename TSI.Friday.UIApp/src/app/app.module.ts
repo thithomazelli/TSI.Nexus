@@ -14,6 +14,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { JwtInterceptor } from './core';
+import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ToastrModule } from 'ngx-toastr';
@@ -49,6 +50,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     provideNgxMask(),
     provideHttpClient(withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
   ],
   bootstrap: [AppComponent],
   exports: [],

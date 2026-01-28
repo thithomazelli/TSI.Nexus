@@ -130,6 +130,22 @@
                 </div>
               }
 
+              <div class="row g-2 mb-1">
+                <div class="col-12 col-md-6" *ngIf="!isEdit">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <select formControlName="role" class="form-select">
+                        <option *ngFor="let opt of roleOptions" [value]="opt.value">
+                          {{ opt.label }}
+                        </option>
+                      </select>
+                      <label for="role">Role</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-key-fill"></i></div>
+                  </div>
+                </div>
+              </div>
+
               @if (errors) {
                 <div class="form-floating">
                   <app-validation-messages

@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
@@ -19,6 +20,7 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         [HttpPost("add")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<WebApiResponse<User>>> Add(RegisterDto model)
         {
             return await _userManagerService.Register(model);
@@ -49,6 +51,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("Remove")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Remove([FromBody] User user)
         {
             var webApiResponse = await _userManagerService.Remove(user);
@@ -61,6 +64,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetAll")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAll()
         {
             var webApiResponse = await _userManagerService.FindAll();
@@ -73,7 +77,6 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="userId">User id to be used in the search</param>
         /// <returns></returns>
         [HttpGet]
-
         [Route("GetById/{userId}")]
         public async Task<IActionResult> GetById(string userId)
         {

@@ -11,7 +11,7 @@ namespace TSI.Friday.Contracts.Models
 
         public string Description { get; set; } = string.Empty;
 
-        public OrderProductType Type { get; set; }
+        public ProductType Type { get; set; }
 
         public decimal Quantity { get; set; }
 

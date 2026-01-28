@@ -19,6 +19,25 @@ namespace TSI.Friday.Data
             try
             {
                 var userManager = provider.GetRequiredService<UserManager<User>>();
+                var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                // ensure roles
+                var roles = new[] { "Admin", "User" };
+                foreach (var role in roles)
+                {
+                    if (!await roleManager.RoleExistsAsync(role))
+                    {
+                        var roleResult = await roleManager.CreateAsync(new IdentityRole(role));
+                        if (!roleResult.Succeeded)
+                        {
+                            logger?.LogError("Failed to create role '{Role}': {Errors}", role, string.Join(';', roleResult.Errors));
+                        }
+                        else
+                        {
+                            logger?.LogInformation("Role '{Role}' created", role);
+                        }
+                    }
+                }
 
                 // ensure admin user
                 var adminUserName = "admin";
@@ -51,11 +70,28 @@ namespace TSI.Friday.Data
                             "Admin user created with password 'tsi@{Year}'",
                             year
                         );
+
+                        // assign admin role
+                        var addRoleResult = await userManager.AddToRoleAsync(user, "Admin");
+                        if (!addRoleResult.Succeeded)
+                        {
+                            logger?.LogError("Failed to add admin user to role 'Admin': {Errors}", string.Join(';', addRoleResult.Errors));
+                        }
                     }
                 }
                 else
                 {
                     logger?.LogInformation("Admin user already exists");
+
+                    // ensure admin has Admin role
+                    if (!await userManager.IsInRoleAsync(admin, "Admin"))
+                    {
+                        var addRoleResult = await userManager.AddToRoleAsync(admin, "Admin");
+                        if (!addRoleResult.Succeeded)
+                        {
+                            logger?.LogError("Failed to add existing admin user to role 'Admin': {Errors}", string.Join(';', addRoleResult.Errors));
+                        }
+                    }
                 }
             }
             catch (Exception ex)

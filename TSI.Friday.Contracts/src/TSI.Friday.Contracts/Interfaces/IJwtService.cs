@@ -1,4 +1,5 @@
-﻿using TSI.Friday.Contracts.Models;
+﻿using System.Collections.Generic;
+using TSI.Friday.Contracts.Models;
 
 namespace TSI.Friday.Contracts.Interfaces
 {
@@ -8,10 +9,11 @@ namespace TSI.Friday.Contracts.Interfaces
     public interface IJwtService
     {
         /// <summary>
-        /// 
+        /// Create a JWT for the provided user. Optionally receive roles to include on the token.
         /// </summary>
         /// <param name="user"></param>
+        /// <param name="roles"></param>
         /// <returns></returns>
-        string CreateJWT(User user);
+        string CreateJWT(User user, IEnumerable<string>? roles = null);
     }
 }

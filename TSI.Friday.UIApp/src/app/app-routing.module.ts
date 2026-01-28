@@ -50,7 +50,7 @@ const routes: Routes = [
   },
   {
     path: 'users',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./users/users.module').then((m) => m.UsersModule),
   },

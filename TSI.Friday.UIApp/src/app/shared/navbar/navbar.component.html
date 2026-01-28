@@ -14,56 +14,11 @@
           <i class="bi bi-list"></i>
         </a>
       </li>
-      <!-- <li class="nav-item d-none d-md-block">
-      <a
-        class="nav-link"
-        routerLink="/home"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        >Home</a
-        >
-      </li>
-      <li class="nav-item d-none d-md-block">
-        <a
-          class="nav-link"
-          routerLink="/clients"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-          >Clientes</a
-          >
-        </li>
-        <li class="nav-item d-none d-md-block">
-          <a
-            class="nav-link"
-            routerLink="/orders"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-            >Pedidos</a
-            >
-          </li>
-          <li class="nav-item d-none d-md-block">
-            <a
-              class="nav-link"
-              routerLink="/products"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
-              >Produtos</a
-              >
-            </li>
-            <li class="nav-item d-none d-md-block">
-              <a
-                class="nav-link"
-                routerLink="/users"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: true }"
-                >Usuários</a
-                >
-              </li> -->
     </ul>
     <!--end::Start Navbar Links-->
 
     <!--begin::End Navbar Links-->
-    @if (user$ | async; as user) {
+    <ng-container *ngIf="user$ | async as user">
       <ul class="navbar-nav ms-auto">
         <!--begin::Navbar Search-->
         <li class="nav-item">
@@ -270,7 +225,7 @@
         </li>
         <!--end::User Menu Dropdown-->
       </ul>
-    }
+    </ng-container>
     <!--end::End Navbar Links-->
   </div>
   <!--end::Container-->

@@ -9,6 +9,7 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { map, Observable, of, ReplaySubject } from 'rxjs';
+import { finalize, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment.development';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -19,9 +20,40 @@ import { Router } from '@angular/router';
 export class AccountService {
   private _userSource = new ReplaySubject<User | null>(1);
 
+  // in-flight refresh observable to prevent duplicate requests
+  private _refresh$?: Observable<void>;
+
   user$ = this._userSource.asObservable();
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  constructor(
+    private apiService: ApiService,
+    private router: Router,
+  ) {}
+
+  /**
+   * Returns true when token is expired or invalid. False when token is present and not expired.
+   */
+  isTokenExpired(token: string | null): boolean {
+    if (!token) {
+      return true;
+    }
+
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return true;
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')),
+      );
+      if (!payload || !payload.exp) {
+        return true;
+      }
+      // exp is in seconds since epoch
+      const exp = Number(payload.exp) * 1000;
+      return Date.now() >= exp;
+    } catch {
+      return true;
+    }
+  }
 
   refreshUser(jwt: string | null) {
     if (jwt === null) {
@@ -29,16 +61,31 @@ export class AccountService {
       return of(undefined);
     }
 
+    // if a refresh is already in-flight, return the existing observable
+    if (this._refresh$) {
+      return this._refresh$;
+    }
+
     let headers = new HttpHeaders();
     headers = headers.set('Authorization', `Bearer ${jwt}`);
 
-    return this.apiService
+    const req$ = this.apiService
       .get<User>('account/refresh-user-token', headers)
       .pipe(
         map((user: User) => {
           this.setUser(user);
-        })
+        }),
+        // ensure the in-flight observable is cleared when completed or errored
+        finalize(() => {
+          this._refresh$ = undefined;
+        }),
+        // share the single underlying request for multiple subscribers
+        shareReplay(1),
       );
+
+    // store and return the in-flight observable
+    this._refresh$ = req$;
+    return req$;
   }
 
   register(model: Register): Observable<WebApiResponse<User>> {
@@ -52,14 +99,14 @@ export class AccountService {
   resendEmailConfirmation(email: string) {
     return this.apiService.post(
       `account/resend-email-confirmation/${email}`,
-      {}
+      {},
     );
   }
 
   forgotUsernameOrPassword(email: string): Observable<void> {
     return this.apiService.post(
       `account/forgot-username-or-password/${email}`,
-      {}
+      {},
     );
   }
 
@@ -71,19 +118,34 @@ export class AccountService {
     return this.apiService.post<User>('account/login', model).pipe(
       map((user: User) => {
         this.setUser(user);
-      })
+      }),
     );
   }
 
   logout(): void {
-    // Navigate to the logout route first so UI can show a logout view,
-    // then clear client state and navigate to the login page.
+    // Clear client state immediately so application stops using invalid token
+    try {
+      localStorage.removeItem(environment.userKey);
+      this._userSource.next(null);
+    } catch {
+      // ignore
+    }
+
+    // Navigate to logout page then to login; if navigation promise never resolves,
+    // at least the client state is already cleared.
     this.router
       .navigateByUrl('/account/logout', { replaceUrl: true })
       .then(() => {
-        localStorage.removeItem(environment.userKey);
-        this._userSource.next(null);
+        // ensure final redirect to login
         this.router.navigateByUrl('/account/login');
+      })
+      .catch(() => {
+        // If navigation fails, still try to go to login
+        try {
+          this.router.navigateByUrl('/account/login');
+        } catch {
+          // ignore
+        }
       });
   }
 
@@ -101,6 +163,34 @@ export class AccountService {
   private setUser(user: User): void {
     if (!user) {
       return;
+    }
+
+    // ensure roles from token payload
+    try {
+      if (user.jwt) {
+        const token = user.jwt;
+        const parts = token.split('.');
+        if (parts.length >= 2) {
+          const payload = JSON.parse(
+            atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')),
+          );
+          const roles =
+            payload['role'] ||
+            payload['roles'] ||
+            payload[
+              'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+            ];
+          if (roles) {
+            if (Array.isArray(roles)) {
+              user.roles = roles;
+            } else if (typeof roles === 'string') {
+              user.roles = [roles];
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // ignore decode errors
     }
 
     localStorage.setItem(environment.userKey, JSON.stringify(user));

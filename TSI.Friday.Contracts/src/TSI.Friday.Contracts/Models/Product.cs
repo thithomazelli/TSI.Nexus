@@ -19,6 +19,8 @@ namespace TSI.Friday.Contracts.Models
 
         public ProductUnit Unit { get; set; }
 
+        public ProductType Type { get; set; }
+
         public int QuantityInStock { get; set; }
 
         public ICollection<ProductPhoto> ProductPhotos { get; set; }

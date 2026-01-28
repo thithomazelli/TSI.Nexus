@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Collections.Generic;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 
@@ -22,7 +24,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public string CreateJWT(User user)
+        public string CreateJWT(User user, IEnumerable<string>? roles = null)
         {
             var userClaims = new List<Claim>
             {
@@ -33,11 +35,43 @@ namespace TSI.Friday.Services
                 new(ClaimTypes.Surname, user.LastName)
             };
 
+            // include roles as claims
+            if (roles != null)
+            {
+                foreach (var role in roles)
+                {
+                    userClaims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
+
             var credentials = new SigningCredentials(_jwtKey, SecurityAlgorithms.HmacSha256Signature);
+
+            // Determine expiration: prefer minutes if configured, otherwise days, otherwise default60 minutes
+            var now = DateTime.UtcNow;
+            DateTime expires;
+            var minutesSetting = _config["JWT:ExpiresInMinutes"];
+            if (!string.IsNullOrEmpty(minutesSetting) && int.TryParse(minutesSetting, out var minutes))
+            {
+                expires = now.AddMinutes(minutes);
+            }
+            else
+            {
+                var daysSetting = _config["JWT:ExpiresInDays"];
+                if (!string.IsNullOrEmpty(daysSetting) && int.TryParse(daysSetting, out var days))
+                {
+                    expires = now.AddDays(days);
+                }
+                else
+                {
+                    // fallback default
+                    expires = now.AddMinutes(60);
+                }
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(userClaims),
-                Expires = DateTime.UtcNow.AddDays(int.Parse(_config["JWT:ExpiresInDays"])),
+                Expires = expires,
                 SigningCredentials = credentials,
                 Issuer = _config["JWT:Issuer"],
             };

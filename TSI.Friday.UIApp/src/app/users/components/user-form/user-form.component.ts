@@ -39,6 +39,11 @@ export class UserFormComponent
   @Output()
   cancel = new EventEmitter<void>();
 
+  roleOptions = [
+    { label: 'Admin', value: 'Admin' },
+    { label: 'User', value: 'User' },
+  ];
+
   constructor(private formBuilder: FormBuilder) {
     super();
   }
@@ -97,6 +102,7 @@ export class UserFormComponent
         ],
       ],
       photo: [''],
+      role: ['User'],
     };
 
     this.form = !this.isEdit

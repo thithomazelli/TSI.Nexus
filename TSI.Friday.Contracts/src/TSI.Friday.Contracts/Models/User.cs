@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 
 namespace TSI.Friday.Contracts.Models
@@ -13,5 +14,9 @@ namespace TSI.Friday.Contracts.Models
         public string LastName { get; set; }
 
         public string Photo { get; set; }
+
+        // NotMapped so EF won't create a dedicated column for this helper property.
+        [NotMapped]
+        public string Role { get; set; }
     }
 }

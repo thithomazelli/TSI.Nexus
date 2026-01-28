@@ -9,6 +9,7 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
+using System.Threading.Tasks;
 
 namespace TSI.Friday.Services
 {
@@ -69,7 +70,20 @@ namespace TSI.Friday.Services
                 return Unauthorized("Invalid username or password");
             }
 
-            return CreateApplicationUserDto(user);
+            return await CreateApplicationUserDto(user);
+        }
+
+        /// <inheritdoc />
+        public async Task<ActionResult<UserDto>> RefreshUserToken(string userName)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+
+            if (user == null)
+            {
+                return Unauthorized("User was not found.");
+            }
+
+            return await CreateApplicationUserDto(user);
         }
 
         /// <inheritdoc />
@@ -97,6 +111,24 @@ namespace TSI.Friday.Services
                 return BadRequest(result.Errors);
             }
 
+            // assign role if provided
+            if (!string.IsNullOrEmpty(model.Role))
+            {
+                try
+                {
+                    var roleResult = await _userManager.AddToRoleAsync(userToAdd, model.Role);
+                    if (!roleResult.Succeeded)
+                    {
+                        // log but don't fail the entire registration
+                        // consider removing the user if role assignment is critical
+                    }
+                }
+                catch
+                {
+                    // swallow role assignment errors to avoid breaking registration
+                }
+            }
+
             try
             {
                 if (!(await SendConfirmEmailAsync(userToAdd)))
@@ -119,19 +151,6 @@ namespace TSI.Friday.Services
                     $"Failed to send email. Please contact admin. Error: {ex.Message}"
                 );
             }
-        }
-
-        /// <inheritdoc />
-        public async Task<ActionResult<UserDto>> RefreshUserToken(string userName)
-        {
-            var user = await _userManager.FindByNameAsync(userName);
-
-            if (user == null)
-            {
-                return Unauthorized("User was not found.");
-            }
-
-            return CreateApplicationUserDto(user);
         }
 
         /// <inheritdoc />
@@ -360,6 +379,46 @@ namespace TSI.Friday.Services
 
                 await _repository.UpdateAsync(userToUpdate);
 
+                // Handle role updates if a role was provided in the payload
+                if (!string.IsNullOrEmpty(user.Role))
+                {
+                    try
+                    {
+                        var currentRoles = await _userManager.GetRolesAsync(userToUpdate);
+
+                        // If the desired role is not present, add it
+                        if (!currentRoles.Contains(user.Role))
+                        {
+                            var addRoleResult = await _userManager.AddToRoleAsync(userToUpdate, user.Role);
+                            if (!addRoleResult.Succeeded)
+                            {
+                                // Log or aggregate errors as needed; do not fail the whole update
+                                // You could set result as warning here if desired
+                            }
+                        }
+
+                        // Remove any other roles the user had (keeping single-role model)
+                        foreach (var existing in currentRoles)
+                        {
+                            if (existing != user.Role)
+                            {
+                                try
+                                {
+                                    await _userManager.RemoveFromRoleAsync(userToUpdate, existing);
+                                }
+                                catch
+                                {
+                                    // ignore individual removal failures
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ignore role assignment errors to avoid breaking update; consider logging
+                    }
+                }
+
                 result.Data = user;
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Usuário {user.UserName} atualizado com sucesso.";
@@ -446,8 +505,10 @@ namespace TSI.Friday.Services
 
         #region Private Helper Methods
 
-        private UserDto CreateApplicationUserDto(User user)
+        private async Task<UserDto> CreateApplicationUserDto(User user)
         {
+            var roles = await _userManager.GetRolesAsync(user);
+
             return new UserDto
             {
                 Id = user.Id,
@@ -456,7 +517,7 @@ namespace TSI.Friday.Services
                 EmailConfirmed = user.EmailConfirmed,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                JWT = _jwtService.CreateJWT(user),
+                JWT = _jwtService.CreateJWT(user, roles),
                 Photo = user.Photo,
             };
         }

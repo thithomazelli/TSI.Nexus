@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: string;
   userName: string;
   email: string;
   emailConfirmed: boolean;
@@ -7,4 +7,8 @@ export interface User {
   lastName: string;
   jwt: string;
   photo: string;
+  // singular role used when creating/updating via forms
+  role?: string;
+  // roles array from token
+  roles?: string[];
 }

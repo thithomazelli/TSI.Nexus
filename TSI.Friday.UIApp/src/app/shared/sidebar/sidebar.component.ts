@@ -4,7 +4,10 @@ import {
   ElementRef,
   OnDestroy,
   Renderer2,
+  OnInit,
 } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { AccountService } from '../../core/services/account/account.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -12,12 +15,25 @@ import {
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
-export class SidebarComponent implements AfterViewInit, OnDestroy {
+export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private listeners: (() => void)[] = [];
   private transitionCleanups: (() => void)[] = [];
   private osInstance: any = null;
+  private userSub: Subscription | null = null;
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  isAdmin = false;
+
+  constructor(
+    private el: ElementRef,
+    private renderer: Renderer2,
+    private accountService: AccountService
+  ) {}
+
+  ngOnInit(): void {
+    this.userSub = this.accountService.user$.subscribe((user) => {
+      this.isAdmin = !!user?.roles?.includes('Admin');
+    });
+  }
 
   ngAfterViewInit(): void {
     // inicializa OverlayScrollbars no wrapper, se disponível
@@ -219,6 +235,11 @@ export class SidebarComponent implements AfterViewInit, OnDestroy {
       this.osInstance = null;
     } catch {
       // ignore
+    }
+
+    if (this.userSub) {
+      this.userSub.unsubscribe();
+      this.userSub = null;
     }
   }
 }
