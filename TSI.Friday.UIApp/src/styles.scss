@@ -118,3 +118,18 @@
 .navbar-nav > .user-menu > .dropdown-menu > li.user-header > img {
   background-color: white;
 }
+
+mat-calendar {
+  background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  box-shadow: var(--bs-box-shadow-inset);
+  margin-top: 5px;
+}
+
+.mat-calendar-body-selected {
+  background-color: #1976d2 !important; // azul Material
+  color: #fff !important;
+  border-radius: 50% !important;
+  box-shadow: 0 0 0 2px #1565c0;
+}

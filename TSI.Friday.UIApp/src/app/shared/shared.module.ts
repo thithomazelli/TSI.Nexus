@@ -3,6 +3,9 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AgGridModule } from 'ag-grid-angular';
@@ -18,6 +21,8 @@ import { ConfirmationComponent } from './components/modals/confirmation/confirma
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { HeaderComponent } from './header/header.component';
 import { PhotoComponent } from './photo/photo.component';
+
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 @NgModule({
   declarations: [
@@ -42,6 +47,8 @@ import { PhotoComponent } from './photo/photo.component';
     MatFormFieldModule,
     MatInputModule,
     MatOptionModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
   exports: [
     NavbarComponent,
@@ -59,6 +66,9 @@ import { PhotoComponent } from './photo/photo.component';
     MatFormFieldModule,
     MatInputModule,
     MatOptionModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
   ],
+  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'pt-BR' }],
 })
 export class SharedModule {}

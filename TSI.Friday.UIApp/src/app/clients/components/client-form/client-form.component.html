@@ -29,63 +29,70 @@
         </div>
       </div>
       <div class="col-12 col-md-6">
-        @if (form.get('type')?.value === 'Física') {
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <input
-              formControlName="socialSecurityCard"
-              type="text"
-              placeholder="CPF"
-              class="form-control"
-              [class.is-invalid]="isInvalid('socialSecurityCard')"
-              [class.is-valid]="isValid('socialSecurityCard')"
-              mask="000.000.000-00"
-              (blur)="markAsTouched('socialSecurityCard')"
-            />
-            <label for="socialSecurityCard">CPF</label>
+        @if (form.get("type")?.value === "Física") {
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="socialSecurityCard"
+                type="text"
+                placeholder="CPF"
+                class="form-control"
+                [class.is-invalid]="isInvalid('socialSecurityCard')"
+                [class.is-valid]="isValid('socialSecurityCard')"
+                mask="000.000.000-00"
+                (blur)="markAsTouched('socialSecurityCard')"
+              />
+              <label for="socialSecurityCard">CPF</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-card-text"></i></div>
           </div>
-          <div class="input-group-text"><i class="bi bi-card-text"></i></div>
-        </div>
         } @else {
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <input
-              formControlName="nationalRegistry"
-              type="text"
-              placeholder="CNPJ"
-              class="form-control"
-              [class.is-invalid]="isInvalid('nationalRegistry')"
-              [class.is-valid]="isValid('nationalRegistry')"
-              mask="00.000.000/0000-00"
-              (blur)="markAsTouched('nationalRegistry')"
-              [disabled]="isEdit"
-            />
-            <label for="nationalRegistry">CNPJ</label>
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="nationalRegistry"
+                type="text"
+                placeholder="CNPJ"
+                class="form-control"
+                [class.is-invalid]="isInvalid('nationalRegistry')"
+                [class.is-valid]="isValid('nationalRegistry')"
+                mask="00.000.000/0000-00"
+                (blur)="markAsTouched('nationalRegistry')"
+                [disabled]="isEdit"
+              />
+              <label for="nationalRegistry">CNPJ</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-building"></i></div>
           </div>
-          <div class="input-group-text"><i class="bi bi-building"></i></div>
-        </div>
         }
       </div>
     </div>
 
     <!-- Campos específicos para Individual -->
-    @if (form.get('type')?.value === 'Física') {
-    <div>
-      <div class="input-group mb-1">
-        <div class="form-floating">
-          <input
-            formControlName="birthday"
-            type="date"
-            placeholder="Data de Nascimento"
-            class="form-control"
-            [class.is-invalid]="isInvalid('birthday')"
-          />
-          <label for="birthday">Data de Nascimento</label>
+    @if (form.get("type")?.value === "Física") {
+      <div>
+        <div class="input-group mb-1">
+          <mat-form-field class="w-100">
+            <mat-label>Data de Nascimento</mat-label>
+            <input
+              matInput
+              [matDatepicker]="picker"
+              formControlName="birthday"
+              [class.is-invalid]="isInvalid('birthday')"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="picker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker
+              #picker
+              panelClass="pt-br-datepicker"
+            ></mat-datepicker>
+          </mat-form-field>
+          <!-- <div class="input-group-text"><i class="bi bi-calendar"></i></div> -->
         </div>
-        <div class="input-group-text"><i class="bi bi-calendar"></i></div>
+        <!-- Adicione outros campos específicos de Individual aqui -->
       </div>
-      <!-- Adicione outros campos específicos de Individual aqui -->
-    </div>
     }
 
     <!-- Campo de email -->

@@ -2,7 +2,7 @@
 using Moq;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
-using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 using TSI.Friday.WebAPI.Controllers;
 
@@ -23,7 +23,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task UsersController_GetAll_ShouldGetAllUsers_WhenMethodIsCalled()
         {
             // Arrange
-            var userMock = new List<User>
+            var userMock = new List<UserDto>
             {
                 new() {
                     Id = "1",
@@ -41,7 +41,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 },
             };
 
-            var expectedResult = new WebApiResponse<IEnumerable<User>>
+            var expectedResult = new WebApiResponse<IEnumerable<UserDto>>
             {
                 Data = userMock,
                 Status = ResponseStatus.Success,
@@ -56,7 +56,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<WebApiResponse<IEnumerable<User>>>(okResult.Value);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<UserDto>>>(okResult.Value);
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(userMock, response.Data);
 
@@ -68,7 +68,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         {
             // Arrange
             const string idMock = "1";
-            var userMock = new User
+            var userMock = new UserDto
             {
                 Id = "1",
                 FirstName = "Thiago",
@@ -77,7 +77,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 EmailConfirmed = true,
             };
 
-            var expectedResult = new WebApiResponse<User>
+            var expectedResult = new WebApiResponse<UserDto>
             {
                 Data = userMock,
                 Status = ResponseStatus.Success,
@@ -92,7 +92,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<WebApiResponse<User>>(okResult.Value);
+            var response = Assert.IsType<WebApiResponse<UserDto>>(okResult.Value);
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(userMock, response.Data);
 

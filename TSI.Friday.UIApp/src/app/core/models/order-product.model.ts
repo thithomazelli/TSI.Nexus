@@ -1,17 +1,23 @@
-import { OrderProductType } from '../enums/order-product-type.enum';
+import { OrderProductStatus, ProductType } from '../enums';
+import { Address } from './address.model';
 
 export interface OrderProduct {
   id: number;
   description?: string;
-  type?: OrderProductType;
   readonly previousQuantity?: number;
   quantity?: number;
-  price?: number;
   discount?: number;
+  price?: number;
   totalPrice?: number;
+  startDate?: Date;
+  endDate?: Date;
+  status: OrderProductStatus;
+  addressId?: number;
+  address?: Address;
   orderId?: number;
   orderNumber?: string;
   productId?: number;
   productSku?: string;
   productName?: string;
+  productType?: ProductType;
 }

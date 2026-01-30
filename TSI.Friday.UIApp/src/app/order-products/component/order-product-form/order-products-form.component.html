@@ -60,6 +60,75 @@
       </div>
     </div>
 
+    <div class="row g-2 mb-1">
+      <div class="col-6">
+        <div class="input-group mb-1">
+          <div class="form-floating flex-grow-1">
+            <input
+              formControlName="productType"
+              type="text"
+              placeholder="Tipo"
+              class="form-control"
+              readonly
+            />
+            <label for="productType">Tipo</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-tag"></i></div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="input-group mb-1">
+          <div class="form-floating flex-grow-1">
+            <select formControlName="status" class="form-select" id="status">
+              <option
+                *ngFor="let option of orderProductStatusOptions"
+                [value]="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+            <label for="status">Status</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-info-circle"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-1">
+      <div class="col-6">
+        <div class="input-group mb-1">
+          <div class="form-floating flex-grow-1">
+            <input
+              formControlName="startDate"
+              type="datetime-local"
+              class="form-control"
+              placeholder="Data e hora inicial"
+            />
+            <label for="startDate">Data/Hora Inicial</label>
+          </div>
+          <div class="input-group-text">
+            <i class="bi bi-calendar-event"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="input-group mb-1">
+          <div class="form-floating flex-grow-1">
+            <input
+              formControlName="endDate"
+              type="datetime-local"
+              class="form-control"
+              placeholder="Data e hora final"
+            />
+            <label for="endDate">Data/Hora Final</label>
+          </div>
+          <div class="input-group-text">
+            <i class="bi bi-calendar-check"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="input-group mb-1">
       <div class="form-floating flex-grow-1">
         <input

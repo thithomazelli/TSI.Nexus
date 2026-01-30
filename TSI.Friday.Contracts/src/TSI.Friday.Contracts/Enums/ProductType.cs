@@ -1,9 +1,9 @@
 ﻿namespace TSI.Friday.Contracts.Enums
 {
-    public enum OrderProductType
+    public enum ProductType
     {
         Sale,
         Rental,
-        Disposal,
+        Service,
     }
 }

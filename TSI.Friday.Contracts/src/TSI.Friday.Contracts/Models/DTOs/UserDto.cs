@@ -17,5 +17,7 @@
         public string JWT { get; set; }
 
         public string Photo { get; set; }
+
+        public string Role { get; set; }
     }
 }

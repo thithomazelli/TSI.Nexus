@@ -36,9 +36,8 @@ export class ProductsComponent implements OnInit {
       headerName: 'SKU',
       sortable: true,
       filter: true,
-      // width: 90,
-      resizable: false,
-      // minWidth: 150,
+      width: 90,
+      resizable: true,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         // href="#" prevents full page reload; onCellClicked handles navigation
@@ -88,6 +87,13 @@ export class ProductsComponent implements OnInit {
     {
       field: 'unit',
       headerName: 'Unit',
+      sortable: true,
+      filter: true,
+      maxWidth: 120,
+    },
+    {
+      field: 'type',
+      headerName: 'Type',
       sortable: true,
       filter: true,
       maxWidth: 120,

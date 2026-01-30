@@ -2,13 +2,13 @@
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="modal-body">
       @if (isEdit) {
-        <div class="mb-3" hidden>
+        <div class="mb-1" hidden>
           <label for="id" class="form-label">Id</label>
           <input id="id" class="form-control" formControlName="id" />
         </div>
       }
 
-      <div class="row g-2 mb-3">
+      <div class="row g-2 mb-1">
         <div class="col-12 col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill">
@@ -23,7 +23,7 @@
               />
               <label for="name">Name</label>
             </div>
-            <div class="input-group-text"><i class="bi bi-person"></i></div>
+            <div class="input-group-text"><i class="bi bi-tag"></i></div>
           </div>
         </div>
         <div class="col-12 col-md-6">
@@ -40,12 +40,12 @@
               />
               <label for="sku">SKU</label>
             </div>
-            <div class="input-group-text"><i class="bi bi-person"></i></div>
+            <div class="input-group-text"><i class="bi bi bi-upc"></i></div>
           </div>
         </div>
       </div>
 
-      <div class="input-group mb-3">
+      <div class="input-group mb-1">
         <div class="form-floating flex-fill">
           <textarea
             formControlName="description"
@@ -57,8 +57,8 @@
         </div>
       </div>
 
-      <div class="row">
-        <div class="col-md-4 mb-3">
+      <div class="row g-2 mb-1">
+        <div class="col-md-6">
           <div class="form-floating flex-fill select-floating">
             <select
               formControlName="unit"
@@ -67,19 +67,38 @@
               [class.is-invalid]="isInvalid('unit')"
               [class.is-valid]="isValid('unit')"
             >
-              >
-              <option value="None" disabled selected>None</option>
+              <option value="" disabled selected>None</option>
               @for (option of unitOptions; track option) {
                 <option [value]="option.value">
                   {{ option.label }}
                 </option>
               }
             </select>
-
             <label for="unit">Unit</label>
           </div>
         </div>
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="type"
+              class="form-select"
+              id="type"
+              [class.is-invalid]="isInvalid('type')"
+              [class.is-valid]="isValid('type')"
+            >
+              <option value="" disabled selected>None</option>
+              @for (option of productTypeOptions; track option) {
+                <option [value]="option.value">
+                  {{ option.label }}
+                </option>
+              }
+            </select>
+            <label for="type">Type</label>
+          </div>
+        </div>
+      </div>
+      <div class="row g-2 mb-1">
+        <div class="col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill">
               <input
@@ -98,7 +117,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill">
               <input
@@ -116,8 +135,7 @@
                   Quantity is required
                 </span> -->
             </div>
-
-            <div class="input-group-text"><i class="bi bi-person"></i></div>
+            <div class="input-group-text"><i class="bi bi-box-seam"></i></div>
           </div>
         </div>
       </div>

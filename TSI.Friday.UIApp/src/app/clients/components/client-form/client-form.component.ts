@@ -129,12 +129,6 @@ export class ClientFormComponent
   private patchFormWithData(): void {
     if (this.data && this.form) {
       const patch = { ...this.data };
-      if ('birthday' in patch && patch.birthday) {
-        const date = new Date((patch as any).birthday);
-        if (!isNaN(date.getTime())) {
-          (patch as any).birthday = date.toISOString().slice(0, 10);
-        }
-      }
       this.form.patchValue(patch);
     }
   }

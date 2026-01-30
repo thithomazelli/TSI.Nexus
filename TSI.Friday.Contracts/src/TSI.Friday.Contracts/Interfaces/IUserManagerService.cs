@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
@@ -67,7 +67,7 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<IActionResult> ForgotUsernameOrPassword(string email);
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -78,27 +78,26 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="user">The user object updated.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
-        Task<WebApiResponse<User>> Update(User user);
+        Task<WebApiResponse<UserDto>> Update(User user);
 
         /// <summary>
         /// Remove an User based on the object received.
         /// </summary>
         /// <param name="user">The user object to be removed.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
-        Task<WebApiResponse<User>> Remove(User user);
-
+        Task<WebApiResponse<UserDto>> Remove(User user);
 
         /// <summary>
         /// Method responsible to get all registers available in the Users data table.
         /// </summary>
         /// <returns>All registers found in the Users data table.</returns>
-        Task<WebApiResponse<IEnumerable<User>>> FindAll();
+        Task<WebApiResponse<IEnumerable<UserDto>>> FindAll();
 
         /// <summary>
         /// Method responsible to get only one User based in the ID received as parameter.
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One User object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<User>> FindById(string id);
+        Task<WebApiResponse<UserDto>> FindById(string id);
     }
 }

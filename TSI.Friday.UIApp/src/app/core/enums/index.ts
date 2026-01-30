@@ -1,6 +1,7 @@
 export * from './api-type.enum';
 export * from './address-type.enum';
 export * from './client-type.enum';
+export * from './order-product-status.enum';
 export * from './order-status.enum';
 export * from './payment-status.enum';
 export * from './payment-type.enum';
@@ -8,3 +9,4 @@ export * from './photo-type.enum';
 export * from './product-unit.enum';
 export * from './response-status.enum';
 export * from './user-type.enum';
+export * from './product-type.enum';

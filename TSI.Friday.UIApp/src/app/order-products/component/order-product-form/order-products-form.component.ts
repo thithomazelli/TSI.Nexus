@@ -16,6 +16,7 @@ import {
   ProductService,
   FormBaseComponent,
   CurrencyService,
+  OrderProductStatus,
 } from '@friday/core';
 import { Observable, startWith, map } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -55,6 +56,11 @@ export class OrderProductsFormComponent
   products$!: Observable<Product[]>;
   filteredProductsSku$!: Observable<Product[]>;
   filteredProductsName$!: Observable<Product[]>;
+
+  orderProductStatusOptions = [
+    { label: 'Delivered', value: OrderProductStatus.Delivered },
+    { label: 'Devolvido', value: OrderProductStatus.Returned },
+  ];
 
   constructor(
     private formBuilder: FormBuilder,
@@ -115,6 +121,7 @@ export class OrderProductsFormComponent
                   this.form.get('productId')!.setValue(result.id);
                   this.form.get('productSku')!.setValue(result.sku);
                   this.form.get('productName')!.setValue(result.name);
+                  this.form.get('productType')!.setValue(result.type);
                 } else {
                   this.form.get('productSku')!.setValue('');
                   this.markAsTouched('productSku');
@@ -170,6 +177,7 @@ export class OrderProductsFormComponent
                   this.form.get('productId')!.setValue(result.id);
                   this.form.get('productSku')!.setValue(result.sku);
                   this.form.get('productName')!.setValue(result.name);
+                  this.form.get('productType')!.setValue(result.type);
                 } else {
                   this.form.get('productName')!.setValue('');
                   this.markAsTouched('productName');
@@ -233,6 +241,7 @@ export class OrderProductsFormComponent
       // Limpa seleção para forçar nova escolha
       this.form.get('productSku')?.setValue('');
       this.form.get('productName')?.setValue('');
+      this.form.get('productType')?.setValue('');
       return;
     }
 
@@ -244,6 +253,7 @@ export class OrderProductsFormComponent
       productId: product.id,
       productSku: product.sku,
       productName: product.name,
+      productType: product.type,
       price: product.price,
       priceFormatted: this.currencyService.formatCurrencyBRL(product.price),
     });
@@ -264,6 +274,9 @@ export class OrderProductsFormComponent
 
   private initForm(): void {
     this.form = this.formBuilder.group({
+      productSku: [''],
+      productName: [''],
+      productType: [{ value: '', disabled: true }],
       description: ['', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
       previousQuantity: [0],
@@ -273,8 +286,6 @@ export class OrderProductsFormComponent
       totalPrice: [{ value: 0, disabled: true }],
       totalPriceFormatted: [{ value: 0, disabled: true }],
       productId: [''],
-      productName: [''],
-      productSku: [''],
     });
 
     if (this.isEdit) {

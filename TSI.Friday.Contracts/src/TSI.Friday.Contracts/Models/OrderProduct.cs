@@ -11,16 +11,26 @@ namespace TSI.Friday.Contracts.Models
 
         public string Description { get; set; } = string.Empty;
 
-        public ProductType Type { get; set; }
-
         public decimal Quantity { get; set; }
-
-        public decimal Price { get; set; }
 
         public decimal Discount { get; set; }
 
+        public decimal Price { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public decimal TotalPrice { get; private set; }
+
+        public DateTime StartDate { get; set; }
+
+        public DateTime EndDate { get; set; }
+
+        public OrderProductStatus Status { get; set; }
+
+        [ForeignKey("Address")]
+        public int AddressId { get; set; }
+
+        [Required]
+        public virtual Address Address { get; set; } = null!;
 
         [ForeignKey("Order")]
         public int OrderId { get; set; }

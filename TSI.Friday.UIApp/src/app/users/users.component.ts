@@ -106,6 +106,13 @@ export class UsersComponent {
       maxWidth: 200,
     },
     {
+      field: 'role',
+      headerName: 'Role',
+      sortable: true,
+      filter: true,
+      resizable: true,
+    },
+    {
       headerName: '',
       sortable: false,
       filter: false,

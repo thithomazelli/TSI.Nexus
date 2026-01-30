@@ -12,6 +12,7 @@ import {
   CurrencyService,
   FormBaseComponent,
   Product,
+  ProductType,
   ProductUnit,
 } from '@friday/core';
 
@@ -45,6 +46,12 @@ export class ProductFormComponent
     { label: 'Unit', value: ProductUnit.Unit },
     { label: 'Kilogram', value: ProductUnit.Kilogram },
     { label: 'Gram', value: ProductUnit.Gram },
+  ];
+
+  productTypeOptions = [
+    { label: 'Sale', value: ProductType.Sale },
+    { label: 'Rental', value: ProductType.Rental },
+    { label: 'Service', value: ProductType.Service },
   ];
 
   constructor(
@@ -102,6 +109,7 @@ export class ProductFormComponent
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [0, [Validators.required, Validators.min(0)]],
       unit: ['', Validators.required],
+      type: ['', Validators.required],
       quantityInStock: [0, [Validators.required, Validators.min(0)]],
       photo: [''],
     };
@@ -122,5 +130,15 @@ export class ProductFormComponent
       };
       this.form.patchValue(patch);
     }
+
+    this.form.get('type')?.valueChanges.subscribe((type) => {
+      const quantityControl = this.form.get('quantityInStock');
+      if (type === ProductType.Service) {
+        quantityControl?.setValue(0);
+        quantityControl?.disable();
+      } else {
+        quantityControl?.enable();
+      }
+    });
   }
 }

@@ -1,4 +1,8 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -9,7 +13,6 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
-using System.Threading.Tasks;
 
 namespace TSI.Friday.Services
 {
@@ -22,6 +25,7 @@ namespace TSI.Friday.Services
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
+        private readonly IMapper _mapper;
 
         /// <summary>
         /// Repository object created to access the Users registers on database using EntityFramework.
@@ -38,6 +42,7 @@ namespace TSI.Friday.Services
             UserManager<User> userManager,
             IEmailService emailService,
             IConfiguration config,
+            IMapper mapper,
             IRepository<User> repository
         )
         {
@@ -46,6 +51,7 @@ namespace TSI.Friday.Services
             _userManager = userManager;
             _emailService = emailService;
             _config = config;
+            _mapper = mapper;
             _repository = repository;
         }
 
@@ -348,9 +354,9 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<User>> Update(User user)
+        public async Task<WebApiResponse<UserDto>> Update(User user)
         {
-            WebApiResponse<User> result = new();
+            WebApiResponse<UserDto> result = new();
 
             try
             {
@@ -389,7 +395,10 @@ namespace TSI.Friday.Services
                         // If the desired role is not present, add it
                         if (!currentRoles.Contains(user.Role))
                         {
-                            var addRoleResult = await _userManager.AddToRoleAsync(userToUpdate, user.Role);
+                            var addRoleResult = await _userManager.AddToRoleAsync(
+                                userToUpdate,
+                                user.Role
+                            );
                             if (!addRoleResult.Succeeded)
                             {
                                 // Log or aggregate errors as needed; do not fail the whole update
@@ -419,7 +428,7 @@ namespace TSI.Friday.Services
                     }
                 }
 
-                result.Data = user;
+                result.Data = await CreateApplicationUserDto(userToUpdate, false);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Usuário {user.UserName} atualizado com sucesso.";
             }
@@ -434,15 +443,26 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<User>> Remove(User user)
+        public async Task<WebApiResponse<UserDto>> Remove(User user)
         {
-            WebApiResponse<User> result = new();
+            WebApiResponse<UserDto> result = new();
 
             try
             {
-                await _repository.RemoveAsync(user);
+                // Fetch the user with roles before removal
+                var userToRemove = await _userManager.FindByIdAsync(user.Id);
+                if (userToRemove == null)
+                {
+                    return new WebApiResponse<UserDto>
+                    {
+                        Status = ResponseStatus.Error,
+                        Message = "User not found.",
+                    };
+                }
 
-                result.Data = user;
+                await _repository.RemoveAsync(userToRemove);
+
+                result.Data = await CreateApplicationUserDto(userToRemove, false);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Usuário {user.UserName} removido com sucesso.";
             }
@@ -457,15 +477,25 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<User>>> FindAll()
+        public async Task<WebApiResponse<IEnumerable<UserDto>>> FindAll()
         {
-            WebApiResponse<IEnumerable<User>> result = new();
+            WebApiResponse<IEnumerable<UserDto>> result = new();
 
             try
             {
-                result.Data = await _repository.GetAllAsync();
+                var users = await _repository.GetAllAsync();
+
+                // Use a loop to create DTOs for each user to include role information
+                var userDtos = new List<UserDto>();
+                foreach (var user in users)
+                {
+                    var userDto = await CreateApplicationUserDto(user, false);
+                    userDtos.Add(userDto);
+                }
+                result.Data = userDtos;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+                result.Message =
+                    $"{(result.Data as ICollection<UserDto>)?.Count ?? 0} registro(s) encontrado(s).";
             }
             catch (Exception ex)
             {
@@ -478,13 +508,14 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<User>> FindById(string id)
+        public async Task<WebApiResponse<UserDto>> FindById(string id)
         {
-            WebApiResponse<User> result = new();
+            WebApiResponse<UserDto> result = new();
 
             try
             {
-                result.Data = await _repository.GetByIdAsync(id);
+                var user = await _repository.GetByIdAsync(id);
+                result.Data = await CreateApplicationUserDto(user, false);
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
@@ -505,7 +536,7 @@ namespace TSI.Friday.Services
 
         #region Private Helper Methods
 
-        private async Task<UserDto> CreateApplicationUserDto(User user)
+        private async Task<UserDto> CreateApplicationUserDto(User user, bool includeJwt = true)
         {
             var roles = await _userManager.GetRolesAsync(user);
 
@@ -517,8 +548,9 @@ namespace TSI.Friday.Services
                 EmailConfirmed = user.EmailConfirmed,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                JWT = _jwtService.CreateJWT(user, roles),
+                JWT = includeJwt ? _jwtService.CreateJWT(user, roles) : null,
                 Photo = user.Photo,
+                Role = roles.FirstOrDefault(),
             };
         }
 
