@@ -50,7 +50,7 @@ export class AddressDetailsModalComponent extends FormBaseComponent {
         .put<WebApiResponse<Address>>(`${this._baseEndPoint}/update`, address)
         .subscribe((response: WebApiResponse<Address>) => {
           this.saved.emit();
-          this.modalService.hideModal(this.dialogRef);
+          this.dialogRef.close(response);
           this.notificationService.showMessage(
             response.status,
             response.message,
@@ -61,7 +61,7 @@ export class AddressDetailsModalComponent extends FormBaseComponent {
         .post<WebApiResponse<Address>>(`${this._baseEndPoint}/add`, address)
         .subscribe((response: WebApiResponse<Address>) => {
           this.saved.emit();
-          this.modalService.hideModal(this.dialogRef);
+          this.dialogRef.close(response);
           this.notificationService.showMessage(
             response.status,
             response.message,
@@ -71,6 +71,6 @@ export class AddressDetailsModalComponent extends FormBaseComponent {
   }
 
   close(): void {
-    this.modalService.hideModal(this.dialogRef);
+    this.dialogRef.close(null);
   }
 }

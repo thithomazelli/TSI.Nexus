@@ -1,0 +1,27 @@
+<div class="input-group mb-1">
+  <div class="form-floating">
+    <input
+      #dateInput
+      class="form-control"
+      type="text"
+      [placeholder]="placeholder || 'DD/MM/AAAA'"
+      maxlength="10"
+      [matDatepicker]="picker"
+      [value]="value"
+      (dateChange)="onDateChange($event)"
+      (blur)="onBlur()"
+      (keydown)="onDateKeyDown($event)"
+      (input)="onDateInput($event)"
+    />
+    <label>{{ label }}</label>
+  </div>
+  <button
+    type="button"
+    class="input-group-text button"
+    (click)="picker.open()"
+    tabindex="-1"
+  >
+    <i class="bi bi-calendar3"></i>
+  </button>
+  <mat-datepicker #picker panelClass="pt-br-datepicker"></mat-datepicker>
+</div>

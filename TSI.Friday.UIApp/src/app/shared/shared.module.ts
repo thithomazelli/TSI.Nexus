@@ -4,7 +4,20 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { MatNativeDateModule, MAT_DATE_FORMATS } from '@angular/material/core';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
+
+import { MY_DATE_FORMATS } from '../core/br-date-format';
+
+import * as _moment from 'moment';
+import 'moment/locale/pt-br';
+
+_moment.updateLocale('pt-br', {
+  weekdaysShort: ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'],
+  weekdaysMin: ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'],
+});
+_moment.locale('pt-br');
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -21,11 +34,11 @@ import { ConfirmationComponent } from './components/modals/confirmation/confirma
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { HeaderComponent } from './header/header.component';
 import { PhotoComponent } from './photo/photo.component';
-
-import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { DateFieldComponent } from './components/date-field/date-field.component';
 
 @NgModule({
   declarations: [
+    DateFieldComponent,
     NotFoundComponent,
     ValidationMessagesComponent,
     FooterComponent,
@@ -49,8 +62,10 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
     MatOptionModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatMomentDateModule,
   ],
   exports: [
+    DateFieldComponent,
     NavbarComponent,
     SidebarComponent,
     FooterComponent,
@@ -69,6 +84,9 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
     MatDatepickerModule,
     MatNativeDateModule,
   ],
-  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'pt-BR' }],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
+  ],
 })
 export class SharedModule {}

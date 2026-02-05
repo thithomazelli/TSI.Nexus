@@ -51,7 +51,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar o Endereço na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível cadastrar o Endereço na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -66,7 +67,7 @@ namespace TSI.Friday.Services
             {
                 var addressEntity = _mapper.Map<Address>(addressDto);
 
-                CleanPreviousDefaultAddress(addressDto);
+                await CleanPreviousDefaultAddress(addressDto);
 
                 await _repository.UpdateAsync(addressEntity);
 
@@ -77,7 +78,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar o Endereço na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar o Endereço na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -100,7 +102,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Endereço na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Endereço na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -117,14 +120,16 @@ namespace TSI.Friday.Services
                 var addressDto = _mapper.Map<AddressDto>(addressEntity);
                 result.Data = addressDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? "Endereço foi encontrado com sucesso"
-                    : $"Nenhum Endereço com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? "Endereço foi encontrado com sucesso"
+                        : $"Nenhum Endereço com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -137,7 +142,9 @@ namespace TSI.Friday.Services
 
             try
             {
-                var addressesEntity = await _repository.QueryAsync(_ => _.ClientId.Equals(clientId));
+                var addressesEntity = await _repository.QueryAsync(_ =>
+                    _.ClientId.Equals(clientId)
+                );
                 var addressesDto = _mapper.Map<IEnumerable<AddressDto>>(addressesEntity).ToList();
 
                 result.Data = addressesDto;
@@ -147,7 +154,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -166,27 +174,25 @@ namespace TSI.Friday.Services
             {
                 addressEntity.IsDefault = true;
             }
-
             else if (addressDto.IsDefault)
             {
-                CleanPreviousDefaultAddress(addressDto);
+                await CleanPreviousDefaultAddress(addressDto);
                 addressEntity.IsDefault = true;
             }
 
             return addressEntity.IsDefault;
         }
 
-        private async void CleanPreviousDefaultAddress(AddressDto addressDto)
+        private async Task CleanPreviousDefaultAddress(AddressDto addressDto)
         {
             if (!addressDto.IsDefault)
             {
                 return;
             }
 
-            var existingDefaults = await _repository
-                .QueryAsync(a =>
-                    a.ClientId == addressDto.ClientId &&
-                    a.Id != addressDto.Id && a.IsDefault);
+            var existingDefaults = await _repository.QueryAsync(a =>
+                a.ClientId == addressDto.ClientId && a.Id != addressDto.Id && a.IsDefault
+            );
 
             if (!existingDefaults.Any())
             {
@@ -201,6 +207,6 @@ namespace TSI.Friday.Services
             await _repository.UpdateRangeAsync(existingDefaults);
         }
 
-        #endregion Private methos
+        #endregion Private methods
     }
 }

@@ -25,7 +25,7 @@ export class ModalService {
     }
     return this.dialog.open(componentOrTemplate as any, {
       data: dialogData,
-      width: data?.width || '500px',
+      width: data?.width || '600px',
       disableClose: !!data?.disableClose,
       panelClass: 'custom-modal',
       autoFocus: false,
@@ -42,15 +42,13 @@ export class ModalService {
   }
 
   // SweetAlert2: Alert simples
-  showSweetNotification(
-    title: string,
-    text: string,
-    icon: 'success' | 'error' | 'warning' | 'info' = 'info',
-  ) {
+  showSweetNotification(title: string, text: string, icon: string) {
+    const iconNormalized = this.mapStatusToIcon(icon);
+
     return Swal.fire({
       title,
       text,
-      icon,
+      icon: iconNormalized,
       confirmButtonText: 'OK',
     });
   }
@@ -90,5 +88,25 @@ export class ModalService {
     } else {
       this.dialog.closeAll();
     }
+  }
+
+  private mapStatusToIcon(
+    status: string,
+  ): 'success' | 'error' | 'warning' | 'info' {
+    const normalized = status.toLowerCase();
+
+    if (['success', 'ok'].includes(normalized)) {
+      return 'success';
+    }
+
+    if (['error', 'fail', 'failed'].includes(normalized)) {
+      return 'error';
+    }
+
+    if (['warning', 'warn', 'alert'].includes(normalized)) {
+      return 'warning';
+    }
+
+    return 'info';
   }
 }

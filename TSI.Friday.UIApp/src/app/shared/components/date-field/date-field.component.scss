@@ -1,0 +1,15 @@
+.input-group-text {
+  cursor: pointer;
+}
+
+.pt-br-datepicker {
+  z-index: 9999;
+}
+
+.button {
+  background-color: var(--bs-tertiary-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius) !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}

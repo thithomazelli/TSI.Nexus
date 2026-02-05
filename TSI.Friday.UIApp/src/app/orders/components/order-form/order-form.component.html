@@ -78,27 +78,6 @@
       </div>
       <div class="col-6">
         <div class="input-group">
-          <div class="form-floating">
-            <input
-              formControlName="priceFormatted"
-              type="text"
-              placeholder="Price"
-              class="form-control"
-              [class.is-invalid]="isInvalid('priceFormatted')"
-              [class.is-valid]="isValid('priceFormatted')"
-            />
-            <label for="price">Price</label>
-          </div>
-          <div class="input-group-text">
-            <i class="bi bi-cash-coin"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-6">
-        <div class="input-group">
           <div class="form-floating flex-fill">
             <input
               formControlName="discount"
@@ -113,6 +92,27 @@
             <label for="discount">Discount</label>
           </div>
           <div class="input-group-text"><i class="bi bi-percent"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-6">
+        <div class="input-group">
+          <div class="form-floating">
+            <input
+              formControlName="priceFormatted"
+              type="text"
+              placeholder="Price"
+              class="form-control"
+              [class.is-invalid]="isInvalid('priceFormatted')"
+              [class.is-valid]="isValid('priceFormatted')"
+            />
+            <label for="price">Price</label>
+          </div>
+          <div class="input-group-text">
+            <i class="bi bi-cash-coin"></i>
+          </div>
         </div>
       </div>
       <div class="col-6">

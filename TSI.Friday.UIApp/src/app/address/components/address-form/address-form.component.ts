@@ -102,6 +102,7 @@ export class AddressFormComponent
 
   private initForm(): void {
     const commonControls = {
+      name: ['', Validators.required],
       type: [null, Validators.required],
       zipCode: ['', Validators.required],
       state: ['', Validators.required],
@@ -111,6 +112,7 @@ export class AddressFormComponent
       comments: [''],
       clientId: [''],
       country: ['BR', Validators.required],
+      isDefault: [false],
     };
 
     this.form = !this.isEdit

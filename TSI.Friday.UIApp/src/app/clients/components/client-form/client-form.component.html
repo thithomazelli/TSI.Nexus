@@ -58,7 +58,6 @@
                 [class.is-valid]="isValid('nationalRegistry')"
                 mask="00.000.000/0000-00"
                 (blur)="markAsTouched('nationalRegistry')"
-                [disabled]="isEdit"
               />
               <label for="nationalRegistry">CNPJ</label>
             </div>
@@ -70,29 +69,10 @@
 
     <!-- Campos específicos para Individual -->
     @if (form.get("type")?.value === "Física") {
-      <div>
-        <div class="input-group mb-1">
-          <mat-form-field class="w-100">
-            <mat-label>Data de Nascimento</mat-label>
-            <input
-              matInput
-              [matDatepicker]="picker"
-              formControlName="birthday"
-              [class.is-invalid]="isInvalid('birthday')"
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="picker"
-            ></mat-datepicker-toggle>
-            <mat-datepicker
-              #picker
-              panelClass="pt-br-datepicker"
-            ></mat-datepicker>
-          </mat-form-field>
-          <!-- <div class="input-group-text"><i class="bi bi-calendar"></i></div> -->
-        </div>
-        <!-- Adicione outros campos específicos de Individual aqui -->
-      </div>
+      <app-date-field
+        formControlName="birthday"
+        [label]="'Data de Nascimento'"
+      ></app-date-field>
     }
 
     <!-- Campo de email -->

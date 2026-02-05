@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
+using AutoMapper;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -27,7 +27,11 @@ namespace TSI.Friday.Services
         /// OrderService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
-        public OrderService(IRepository<Order> repository, ISequenceService sequenceService, IMapper mapper)
+        public OrderService(
+            IRepository<Order> repository,
+            ISequenceService sequenceService,
+            IMapper mapper
+        )
         {
             _repository = repository;
             _sequenceService = sequenceService;
@@ -48,14 +52,15 @@ namespace TSI.Friday.Services
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);
 
-                result.Data = orderDto;
+                result.Data = _mapper.Map<OrderDto>(orderEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} cadastrado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar o Pedido {orderDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível cadastrar o Pedido {orderDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -71,14 +76,15 @@ namespace TSI.Friday.Services
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.UpdateAsync(orderEntity);
 
-                result.Data = orderDto;
+                result.Data = _mapper.Map<OrderDto>(orderEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados do Pedido {orderDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar os dados do Pedido {orderDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -101,7 +107,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Pedido {orderDto?.OrderNumber} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Pedido {orderDto?.OrderNumber} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -122,7 +129,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Pedidos na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Pedidos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -139,14 +147,16 @@ namespace TSI.Friday.Services
 
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Pedido {result.Data.OrderNumber} encontrado com sucesso"
-                    : $"Nenhum Pedido com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Pedido {result.Data.OrderNumber} encontrado com sucesso"
+                        : $"Nenhum Pedido com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Pedidos na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Pedidos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -159,17 +169,23 @@ namespace TSI.Friday.Services
 
             try
             {
-                var order = await _repository.FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
+                var order = await _repository.FirstOrDefaultAsync(
+                    o => o.OrderNumber == orderNumber,
+                    o => o.Client
+                );
+
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Pedido {result.Data.OrderNumber} encontrado com sucesso"
-                    : $"Nenhum Pedido com o número {orderNumber} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Pedido {result.Data.OrderNumber} encontrado com sucesso"
+                        : $"Nenhum Pedido com o número {orderNumber} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível buscar o Pedido pelo número {orderNumber}. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível buscar o Pedido pelo número {orderNumber}. Erro: {ex.Message}";
             }
 
             return result;
@@ -190,7 +206,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os Pedidos do Cliente {clientId}. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os Pedidos do Cliente {clientId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -203,7 +220,9 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orders = await _repository.QueryAsync(o => o.OrderProducts.Any(op => op.ProductId == productId));
+                var orders = await _repository.QueryAsync(o =>
+                    o.OrderProducts.Any(op => op.ProductId == productId)
+                );
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -211,7 +230,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os Pedidos relacionados ao Produto {productId}. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os Pedidos relacionados ao Produto {productId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -262,7 +282,6 @@ namespace TSI.Friday.Services
 
             return prefix;
         }
-
 
         #endregion Private methods
     }

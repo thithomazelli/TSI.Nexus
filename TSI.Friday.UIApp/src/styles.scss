@@ -133,3 +133,9 @@ mat-calendar {
   border-radius: 50% !important;
   box-shadow: 0 0 0 2px #1565c0;
 }
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

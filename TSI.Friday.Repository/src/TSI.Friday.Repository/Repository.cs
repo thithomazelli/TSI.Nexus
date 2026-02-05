@@ -111,6 +111,27 @@ namespace TSI.Friday.Repository
         }
 
         /// <inheritdoc />
+        public async Task<T> FirstOrDefaultAsync(
+            Expression<Func<T, bool>> filter,
+            params Expression<Func<T, object>>[] includes
+        )
+        {
+            IQueryable<T> query = _myDbContext.Set<T>().Where(filter);
+
+            if (includes != null && includes.Length > 0)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            var entity = await query.FirstOrDefaultAsync();
+
+            return entity ?? throw new InvalidOperationException("No entity found matching the filter.");
+        }
+
+        /// <inheritdoc />
         public async Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter)
         {
             return await _myDbContext.Set<T>().Where(filter).ToListAsync();

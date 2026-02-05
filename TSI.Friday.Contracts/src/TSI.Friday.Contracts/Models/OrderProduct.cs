@@ -27,10 +27,9 @@ namespace TSI.Friday.Contracts.Models
         public OrderProductStatus Status { get; set; }
 
         [ForeignKey("Address")]
-        public int AddressId { get; set; }
+        public int? AddressId { get; set; }
 
-        [Required]
-        public virtual Address Address { get; set; } = null!;
+        public virtual Address Address { get; set; }
 
         [ForeignKey("Order")]
         public int OrderId { get; set; }

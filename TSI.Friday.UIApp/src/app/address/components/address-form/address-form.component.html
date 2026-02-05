@@ -1,5 +1,23 @@
 <div class="address-form-wrapper" [ngClass]="{ compact: compact }">
   <form [formGroup]="form" (ngSubmit)="submit()">
+    <!-- Nome -->
+    <div class="row g-2 mb-1">
+      <div class="col-12">
+        <div class="input-group">
+          <div class="form-floating flex-grow-1">
+            <input
+              formControlName="name"
+              type="text"
+              class="form-control"
+              placeholder="Nome"
+              [class.is-invalid]="isInvalid('name')"
+            />
+            <label for="name">Nome</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+        </div>
+      </div>
+    </div>
     <!-- 1ª linha: tipo + cep -->
     <div class="row g-2 mb-1">
       <div class="col-12 col-md-6">
@@ -19,7 +37,7 @@
             </select>
             <label for="type">Tipo de Endereço</label>
           </div>
-          <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+          <div class="input-group-text"><i class="bi bi-info-circle"></i></div>
         </div>
       </div>
       <div class="col-12 col-md-6">
@@ -91,7 +109,11 @@
               [class.is-invalid]="isInvalid('state')"
             >
               <option [ngValue]="null">Selecione o estado</option>
-                @for (estado of estados; track trackByEstadoId(i, estado); let i = $index) {
+              @for (
+                estado of estados;
+                track trackByEstadoId(i, estado);
+                let i = $index
+              ) {
                 <option [value]="estado.sigla">
                   {{ estado.nome }}
                 </option>
@@ -111,7 +133,11 @@
               [class.is-invalid]="isInvalid('city')"
             >
               <option [ngValue]="null">Selecione a cidade</option>
-                @for (cidade of cidades; track trackByCidadeId(i, cidade); let i = $index) {
+              @for (
+                cidade of cidades;
+                track trackByCidadeId(i, cidade);
+                let i = $index
+              ) {
                 <option [value]="cidade.nome">
                   {{ cidade.nome }}
                 </option>

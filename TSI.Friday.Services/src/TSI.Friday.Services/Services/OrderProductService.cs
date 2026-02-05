@@ -41,6 +41,41 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public async Task<WebApiResponse<OrderProductDto>> Add(OrderProductDto orderProductDto)
+        {
+            WebApiResponse<OrderProductDto> result = new();
+
+            try
+            {
+                var orderProductEntity = _mapper.Map<OrderProduct>(orderProductDto);
+
+                await _repository.AddAsync(orderProductEntity);
+
+                // Update product stock: subtract quantity
+                await ChangeProductStockAsync(
+                    orderProductEntity.ProductId,
+                    -Convert.ToInt32(orderProductEntity.Quantity)
+                );
+
+                // Recalculate order price and update order
+                await RecalculateAndUpdateOrderAsync(orderProductEntity.OrderId);
+
+                result.Data = orderProductDto;
+                result.Status = ResponseStatus.Success;
+                result.Message =
+                    $"Item do Pedido {orderProductDto.Description} cadastrado com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível cadastrar o Item do Pedido {orderProductDto?.Description} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
         public async Task<WebApiResponse<OrderProductDto>> Update(OrderProductDto orderProductDto)
         {
             WebApiResponse<OrderProductDto> result = new();
@@ -72,41 +107,6 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do Item do Pedido {orderProductDto?.Description} na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<OrderProductDto>> Add(OrderProductDto orderProductDto)
-        {
-            WebApiResponse<OrderProductDto> result = new();
-
-            try
-            {
-                var orderProductEntity = _mapper.Map<OrderProduct>(orderProductDto);
-
-                await _repository.AddAsync(orderProductEntity);
-
-                // Update product stock: subtract quantity
-                await ChangeProductStockAsync(
-                    orderProductEntity.ProductId,
-                    -Convert.ToInt32(orderProductEntity.Quantity)
-                );
-
-                // Recalculate order price and update order
-                await RecalculateAndUpdateOrderAsync(orderProductEntity.OrderId);
-
-                result.Data = orderProductDto;
-                result.Status = ResponseStatus.Success;
-                result.Message =
-                    $"Item do Pedido {orderProductDto.Description} cadastrado com sucesso.";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível cadastrar o Item do Pedido {orderProductDto?.Description} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -157,7 +157,8 @@ namespace TSI.Friday.Services
                 var items = await _repository.QueryAsync(
                     op => op.OrderId == orderId,
                     op => op.Order,
-                    op => op.Product
+                    op => op.Product,
+                    op => op.Address
                 );
                 result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);
                 result.Status = ResponseStatus.Success;

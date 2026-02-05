@@ -1,6 +1,6 @@
+import { firstValueFrom } from 'rxjs';
 import {
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -17,11 +17,20 @@ import {
   FormBaseComponent,
   CurrencyService,
   OrderProductStatus,
+  ModalService,
+  ProductType,
+  Address,
+  ApiService,
+  WebApiResponse,
+  ApiType,
+  Order,
+  ResponseStatus,
 } from '@friday/core';
 import { Observable, startWith, map } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ModalService } from '../../../core/services/modal/modal.service';
+
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
+import { AddressDetailsModalComponent } from '../../../address/components/address-details-modal/address-details-modal.component';
 
 @Component({
   selector: 'app-order-products-form',
@@ -33,7 +42,11 @@ export class OrderProductsFormComponent
   extends FormBaseComponent
   implements OnInit, OnChanges
 {
-  @ViewChild('firstInput') firstInput!: ElementRef;
+  @ViewChild('endDateField')
+  endDateField: any;
+
+  @Input()
+  parentId: number | null = null;
 
   @Input()
   isEdit = false;
@@ -53,16 +66,28 @@ export class OrderProductsFormComponent
   @Output()
   cancel = new EventEmitter<void>();
 
+  showAllAddresses = false;
+  customerAddresses: Address[] = [];
+
   products$!: Observable<Product[]>;
   filteredProductsSku$!: Observable<Product[]>;
   filteredProductsName$!: Observable<Product[]>;
 
+  productTypeOptions = [
+    { label: 'Aluguel', value: ProductType.Rental },
+    { label: 'Venda', value: ProductType.Sale },
+    { label: 'Serviço', value: ProductType.Service },
+  ];
+
   orderProductStatusOptions = [
-    { label: 'Delivered', value: OrderProductStatus.Delivered },
+    { label: 'Entregue', value: OrderProductStatus.Delivered },
     { label: 'Devolvido', value: OrderProductStatus.Returned },
   ];
 
+  private _orderData: Order | null = null;
+
   constructor(
+    private apiService: ApiService,
     private formBuilder: FormBuilder,
     private productService: ProductService,
     private modalService: ModalService,
@@ -71,18 +96,83 @@ export class OrderProductsFormComponent
     super();
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.initForm();
     this.disableEditFields();
     this.patchFormWithData();
     this.setupAutoComplete();
     this.totalPriceChange();
+    await this.initParentInfo();
+    await this.initAddressInfo();
+
+    // Enable/disable quantity field based on productType
+    const quantityControl = this.form.get('quantity');
+    const productTypeControl = this.form.get('productType');
+    if (productTypeControl && quantityControl) {
+      const setQuantityState = (type: string) => {
+        if (type === 'Sale') {
+          quantityControl.enable();
+        } else {
+          quantityControl.disable();
+        }
+      };
+      setQuantityState(productTypeControl.value);
+      productTypeControl.valueChanges.subscribe((type: string) => {
+        setQuantityState(type);
+      });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.data && this.form) {
       this.patchFormWithData();
     }
+  }
+
+  get defaultAddress(): Address | null {
+    return (
+      this.customerAddresses?.find((a) => a.isDefault) ||
+      this.customerAddresses?.[0]
+    );
+  }
+
+  get selectedAddress(): Address | null {
+    const id = this.form?.get('addressId')?.value;
+    return (
+      this.customerAddresses?.find((a) => a.id === id) || this.defaultAddress
+    );
+  }
+
+  async initParentInfo() {
+    if (this.parentId == null) {
+      return;
+    }
+    const response = await firstValueFrom(
+      this.apiService.get<WebApiResponse<Order>>(
+        `${ApiType.Orders}/GetById/${this.parentId}`,
+      ),
+    );
+    this._orderData = response.data ?? null;
+  }
+
+  async initAddressInfo() {
+    if (!this._orderData?.clientId) {
+      this.customerAddresses = [];
+      return;
+    }
+    const response = await firstValueFrom(
+      this.apiService.get<WebApiResponse<Address[]>>(
+        `${ApiType.Addresses}/getAllByClientId/${this._orderData.clientId}`,
+      ),
+    );
+    this.customerAddresses = (response.data ?? []).map(
+      (addr) => new Address({ ...addr }),
+    );
+    // Seleciona o endereço padrão no form
+    const defaultId = this.isEdit
+      ? this.data?.addressId
+      : this.defaultAddress?.id || null;
+    this.form.get('addressId')?.setValue(defaultId);
   }
 
   async onProductSkuBlur(): Promise<void> {
@@ -222,6 +312,18 @@ export class OrderProductsFormComponent
     }
   }
 
+  onPriceBlur(): void {
+    const priceControl = this.form.get('priceFormatted');
+    if (!priceControl) {
+      return;
+    }
+
+    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
+    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
+    this.form.get('price')?.setValue(value);
+    this.updateTotalPrice();
+  }
+
   selectProduct(product: Product) {
     if (!product) {
       return;
@@ -229,9 +331,10 @@ export class OrderProductsFormComponent
 
     // Validação de estoque
     if (
-      product.quantityInStock === undefined ||
-      product.quantityInStock === null ||
-      product.quantityInStock <= 0
+      product.type !== ProductType.Service &&
+      (product.quantityInStock === undefined ||
+        product.quantityInStock === null ||
+        product.quantityInStock <= 0)
     ) {
       this.modalService.showNotification(
         false,
@@ -249,6 +352,16 @@ export class OrderProductsFormComponent
       this.form.addControl('productId', this.formBuilder.control(''));
     }
 
+    if (this.data == null) {
+      this.data = {} as OrderProduct;
+    }
+
+    this.data.productId = product.id;
+    this.data.productSku = product.sku;
+    this.data.productName = product.name;
+    this.data.productType = product.type;
+    this.data.price = product.price;
+
     this.form.patchValue({
       productId: product.id,
       productSku: product.sku,
@@ -257,12 +370,21 @@ export class OrderProductsFormComponent
       price: product.price,
       priceFormatted: this.currencyService.formatCurrencyBRL(product.price),
     });
+
     this.updateTotalPrice();
+  }
+
+  onChangeAddressClick() {
+    this.showAllAddresses = !this.showAllAddresses;
+  }
+
+  onSelectAddressRadio() {
+    this.showAllAddresses = false;
   }
 
   submit(): void {
     if (this.form.valid) {
-      this.save.emit(this.form.value);
+      this.save.emit(this.form.getRawValue());
     } else {
       this.form.markAllAsTouched();
     }
@@ -272,12 +394,87 @@ export class OrderProductsFormComponent
     this.cancel.emit();
   }
 
+  validateEndDate(): void {
+    const start = this.form.get('startDate')?.value;
+    const end = this.form.get('endDate')?.value;
+    if (start && end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      if (endDate < startDate) {
+        // Limpa o campo visualmente e logicamente
+        if (this.endDateField && this.endDateField.clear) {
+          this.endDateField.clear();
+        }
+        this.modalService.showNotification(
+          false,
+          'Data inválida',
+          'A data de entrega não pode ser menor que a data de retirada.',
+        );
+      }
+    }
+  }
+
+  openEditAddressModal(address: Address) {
+    const initialState = {
+      isEdit: true,
+      data: address,
+      id: address.id,
+      parentId: address.clientId,
+    };
+
+    const dialogRef = this.modalService.showTemplateModal(
+      AddressDetailsModalComponent,
+      initialState,
+    );
+    dialogRef.afterClosed().subscribe((response: WebApiResponse<Address>) => {
+      if (response) {
+        // Atualiza endereço editado na lista
+        const idx = this.customerAddresses.findIndex(
+          (a) => a.id === response.data.id,
+        );
+        if (idx > -1) {
+          this.customerAddresses[idx] = new Address({ ...response.data });
+        }
+        this.modalService.showNotification(
+          response.status === ResponseStatus.Success,
+          '',
+          response.message,
+        );
+      }
+    });
+  }
+
+  openAddAddressModal() {
+    const initialState = {
+      isEdit: false,
+      parentId: this._orderData?.clientId,
+    };
+
+    const dialogRef = this.modalService.showTemplateModal(
+      AddressDetailsModalComponent,
+      initialState,
+    );
+    dialogRef.afterClosed().subscribe((response: WebApiResponse<Address>) => {
+      if (response) {
+        // Adiciona novo endereço ao fim da lista
+        this.customerAddresses.push(new Address({ ...response.data }));
+        this.modalService.showNotification(
+          response.status === ResponseStatus.Success,
+          '',
+          response.message,
+        );
+      }
+    });
+  }
   private initForm(): void {
+    const today = new Date();
+    const fiveDaysLater = new Date();
+    fiveDaysLater.setDate(today.getDate() + 5);
     this.form = this.formBuilder.group({
+      productId: [''],
       productSku: [''],
       productName: [''],
       productType: [{ value: '', disabled: true }],
-      description: ['', Validators.required],
       quantity: [1, [Validators.required, Validators.min(1)]],
       previousQuantity: [0],
       price: [0, [Validators.required]],
@@ -285,7 +482,26 @@ export class OrderProductsFormComponent
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
       totalPriceFormatted: [{ value: 0, disabled: true }],
-      productId: [''],
+      startDate: [today],
+      endDate: [fiveDaysLater],
+      status: [OrderProductStatus.Delivered, Validators.required],
+      addressId: [null, Validators.required],
+    });
+
+    // Validação: endDate >= startDate
+    this.form.get('endDate')?.valueChanges.subscribe(() => {
+      this.validateEndDate();
+    });
+    this.form.get('startDate')?.valueChanges.subscribe(() => {
+      const start = this.form.get('startDate')?.value;
+      if (start) {
+        const startDate = new Date(start);
+        const endDateControl = this.form.get('endDate');
+        const newEndDate = new Date(startDate);
+        newEndDate.setDate(startDate.getDate() + 5);
+        endDateControl?.setValue(newEndDate);
+      }
+      this.validateEndDate();
     });
 
     if (this.isEdit) {
@@ -346,6 +562,7 @@ export class OrderProductsFormComponent
         );
       }),
     );
+
     this.filteredProductsName$ = this.form
       .get('productName')!
       .valueChanges.pipe(
@@ -388,18 +605,6 @@ export class OrderProductsFormComponent
     this.form
       .get('discount')
       ?.valueChanges.subscribe(() => this.updateTotalPrice());
-  }
-
-  onPriceBlur(): void {
-    const priceControl = this.form.get('priceFormatted');
-    if (!priceControl) {
-      return;
-    }
-
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get('price')?.setValue(value);
-    this.updateTotalPrice();
   }
 
   private updateTotalPrice(): void {

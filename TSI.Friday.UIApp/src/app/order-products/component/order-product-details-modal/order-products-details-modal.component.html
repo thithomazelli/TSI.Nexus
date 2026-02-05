@@ -9,6 +9,7 @@
   <app-order-products-form
     [isEdit]="isEdit"
     [data]="data"
+    [parentId]="parentId"
     (save)="save($event)"
     (cancel)="close()"
     [compact]="false"

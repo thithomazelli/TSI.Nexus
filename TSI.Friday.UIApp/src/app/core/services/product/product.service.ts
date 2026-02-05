@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ApiService, ApiType, WebApiResponse } from '@friday/core';
+import { ApiService, ApiType, ProductType, WebApiResponse } from '@friday/core';
 import { Product } from '@friday/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
@@ -18,6 +18,11 @@ export class ProductService {
         .get<WebApiResponse<Product[]>>(`${this._baseEndPoint}/getAll`)
         .pipe(
           tap((response) => {
+            response.data = response.data.filter(
+              (p) =>
+                (p.type !== ProductType.Service && p.quantityInStock > 0) ||
+                p.type === ProductType.Service,
+            );
             this.products$.next(response.data);
             this.loaded = true;
           }),

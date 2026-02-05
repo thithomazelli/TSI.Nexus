@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import {
+  Address,
   ApiService,
   ApiType,
   ModalService,
@@ -43,6 +44,7 @@ export class OrderProductsComponent {
       headerName: 'Produto',
       sortable: true,
       filter: true,
+      width: 300,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         return `<a data-action="edit" class="ag-link">${value}</a>`;
@@ -61,12 +63,14 @@ export class OrderProductsComponent {
       sortable: true,
       filter: true,
       width: 120,
+      hide: true,
     },
     {
       field: 'price',
       headerName: 'Preço Unitário',
       sortable: true,
       filter: true,
+      hide: true,
       valueFormatter: (params: ValueFormatterParams) =>
         params.value ? `R$ ${params.value.toFixed(2)}` : '',
     },
@@ -76,6 +80,7 @@ export class OrderProductsComponent {
       sortable: true,
       filter: true,
       width: 120,
+      hide: true,
       valueFormatter: (params: ValueFormatterParams) =>
         params.value ? `${params.value}%` : '0%',
     },
@@ -84,8 +89,22 @@ export class OrderProductsComponent {
       headerName: 'Total',
       sortable: true,
       filter: true,
+      width: 120,
       valueFormatter: (params: ValueFormatterParams) =>
         params.value ? `R$ ${params.value.toFixed(2)}` : 'R$ 0,00',
+    },
+    {
+      field: 'address',
+      headerName: 'Endereço',
+      sortable: true,
+      filter: true,
+      width: 430,
+      valueFormatter: (params: ValueFormatterParams) => {
+        const addressModel = new Address({ ...params.value });
+        return params.value != null
+          ? `${addressModel.street}, ${addressModel.number} - ${addressModel.city}/${addressModel.state}`
+          : 'N/A';
+      },
     },
     {
       headerName: '',

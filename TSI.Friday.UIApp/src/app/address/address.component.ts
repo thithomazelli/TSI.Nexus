@@ -45,6 +45,12 @@ export class AddressComponent {
       },
     },
     {
+      field: 'name',
+      headerName: 'Nome',
+      sortable: true,
+      filter: true,
+    },
+    {
       field: 'type',
       headerName: 'Tipo',
       sortable: true,
@@ -157,7 +163,7 @@ export class AddressComponent {
         this.modalService.showSweetNotification(
           '',
           response.message,
-          'success',
+          response.status,
         );
       });
   }
@@ -166,12 +172,12 @@ export class AddressComponent {
     address.isDefault = true;
     this.apiService
       .put<WebApiResponse<Address>>(`${this._baseEndPoint}/update`, address)
-      .subscribe(() => {
+      .subscribe((response: WebApiResponse<Address>) => {
         this.getAddresses();
         this.modalService.showSweetNotification(
           '',
-          'Endereço padrão atualizado com sucesso.',
-          'success',
+          response.message,
+          response.status,
         );
         this.refreshAddresses();
       });

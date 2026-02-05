@@ -1,7 +1,8 @@
 import { AddressType } from '../enums/address-type.enum';
 
-export interface Address {
-  id: number;
+export class Address {
+  id!: number;
+  name?: string | null;
   street?: string | null;
   number?: number | null;
   city?: string | null;
@@ -12,4 +13,12 @@ export interface Address {
   type?: AddressType | null;
   clientId?: number | null;
   isDefault?: boolean | null;
+
+  constructor(init?: Partial<Address>) {
+    Object.assign(this, init);
+  }
+
+  get address(): string {
+    return `${this.street || ''}, ${this.number || ''} - ${this.city || ''}, ${this.state || ''}, ${this.zipCode || ''}, ${this.country || ''}`;
+  }
 }

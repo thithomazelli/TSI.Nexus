@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace TSI.Friday.Contracts.Interfaces
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<T>
+        where T : class
     {
         /// <summary>
         /// This function will be receive an object as parameter and should be add it to the database.
@@ -81,6 +82,17 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter);
 
         /// <summary>
+        /// This function will be receive an expression as parameter and should be returns the first object found.
+        /// </summary>
+        /// <param name="filter">The filter expression to be used on the search.</param>
+        /// <param name="includes">The objects to be included in the search.</param>
+        /// <returns>Returns the first object found matching the filter.</returns>
+        Task<T> FirstOrDefaultAsync(
+            Expression<Func<T, bool>> filter,
+            params Expression<Func<T, object>>[] includes
+        );
+
+        /// <summary>
         /// This function will be receive na expression as parameter and should be returns results from the execute.
         /// </summary>
         /// <param name="filter">The filter expression to be used on the search.</param>
@@ -93,6 +105,9 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="filter">The filter expression to be used on the search.</param>
         /// <param name="includes">The objects to be included in the search.</param>
         /// <returns>Returns a list with the objects found on the execution.</returns>
-        Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes);
+        Task<IList<T>> QueryAsync(
+            Expression<Func<T, bool>> filter,
+            params Expression<Func<T, object>>[] includes
+        );
     }
 }

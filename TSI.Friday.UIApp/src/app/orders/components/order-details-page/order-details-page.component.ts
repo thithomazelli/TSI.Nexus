@@ -61,6 +61,9 @@ export class OrderDetailsPageComponent {
             response.status,
             response.message,
           );
+          if (response.data && response.data.id) {
+            this.routerService.navigate([`/orders/${response.data.id}`]);
+          }
         });
     }
   }

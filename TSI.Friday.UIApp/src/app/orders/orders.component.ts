@@ -13,6 +13,7 @@ import {
   ValueFormatterParams,
 } from 'ag-grid-community';
 import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-orders',
@@ -118,11 +119,7 @@ export class OrdersComponent {
       width: 280,
       cellRenderer: (params: ICellRendererParams) => {
         return `
-          <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-folder"></i>
-            View
-          </button>
-          <button class="btn btn-info btn-sm" data-action="edit">
+          <button class="btn btn-info btn-sm" data-action="view">
             <i class="fas fa-edit"></i>
             Edit
           </button>
@@ -138,6 +135,7 @@ export class OrdersComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -163,16 +161,7 @@ export class OrdersComponent {
   }
 
   onOpenModal(initialState: any) {
-    const ref = this.modalService.showTemplateModal(
-      OrderDetailsModalComponent,
-      initialState,
-    );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.getOrders();
-        ref.close();
-      });
-    }
+    this.router.navigate(['/orders/new']);
   }
 
   private getOrders(): void {
