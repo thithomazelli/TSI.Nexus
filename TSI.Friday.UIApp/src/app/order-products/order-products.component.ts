@@ -8,7 +8,7 @@ import {
 } from '@friday/core';
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { OrderProduct } from '@friday/core';
-import { OrderProductsDetailsModalComponent } from './component/order-product-details-modal/order-products-details-modal.component';
+import { OrderProductsDetailsModalComponent } from './components/order-product-details-modal/order-products-details-modal.component';
 
 @Component({
   selector: 'app-order-products',
