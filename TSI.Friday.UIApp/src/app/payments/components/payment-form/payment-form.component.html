@@ -1,0 +1,282 @@
+<div class="payment-form-wrapper">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <!-- First line: Type and Method -->
+    <div class="row g-2 mb-1">
+      <div class="col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="type"
+              class="form-select"
+              id="type"
+              [class.is-invalid]="isInvalid('type')"
+              [class.is-valid]="isValid('type')"
+            >
+              <option value="" disabled selected>Tipo</option>
+              @for (option of typeOptions; track option) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="type">Tipo</label>
+          </div>
+          <div class="input-group-text">
+            <i class="bi bi-credit-card-2-front"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="method"
+              class="form-select"
+              id="method"
+              [class.is-invalid]="isInvalid('method')"
+              [class.is-valid]="isValid('method')"
+            >
+              <option value="" disabled selected>Método</option>
+              @for (option of methodOptions; track option) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="method">Método</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-credit-card"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second line: clientId and orderId -->
+    @if (showClientAndOrder) {
+      <div class="row g-2 mb-1">
+        <div class="col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="clientName"
+                type="text"
+                placeholder="Cliente"
+                class="form-control"
+                id="clientName"
+                [matAutocomplete]="clientAuto"
+                (blur)="onClientBlur()"
+              />
+              <label for="clientName">Cliente</label>
+              <mat-autocomplete
+                #clientAuto="matAutocomplete"
+                (optionSelected)="
+                  form.get('clientId')?.setValue($event.option.value.id)
+                "
+              >
+                <mat-option
+                  *ngFor="let client of filteredClients$ | async"
+                  [value]="client.name"
+                >
+                  {{ client.name }}
+                </mat-option>
+              </mat-autocomplete>
+            </div>
+            <div class="input-group-text"><i class="bi bi-person"></i></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="orderNumber"
+                type="text"
+                placeholder="Número do Pedido"
+                class="form-control"
+                id="orderNumber"
+                [matAutocomplete]="orderAuto"
+                (blur)="onOrderBlur()"
+              />
+              <label for="orderNumber">Número do Pedido</label>
+              <mat-autocomplete
+                #orderAuto="matAutocomplete"
+                (optionSelected)="
+                  form.get('orderId')?.setValue($event.option.value.id)
+                "
+              >
+                <mat-option
+                  *ngFor="let order of filteredOrders$ | async"
+                  [value]="order.orderNumber"
+                >
+                  {{ order.orderNumber }}
+                </mat-option>
+              </mat-autocomplete>
+            </div>
+            <div class="input-group-text"><i class="bi bi-hash"></i></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Third line: status and date -->
+    <div class="row g-2 mb-1">
+      <div class="col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="status"
+              class="form-select"
+              id="status"
+              [class.is-invalid]="isInvalid('status')"
+              [class.is-valid]="isValid('status')"
+            >
+              <option value="" disabled selected>Status</option>
+              @for (option of statusOptions; track option) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="status">Status</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-info-circle"></i></div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="category"
+              class="form-select"
+              id="category"
+              [class.is-invalid]="isInvalid('category')"
+              [class.is-valid]="isValid('category')"
+            >
+              <option value="" disabled selected>Categoria</option>
+              @for (option of categoryOptions; track option) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="category">Categoria</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-tags"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-1">
+      <div class="col-6">
+        <app-date-field
+          formControlName="date"
+          [label]="'Data Pagamento'"
+        ></app-date-field>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-1">
+      <div class="col-12">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="description"
+              type="text"
+              placeholder="Descrição"
+              class="form-control"
+              id="description"
+            />
+            <label for="description">Descrição</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-card-text"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-2 mb-1">
+      <div class="col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-grow-1">
+            <input
+              formControlName="priceFormatted"
+              type="text"
+              placeholder="Valor"
+              class="form-control"
+              [class.is-invalid]="isInvalid('priceFormatted')"
+              [class.is-valid]="isValid('priceFormatted')"
+              (blur)="onCurrencyBlur('price')"
+            />
+            <label for="price">Valor</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="condition"
+              class="form-select"
+              id="condition"
+              [class.is-invalid]="isInvalid('condition')"
+              [class.is-valid]="isValid('condition')"
+            >
+              <option value="" disabled selected>Condição</option>
+              @for (option of conditionOptions; track option) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="condition">Condição</label>
+          </div>
+          <div class="input-group-text">
+            <i class="bi bi-calendar2-week"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (isInstallment) {
+      <div class="row g-2 mb-1">
+        <div class="col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="installments"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Total de parcelas"
+                class="form-control"
+                id="installments"
+                [class.is-invalid]="isInvalid('installments')"
+                [class.is-valid]="isValid('installments')"
+              />
+              <label for="installments">Total de parcelas</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-list-ol"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="pricePerInstallmentFormatted"
+                type="text"
+                placeholder="Valor por Parcela"
+                class="form-control"
+                [class.is-invalid]="isInvalid('pricePerInstallmentFormatted')"
+                [class.is-valid]="isValid('pricePerInstallmentFormatted')"
+                (blur)="onCurrencyBlur('pricePerInstallment')"
+              />
+              <label for="pricePerInstallment">Valor por Parcela</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-cash"></i></div>
+          </div>
+        </div>
+      </div>
+    }
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+        Cancelar
+      </button>
+      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+        {{ isEdit ? "Salvar" : "Adicionar" }}
+      </button>
+    </div>
+  </form>
+</div>

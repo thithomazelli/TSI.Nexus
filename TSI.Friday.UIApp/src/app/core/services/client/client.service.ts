@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { ApiService, ApiType, Client, WebApiResponse } from '@friday/core';
 
@@ -24,7 +23,7 @@ export class ClientService {
           catchError(() => {
             this.clients$.next([]);
             return of([]);
-          })
+          }),
         )
         .subscribe();
     }

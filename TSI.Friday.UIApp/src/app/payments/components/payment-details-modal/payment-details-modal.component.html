@@ -1,0 +1,16 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ isEdit ? "Editar Pagamento" : "Adicionar Pagamento" }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-payment-form
+    [isEdit]="isEdit"
+    [data]="data"
+    (save)="save($event)"
+    (cancel)="close()"
+    [compact]="false"
+  ></app-payment-form>
+</div>

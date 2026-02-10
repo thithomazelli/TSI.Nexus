@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
 
@@ -68,6 +68,18 @@ namespace TSI.Friday.WebAPI.Controllers
         public async Task<IActionResult> Remove([FromBody] PaymentDto paymentDto)
         {
             var webApiResponse = await _paymentService.Remove(paymentDto);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get all payments available on database
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var webApiResponse = await _paymentService.FindAll();
             return Ok(webApiResponse);
         }
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models

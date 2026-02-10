@@ -6,18 +6,11 @@ import { HomeComponent } from './home/home.component';
 import { NotFoundComponent } from './shared/components/errors/not-found/not-found.component';
 
 const routes: Routes = [
-  // =========================
-  // Rotas públicas
-  // =========================
   {
     path: 'account',
     loadChildren: () =>
       import('./account/account.module').then((m) => m.AccountModule),
   },
-
-  // =========================
-  // Rotas protegidas (lazy)
-  // =========================
   {
     path: 'clients',
     canActivate: [AuthorizationGuard],
@@ -35,6 +28,12 @@ const routes: Routes = [
     canActivate: [AuthorizationGuard],
     loadChildren: () =>
       import('./clients/clients.module').then((m) => m.ClientsModule),
+  },
+  {
+    path: 'payments',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./payments/payments.module').then((m) => m.PaymentsModule),
   },
   {
     path: 'products',
@@ -55,9 +54,6 @@ const routes: Routes = [
       import('./users/users.module').then((m) => m.UsersModule),
   },
 
-  // =========================
-  // Home protegida
-  // =========================
   {
     path: '',
     canActivate: [AuthorizationGuard],
@@ -69,9 +65,6 @@ const routes: Routes = [
     component: HomeComponent,
   },
 
-  // =========================
-  // Not Found protegida
-  // =========================
   {
     path: 'not-found',
     canActivate: [AuthorizationGuard],

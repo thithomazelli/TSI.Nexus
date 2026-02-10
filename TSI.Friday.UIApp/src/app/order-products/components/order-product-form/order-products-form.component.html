@@ -66,6 +66,7 @@
           <div class="input-group mb-1">
             <div class="form-floating flex-grow-1">
               <select formControlName="productType" class="form-select">
+                <option value="" disabled selected>Tipo</option>
                 <option
                   *ngFor="let option of productTypeOptions"
                   [value]="option.value"
@@ -82,6 +83,7 @@
           <div class="input-group mb-1">
             <div class="form-floating flex-grow-1">
               <select formControlName="status" class="form-select" id="status">
+                <option value="" disabled selected>Status</option>
                 <option
                   *ngFor="let option of orderProductStatusOptions"
                   [value]="option.value"

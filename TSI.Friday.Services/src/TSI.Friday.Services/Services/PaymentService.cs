@@ -48,7 +48,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar o Pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível cadastrar o Pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -71,7 +72,30 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados do Pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar os dados do Pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindAll()
+        {
+            WebApiResponse<IEnumerable<PaymentDto>> result = new();
+
+            try
+            {
+                var payments = await _repository.GetAllAsync(o => o.Client);
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de Pagamentos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -94,7 +118,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Pagamento {paymentDto?.Description} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Pagamento {paymentDto?.Description} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -110,14 +135,16 @@ namespace TSI.Friday.Services
                 var payment = await _repository.GetByIdAsync(id);
                 result.Data = _mapper.Map<PaymentDto>(payment);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Pagamento {result.Data.Description} encontrado com sucesso"
-                    : $"Nenhum Pagamento com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Pagamento {result.Data.Description} encontrado com sucesso"
+                        : $"Nenhum Pagamento com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Pagamentos na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Pagamentos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -138,7 +165,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os Pagamentos do Cliente {clientId}. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os Pagamentos do Cliente {clientId}. Erro: {ex.Message}";
             }
 
             return result;

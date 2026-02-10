@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TSI.Friday.Contracts.Enums;
 
@@ -12,46 +11,42 @@ namespace TSI.Friday.Contracts.Models
 
         public int Id { get; set; }
 
+        public PaymentType Type { get; set; }
+
+        public PaymentMethod Method { get; set; }
+
+        public PaymentStatus Status { get; set; }
+
+        public DateTime Date { get; set; }
+
+        public string Category { get; set; }
+
         public string Description { get; set; }
 
         public decimal Price { get; set; }
 
-        public decimal Discount { get; set; }
-
-        public decimal TotalPrice { get; set; }
-
-        public PaymentStatus Status { get; set; }
-
-        public PaymentType Type { get; set; }
+        public PaymentCondition Condition { get; set; }
 
         public int Installments { get; set; }
 
-        public decimal TotalPerInstallment { get; set; }
+        public decimal PricePerInstallment { get; set; }
 
         [ForeignKey("Order")]
-        public int OrderId { get; set; }
+        public int? OrderId { get; set; }
 
-        [Required]
         public Order Order
         {
             get => _order;
-            set
-            {
-                _order = value ?? throw new ArgumentNullException(nameof(Order));
-            }
+            set { _order = value ?? throw new ArgumentNullException(nameof(Order)); }
         }
 
         [ForeignKey("Client")]
-        public int ClientId { get; set; }
+        public int? ClientId { get; set; }
 
-        [Required]
         public Client Client
         {
             get => _client;
-            set
-            {
-                _client = value ?? throw new ArgumentNullException(nameof(Client));
-            }
+            set { _client = value ?? throw new ArgumentNullException(nameof(Client)); }
         }
 
         public Payment() { }

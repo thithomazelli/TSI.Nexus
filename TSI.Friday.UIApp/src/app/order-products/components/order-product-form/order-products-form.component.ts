@@ -471,7 +471,7 @@ export class OrderProductsFormComponent
     const fiveDaysLater = new Date();
     fiveDaysLater.setDate(today.getDate() + 5);
     this.form = this.formBuilder.group({
-      productId: [''],
+      productId: ['', Validators.required],
       productSku: [''],
       productName: [''],
       productType: [{ value: '', disabled: true }],

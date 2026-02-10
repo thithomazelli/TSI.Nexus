@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 
@@ -9,7 +9,6 @@ namespace TSI.Friday.WebAPI.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-
     public class ProductsController : Controller
     {
         /// <summary>
@@ -63,26 +62,6 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="id"></param>
-        /// <param name="ct"></param>
-        /// <returns></returns>
-        [HttpPost("uploadImage")]
-        [Route("UploadImage")]
-        //public async Task<IActionResult> UploadImage([FromForm] IFormFile file, [FromForm] int? id, CancellationToken ct = default)
-        //{
-        //    if (file == null) return BadRequest(new { message = "File required" });
-
-        //    // delegate all logic to service
-        //    //var result = await _photoService.UploadImageAsync(file, "products", id, ct);
-
-        //    //// result contains stored filename/path
-        //    return Ok(new { data = new { filename = "result" } });
-        //}
-
-        /// <summary>
         /// Remove product when it is identified on database
         /// </summary>
         /// <param name="product">Object to be removed</param>
@@ -96,7 +75,7 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get all products available on database 
+        /// Get all products available on database
         /// </summary>
         /// <returns></returns>
         [HttpGet]

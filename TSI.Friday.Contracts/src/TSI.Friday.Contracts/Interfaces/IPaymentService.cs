@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 
@@ -27,6 +28,12 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="paymentDto">The payment object to be removed.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
         Task<WebApiResponse<PaymentDto>> Remove(PaymentDto paymentDto);
+
+        /// <summary>
+        /// Method responsible to get all registers available on the payment data table.
+        /// </summary>
+        /// <returns>All registers found on the payment data table.</returns>
+        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindAll();
 
         /// <summary>
         /// Method responsible to get only one Payment based on the ID received as parameter.

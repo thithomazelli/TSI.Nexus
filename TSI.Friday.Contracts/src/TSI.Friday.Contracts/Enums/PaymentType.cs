@@ -2,8 +2,7 @@
 {
     public enum PaymentType
     {
-        Cash,
-        Pix,
-        CreditCard,
+        Incoming,
+        Outgoing,
     }
 }
