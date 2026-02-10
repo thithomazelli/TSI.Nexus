@@ -1,5 +1,4 @@
 ﻿using System;
-using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models
 {

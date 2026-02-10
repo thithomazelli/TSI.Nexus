@@ -24,6 +24,6 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public string NationalIdCard { get; set; }
 
-        public DateTime Birthday { get; set; }
+        public DateTime? Birthday { get; set; }
     }
 }

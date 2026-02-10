@@ -179,7 +179,7 @@ export class PaymentsComponent {
       sortable: false,
       filter: false,
       resizable: false,
-      width: 250,
+      width: 300,
       cellRenderer: () => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">

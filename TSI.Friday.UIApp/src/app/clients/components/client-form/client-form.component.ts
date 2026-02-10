@@ -74,7 +74,13 @@ export class ClientFormComponent
       this.form.markAllAsTouched();
       return;
     }
-    this.save.emit(this.form.getRawValue());
+
+    const raw = this.form.getRawValue();
+    if (!raw.birthday || raw.birthday === '') {
+      raw.birthday = null;
+    }
+
+    this.save.emit(raw);
   }
 
   doCancel(): void {
@@ -98,7 +104,7 @@ export class ClientFormComponent
       mobile: ['', []],
       socialSecurityCard: ['', this.cpfValidator()],
       nationalRegistry: ['', this.cnpjValidator()],
-      birthday: [''],
+      birthday: [null],
       photo: [''],
     };
 

@@ -55,7 +55,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
           this.modalService.showSweetNotification(
             '',
             response.message,
-            'success',
+            response.status,
           );
           this.modalService.hideModal(this.dialogRef);
         });
@@ -70,7 +70,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
           this.modalService.showSweetNotification(
             '',
             response.message,
-            'success',
+            response.status,
           );
         });
     }
