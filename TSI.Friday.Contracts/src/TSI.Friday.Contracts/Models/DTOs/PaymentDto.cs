@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
@@ -23,9 +25,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public PaymentCondition Condition { get; set; }
 
-        public int Installments { get; set; }
-
-        public decimal PricePerInstallment { get; set; }
+        // Use DTO for installments to allow JSON binding
+        public ICollection<PaymentInstallmentDto> Installments { get; set; } = [];
 
         public int? OrderId { get; set; }
 

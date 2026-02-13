@@ -5,5 +5,6 @@
         Cash,
         Pix,
         CreditCard,
+        DebitCard,
     }
 }

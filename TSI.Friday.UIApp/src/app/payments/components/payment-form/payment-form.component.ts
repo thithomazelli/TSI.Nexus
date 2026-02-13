@@ -117,6 +117,17 @@ export class PaymentFormComponent
     this.onTypeChanges();
     this.onInstallmentsChanges();
     this.setupAutoComplete();
+
+    // Subscription para price
+    this.form.get('price')?.valueChanges.subscribe((price: number) => {
+      const installments = this.form.get('totalOfInstallments')?.value || 1;
+      const validInstallments = installments > 0 ? installments : 1;
+      const perInstallment = price / validInstallments;
+      this.form.get('pricePerInstallment')?.setValue(perInstallment);
+      this.form
+        .get('pricePerInstallmentFormatted')
+        ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -162,7 +173,10 @@ export class PaymentFormComponent
       // Verifica se o nome existe na lista de clientes
       const clients = (this.clients$ as any).source.value as Client[];
       const found = clients.find((c) => c.name === clientName);
-      if (!found) {
+      if (found) {
+        this.form.get('clientId')!.setValue(found.id);
+        this.form.get('clientName')!.setValue(found.name);
+      } else {
         const confirmRef = this.modalService.showConfirmation({
           title: 'Cliente não encontrado',
           message: `O cliente "${clientName}" não existe. Deseja adicioná-lo?`,
@@ -187,6 +201,7 @@ export class PaymentFormComponent
                   this.form.get('clientName')!.setValue('');
                   this.markAsTouched('clientName');
                   this.form.get('clientName')!.setErrors({ required: true });
+                  this.form.get('clientId')!.setValue(null);
                 }
               });
           },
@@ -196,6 +211,7 @@ export class PaymentFormComponent
             this.form.get('clientName')!.setValue('');
             this.markAsTouched('clientName');
             this.form.get('clientName')!.setErrors({ required: true });
+            this.form.get('clientId')!.setValue(null);
           }
         });
       }
@@ -212,12 +228,16 @@ export class PaymentFormComponent
       }
       const orders = (this.orders$ as any).source.value as Order[];
       const found = orders.find((o) => o.orderNumber === orderNumber);
-      if (!found) {
+      if (found) {
+        this.form.get('orderId')!.setValue(found.id);
+        this.form.get('orderNumber')!.setValue(found.orderNumber);
+      } else {
         this.modalService.showNotification(
           false,
           'Pedido não encontrado',
           `O pedido "${orderNumber}" não existe. Por favor, selecione um pedido válido ou cadastre-o antes de associar a este pagamento.`,
         );
+        this.form.get('orderId')!.setValue(null);
       }
     }, 200);
   }
@@ -241,11 +261,11 @@ export class PaymentFormComponent
       status: ['', Validators.required],
       date: [new Date(), Validators.required],
       category: ['', Validators.required],
-      description: [''],
+      description: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
       condition: ['', Validators.required],
-      installments: [1, [Validators.min(1)]],
+      totalOfInstallments: [1, [Validators.min(1)]],
       pricePerInstallment: [0, [Validators.min(0)]],
       pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
       clientId: [null],
@@ -259,17 +279,42 @@ export class PaymentFormComponent
           id: [''],
           ...commonControls,
         });
+
+    // Bloqueia campos quando isEdit for true
+    if (this.isEdit && this.form) {
+      this.form.get('clientName')?.disable();
+      this.form.get('orderNumber')?.disable();
+      this.form.get('totalOfInstallments')?.disable();
+    }
   }
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
+      // Preenche campos conforme solicitado
+      const totalOfInstallments = Array.isArray(this.data.installments)
+        ? this.data.installments.length
+        : 1;
+      const priceSum = Array.isArray(this.data.installments)
+        ? this.data.installments.reduce(
+            (acc, curr) => acc + (curr.price || 0),
+            0,
+          )
+        : this.data.price || 0;
+      const pricePerInstallment =
+        priceSum / (totalOfInstallments > 0 ? totalOfInstallments : 1);
+
       this.form.patchValue({
         ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-        pricePerInstallmentFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.pricePerInstallment,
-        ),
+        totalOfInstallments,
+        price: priceSum,
+        pricePerInstallment,
+        priceFormatted: this.currencyService.formatCurrencyBRL(priceSum),
+        pricePerInstallmentFormatted:
+          this.currencyService.formatCurrencyBRL(pricePerInstallment),
       });
+
+      // Bloqueia campo preço
+      this.form.get('price')?.disable();
     } else {
       this.form
         .get('priceFormatted')
@@ -368,7 +413,7 @@ export class PaymentFormComponent
   }
 
   private onInstallmentsChanges(): void {
-    const installmentsCtrl = this.form?.get('installments');
+    const installmentsCtrl = this.form?.get('totalOfInstallments');
     if (installmentsCtrl) {
       this.installmentsSub = installmentsCtrl.valueChanges.subscribe(
         (installments: number) => {
@@ -381,6 +426,7 @@ export class PaymentFormComponent
             ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
         },
       );
+
       // Inicializa o valor ao criar o form
       const initialInstallments =
         installmentsCtrl.value > 0 ? installmentsCtrl.value : 1;

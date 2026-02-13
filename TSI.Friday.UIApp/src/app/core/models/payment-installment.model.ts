@@ -1,9 +1,8 @@
 import { PaymentCondition, PaymentMethod } from '../enums';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { PaymentType } from '../enums/payment-type.enum';
-import { PaymentInstallment } from './payment-installment.model';
 
-export interface Payment {
+export interface PaymentInstallment {
   id: number;
   type?: PaymentType;
   method?: PaymentMethod;
@@ -13,11 +12,7 @@ export interface Payment {
   description?: string;
   price?: number;
   condition?: PaymentCondition;
-  totalOfInstallments?: number;
-  pricePerInstallment?: number;
+  installmentNumber?: number;
   orderId?: number;
-  orderNumber?: string;
   clientId?: number;
-  clientName?: string;
-  installments?: PaymentInstallment[];
 }

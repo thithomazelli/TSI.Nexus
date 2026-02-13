@@ -5,6 +5,7 @@ import {
   ApiType,
   NotificationService,
   Payment,
+  PaymentInstallment,
   WebApiResponse,
 } from '@friday/core';
 

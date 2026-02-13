@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using TSI.Friday.Contracts.Enums;
 
@@ -13,8 +14,6 @@ namespace TSI.Friday.Contracts.Models
 
         public PaymentType Type { get; set; }
 
-        public PaymentMethod Method { get; set; }
-
         public PaymentStatus Status { get; set; }
 
         public DateTime Date { get; set; }
@@ -27,9 +26,7 @@ namespace TSI.Friday.Contracts.Models
 
         public PaymentCondition Condition { get; set; }
 
-        public int Installments { get; set; }
-
-        public decimal PricePerInstallment { get; set; }
+        public ICollection<PaymentInstallment> Installments { get; set; }
 
         [ForeignKey("Order")]
         public int? OrderId { get; set; }

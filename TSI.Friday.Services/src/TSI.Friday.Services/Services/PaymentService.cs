@@ -86,7 +86,11 @@ namespace TSI.Friday.Services
 
             try
             {
-                var payments = await _repository.GetAllAsync(o => o.Client);
+                var payments = await _repository.GetAllAsync(
+                    c => c.Client,
+                    o => o.Order,
+                    p => p.Installments
+                );
                 result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
@@ -132,7 +136,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var payment = await _repository.GetByIdAsync(id);
+                var payment = await _repository.GetByIdAsync(id, p => p.Installments);
                 result.Data = _mapper.Map<PaymentDto>(payment);
                 result.Status = ResponseStatus.Success;
                 result.Message =

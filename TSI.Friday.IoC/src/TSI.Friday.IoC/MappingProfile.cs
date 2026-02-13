@@ -127,6 +127,19 @@ namespace TSI.Friday.IoC
                 );
             CreateMap<PaymentDto, Payment>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // PaymentInstallment mappings
+            CreateMap<PaymentInstallment, PaymentInstallmentDto>()
+                .ForMember(
+                    dest => dest.OrderNumber,
+                    opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderNumber : null)
+                )
+                .ForMember(
+                    dest => dest.ClientName,
+                    opt => opt.MapFrom(src => src.Client != null ? src.Client.Name : null)
+                );
+            CreateMap<PaymentInstallmentDto, PaymentInstallment>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }
