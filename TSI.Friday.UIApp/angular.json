@@ -89,11 +89,7 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": {
-            "sslCert": "ssl/localhost.pem",
-            "sslKey": "ssl/localhost-key.pem",
-            "ssl": true
-          },
+          "options": {},
           "configurations": {
             "production": {
               "buildTarget": "TSI.Friday.UIApp:build:production"
