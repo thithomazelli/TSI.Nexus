@@ -25,7 +25,7 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
     private modalService: ModalService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
   ) {
     super();
     this.accountService.user$.pipe(take(1)).subscribe({
@@ -76,7 +76,9 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
         if (response.error.errors) {
           this.errorMessages = response.error.errors;
         } else {
-          this.errorMessages.push(response.error);
+          this.errorMessages.push(
+            'Falha na comunicação com o servidor. Tente novamente mais tarde.',
+          );
         }
       },
     });
