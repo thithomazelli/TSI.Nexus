@@ -75,6 +75,8 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
       error: (response) => {
         if (response.error.errors) {
           this.errorMessages = response.error.errors;
+        } else if (typeof response.error === 'string') {
+          this.errorMessages.push(response.error);
         } else {
           this.errorMessages.push(
             'Falha na comunicação com o servidor. Tente novamente mais tarde.',
