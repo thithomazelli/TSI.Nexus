@@ -189,7 +189,7 @@
           <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
             <!--begin::User Image-->
             <li class="user-header text-bg-primary">
-              <img
+              <!-- <img
                 [src]="imageUrl"
                 class="rounded-circle shadow panel-user-image"
                 alt="User Image"
@@ -197,7 +197,14 @@
               <p>
                 {{ `${user.firstName} ${user.lastName}` | titlecase }}
                 <small>Member since Nov. 2023</small>
-              </p>
+              </p> -->
+              <app-photo
+                [entityClass]="'User'"
+                [data]="data"
+                [imageUrl]="imageUrl"
+                [canDisplaySubtitle]="false"
+              >
+              </app-photo>
             </li>
             <!--end::User Image-->
             <!--begin::Menu Body-->

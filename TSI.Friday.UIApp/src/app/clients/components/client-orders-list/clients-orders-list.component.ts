@@ -1,26 +1,31 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   ApiService,
   ApiType,
   ModalService,
-  Order,
   WebApiResponse,
+  Client,
+  Order,
 } from '@friday/core';
 import {
   ColDef,
   ICellRendererParams,
   ValueFormatterParams,
 } from 'ag-grid-community';
-import { Router } from '@angular/router';
+import { OrderDetailsModalComponent } from '../../../orders/components/order-details-modal/order-details-modal.component';
 
 @Component({
-  selector: 'app-orders',
+  selector: 'app-client-orders-list',
   standalone: false,
-  templateUrl: './orders.component.html',
-  styleUrl: './orders.component.scss',
+  templateUrl: './clients-orders-list.component.html',
+  styleUrl: './clients-orders-list.component.scss',
 })
-export class OrdersComponent {
-  baseEndPoint = ApiType.Orders;
+export class ClientsOrdersListComponent {
+  @Input()
+  parentData?: Client | null = null;
+
+  private _baseEndPoint = ApiType.Orders;
+
   rowData: Order[] = [];
   columnDefs: ColDef[] = [
     {
@@ -39,18 +44,6 @@ export class OrdersComponent {
       width: 150,
       resizable: true,
       // minWidth: 150,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        // href="#" prevents full page reload; onCellClicked handles navigation
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-    {
-      field: 'clientName',
-      headerName: 'Client Name',
-      sortable: true,
-      filter: true,
-      flex: 1,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         // href="#" prevents full page reload; onCellClicked handles navigation
@@ -117,15 +110,15 @@ export class OrdersComponent {
       width: 280,
       cellRenderer: (params: ICellRendererParams) => {
         return `
-          <button class="btn btn-info btn-sm" data-action="view">
-            <i class="fas fa-edit"></i>
-            Edit
-          </button>
-          <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash"></i>  
-            Delete
-          </button>
-        `;
+            <button class="btn btn-info btn-sm" data-action="view">
+              <i class="fas fa-edit"></i>
+              Edit
+            </button>
+            <button class="btn btn-danger btn-sm" data-action="delete">
+              <i class="fas fa-trash"></i>  
+              Delete
+            </button>
+          `;
       },
     },
   ];
@@ -133,7 +126,6 @@ export class OrdersComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
-    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -146,25 +138,36 @@ export class OrdersComponent {
 
   deleteOrder(order: Order): void {
     this.apiService
-      .delete<WebApiResponse<Order>>(`${this.baseEndPoint}/remove`, order)
+      .delete<WebApiResponse<Order>>(`${this._baseEndPoint}/remove`, order)
       .subscribe((response: WebApiResponse<Order>) => {
         this.rowData = this.rowData.filter((p) => p.id !== order.id);
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Ordem excluída',
+          '',
           response.message,
-          'success',
+          response.status,
         );
       });
   }
 
   onOpenModal(initialState: any) {
-    this.router.navigate(['/orders/new']);
+    const ref = this.modalService.showTemplateModal(
+      OrderDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe(() => {
+        this.refreshOrders();
+        ref.close();
+      });
+    }
   }
 
   private getOrders(): void {
     this.apiService
-      .get<WebApiResponse<Order[]>>(`${this.baseEndPoint}/getAll`)
+      .get<
+        WebApiResponse<Order[]>
+      >(`${this._baseEndPoint}/getByClientId/${this.parentData?.id}`)
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
       });
