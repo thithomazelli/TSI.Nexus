@@ -6,7 +6,12 @@ import { PaymentInstallmentFormComponent } from './components/payment-installmen
 import { PaymentInstallmentDetailsModalComponent } from './components/payment-installment-details-modal/payment-installment-details-modal.component';
 
 @NgModule({
-  declarations: [PaymentInstallmentsComponent, PaymentInstallmentFormComponent, PaymentInstallmentDetailsModalComponent],
+  declarations: [
+    PaymentInstallmentsComponent,
+    PaymentInstallmentFormComponent,
+    PaymentInstallmentDetailsModalComponent,
+  ],
   imports: [CommonModule, SharedModule],
+  exports: [PaymentInstallmentsComponent],
 })
-export class PaymentsModule {}
+export class PaymentInstallmentsModule {}

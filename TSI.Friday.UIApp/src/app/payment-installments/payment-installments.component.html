@@ -1,1 +1,19 @@
-<p>payment-installments works!</p>
+<app-header
+  title="Pagamentos"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Financeiro', link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [className]="'Pagamentos'"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [baseEndPoint]="baseEndPoint"
+    [refresh]="refreshOrders.bind(this)"
+    [delete]="deleteOrder.bind(this)"
+    (openModal)="onOpenModal($event)"
+  ></app-grid>
+</div>
