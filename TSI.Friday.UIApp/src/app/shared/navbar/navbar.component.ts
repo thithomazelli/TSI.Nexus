@@ -9,6 +9,7 @@ import {
 import { Observable } from 'rxjs';
 import { AccountService, User } from '@friday/core';
 import { environment } from '../../../environments/environment.development';
+import { NavbarService } from '../../core/services/navbar/navbar.service';
 
 @Component({
   selector: 'app-navbar',
@@ -19,6 +20,7 @@ import { environment } from '../../../environments/environment.development';
 export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isFullscreen = false;
   imageUrl: string = './assets/img/user2-160x160.jpg';
+  data: User | null = null;
 
   private mobileBreakpoint = 992;
   private resizeUnlisten: (() => void) | null = null;
@@ -30,6 +32,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private renderer: Renderer2,
     private accountService: AccountService,
+    private navbarService: NavbarService,
   ) {}
 
   get user$(): Observable<User | null> {
@@ -52,16 +55,25 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.navbarService.onPhotoChange().subscribe((imageUrl: string) => {
+      if (imageUrl == '') {
+        return;
+      }
+      this.imageUrl = imageUrl;
+    });
+
     this.user$.subscribe((user) => {
       const apiBase = environment.appUrl; // ajuste conforme seu ambiente
       if (user && user.photo) {
         this.imageUrl = `${apiBase}/uploads/User/${user.photo}`;
+        this.data = user;
         return;
       }
 
       this.imageUrl = 'assets/img/no_profile.png';
     });
   }
+
   ngAfterViewInit(): void {
     this.applyResponsiveState(window.innerWidth);
     this.resizeUnlisten = this.renderer.listen(

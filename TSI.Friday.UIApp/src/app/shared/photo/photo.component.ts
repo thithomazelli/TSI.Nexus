@@ -16,6 +16,7 @@ import {
 import { ApiService, ApiType, ModalService } from '@friday/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { environment } from '../../../environments/environment.development';
+import { NavbarService } from '../../core/services/navbar/navbar.service';
 
 @Component({
   selector: 'app-photo',
@@ -45,6 +46,9 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   @Input()
   entityClass: string = '';
 
+  @Input()
+  canDisplaySubtitle: boolean = true;
+
   @Output()
   imageChange = new EventEmitter<{ fileName: string }>();
 
@@ -68,6 +72,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
     private cd: ChangeDetectorRef,
     private modalService: ModalService,
     private apiService: ApiService,
+    private navbarService: NavbarService,
     @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     if (dialogData) {
@@ -81,6 +86,13 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnInit(): void {
     this.previewDataUrl = this.getPhotoUrl();
+    this.navbarService.onPhotoChange().subscribe((imageUrl: string) => {
+      if (imageUrl == '') {
+        return;
+      }
+
+      this.previewDataUrl = imageUrl;
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -244,6 +256,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
           'Upload realizado com sucesso!',
           'success',
         );
+        this.navbarService.emitPhotoChange(this.getPhotoUrl());
       });
   }
 

@@ -29,20 +29,15 @@ export class ClientsComponent {
       headerName: 'ID',
       sortable: true,
       filter: true,
-      // minWidth: 80,
       hide: true,
     },
     {
       field: 'name',
-      headerName: 'Name',
+      headerName: 'Nome',
       sortable: true,
       filter: true,
-      // width: 90,
-      resizable: false,
-      // minWidth: 150,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
-        // href="#" prevents full page reload; onCellClicked handles navigation
         return `<a data-action="view" class="ag-link">${value}</a>`;
       },
     },
@@ -82,10 +77,8 @@ export class ClientsComponent {
       sortable: true,
       filter: true,
       flex: 1,
-      // minWidth: 150,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
-        // href="#" prevents full page reload; onCellClicked handles navigation
         return `<a data-action="view" class="ag-link">${value}</a>`;
       },
     },
@@ -95,7 +88,6 @@ export class ClientsComponent {
       sortable: true,
       filter: true,
       flex: 2,
-      // minWidth: 1500,
       hide: true,
     },
     {
@@ -104,18 +96,17 @@ export class ClientsComponent {
       sortable: true,
       filter: true,
       flex: 2,
-      // minWidth: 1500,
       hide: true,
     },
     {
       field: 'mobile',
-      headerName: 'Mobile',
+      headerName: 'Celular',
       sortable: true,
       filter: true,
       maxWidth: 120,
     },
     {
-      headerName: '',
+      headerName: 'Ações',
       sortable: false,
       filter: false,
       maxWidth: 400,
@@ -124,16 +115,13 @@ export class ClientsComponent {
       cellRenderer: (params: ICellRendererParams) => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-folder"></i>
-            View
+            <i class="fas fa-eye"></i>
           </button>
           <button class="btn btn-info btn-sm" data-action="edit">
             <i class="fas fa-edit"></i>
-            Edit
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
             <i class="fas fa-trash"></i>  
-            Delete
           </button>
         `;
       },

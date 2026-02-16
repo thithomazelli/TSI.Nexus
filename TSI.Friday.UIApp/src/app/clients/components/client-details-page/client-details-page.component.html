@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Edit Clients' : 'Add Clients'"
+  [title]="isEdit ? 'Editar Clientes' : 'Adicionar Clientes'"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Clients', link: '/clients' },
-    { label: isEdit ? 'Edit Clients' : 'Add Clients', link: '' },
+    { label: 'Clientes', link: '/clients' },
+    { label: isEdit ? 'Editar Clientes' : 'Adicionar Clientes', link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -57,7 +57,7 @@
                   [class.active]="activeTab === 'form'"
                   (click)="activeTab = 'form'"
                   data-toggle="tab"
-                  >Form</a
+                  >Formulário</a
                 >
               </li>
               <li class="nav-item">
@@ -66,7 +66,7 @@
                   [class.active]="activeTab === 'address'"
                   (click)="activeTab = 'address'"
                   data-toggle="tab"
-                  >Address</a
+                  >Endereço</a
                 >
               </li>
               <li class="nav-item">
@@ -75,7 +75,16 @@
                   [class.active]="activeTab === 'image'"
                   (click)="activeTab = 'image'"
                   data-toggle="tab"
-                  >Image</a
+                  >Imagem</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'orders'"
+                  (click)="activeTab = 'orders'"
+                  data-toggle="tab"
+                  >Pedidos</a
                 >
               </li>
               <li class="nav-item">
@@ -120,6 +129,11 @@
                       [imageUrl]="data?.photo"
                     ></app-photo>
                   </div>
+                }
+                @if (activeTab === "orders") {
+                  <app-client-orders-list
+                    [parentData]="data"
+                  ></app-client-orders-list>
                 }
                 @if (activeTab === "extra") {
                   <div>

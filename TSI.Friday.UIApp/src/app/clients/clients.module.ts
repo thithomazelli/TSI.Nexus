@@ -10,6 +10,7 @@ import { ClientsRoutingModule } from './clients-routing.module';
 import { SharedModule } from '../shared/shared.module';
 import { NgxMaskDirective } from 'ngx-mask';
 import { AddressModule } from '../address/address.module';
+import { ClientsOrdersListComponent } from './components/client-orders-list/clients-orders-list.component';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { AddressModule } from '../address/address.module';
     ClientFormComponent,
     ClientDetailsModalComponent,
     ClientDetailsPageComponent,
+    ClientsOrdersListComponent,
   ],
   imports: [
     AddressModule,

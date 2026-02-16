@@ -1,0 +1,12 @@
+<div class="app-content">
+  <app-grid
+    [className]="'Pedidos'"
+    [compactView]="true"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [baseEndPoint]="'orders'"
+    [refresh]="refreshOrders.bind(this)"
+    [delete]="deleteOrder.bind(this)"
+    (openModal)="onOpenModal($event)"
+  ></app-grid>
+</div>
