@@ -14,8 +14,15 @@ import {
   Validators,
   ValidatorFn,
   AbstractControl,
+  FormGroup,
 } from '@angular/forms';
-import { Company, FormBaseComponent, Individual } from '@friday/core';
+import {
+  Address,
+  Client,
+  Company,
+  FormBaseComponent,
+  Individual,
+} from '@friday/core';
 // import { Client } from 'CAMINHO_DO_CLIENT_MODEL'; // Ajuste o import conforme seu projeto
 
 @Component({
@@ -34,7 +41,7 @@ export class ClientFormComponent
   isEdit = false;
 
   @Input()
-  data?: Individual | Company | null; // Troque 'any' por 'Client' se tiver o model
+  data?: Individual | Company | null = <Client>{};
 
   @Input()
   compact = false;
@@ -80,14 +87,62 @@ export class ClientFormComponent
       raw.birthday = null;
     }
 
-    this.save.emit(raw);
+    // Atualiza as propriedades de data com os valores do formulário, exceto address
+    const { address, ...rest } = raw;
+    Object.assign(this.data!, rest);
+
+    // Modo SAVE: se não houver addresses, cria e adiciona o address do form
+    if (
+      !Array.isArray(this.data!.addresses) ||
+      this.data!.addresses.length === 0
+    ) {
+      this.data!.addresses = [address];
+    } else {
+      // Modo EDIT: atualiza o endereço principal (isDefault) com os dados do form
+      const idx = this.data!.addresses.findIndex((a: Address) => a.isDefault);
+      if (idx !== -1) {
+        this.data!.addresses[idx] = {
+          ...this.data!.addresses[idx],
+          ...address,
+        };
+      } else {
+        // Se não houver principal, adiciona
+        this.data!.addresses.push(address);
+      }
+    }
+
+    this.save.emit(this.data);
   }
 
   doCancel(): void {
     this.cancel.emit();
   }
 
+  get addressFormGroup(): FormGroup {
+    return this.form.get('address') as FormGroup;
+  }
+
+  get defaultAddress(): Address | undefined {
+    return Array.isArray(this.data?.addresses)
+      ? this.data!.addresses.find((a: Address) => a.isDefault)
+      : undefined;
+  }
+
   private initForm(): void {
+    const addressGroup = this.formBuilder.group({
+      name: ['', Validators.required],
+      type: [null, Validators.required],
+      zipCode: ['', Validators.required],
+      state: ['', Validators.required],
+      city: ['', Validators.required],
+      street: ['', Validators.required],
+      number: [null, Validators.required],
+      comments: [''],
+      clientId: [null],
+      country: ['BR', Validators.required],
+      isDefault: [false],
+    });
+
     const commonControls = {
       name: ['', [Validators.required]],
       email: [
@@ -106,6 +161,7 @@ export class ClientFormComponent
       nationalRegistry: ['', this.cnpjValidator()],
       birthday: [null],
       photo: [''],
+      address: addressGroup,
     };
 
     this.form = !this.isEdit
@@ -136,6 +192,15 @@ export class ClientFormComponent
     if (this.data && this.form) {
       const patch = { ...this.data };
       this.form.patchValue(patch);
+      // Preenche o grupo address com o endereço padrão, se existir
+      if (Array.isArray(this.data.addresses)) {
+        const defaultAddress = this.data.addresses.find(
+          (a: Address) => a.isDefault,
+        );
+        if (defaultAddress) {
+          this.addressFormGroup.patchValue(defaultAddress);
+        }
+      }
     }
   }
 

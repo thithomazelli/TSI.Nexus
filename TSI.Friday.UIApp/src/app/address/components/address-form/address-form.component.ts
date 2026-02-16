@@ -1,3 +1,5 @@
+import { FormGroup } from '@angular/forms';
+
 import {
   Component,
   EventEmitter,
@@ -41,6 +43,9 @@ export class AddressFormComponent
   @Input()
   errors: string[] | undefined;
 
+  @Input()
+  formGroup: FormGroup<any> | null = null;
+
   @Output()
   save = new EventEmitter<Address>();
 
@@ -60,8 +65,13 @@ export class AddressFormComponent
   }
 
   ngOnInit(): void {
-    this.initForm();
+    if (this.formGroup) {
+      this.form = this.formGroup;
+    } else {
+      this.initForm();
+    }
     this.getEstados();
+    this.setupAutoComplete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -74,6 +84,151 @@ export class AddressFormComponent
         this.form.get('clientId')?.disable();
       }
     }
+    // Sempre reconfigura lógica do form ao mudar inputs
+    this.setupAutoComplete();
+  }
+  /**
+   * Garante subscriptions e lógica dinâmica para CEP, estado, cidade, etc.,
+   * mesmo quando usando FormGroup externo.
+   */
+  private setupAutoComplete(): void {
+    if (!this.form) {
+      return;
+    }
+
+    // Evita múltiplas subscriptions
+    this.cidadesCancel$.next();
+
+    // PATCH INICIAL (caso data)
+    if (this.data) {
+      const patch = { ...this.data };
+      const patchAndLoadCities = () => {
+        this.form.patchValue(patch);
+        if (patch.state) {
+          const estado = this.estados.find((e) => e.sigla === patch.state);
+          if (estado) {
+            this.http
+              .get<
+                any[]
+              >(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`)
+              .subscribe((cidades) => {
+                const uniqueCidades = (cidades || []).filter(
+                  (cidade: any, index: number, self: any[]) =>
+                    cidade.id != null &&
+                    index === self.findIndex((e) => e.id === cidade.id),
+                );
+                this.cidades = uniqueCidades;
+                const normalize = (str: string) =>
+                  str
+                    .normalize('NFD')
+                    .replace(/\p{Diacritic}/gu, '')
+                    .toLowerCase();
+                let cidadeFinal = '';
+                const cityValue = patch.city ?? '';
+                const cidadeMatch = this.cidades.find(
+                  (c) => normalize(c.nome) === normalize(cityValue),
+                );
+                if (cidadeMatch) {
+                  cidadeFinal = cidadeMatch.nome;
+                } else if (this.cidades.length > 0) {
+                  cidadeFinal = this.cidades[0].nome;
+                }
+                this.form.get('city')?.setValue(cidadeFinal);
+                this.form.get('city')?.updateValueAndValidity();
+                this.form.updateValueAndValidity();
+              });
+          }
+        }
+      };
+      // Se for formGroup externo, só faz patch depois dos estados carregarem
+      if (this.formGroup) {
+        if (this.estados && this.estados.length > 0) {
+          patchAndLoadCities();
+        } else {
+          const estadosSub = this.http
+            .get<
+              any[]
+            >('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+            .subscribe((estados) => {
+              this.estados = estados;
+              patchAndLoadCities();
+              estadosSub.unsubscribe();
+            });
+        }
+      } else {
+        // Se não for externo, mantém fluxo normal
+        if (this.estados && this.estados.length > 0) {
+          patchAndLoadCities();
+        } else {
+          const estadosSub = this.http
+            .get<
+              any[]
+            >('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
+            .subscribe((estados) => {
+              this.estados = estados;
+              patchAndLoadCities();
+              estadosSub.unsubscribe();
+            });
+        }
+      }
+    }
+
+    // SUBSCRIPTIONS REATIVAS
+    this.form.get('zipCode')?.valueChanges.subscribe((cep: string) => {
+      if (cep && cep.length >= 8) {
+        this.buscarEnderecoPorCep(cep);
+      }
+    });
+
+    this.form
+      .get('state')
+      ?.valueChanges.pipe(
+        takeUntil(this.cidadesCancel$),
+        switchMap((sigla: string) => {
+          if (!sigla) {
+            this.cidades = [];
+            this.form.get('city')?.setValue('');
+            return of([]);
+          }
+          const estado = this.estados.find((e) => e.sigla === sigla);
+          if (!estado) {
+            this.cidades = [];
+            this.form.get('city')?.setValue('');
+            return of([]);
+          }
+          return this.http.get<any[]>(
+            `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`,
+          );
+        }),
+      )
+      .subscribe((cidades) => {
+        const uniqueCidades = (cidades || []).filter(
+          (cidade: any, index: number, self: any[]) =>
+            index === self.findIndex((e) => e.id === cidade.id),
+        );
+        this.cidades = uniqueCidades;
+        let cidadeFinal = '';
+        const cityControl = this.form.get('city');
+        const normalize = (str: string) =>
+          str
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '')
+            .toLowerCase();
+        if (
+          cityControl?.value &&
+          this.cidades.some(
+            (c) => normalize(c.nome) === normalize(cityControl.value),
+          )
+        ) {
+          cidadeFinal = cityControl.value;
+        } else if (this.cidades.length > 0) {
+          cidadeFinal = this.cidades[0].nome;
+        }
+        cityControl?.setValue(cidadeFinal);
+        cityControl?.setValidators([Validators.required]);
+        cityControl?.updateValueAndValidity();
+        this.form.updateValueAndValidity();
+      });
   }
 
   submit(): void {
@@ -127,7 +282,9 @@ export class AddressFormComponent
     if (this.isEdit) {
       this.form.get('id')?.disable();
     }
+  }
 
+  private initializeAutoFill(): void {
     if (this.data) {
       // Normaliza type para number/null
       const patch = { ...this.data };

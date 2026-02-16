@@ -38,8 +38,9 @@ namespace TSI.Friday.Services
 
             try
             {
-                var companyEntity = _mapper.Map<Company>(clientDto);
-                var companyDuplicatedMessage = await CheckIfCompanyIsDuplicatedAndGetErrorMessage(companyEntity);
+                var companyDuplicatedMessage = await CheckIfCompanyIsDuplicatedAndGetErrorMessage(
+                    clientDto
+                );
 
                 if (!string.IsNullOrEmpty(companyDuplicatedMessage))
                 {
@@ -48,6 +49,7 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
+                var companyEntity = _mapper.Map<Company>(clientDto);
                 await _repository.AddAsync(companyEntity);
 
                 result.Data = clientDto;
@@ -57,7 +59,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar o Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível cadastrar o Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -70,8 +73,9 @@ namespace TSI.Friday.Services
 
             try
             {
-                var companyEntity = _mapper.Map<Company>(clientDto);
-                var companyDuplicatedMessage = await CheckIfCompanyIsDuplicatedAndGetErrorMessage(companyEntity);
+                var companyDuplicatedMessage = await CheckIfCompanyIsDuplicatedAndGetErrorMessage(
+                    clientDto
+                );
 
                 if (!string.IsNullOrEmpty(companyDuplicatedMessage))
                 {
@@ -80,7 +84,48 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
-                await _repository.UpdateAsync(companyEntity);
+                // Load tracked entity including Addresses so EF can detect changes on navigation
+                var existing = await _repository.GetByIdAsync(clientDto.Id, c => c.Addresses);
+
+                if (existing == null)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = $"Cliente com Id {clientDto.Id} não encontrado.";
+                    return result;
+                }
+
+                // Map simple/scalar properties from DTO to tracked entity
+                _mapper.Map(clientDto, existing);
+
+                // Synchronize Addresses collection
+                var incoming = (clientDto.Addresses ?? new List<AddressDto>()).ToList();
+
+                // Update or add incoming addresses
+                foreach (var addrDto in incoming)
+                {
+                    if (addrDto.Id == 0)
+                    {
+                        // new address
+                        var newAddr = _mapper.Map<Address>(addrDto);
+                        existing.Addresses.Add(newAddr);
+                    }
+                    else
+                    {
+                        var existAddr = existing.Addresses.FirstOrDefault(a => a.Id == addrDto.Id);
+                        if (existAddr != null)
+                        {
+                            _mapper.Map(addrDto, existAddr);
+                        }
+                        else
+                        {
+                            // incoming references an address not currently loaded - map and add
+                            var addAddr = _mapper.Map<Address>(addrDto);
+                            existing.Addresses.Add(addAddr);
+                        }
+                    }
+                }
+
+                await _repository.UpdateAsync(existing);
 
                 result.Data = clientDto;
                 result.Status = ResponseStatus.Success;
@@ -89,7 +134,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados do Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar os dados do Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -117,7 +163,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -138,7 +185,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -154,14 +202,16 @@ namespace TSI.Friday.Services
                 var clientEntity = await _repository.GetByIdAsync(id);
                 result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Cliente {result.Data.Name} encontrado com sucesso"
-                    : $"Nenhum Cliente com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Cliente {result.Data.Name} encontrado com sucesso"
+                        : $"Nenhum Cliente com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -174,17 +224,21 @@ namespace TSI.Friday.Services
 
             try
             {
-                var clientEntity = await _repository.FirstOrDefaultAsync(x => x.NationalRegistry == nationalRegistry);
+                var clientEntity = await _repository.FirstOrDefaultAsync(x =>
+                    x.NationalRegistry == nationalRegistry
+                );
                 result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                    : $"Nenhum Cliente com o CNPJ {nationalRegistry} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Cliente {result.Data.Name} encontrado com sucesso."
+                        : $"Nenhum Cliente com o CNPJ {nationalRegistry} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -200,14 +254,16 @@ namespace TSI.Friday.Services
                 var clientEntity = await _repository.FirstOrDefaultAsync(x => x.Email == email);
                 result.Data = _mapper.Map<ClientDto>(clientEntity);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                    : $"Nenhum Cliente com o E-mail {email} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Cliente {result.Data.Name} encontrado com sucesso."
+                        : $"Nenhum Cliente com o E-mail {email} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -220,23 +276,25 @@ namespace TSI.Friday.Services
         /// <summary>
         /// Should verify if the Company is already being registered on the database.
         /// </summary>
-        /// <param name="company">The Company object that is being added or updated.</param>
+        /// <param name="companyDto">The CompanyDTO object that is being added or updated.</param>
         /// <returns>The error message when Company is duplicated. Otherwise an empty string.</returns>
-        private async Task<string> CheckIfCompanyIsDuplicatedAndGetErrorMessage(Company company)
+        private async Task<string> CheckIfCompanyIsDuplicatedAndGetErrorMessage(
+            ClientDto companyDto
+        )
         {
-            if (await IsNameDuplicated(company))
+            if (await IsNameDuplicated(companyDto))
             {
-                return $"Já existe um Cliente cadastrado com Nome {company.Name}.";
+                return $"Já existe um Cliente cadastrado com Nome {companyDto.Name}.";
             }
 
-            if (await IsEmailDuplicated(company))
+            if (await IsEmailDuplicated(companyDto))
             {
-                return $"Já existe um Cliente cadastrado com E-mail {company.Email}.";
+                return $"Já existe um Cliente cadastrado com E-mail {companyDto.Email}.";
             }
 
-            if (await IsNationalRegistryDuplicated(company))
+            if (await IsNationalRegistryDuplicated(companyDto))
             {
-                return $"Já existe um Cliente cadastrado com o CNPJ {company.NationalRegistry}.";
+                return $"Já existe um Cliente cadastrado com o CNPJ {companyDto.NationalRegistry}.";
             }
 
             return string.Empty;
@@ -245,35 +303,41 @@ namespace TSI.Friday.Services
         /// <summary>
         /// Should verify if the Company email is already being used by another register on the database.
         /// </summary>
-        /// <param name="company">The Company object that is being added or updated.</param>
+        /// <param name="companyDto">The Company object that is being added or updated.</param>
         /// <returns>True when the Email is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsEmailDuplicated(Company company)
+        private async Task<bool> IsEmailDuplicated(ClientDto companyDto)
         {
-            return await _repository
-                .AnyAsync(_ => _.Id != company.Id && !string.IsNullOrEmpty(_.Email) && _.Email == company.Email);
+            return await _repository.AnyAsync(_ =>
+                _.Id != companyDto.Id
+                && !string.IsNullOrEmpty(_.Email)
+                && _.Email == companyDto.Email
+            );
         }
 
         /// <summary>
         /// Should verify if the Company name is already being used by another register on the database.
         /// </summary>
-        /// <param name="company">The Company object that is being added or updated.</param>
+        /// <param name="companyDto">The Company object that is being added or updated.</param>
         /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNameDuplicated(Company company)
+        private async Task<bool> IsNameDuplicated(ClientDto companyDto)
         {
-            return await _repository
-                .AnyAsync(_ => _.Id != company.Id && _.Name == company.Name);
+            return await _repository.AnyAsync(_ =>
+                _.Id != companyDto.Id && _.Name == companyDto.Name
+            );
         }
 
         /// <summary>
         /// Should verify if the Company NationalRegistry is already being used by another register on the database.
         /// </summary>
-        /// <param name="Company">The Company object that is being added or updated.</param>
+        /// <param name="companyDto">The Company object that is being added or updated.</param>
         /// <returns>True when the NationalIDCard is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNationalRegistryDuplicated(Company company)
+        private async Task<bool> IsNationalRegistryDuplicated(ClientDto companyDto)
         {
-            return await _repository
-                .AnyAsync(_ => _.Id != company.Id && !string.IsNullOrEmpty(_.NationalRegistry) &&
-                            _.NationalRegistry == company.NationalRegistry);
+            return await _repository.AnyAsync(_ =>
+                _.Id != companyDto.Id
+                && !string.IsNullOrEmpty(_.NationalRegistry)
+                && _.NationalRegistry == companyDto.NationalRegistry
+            );
         }
 
         #endregion Private methods
