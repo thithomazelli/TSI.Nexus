@@ -45,29 +45,29 @@
               <li class="nav-item">
                 <a
                   class="nav-link"
-                  [class.active]="activeTab === 'resumo'"
-                  (click)="activeTab = 'resumo'"
-                  >Resumo</a
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
+                  >Detalhes</a
                 >
               </li>
               <li class="nav-item">
                 <a
                   class="nav-link"
-                  [class.active]="activeTab === 'produtos'"
-                  (click)="activeTab = 'produtos'"
+                  [class.active]="activeTab === 'products'"
+                  (click)="activeTab = 'products'"
                   >Produtos</a
                 >
               </li>
               <li class="nav-item">
                 <a
                   class="nav-link"
-                  [class.active]="activeTab === 'pagamentos'"
-                  (click)="activeTab = 'pagamentos'"
+                  [class.active]="activeTab === 'payments'"
+                  (click)="activeTab = 'payments'"
                   >Pagamentos</a
                 >
               </li>
             </ul>
-            <div *ngIf="activeTab === 'resumo'">
+            <div *ngIf="activeTab === 'details'">
               <app-order-form
                 [isEdit]="isEdit"
                 [data]="data"
@@ -77,14 +77,17 @@
                 [errors]="errorMessages"
               ></app-order-form>
             </div>
-            <div *ngIf="activeTab === 'produtos'">
+            <div *ngIf="activeTab === 'products'">
               <app-order-products
                 [parentOrderId]="data?.id"
                 (orderProductsUpdated)="onOrderProductsUpdated()"
               ></app-order-products>
             </div>
-            <div *ngIf="activeTab === 'pagamentos'">
-              <p>Pagamentos do pedido vão aqui.</p>
+            <div *ngIf="activeTab === 'payments'">
+              <app-payment-installments
+                [entity]="'Order'"
+                [data]="data"
+              ></app-payment-installments>
             </div>
           </div>
         </div>

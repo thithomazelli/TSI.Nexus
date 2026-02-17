@@ -20,7 +20,7 @@ export class PaymentDetailsPageComponent {
   data?: Payment | null = null;
   id: number | null = null;
   loading = false;
-  activeTab: 'form' | 'extra' = 'form';
+  activeTab: 'details' | 'payments' = 'details';
 
   private _baseEndPoint: ApiType = ApiType.Payments;
 

@@ -54,10 +54,10 @@
               <li class="nav-item">
                 <a
                   class="nav-link active"
-                  [class.active]="activeTab === 'form'"
-                  (click)="activeTab = 'form'"
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
                   data-toggle="tab"
-                  >Formulário</a
+                  >Detalhes</a
                 >
               </li>
               <li class="nav-item">
@@ -72,15 +72,6 @@
               <li class="nav-item">
                 <a
                   class="nav-link"
-                  [class.active]="activeTab === 'image'"
-                  (click)="activeTab = 'image'"
-                  data-toggle="tab"
-                  >Imagem</a
-                >
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link"
                   [class.active]="activeTab === 'orders'"
                   (click)="activeTab = 'orders'"
                   data-toggle="tab"
@@ -90,10 +81,10 @@
               <li class="nav-item">
                 <a
                   class="nav-link"
-                  [class.active]="activeTab === 'extra'"
-                  (click)="activeTab = 'extra'"
+                  [class.active]="activeTab === 'payments'"
+                  (click)="activeTab = 'payments'"
                   data-toggle="tab"
-                  >Other</a
+                  >Pagamentos</a
                 >
               </li>
             </ul>
@@ -104,7 +95,7 @@
 
             @if (!loading) {
               <div>
-                @if (activeTab === "form") {
+                @if (activeTab === "details") {
                   <div>
                     <!-- data-form component: pass compact=true for page -->
                     <app-client-form
@@ -121,24 +112,16 @@
                     <app-address [parentData]="data"> </app-address>
                   </div>
                 }
-                @if (activeTab === "image") {
-                  <div>
-                    <app-photo
-                      [data]="data"
-                      [entityClass]="'Client'"
-                      [imageUrl]="data?.photo"
-                    ></app-photo>
-                  </div>
-                }
                 @if (activeTab === "orders") {
                   <app-client-orders-list
                     [parentData]="data"
                   ></app-client-orders-list>
                 }
-                @if (activeTab === "extra") {
-                  <div>
-                    <p>Other sections go here (prices, history, notes...)</p>
-                  </div>
+                @if (activeTab === "payments") {
+                  <app-payment-installments
+                    [entity]="'Client'"
+                    [data]="data"
+                  ></app-payment-installments>
                 }
               </div>
             }

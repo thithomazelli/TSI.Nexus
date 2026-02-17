@@ -128,7 +128,7 @@ catch
 }
 
 // Serve uploaded files from a dedicated folder to avoid frontend watcher triggers
-var uploadsPath = Path.GetFullPath(Path.Combine("D:\\Development\\TSI.Friday", "uploads"));
+var uploadsPath = Path.GetFullPath(Path.Combine("C:\\Users\\leona\\Documents\\Projects\\TSI\\TSI.Friday", "uploads"));
 Directory.CreateDirectory(uploadsPath);
 var uploadsProvider = new PhysicalFileProvider(uploadsPath);
 app.UseStaticFiles(

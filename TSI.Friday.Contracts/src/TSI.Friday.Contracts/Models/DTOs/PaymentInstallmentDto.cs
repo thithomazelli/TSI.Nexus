@@ -21,11 +21,11 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public int PaymentId { get; set; }
 
-        public int ClientId { get; set; }
+        public int? ClientId { get; set; }
 
         public string ClientName { get; set; }
 
-        public int OrderId { get; set; }
+        public int? OrderId { get; set; }
 
         public string OrderNumber { get; set; }
     }

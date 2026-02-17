@@ -11,6 +11,7 @@ import { SharedModule } from '../shared/shared.module';
 import { NgxMaskDirective } from 'ngx-mask';
 import { AddressModule } from '../address/address.module';
 import { ClientsOrdersListComponent } from './components/client-orders-list/clients-orders-list.component';
+import { PaymentInstallmentsModule } from '../payment-installments/payment-installments.module';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { ClientsOrdersListComponent } from './components/client-orders-list/clie
   ],
   imports: [
     AddressModule,
+    PaymentInstallmentsModule,
     CommonModule,
     ClientsRoutingModule,
     SharedModule,
