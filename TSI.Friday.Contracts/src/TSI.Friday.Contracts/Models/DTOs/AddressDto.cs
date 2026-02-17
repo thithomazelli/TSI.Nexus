@@ -24,7 +24,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public AddressType Type { get; set; }
 
-        public int ClientId { get; set; }
+        public int? ClientId { get; set; }
 
         public bool IsDefault { get; set; }
     }

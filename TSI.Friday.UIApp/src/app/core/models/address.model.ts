@@ -1,7 +1,7 @@
 import { AddressType } from '../enums/address-type.enum';
 
 export class Address {
-  id!: number;
+  id?: number | null;
   name?: string | null;
   street?: string | null;
   number?: number | null;

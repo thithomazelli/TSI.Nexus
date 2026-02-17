@@ -8,6 +8,7 @@ import {
   WebApiResponse,
   Individual,
   Company,
+  Client,
 } from '@friday/core';
 
 @Component({
@@ -21,7 +22,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
   saved = new EventEmitter<void>();
 
   isEdit = false;
-  data?: Individual | Company | null = null;
+  data?: Individual | Company | null = <Client>{};
   id: number | null = null;
 
   private _baseEndPoint: ApiType = ApiType.Clients;
@@ -36,7 +37,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
     // Recebe dados do modal
     if (dialogData) {
       this.isEdit = dialogData.isEdit ?? false;
-      this.data = dialogData.data ?? null;
+      this.data = dialogData.data ?? <Client>{};
       this.id = dialogData.id ?? null;
     }
   }

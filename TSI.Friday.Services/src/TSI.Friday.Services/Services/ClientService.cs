@@ -54,7 +54,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -70,14 +71,16 @@ namespace TSI.Friday.Services
                 var client = await _repository.GetByIdAsync(id);
                 result.Data = _mapper.Map<ClientDto>(client);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Cliente {result.Data.Name} encontrado com sucesso"
-                    : $"Nenhum Cliente com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Cliente {result.Data.Name} encontrado com sucesso"
+                        : $"Nenhum Cliente com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -90,7 +93,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var clients = await _repository.GetAllAsync();
+                var clients = await _repository.GetAllAsync(c => c.Addresses);
 
                 result.Data = _mapper.Map<IEnumerable<ClientDto>>(clients);
                 result.Status = ResponseStatus.Success;
@@ -99,7 +102,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;

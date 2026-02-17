@@ -14,8 +14,15 @@ import {
   Validators,
   ValidatorFn,
   AbstractControl,
+  FormGroup,
 } from '@angular/forms';
-import { Company, FormBaseComponent, Individual } from '@friday/core';
+import {
+  Address,
+  Client,
+  Company,
+  FormBaseComponent,
+  Individual,
+} from '@friday/core';
 // import { Client } from 'CAMINHO_DO_CLIENT_MODEL'; // Ajuste o import conforme seu projeto
 
 @Component({
@@ -34,7 +41,7 @@ export class ClientFormComponent
   isEdit = false;
 
   @Input()
-  data?: Individual | Company | null; // Troque 'any' por 'Client' se tiver o model
+  data?: Individual | Company | null = <Client>{};
 
   @Input()
   compact = false;
@@ -48,12 +55,24 @@ export class ClientFormComponent
   @Output()
   cancel = new EventEmitter<void>();
 
+  canDisplayClientButtons = true;
+  canDisplayAddressForm = true;
+  canDisplayAddressButtons = false;
+  canDisplayNewAddressLink = false;
+  selectedAddressIndex: number | null = null;
+
   constructor(private formBuilder: FormBuilder) {
     super();
   }
 
   ngOnInit(): void {
+    this.canDisplayAddressForm = this.isEdit ? false : true;
+    this.canDisplayAddressButtons =
+      this.isEdit && this.canDisplayAddressForm ? true : false;
+    this.canDisplayNewAddressLink = this.isEdit ? false : true;
+
     this.initForm();
+    this.initAddressInfo();
     this.disableEditFields();
     this.patchFormWithData();
   }
@@ -80,14 +99,161 @@ export class ClientFormComponent
       raw.birthday = null;
     }
 
-    this.save.emit(raw);
+    // Se vier address preenchido, mova para addresses
+    if (raw.address && Object.keys(raw.address).some((k) => raw.address[k])) {
+      if (!this.data!.addresses) {
+        this.data!.addresses = [];
+      }
+      // Se address já existe em addresses (por id ou igualdade), substitui, senão adiciona
+      const idx = this.data!.addresses.findIndex(
+        (a) => a.id && raw.address.id && a.id === raw.address.id,
+      );
+
+      if (idx !== -1) {
+        this.data!.addresses[idx] = raw.address;
+      } else {
+        this.data!.addresses.push(raw.address);
+      }
+    }
+
+    // Atualiza as propriedades de data com os valores do formulário, exceto address
+    const { address, ...rest } = raw;
+    Object.assign(this.data!, rest);
+
+    // Remove o atributo address do objeto final, se existir
+    if ('address' in this.data!) {
+      delete (this.data as any).address;
+    }
+
+    // Se não tiver endereço default, define o primeiro como default
+    if (!this.data?.addresses.find((addr) => addr.isDefault)) {
+      this.data!.addresses![0].isDefault = true;
+    }
+
+    this.data?.addresses.find((addr) => {
+      if (addr.id == null) {
+        delete addr.id;
+      }
+    });
+
+    this.save.emit(this.data);
   }
 
   doCancel(): void {
     this.cancel.emit();
   }
 
+  onSaveAndAddNewAddress(): void {
+    this.addressFormGroup.markAllAsTouched();
+    if (this.addressFormGroup.valid) {
+      this.saveAddress(this.addressFormGroup.value);
+    }
+  }
+
+  get addressFormGroup(): FormGroup {
+    return this.form.get('address') as FormGroup;
+  }
+
+  /**
+   * Retorna o endereço selecionado de forma segura para o template
+   */
+  get selectedAddress(): Address | null {
+    if (
+      this.selectedAddressIndex !== null &&
+      Array.isArray(this.data?.addresses) &&
+      this.selectedAddressIndex >= 0 &&
+      this.selectedAddressIndex < this.data.addresses.length
+    ) {
+      return this.data.addresses[this.selectedAddressIndex];
+    }
+    return null;
+  }
+
+  displayNewAddress(): void {
+    this.restoreAddressValidators();
+    this.selectedAddressIndex = null;
+    this.canDisplayAddressForm = true;
+    this.canDisplayAddressButtons = true;
+  }
+
+  editAddress(addr: Address) {
+    const idx = this.data?.addresses?.findIndex((a) => a === addr);
+    if (idx !== undefined && idx !== -1) {
+      this.selectedAddressIndex = idx;
+      // Preenche o form de endereço com os dados selecionados
+      this.addressFormGroup.patchValue({ ...addr });
+      this.canDisplayAddressForm = true;
+      this.canDisplayAddressButtons = true;
+      this.canDisplayNewAddressLink = false;
+    }
+  }
+
+  cancelAddress(): void {
+    this.canDisplayClientButtons = true;
+    this.canDisplayAddressForm = false;
+    this.canDisplayAddressButtons = false;
+    this.canDisplayNewAddressLink = false;
+    this.selectedAddressIndex = null;
+
+    this.resetAddressForm();
+  }
+
+  saveAddress(address: Address): void {
+    if (!this.addressFormGroup.valid) {
+      return;
+    }
+
+    if (this.selectedAddressIndex !== null && this.data?.addresses) {
+      // Atualiza o endereço editado
+      this.data.addresses[this.selectedAddressIndex] = address;
+    } else {
+      // Adiciona novo endereço
+      this.data!.addresses.push(address);
+    }
+
+    this.initAddressInfo();
+    this.resetAddressForm();
+
+    this.selectedAddressIndex = null;
+    this.canDisplayAddressForm = this.canDisplayNewAddressLink ? true : false;
+    this.canDisplayAddressButtons = false;
+
+    if (this.canDisplayAddressForm) {
+      this.restoreAddressValidators();
+    }
+  }
+
+  private initAddressInfo() {
+    if (!this.data) {
+      return;
+    }
+
+    if (!this.data.addresses) {
+      this.data.addresses = [];
+      return;
+    }
+
+    this.data.addresses = (this.data.addresses ?? []).map(
+      (addr) => new Address({ ...addr }),
+    );
+  }
+
   private initForm(): void {
+    const addressGroup = this.formBuilder.group({
+      id: [null],
+      name: ['', Validators.required],
+      type: [null, Validators.required],
+      zipCode: ['', Validators.required],
+      state: ['', Validators.required],
+      city: ['', Validators.required],
+      street: ['', Validators.required],
+      number: [null, Validators.required],
+      comments: [''],
+      clientId: [null],
+      country: ['BR', Validators.required],
+      isDefault: [false],
+    });
+
     const commonControls = {
       name: ['', [Validators.required]],
       email: [
@@ -106,6 +272,7 @@ export class ClientFormComponent
       nationalRegistry: ['', this.cnpjValidator()],
       birthday: [null],
       photo: [''],
+      address: addressGroup,
     };
 
     this.form = !this.isEdit
@@ -124,6 +291,64 @@ export class ClientFormComponent
     this.updateFieldValidators(this.form.get('type')?.value, false);
   }
 
+  private resetAddressForm(): void {
+    this.addressFormGroup.reset();
+
+    // Remove validators dos campos do grupo address
+    Object.keys(this.addressFormGroup.controls).forEach((key) => {
+      this.addressFormGroup.get(key)?.clearValidators();
+      this.addressFormGroup.get(key)?.updateValueAndValidity();
+    });
+  }
+
+  /**
+   * Restaura os validadores obrigatórios do addressFormGroup
+   */
+  private restoreAddressValidators(): void {
+    const controls = this.addressFormGroup.controls;
+    if (controls['name']) {
+      controls['name'].setValidators([Validators.required]);
+    }
+
+    if (controls['type']) {
+      controls['type'].setValidators([Validators.required]);
+    }
+
+    if (controls['zipCode']) {
+      controls['zipCode'].setValidators([Validators.required]);
+    }
+
+    if (controls['state']) {
+      controls['state'].setValidators([Validators.required]);
+    }
+
+    if (controls['city']) {
+      controls['city'].setValidators([Validators.required]);
+    }
+
+    if (controls['street']) {
+      controls['street'].setValidators([Validators.required]);
+    }
+
+    if (controls['number']) {
+      controls['number'].setValidators([Validators.required]);
+    }
+
+    if (controls['country']) {
+      controls['country'].setValue('BR');
+      controls['country'].setValidators([Validators.required]);
+    }
+
+    if (controls['isDefault']) {
+      controls['isDefault'].setValue(false);
+    }
+
+    // Campos opcionais não recebem validadores
+    Object.keys(controls).forEach((key) =>
+      controls[key].updateValueAndValidity(),
+    );
+  }
+
   private disableEditFields(): void {
     if (this.isEdit && this.form) {
       this.form.get('type')?.disable();
@@ -136,6 +361,11 @@ export class ClientFormComponent
     if (this.data && this.form) {
       const patch = { ...this.data };
       this.form.patchValue(patch);
+    }
+
+    if (this.data?.addresses && this.data.addresses.length > 0) {
+      this.canDisplayAddressForm = false;
+      this.resetAddressForm();
     }
   }
 

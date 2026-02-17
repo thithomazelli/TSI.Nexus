@@ -38,9 +38,8 @@ namespace TSI.Friday.Services
 
             try
             {
-                var clientEntity = _mapper.Map<Individual>(clientDto);
                 var individualDuplicatedMessage =
-                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientEntity);
+                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientDto);
 
                 if (!string.IsNullOrEmpty(individualDuplicatedMessage))
                 {
@@ -49,6 +48,7 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
+                var clientEntity = _mapper.Map<Individual>(clientDto);
                 await _repository.AddAsync(clientEntity);
 
                 result.Data = clientDto;
@@ -72,18 +72,58 @@ namespace TSI.Friday.Services
 
             try
             {
-                var clientEntity = _mapper.Map<Individual>(clientDto);
-                var IndividualDuplicatedMessage =
-                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientEntity);
+                var individualDuplicatedMessage =
+                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientDto);
 
-                if (!string.IsNullOrEmpty(IndividualDuplicatedMessage))
+                if (!string.IsNullOrEmpty(individualDuplicatedMessage))
                 {
                     result.Status = ResponseStatus.Error;
-                    result.Message = IndividualDuplicatedMessage;
+                    result.Message = individualDuplicatedMessage;
                     return result;
                 }
 
-                await _repository.UpdateAsync(clientEntity);
+                // Load tracked entity including Addresses so EF can detect changes on navigation
+                var existing = await _repository.GetByIdAsync(clientDto.Id, c => c.Addresses);
+
+                if (existing == null)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = $"Cliente com Id {clientDto.Id} não encontrado.";
+                    return result;
+                }
+
+                // Map simple/scalar properties from DTO to tracked entity
+                _mapper.Map(clientDto, existing);
+
+                // Synchronize Addresses collection
+                var incoming = (clientDto.Addresses ?? new List<AddressDto>()).ToList();
+
+                // Update or add incoming addresses
+                foreach (var addrDto in incoming)
+                {
+                    if (addrDto.Id == 0)
+                    {
+                        // new address
+                        var newAddr = _mapper.Map<Address>(addrDto);
+                        existing.Addresses.Add(newAddr);
+                    }
+                    else
+                    {
+                        var existAddr = existing.Addresses.FirstOrDefault(a => a.Id == addrDto.Id);
+                        if (existAddr != null)
+                        {
+                            _mapper.Map(addrDto, existAddr);
+                        }
+                        else
+                        {
+                            // incoming references an address not currently loaded - map and add
+                            var addAddr = _mapper.Map<Address>(addrDto);
+                            existing.Addresses.Add(addAddr);
+                        }
+                    }
+                }
+
+                await _repository.UpdateAsync(existing);
 
                 result.Data = clientDto;
                 result.Status = ResponseStatus.Success;
@@ -233,30 +273,30 @@ namespace TSI.Friday.Services
         /// <summary>
         /// Should verify if the Individual is already being registered on the database.
         /// </summary>
-        /// <param name="individual">The Individual object that is being added or updated.</param>
+        /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>The error message when Individual is duplicated. Otherwise an empty string.</returns>
         private async Task<string> CheckIfIndividualIsDuplicatedAndGetErrorMessage(
-            Individual individual
+            ClientDto individualDto
         )
         {
-            if (await IsNameDuplicated(individual))
+            if (await IsNameDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com Nome {individual.Name}.";
+                return $"Já existe um Cliente cadastrado com Nome {individualDto.Name}.";
             }
 
-            if (await IsEmailDuplicated(individual))
+            if (await IsEmailDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com E-mail {individual.Email}.";
+                return $"Já existe um Cliente cadastrado com E-mail {individualDto.Email}.";
             }
 
-            if (await IsSocialSecurityCardDuplicated(individual))
+            if (await IsSocialSecurityCardDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com o CPF {individual.SocialSecurityCard}.";
+                return $"Já existe um Cliente cadastrado com o CPF {individualDto.SocialSecurityCard}.";
             }
 
-            if (await IsNationalIDCardDuplicated(individual))
+            if (await IsNationalIDCardDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com o RG {individual.NationalIdCard}.";
+                return $"Já existe um Cliente cadastrado com o RG {individualDto.NationalIdCard}.";
             }
 
             return string.Empty;
@@ -265,54 +305,54 @@ namespace TSI.Friday.Services
         /// <summary>
         /// Should verify if the Individual email is already being used by another register on the database.
         /// </summary>
-        /// <param name="individual">The Individual object that is being added or updated.</param>
+        /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the Email is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsEmailDuplicated(Individual individual)
+        private async Task<bool> IsEmailDuplicated(ClientDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
-                _.Id != individual.Id
+                _.Id != individualDto.Id
                 && !string.IsNullOrEmpty(_.Email)
-                && _.Email == individual.Email
+                && _.Email == individualDto.Email
             );
         }
 
         /// <summary>
         /// Should verify if the Individual name is already being used by another register on the database.
         /// </summary>
-        /// <param name="individual">The Individual object that is being added or updated.</param>
+        /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNameDuplicated(Individual individual)
+        private async Task<bool> IsNameDuplicated(ClientDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
-                _.Id != individual.Id && _.Name == individual.Name
+                _.Id != individualDto.Id && _.Name == individualDto.Name
             );
         }
 
         /// <summary>
         /// Should verify if the Individual NationalIDCard is already being used by another register on the database.
         /// </summary>
-        /// <param name="individual">The Individual object that is being added or updated.</param>
+        /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the NationalIDCard is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNationalIDCardDuplicated(Individual individual)
+        private async Task<bool> IsNationalIDCardDuplicated(ClientDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
-                _.Id != individual.Id
+                _.Id != individualDto.Id
                 && !string.IsNullOrEmpty(_.NationalIdCard)
-                && _.NationalIdCard == individual.NationalIdCard
+                && _.NationalIdCard == individualDto.NationalIdCard
             );
         }
 
         /// <summary>
         /// Should verify if the Individual SocialSecurityCard is already being used by another register on the database.
         /// </summary>
-        /// <param name="individual">The Individual object that is being added or updated.</param>
+        /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the SocialSecurityCard is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsSocialSecurityCardDuplicated(Individual individual)
+        private async Task<bool> IsSocialSecurityCardDuplicated(ClientDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
-                _.Id != individual.Id
+                _.Id != individualDto.Id
                 && !string.IsNullOrEmpty(_.SocialSecurityCard)
-                && _.SocialSecurityCard == individual.SocialSecurityCard
+                && _.SocialSecurityCard == individualDto.SocialSecurityCard
             );
         }
 

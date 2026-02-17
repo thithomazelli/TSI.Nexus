@@ -115,13 +115,13 @@ export class ClientsComponent {
       cellRenderer: (params: ICellRendererParams) => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-eye"></i>
+            <i class="fas fa-eye" data-action="view"></i>
           </button>
           <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit"></i>
+            <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash"></i>  
+            <i class="fas fa-trash" data-action="delete"></i>  
           </button>
         `;
       },

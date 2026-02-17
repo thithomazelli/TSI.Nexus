@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TSI.Friday.Contracts.Models.DTOs
 {
@@ -25,5 +26,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public string NationalIdCard { get; set; }
 
         public DateTime? Birthday { get; set; }
+
+        public ICollection<AddressDto> Addresses { get; set; }
     }
 }

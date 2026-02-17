@@ -1,0 +1,22 @@
+// Link de endereço desabilitado
+a.address-link.disabled,
+a.address-link[aria-disabled="true"] {
+  color: #adb5bd !important; // Bootstrap gray-500
+  cursor: default !important;
+  pointer-events: none;
+  text-decoration: none;
+}
+/* Títulos das sessões */
+.client-form-wrapper h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 1.2rem;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 0.8rem;
+}
+
+.client-form-wrapper h5:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}

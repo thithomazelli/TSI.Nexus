@@ -17,6 +17,6 @@ import { NgxMaskDirective } from 'ngx-mask';
     AddressDetailsPageComponent,
   ],
   imports: [CommonModule, SharedModule, NgxMaskDirective],
-  exports: [AddressComponent],
+  exports: [AddressComponent, AddressFormComponent],
 })
 export class AddressModule {}
