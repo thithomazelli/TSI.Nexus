@@ -8,6 +8,7 @@ import { PaymentDetailsPageComponent } from './components/payment-details-page/p
 import { PaymentFormComponent } from './components/payment-form/payment-form.component';
 import { PaymentsComponent } from './payments.component';
 import { ClientsModule } from '../clients/clients.module';
+import { PaymentInstallmentsModule } from '../payment-installments/payment-installments.module';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { ClientsModule } from '../clients/clients.module';
     SharedModule,
     NgxMaskDirective,
     ClientsModule,
+    PaymentInstallmentsModule,
   ],
 })
 export class PaymentsModule {}

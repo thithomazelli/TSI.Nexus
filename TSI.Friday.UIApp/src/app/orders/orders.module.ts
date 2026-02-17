@@ -12,6 +12,7 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { ClientsModule } from '../clients/clients.module';
 import { OrderProductsModule } from '../order-products/order-products.module';
 import { ProductsModule } from '../products/products.module';
+import { PaymentInstallmentsModule } from '../payment-installments/payment-installments.module';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import { ProductsModule } from '../products/products.module';
     NgxMaskDirective,
     ClientsModule,
     ProductsModule,
+    PaymentInstallmentsModule,
   ],
 })
 export class OrdersModule {}

@@ -46,8 +46,8 @@
               <li class="nav-item">
                 <a
                   class="nav-link active"
-                  [class.active]="activeTab === 'form'"
-                  (click)="activeTab = 'form'"
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
                   data-toggle="tab"
                   >Detalhes</a
                 >
@@ -55,10 +55,10 @@
               <li class="nav-item">
                 <a
                   class="nav-link"
-                  [class.active]="activeTab === 'extra'"
-                  (click)="activeTab = 'extra'"
+                  [class.active]="activeTab === 'payments'"
+                  (click)="activeTab = 'payments'"
                   data-toggle="tab"
-                  >Outros</a
+                  >Parcelas</a
                 >
               </li>
             </ul>
@@ -69,7 +69,7 @@
 
             @if (!loading) {
               <div>
-                @if (activeTab === "form") {
+                @if (activeTab === "details") {
                   <div>
                     <app-payment-form
                       [isEdit]="isEdit"
@@ -80,12 +80,11 @@
                     ></app-payment-form>
                   </div>
                 }
-                @if (activeTab === "extra") {
-                  <div>
-                    <p>
-                      Outras informações do pagamento podem ser exibidas aqui.
-                    </p>
-                  </div>
+                @if (activeTab === "payments") {
+                  <app-payment-installments
+                    [entity]="'Payment'"
+                    [data]="data"
+                  ></app-payment-installments>
                 }
               </div>
             }

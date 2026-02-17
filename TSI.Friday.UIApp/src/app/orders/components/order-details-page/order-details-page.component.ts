@@ -22,7 +22,7 @@ export class OrderDetailsPageComponent {
   errorMessages?: string[];
   private _baseEndPoint: ApiType = ApiType.Orders;
 
-  activeTab: 'resumo' | 'produtos' | 'pagamentos' = 'resumo';
+  activeTab: 'details' | 'products' | 'payments' = 'details';
 
   constructor(
     private activatedRoute: ActivatedRoute,

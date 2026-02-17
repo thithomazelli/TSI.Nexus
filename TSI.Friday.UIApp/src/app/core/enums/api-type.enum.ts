@@ -6,6 +6,7 @@ export enum ApiType {
   Orders = 'orders',
   OrderProducts = 'orderproducts',
   Payments = 'payments',
+  PaymentInstallments = 'paymentinstallments',
   Photos = 'photos',
   Products = 'products',
   Users = 'users',

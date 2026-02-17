@@ -21,8 +21,7 @@ export class ClientDetailsPageComponent {
   data?: Company | Individual | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'form' | 'image' | 'address' | 'orders' | 'payments' | 'extra' =
-    'form';
+  activeTab: 'details' | 'address' | 'orders' | 'payments' = 'details';
 
   private _baseEndPoint: ApiType = ApiType.Clients;
 

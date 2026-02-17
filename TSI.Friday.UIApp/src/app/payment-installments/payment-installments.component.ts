@@ -5,6 +5,7 @@ import {
   ApiType,
   Client,
   ModalService,
+  Order,
   Payment,
   WebApiResponse,
 } from '@friday/core';
@@ -24,9 +25,12 @@ import { PaymentInstallmentDetailsModalComponent } from './components/payment-in
 })
 export class PaymentInstallmentsComponent {
   @Input()
-  parentData?: Client | null = null;
+  entity: string = '';
 
-  baseEndPoint = ApiType.Payments;
+  @Input()
+  data?: Client | Order | Payment | null = null;
+
+  baseEndPoint = ApiType.PaymentInstallments;
   rowData: Payment[] = [];
   columnDefs: ColDef[] = [
     {
@@ -34,7 +38,7 @@ export class PaymentInstallmentsComponent {
       headerName: 'ID',
       sortable: true,
       filter: true,
-      hide: true,
+      hide: false,
       minWidth: 150,
     },
     {
@@ -245,7 +249,9 @@ export class PaymentInstallmentsComponent {
 
   private getPayments(): void {
     this.apiService
-      .get<WebApiResponse<Payment[]>>(`${this.baseEndPoint}/getAll`)
+      .get<
+        WebApiResponse<Payment[]>
+      >(`${this.baseEndPoint}/getBy${this.entity}Id/${this.data?.id}`)
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.rowData = response.data ?? [];
       });
