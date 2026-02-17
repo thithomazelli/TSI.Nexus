@@ -127,7 +127,7 @@
     @if (!compact) {
       <section style="font-size: 0.95em">
         <h5 class="mt-4 mb-2" style="font-size: 1.1em">Endereços</h5>
-        <!-- <div>
+        <div>
           <div class="row g-2">
             <div class="col-12 col-md-6" *ngFor="let addr of data?.addresses">
               <div class="d-flex align-items-start mb-2">
@@ -143,21 +143,83 @@
               </div>
             </div>
           </div>
-        </div> -->
+        </div>
+        <div class="mt-2">
+          <a
+            *ngIf="!canDisplayNewAddressLink"
+            href="#"
+            class="address-link me-3"
+            (click)="$event.preventDefault(); displayNewAddress()"
+            >Adicionar um novo endereço</a
+          >
+        </div>
         <app-address-form
+          *ngIf="canDisplayAddressForm"
           [formGroup]="addressFormGroup"
-          [data]="defaultAddress"
+          [data]="selectedAddress"
+          (save)="saveAddress($event)"
+          (cancel)="cancelAddress()"
           [compact]="true"
         ></app-address-form>
+
+        <div class="d-flex justify-content-end mt-3">
+          @if (canDisplayAddressButtons) {
+            <button
+              type="button"
+              class="btn btn-secondary me-2"
+              (click)="$event.preventDefault(); cancelAddress()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-success"
+              [class.disabled]="!addressFormGroup.valid"
+              [attr.aria-disabled]="!addressFormGroup.valid"
+              (click)="
+                $event.preventDefault(); saveAddress(addressFormGroup.value)
+              "
+            >
+              Salvar Endereço
+            </button>
+          } @else if (canDisplayNewAddressLink) {
+            <a
+              *ngIf="data?.addresses?.length !== 0"
+              href="#"
+              class="address-link me-3"
+              (click)="$event.preventDefault(); cancelAddress()"
+              >Cancelar
+            </a>
+
+            <a
+              id="newAddressLinkButton"
+              href="#"
+              class="address-link"
+              [class.disabled]="!addressFormGroup.valid"
+              [attr.aria-disabled]="!addressFormGroup.valid"
+              (click)="
+                $event.preventDefault(); saveAddress(addressFormGroup.value)
+              "
+              >Adicionar um novo endereço</a
+            >
+          }
+        </div>
       </section>
     }
 
-    <div class="d-flex justify-content-end mt-3">
+    <div
+      class="d-flex justify-content-end mt-3"
+      *ngIf="!canDisplayAddressButtons"
+    >
       <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
-        Cancel
+        Cancelar
       </button>
-      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
-        Save
+      <button
+        type="submit"
+        class="btn btn-success"
+        [disabled]="canDisplayAddressButtons || form.invalid"
+      >
+        Salvar Cliente
       </button>
     </div>
   </form>
