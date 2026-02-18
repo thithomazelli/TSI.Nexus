@@ -118,6 +118,9 @@ export class AccountService {
     return this.apiService.post<User>('account/login', model).pipe(
       map((user: User) => {
         this.setUser(user);
+        if (user.jwt) {
+          this.startAutoLogout(user.jwt);
+        }
       }),
     );
   }
@@ -160,6 +163,48 @@ export class AccountService {
     return user.jwt;
   }
 
+  // Timer para autologoff
+  private logoutTimer: any;
+  /**
+   * Inicia ou reinicia o timer de autologoff baseado no exp do token JWT.
+   * Chame este método sempre que um novo token for emitido (login, refresh, etc).
+   */
+  startAutoLogout(token: string | null) {
+    if (this.logoutTimer) {
+      clearTimeout(this.logoutTimer);
+    }
+    if (!token) {
+      this.logout();
+      return;
+    }
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) {
+        this.logout();
+        return;
+      }
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')),
+      );
+      if (!payload || !payload.exp) {
+        this.logout();
+        return;
+      }
+      const expiresAt = Number(payload.exp) * 1000;
+      const now = Date.now();
+      const timeout = expiresAt - now;
+      if (timeout > 0) {
+        this.logoutTimer = setTimeout(() => {
+          this.logout();
+        }, timeout);
+      } else {
+        this.logout();
+      }
+    } catch {
+      this.logout();
+    }
+  }
+
   private setUser(user: User): void {
     if (!user) {
       return;
@@ -188,6 +233,8 @@ export class AccountService {
             }
           }
         }
+        // Sempre reinicia o timer de autologoff ao setar novo usuário/token
+        this.startAutoLogout(token);
       }
     } catch (e) {
       // ignore decode errors

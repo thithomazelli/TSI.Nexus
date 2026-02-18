@@ -1,3 +1,33 @@
+// Tabela minimalista de produtos do pedido
+.minimalist-table {
+  th,
+  td {
+    border: none !important;
+    background: transparent !important;
+    padding-top: 0.32rem;
+    padding-bottom: 0.32rem;
+    font-size: 0.93rem;
+    color: #6c757d;
+    font-weight: 400;
+    opacity: 0.85;
+  }
+  thead tr {
+    border-bottom: 1px solid #ececec;
+  }
+  th {
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    color: #adb5bd;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+  tbody tr:hover {
+    background: #f8f9fa !important;
+  }
+  td {
+    border-bottom: 1px solid #f3f3f3 !important;
+  }
+}
 // Reforço para garantir fundo branco e destaque no autocomplete do cliente
 ::ng-deep .mat-autocomplete-panel {
   background: #fff !important;

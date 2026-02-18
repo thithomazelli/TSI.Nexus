@@ -68,15 +68,37 @@
               </li>
             </ul>
             <div *ngIf="activeTab === 'details'">
-              <app-order-form
+              <!-- <app-order-form
                 [isEdit]="isEdit"
                 [data]="data"
                 (save)="onSave($event)"
                 (cancel)="onCancel()"
                 [compact]="false"
                 [errors]="errorMessages"
-              ></app-order-form>
+              ></app-order-form> -->
+
+              <!-- Sessão 1: Order Form -->
+              <section class="order-section">
+                <h6>Dados do Pedido</h6>
+                <app-order-form
+                  [isEdit]="isEdit"
+                  [data]="data"
+                  (save)="onSave($event)"
+                  (cancel)="onCancel()"
+                  [compact]="false"
+                  [errors]="errorMessages"
+                ></app-order-form>
+              </section>
+
+              <hr />
+
+              <!-- Sessão 3: Payment Form -->
+              <section class="order-section">
+                <h6>Pagamento</h6>
+                <!-- <app-payment-form [isEdit]="isEdit"></app-payment-form> -->
+              </section>
             </div>
+
             <div *ngIf="activeTab === 'products'">
               <app-order-products
                 [parentOrderId]="data?.id"

@@ -1,12 +1,13 @@
 import { OrderStatus } from '../enums/order-status.enum';
+import { BaseModel } from './base.model';
 import { OrderProduct } from './order-product.model';
 
-export interface Order {
-  id: number;
-  orderNumber: string;
+export interface Order extends BaseModel {
+  id?: number;
+  orderNumber?: string;
   clientId?: number;
   clientName?: string;
-  status: OrderStatus;
+  status?: OrderStatus;
   description?: string;
   discount?: number;
   price?: number;

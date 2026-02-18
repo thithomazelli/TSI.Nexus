@@ -1,18 +1,19 @@
 import { PaymentCondition, PaymentMethod } from '../enums';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { PaymentType } from '../enums/payment-type.enum';
+import { BaseModel } from './base.model';
 
-export interface PaymentInstallment {
+export interface PaymentInstallment extends BaseModel {
   id: number;
   type?: PaymentType;
-  method?: PaymentMethod;
   status?: PaymentStatus;
+  method?: PaymentMethod;
   date?: Date;
-  category?: string;
   description?: string;
-  price?: number;
-  condition?: PaymentCondition;
   installmentNumber?: number;
+  price?: number;
   orderId?: number;
+  orderNumber?: string;
   clientId?: number;
+  clientName?: string;
 }

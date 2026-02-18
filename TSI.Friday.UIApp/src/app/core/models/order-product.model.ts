@@ -1,7 +1,8 @@
 import { OrderProductStatus, ProductType } from '../enums';
 import { Address } from './address.model';
+import { BaseModel } from './base.model';
 
-export interface OrderProduct {
+export interface OrderProduct extends BaseModel {
   id: number;
   description?: string;
   readonly previousQuantity?: number;

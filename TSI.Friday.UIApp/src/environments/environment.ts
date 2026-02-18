@@ -1,5 +1,5 @@
 export const environment = {
-  tokenRefreshIntervalSeconds: 600,
+  tokenRefreshIntervalSeconds: 300,
   production: true,
   appUrl: '',
   userKey: 'fridayAppUser',

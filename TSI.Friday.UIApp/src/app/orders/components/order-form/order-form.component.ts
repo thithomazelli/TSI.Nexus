@@ -18,10 +18,12 @@ import {
   FormBaseComponent,
   ModalService,
   CurrencyService,
+  OrderProduct,
 } from '@friday/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Observable, startWith, map } from 'rxjs';
 import { ClientDetailsModalComponent } from '../../../clients/components/client-details-modal/client-details-modal.component';
+import { OrderProductsDetailsModalComponent } from '../../../order-products/components/order-product-details-modal/order-products-details-modal.component';
 
 @Component({
   selector: 'app-order-form',
@@ -46,7 +48,9 @@ export class OrderFormComponent
   isEdit = false;
 
   @Input()
-  data?: Order | null;
+  data?: Order | null = <Order>{
+    orderProducts: [],
+  };
 
   @Input()
   compact = false;
@@ -150,8 +154,63 @@ export class OrderFormComponent
   }
 
   removeProduct(index: number): void {
-    if (!this.data?.orderProducts) return;
+    if (!this.data?.orderProducts) {
+      return;
+    }
     this.data.orderProducts.splice(index, 1);
+    this.updatePriceFields();
+    this.updateTotalPriceFields();
+  }
+
+  openOrderProductsModal() {
+    const data = { ...this.data, ...this.form.getRawValue() };
+
+    const initialState = {
+      isEdit: false,
+      id: null,
+      parentId: null,
+      parentData: data,
+    };
+
+    if (!this.form.get('clientId')?.value) {
+      this.modalService.showNotification(
+        false,
+        '',
+        'Por favor, selecione um cliente antes de adicionar produtos.',
+      );
+      return;
+    }
+
+    const ref = this.modalService.showTemplateModal(
+      OrderProductsDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe((orderProduct: OrderProduct) => {
+        this.data?.orderProducts?.push(orderProduct);
+
+        this.updatePriceFields();
+        this.updateTotalPriceFields();
+        this.modalService.showNotification(
+          true,
+          '',
+          'Produto adicionado com sucesso',
+        );
+        ref.close();
+      });
+    }
+  }
+
+  private updatePriceFields(): void {
+    const total = this.data?.orderProducts?.reduce(
+      (sum, p) => sum + (p?.price || 0) * (p?.quantity || 0),
+      0,
+    );
+    this.data!.price = total;
+    this.form.get('price')?.setValue(total);
+    this.form
+      .get('priceFormatted')
+      ?.setValue(this.currencyService.formatCurrencyBRL(total));
   }
 
   private updateTotalPriceFields(): void {

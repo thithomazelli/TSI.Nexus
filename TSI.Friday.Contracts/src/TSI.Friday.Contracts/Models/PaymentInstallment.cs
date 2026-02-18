@@ -8,9 +8,11 @@ namespace TSI.Friday.Contracts.Models
     {
         public int Id { get; set; }
 
-        public PaymentMethod Method { get; set; }
+        public PaymentType Type { get; set; }
 
         public PaymentStatus Status { get; set; }
+
+        public PaymentMethod Method { get; set; }
 
         public DateTime Date { get; set; }
 

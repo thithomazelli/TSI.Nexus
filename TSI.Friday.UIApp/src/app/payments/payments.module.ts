@@ -25,5 +25,6 @@ import { PaymentInstallmentsModule } from '../payment-installments/payment-insta
     ClientsModule,
     PaymentInstallmentsModule,
   ],
+  exports: [PaymentFormComponent],
 })
 export class PaymentsModule {}

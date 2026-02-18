@@ -49,6 +49,9 @@ export class OrderProductsFormComponent
   parentId: number | null = null;
 
   @Input()
+  parentData: any;
+
+  @Input()
   isEdit = false;
 
   @Input()
@@ -144,7 +147,10 @@ export class OrderProductsFormComponent
   }
 
   async initParentInfo() {
-    if (this.parentId == null) {
+    if (this.parentData) {
+      this._orderData = this.parentData;
+      return;
+    } else if (this.parentId == null) {
       return;
     }
     const response = await firstValueFrom(
@@ -557,9 +563,19 @@ export class OrderProductsFormComponent
         if (!filterValue) {
           return [];
         }
-        return (this.products$ as any).source.value.filter((product: Product) =>
-          (product.sku || '').toLowerCase().includes(filterValue),
-        );
+        return (this.products$ as any).source.value
+          .filter((product: Product) =>
+            (product.sku || '').toLowerCase().includes(filterValue),
+          )
+          .map((product: Product) => ({
+            ...product,
+            alreadyUsed: this.parentData?.orderProducts?.some(
+              (op: OrderProduct) => op.productId === product.id,
+            ),
+            disabled:
+              product.quantityInStock !== undefined &&
+              product.quantityInStock <= 0,
+          }));
       }),
     );
 
@@ -577,10 +593,19 @@ export class OrderProductsFormComponent
           if (!filterValue) {
             return [];
           }
-          return (this.products$ as any).source.value.filter(
-            (product: Product) =>
+          return (this.products$ as any).source.value
+            .filter((product: Product) =>
               (product.name || '').toLowerCase().includes(filterValue),
-          );
+            )
+            .map((product: Product) => ({
+              ...product,
+              alreadyUsed: this.parentData?.orderProducts?.some(
+                (op: OrderProduct) => op.productId === product.id,
+              ),
+              disabled:
+                product.quantityInStock !== undefined &&
+                product.quantityInStock <= 0,
+            }));
         }),
       );
   }

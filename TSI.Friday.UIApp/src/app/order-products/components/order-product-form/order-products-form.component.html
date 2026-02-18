@@ -24,8 +24,16 @@
                 <mat-option
                   *ngFor="let product of filteredProductsSku$ | async"
                   [value]="product"
+                  [disabled]="product.disabled || product.alreadyUsed"
+                  [ngClass]="{ 'text-muted': product.disabled }"
                 >
                   {{ product.sku }}
+                  <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                    >(já utilizado)</span
+                  >
+                  <span *ngIf="product.disabled" class="ms-1 text-muted"
+                    >(sem estoque)</span
+                  >
                 </mat-option>
               </mat-autocomplete>
             </div>
@@ -52,8 +60,18 @@
                 <mat-option
                   *ngFor="let product of filteredProductsName$ | async"
                   [value]="product"
+                  [disabled]="product.disabled || product.alreadyUsed"
+                  [ngClass]="{
+                    'text-muted': product.disabled || product.alreadyUsed,
+                  }"
                 >
                   {{ product.name }}
+                  <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                    >(já utilizado)</span
+                  >
+                  <span *ngIf="product.disabled" class="ms-2 text-muted"
+                    >(sem estoque)</span
+                  >
                 </mat-option>
               </mat-autocomplete>
             </div>
@@ -102,7 +120,7 @@
     </section>
 
     <!-- Sessão 2: Dados (apenas para Rental) -->
-    <ng-container *ngIf="data?.productType == 'Rental'">
+    <ng-container>
       <section>
         <h5 class="mt-4 mb-2">Dados</h5>
         <!-- Endereço -->
@@ -278,3 +296,8 @@
     </section>
   </form>
 </div>
+<style>
+  .option-disabled {
+    color: #bdbdbd !important;
+  }
+</style>

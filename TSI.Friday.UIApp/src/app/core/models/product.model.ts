@@ -12,4 +12,6 @@ export interface Product extends BaseModel {
   unit: ProductUnit;
   type: ProductType;
   quantityInStock: number;
+  disabled?: boolean;
+  alreadyUsed?: boolean;
 }

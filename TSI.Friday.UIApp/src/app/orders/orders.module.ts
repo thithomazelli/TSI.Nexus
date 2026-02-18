@@ -13,6 +13,7 @@ import { ClientsModule } from '../clients/clients.module';
 import { OrderProductsModule } from '../order-products/order-products.module';
 import { ProductsModule } from '../products/products.module';
 import { PaymentInstallmentsModule } from '../payment-installments/payment-installments.module';
+import { PaymentsModule } from '../payments/payments.module';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { PaymentInstallmentsModule } from '../payment-installments/payment-insta
     NgxMaskDirective,
     ClientsModule,
     ProductsModule,
+    PaymentsModule,
     PaymentInstallmentsModule,
   ],
 })

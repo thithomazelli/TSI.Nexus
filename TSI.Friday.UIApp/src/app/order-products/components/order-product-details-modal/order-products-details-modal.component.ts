@@ -18,12 +18,13 @@ import { OrderProduct } from '@friday/core';
 })
 export class OrderProductsDetailsModalComponent extends FormBaseComponent {
   @Output()
-  saved = new EventEmitter<void>();
+  saved = new EventEmitter<OrderProduct>();
 
   isEdit = false;
   data?: OrderProduct | null = null;
   id: number | null = null;
   parentId: number | null = null;
+  parentData: any;
   private _baseEndPoint = ApiType.OrderProducts;
 
   constructor(
@@ -39,10 +40,16 @@ export class OrderProductsDetailsModalComponent extends FormBaseComponent {
       this.data = dialogData.data ?? null;
       this.id = dialogData.id ?? null;
       this.parentId = dialogData.parentId ?? null;
+      this.parentData = dialogData.parentData ?? null;
     }
   }
 
   save(orderProduct: OrderProduct): void {
+    if (!this.parentId) {
+      this.saved.emit(orderProduct);
+      return;
+    }
+
     orderProduct.orderId = this.parentId ?? undefined;
 
     if (this.isEdit && this.id) {

@@ -21,7 +21,10 @@ export class OrderDetailsModalComponent extends FormBaseComponent {
   saved = new EventEmitter<void>();
 
   isEdit = false;
-  data?: Order | null = null;
+  data?: Order | null = <Order>{
+    orderProducts: [],
+  };
+
   id: number | null = null;
   private _baseEndPoint: ApiType = ApiType.Orders;
 
@@ -35,7 +38,7 @@ export class OrderDetailsModalComponent extends FormBaseComponent {
     super();
     if (dialogData) {
       this.isEdit = dialogData.isEdit ?? false;
-      this.data = dialogData.data ?? null;
+      this.data = dialogData.data ?? this.data;
       this.id = dialogData.id ?? null;
     }
   }

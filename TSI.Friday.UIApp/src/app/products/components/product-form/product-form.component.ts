@@ -103,14 +103,14 @@ export class ProductFormComponent
 
   private initForm(): void {
     const commonControls = {
-      sku: ['', Validators.required],
-      name: ['', Validators.required],
-      description: [''],
-      price: [0, [Validators.required, Validators.min(0)]],
+      sku: ['SKU0', Validators.required],
+      name: ['Caçamba 0', Validators.required],
+      description: ['Caçamba 0'],
+      price: [200, [Validators.required, Validators.min(0)]],
       priceFormatted: [0, [Validators.required, Validators.min(0)]],
-      unit: ['', Validators.required],
-      type: ['', Validators.required],
-      quantityInStock: [0, [Validators.required, Validators.min(0)]],
+      unit: ['Unit', Validators.required],
+      type: ['Rental', Validators.required],
+      quantityInStock: [1, [Validators.required, Validators.min(0)]],
       photo: [''],
     };
 

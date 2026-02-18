@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   ApiService,
   ApiType,
@@ -11,7 +11,7 @@ import {
   ICellRendererParams,
   ValueFormatterParams,
 } from 'ag-grid-community';
-import { Router } from '@angular/router';
+import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
 
 @Component({
   selector: 'app-orders',
@@ -115,15 +115,16 @@ export class OrdersComponent {
       maxWidth: 400,
       resizable: true,
       width: 280,
-      cellRenderer: (params: ICellRendererParams) => {
+      cellRenderer: () => {
         return `
-          <button class="btn btn-info btn-sm" data-action="view">
-            <i class="fas fa-edit"></i>
-            Edit
+          <button class="btn btn-primary btn-sm" data-action="view">
+            <i class="fas fa-eye" data-action="view"></i>
+          </button>
+          <button class="btn btn-secondary btn-sm text-white" data-action="edit">
+            <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash"></i>  
-            Delete
+            <i class="fas fa-trash" data-action="delete"></i>
           </button>
         `;
       },
@@ -133,7 +134,6 @@ export class OrdersComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
-    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -159,7 +159,16 @@ export class OrdersComponent {
   }
 
   onOpenModal(initialState: any) {
-    this.router.navigate(['/orders/new']);
+    const ref = this.modalService.showTemplateModal(
+      OrderDetailsModalComponent,
+      initialState,
+    );
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe(() => {
+        this.getOrders();
+        ref.close();
+      });
+    }
   }
 
   private getOrders(): void {

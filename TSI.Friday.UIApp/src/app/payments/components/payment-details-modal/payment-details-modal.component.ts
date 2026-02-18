@@ -52,34 +52,6 @@ export class PaymentDetailsModalComponent {
           );
         });
     } else {
-      payment.installments = [];
-
-      for (let i = 0; i < (payment.totalOfInstallments || 0); i++) {
-        const originalDate = new Date(
-          payment.date ? new Date(payment.date) : new Date(),
-        );
-        const nextMonth = new Date(originalDate);
-        nextMonth.setMonth(nextMonth.getMonth() + i + 1);
-
-        const installment = <PaymentInstallment>{
-          type: payment.type,
-          method: payment.method,
-          status: payment.status,
-          date: i == 0 ? payment.date : nextMonth,
-          category: payment.category,
-          description: `${payment.description} - Parcela ${i + 1}`,
-          price: payment.price
-            ? payment.price / (payment.totalOfInstallments || 1)
-            : 0,
-          condition: payment.condition,
-          installmentNumber: i + 1,
-          orderId: payment.orderId,
-          clientId: payment.clientId,
-        };
-
-        payment.installments.push(installment);
-      }
-
       this.apiService
         .post<WebApiResponse<Payment>>(`${this._baseEndPoint}/add`, payment)
         .subscribe((response: WebApiResponse<Payment>) => {

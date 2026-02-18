@@ -18,11 +18,11 @@ export class ProductService {
         .get<WebApiResponse<Product[]>>(`${this._baseEndPoint}/getAll`)
         .pipe(
           tap((response) => {
-            response.data = response.data.filter(
-              (p) =>
-                (p.type !== ProductType.Service && p.quantityInStock > 0) ||
-                p.type === ProductType.Service,
-            );
+            // response.data = response.data.(
+            //   (p) =>
+            //     (p.type !== ProductType.Service && p.quantityInStock > 0) ||
+            //     p.type === ProductType.Service,
+            // );
             this.products$.next(response.data);
             this.loaded = true;
           }),

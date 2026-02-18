@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
@@ -11,22 +10,24 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public PaymentType Type { get; set; }
 
-        public PaymentMethod Method { get; set; }
-
-        public PaymentStatus Status { get; set; }
-
         public DateTime Date { get; set; }
 
         public string Category { get; set; }
 
         public string Description { get; set; }
 
-        public decimal Price { get; set; }
-
         public PaymentCondition Condition { get; set; }
 
-        // Use DTO for installments to allow JSON binding
-        public ICollection<PaymentInstallmentDto> Installments { get; set; } = [];
+        public int TotalOfInstallments { get; set; }
+
+        public decimal Price { get; set; }
+
+        public PaymentMethod Method { get; set; }
+
+        public PaymentStatus Status { get; set; }
+
+        public ICollection<PaymentInstallmentDto> Installments { get; set; } =
+            new List<PaymentInstallmentDto>();
 
         public int? OrderId { get; set; }
 

@@ -13,6 +13,6 @@ import { OrderProductsFormComponent } from './components/order-product-form/orde
     OrderProductsFormComponent,
   ],
   imports: [CommonModule, SharedModule, AddressModule],
-  exports: [OrderProductsComponent],
+  exports: [OrderProductsComponent, OrderProductsFormComponent],
 })
 export class OrderProductsModule {}
