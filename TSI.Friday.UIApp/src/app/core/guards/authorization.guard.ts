@@ -32,6 +32,7 @@ export class AuthorizationGuard implements CanActivateChild {
           const isAccountRoute = state.url?.startsWith('/account');
 
           if (!isAccountRoute) {
+            this.modalService.hideModal();
             this.modalService.showSweetNotification(
               'Restricted Area',
               'Leave immediately!',
