@@ -4,6 +4,8 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TSI.Friday.Services
 {
@@ -17,6 +19,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<OrderProduct> _repository;
         private readonly IRepository<Order> _orderRepository;
         private readonly IRepository<Product> _productRepository;
+        private readonly IProductService _productService;
         private readonly IMapper _mapper;
 
         #endregion Properties
@@ -31,13 +34,25 @@ namespace TSI.Friday.Services
             IRepository<OrderProduct> repository,
             IRepository<Order> orderRepository,
             IRepository<Product> productRepository,
+            IProductService productService,
             IMapper mapper
         )
         {
             _repository = repository;
             _orderRepository = orderRepository;
             _productRepository = productRepository;
+            _productService = productService;
             _mapper = mapper;
+        }
+
+        // Backwards-compatible constructor used by tests and callers that don't provide IProductService.
+        public OrderProductService(
+            IRepository<OrderProduct> repository,
+            IRepository<Order> orderRepository,
+            IRepository<Product> productRepository,
+            IMapper mapper
+        ) : this(repository, orderRepository, productRepository, new ProductService(productRepository), mapper)
+        {
         }
 
         /// <inheritdoc />
@@ -51,11 +66,12 @@ namespace TSI.Friday.Services
 
                 await _repository.AddAsync(orderProductEntity);
 
-                // Update product stock: subtract quantity
-                await ChangeProductStockAsync(
-                    orderProductEntity.ProductId,
-                    -Convert.ToInt32(orderProductEntity.Quantity)
-                );
+                // Update product stock: batch via product service
+                var deltas = new Dictionary<int, int>
+                {
+                    { orderProductEntity.ProductId, -Convert.ToInt32(orderProductEntity.Quantity) }
+                };
+                await _productService.AdjustStockAsync(deltas);
 
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(orderProductEntity.OrderId);
@@ -91,7 +107,8 @@ namespace TSI.Friday.Services
 
                 if (newQuantity != 0)
                 {
-                    await ChangeProductStockAsync(orderProductDto.ProductId, newQuantity);
+                    var deltas = new Dictionary<int, int> { { orderProductDto.ProductId, newQuantity } };
+                    await _productService.AdjustStockAsync(deltas);
                 }
 
                 // Recalculate order price and update order
@@ -124,10 +141,8 @@ namespace TSI.Friday.Services
                 await _repository.RemoveAsync(existing);
 
                 // Add back quantity to product
-                await ChangeProductStockAsync(
-                    existing.ProductId,
-                    Convert.ToInt32(existing.Quantity)
-                );
+                var deltas = new Dictionary<int, int> { { existing.ProductId, Convert.ToInt32(existing.Quantity) } };
+                await _productService.AdjustStockAsync(deltas);
 
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(existing.OrderId);
@@ -201,14 +216,7 @@ namespace TSI.Friday.Services
 
         #endregion Public methods
 
-        #region Private helpers
-
-        private async Task ChangeProductStockAsync(int productId, int delta)
-        {
-            var product = await _productRepository.GetByIdAsync(productId);
-            product.QuantityInStock = product.QuantityInStock + delta;
-            await _productRepository.UpdateAsync(product);
-        }
+        #region Private methods
 
         private async Task RecalculateAndUpdateOrderAsync(int orderId)
         {
@@ -222,6 +230,6 @@ namespace TSI.Friday.Services
             await _orderRepository.UpdateAsync(order);
         }
 
-        #endregion Private helpers
+        #endregion Private methods
     }
 }

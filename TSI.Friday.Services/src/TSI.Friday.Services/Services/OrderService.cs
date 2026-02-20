@@ -18,6 +18,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<Order> _repository;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
+        private readonly IProductService _productService;
 
         #endregion Properties
 
@@ -30,12 +31,14 @@ namespace TSI.Friday.Services
         public OrderService(
             IRepository<Order> repository,
             ISequenceService sequenceService,
-            IMapper mapper
+            IMapper mapper,
+            IProductService productService
         )
         {
             _repository = repository;
             _sequenceService = sequenceService;
             _mapper = mapper;
+            _productService = productService;
         }
 
         /// <inheritdoc />
@@ -51,6 +54,30 @@ namespace TSI.Friday.Services
 
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);
+
+                // adjust stock in batch if product service available
+                if (orderEntity.OrderProducts.Any())
+                {
+                    var deltas = new Dictionary<int, int>();
+                    foreach (var op in orderEntity.OrderProducts)
+                    {
+                        var pid = op.ProductId;
+                        var delta = -Convert.ToInt32(op.Quantity);
+                        if (deltas.ContainsKey(pid))
+                        {
+                            deltas[pid] += delta;
+                        }
+                        else
+                        {
+                            deltas[pid] = delta;
+                        }
+                    }
+
+                    if (deltas.Count > 0)
+                    {
+                        await _productService.AdjustStockAsync(deltas);
+                    }
+                }
 
                 result.Data = _mapper.Map<OrderDto>(orderEntity);
                 result.Status = ResponseStatus.Success;
@@ -97,7 +124,28 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orderEntity = _mapper.Map<Order>(orderDto);
+                var orderEntity = await _repository.GetByIdAsync(orderDto.Id, o => o.OrderProducts);
+
+                // compute deltas before removal
+                if (orderEntity.OrderProducts != null)
+                {
+                    var deltas = new Dictionary<int, int>();
+                    foreach (var op in orderEntity.OrderProducts)
+                    {
+                        var pid = op.ProductId;
+                        var delta = Convert.ToInt32(op.Quantity); // add back to stock
+                        if (deltas.ContainsKey(pid))
+                            deltas[pid] += delta;
+                        else
+                            deltas[pid] = delta;
+                    }
+
+                    if (deltas.Count > 0)
+                    {
+                        await _productService.AdjustStockAsync(deltas);
+                    }
+                }
+
                 await _repository.RemoveAsync(orderEntity);
 
                 result.Data = orderDto;

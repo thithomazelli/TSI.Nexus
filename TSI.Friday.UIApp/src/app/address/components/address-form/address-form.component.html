@@ -1,166 +1,169 @@
 <div class="address-form-wrapper" [ngClass]="{ compact: compact }">
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <!-- 1ª linha: tipo + cep -->
-    <div class="row g-2 mb-1">
-      <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <select
-              formControlName="type"
-              class="form-select"
-              [class.is-invalid]="isInvalid('type')"
-            >
-              <option [ngValue]="null">Selecione o tipo</option>
-              <option [ngValue]="'Home'">Residencial</option>
-              <option [ngValue]="'Office'">Escritório</option>
-              <option [ngValue]="'Postal'">Postal</option>
-              <option [ngValue]="'Billing'">Cobrança</option>
-              <option [ngValue]="'Shipping'">Entrega</option>
-            </select>
-            <label for="type">Tipo de Endereço</label>
-          </div>
-          <div class="input-group-text"><i class="bi bi-info-circle"></i></div>
-        </div>
-      </div>
-      <div class="col-12 col-md-6">
-        <div class="input-group position-relative">
-          <div class="form-floating flex-grow-1">
-            <input
-              formControlName="zipCode"
-              type="text"
-              class="form-control"
-              placeholder="CEP"
-              maxlength="9"
-              mask="00000-000"
-              [class.is-invalid]="isInvalid('zipCode')"
-            />
-            <label for="zipCode">CEP</label>
-          </div>
-          <div class="input-group-text"><i class="bi bi-mailbox"></i></div>
-          @if (loadingCep) {
-            <div class="position-absolute top-50 end-0 translate-middle-y me-3">
-              <span
-                class="spinner-border spinner-border-sm text-primary"
-              ></span>
+    <div class="modal-scrollable-area">
+      <div class="row g-1 mb-1">
+        <!-- 1ª linha: tipo + cep -->
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <select
+                formControlName="type"
+                class="form-select"
+                [class.is-invalid]="isInvalid('type')"
+              >
+                <option [ngValue]="null">Selecione o tipo</option>
+                <option [ngValue]="'Home'">Residencial</option>
+                <option [ngValue]="'Office'">Escritório</option>
+                <option [ngValue]="'Postal'">Postal</option>
+                <option [ngValue]="'Billing'">Cobrança</option>
+                <option [ngValue]="'Shipping'">Entrega</option>
+              </select>
+              <label for="type">Tipo de Endereço</label>
             </div>
-          }
-        </div>
-      </div>
-    </div>
-    <!-- 2ª linha: rua + número -->
-    <div class="row g-2 mb-1">
-      <div class="col-12 col-md-9">
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <input
-              formControlName="street"
-              type="text"
-              class="form-control"
-              placeholder="Rua"
-              [class.is-invalid]="isInvalid('street')"
-            />
-            <label for="street">Rua</label>
+            <div class="input-group-text">
+              <i class="bi bi-info-circle"></i>
+            </div>
           </div>
-          <div class="input-group-text"><i class="bi bi-signpost"></i></div>
         </div>
-      </div>
-      <div class="col-12 col-md-3">
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <input
-              formControlName="number"
-              type="number"
-              class="form-control"
-              placeholder="Número"
-              [class.is-invalid]="isInvalid('number')"
-            />
-            <label for="number">Número</label>
+        <div class="col-12 col-md-6">
+          <div class="input-group position-relative">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="zipCode"
+                type="text"
+                class="form-control"
+                placeholder="CEP"
+                maxlength="9"
+                mask="00000-000"
+                [class.is-invalid]="isInvalid('zipCode')"
+              />
+              <label for="zipCode">CEP</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-mailbox"></i></div>
+            @if (loadingCep) {
+              <div
+                class="position-absolute top-50 end-0 translate-middle-y me-3"
+              >
+                <span
+                  class="spinner-border spinner-border-sm text-primary"
+                ></span>
+              </div>
+            }
           </div>
-          <div class="input-group-text"><i class="bi bi-hash"></i></div>
         </div>
-      </div>
-    </div>
-    <!-- 3ª linha: estado + cidade -->
-    <div class="row g-2 mb-1">
-      <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <select
-              formControlName="state"
-              class="form-select"
-              [class.is-invalid]="isInvalid('state')"
-            >
-              <option [ngValue]="null">Selecione o estado</option>
-              @for (
-                estado of estados;
-                track trackByEstadoId(i, estado);
-                let i = $index
-              ) {
-                <option [value]="estado.sigla">
-                  {{ estado.nome }}
-                </option>
-              }
-            </select>
-            <label for="state">Estado</label>
+
+        <!-- 2ª linha: rua + número -->
+        <div class="col-12 col-md-9">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="street"
+                type="text"
+                class="form-control"
+                placeholder="Rua"
+                [class.is-invalid]="isInvalid('street')"
+              />
+              <label for="street">Rua</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-signpost"></i></div>
           </div>
-          <div class="input-group-text"><i class="bi bi-flag"></i></div>
         </div>
-      </div>
-      <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <select
-              formControlName="city"
-              class="form-select"
-              [class.is-invalid]="isInvalid('city')"
-            >
-              <option [ngValue]="null">Selecione a cidade</option>
-              @for (
-                cidade of cidades;
-                track trackByCidadeId(i, cidade);
-                let i = $index
-              ) {
-                <option [value]="cidade.nome">
-                  {{ cidade.nome }}
-                </option>
-              }
-            </select>
-            <label for="city">Cidade</label>
+        <div class="col-12 col-md-3">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="number"
+                type="number"
+                class="form-control"
+                placeholder="Número"
+                [class.is-invalid]="isInvalid('number')"
+              />
+              <label for="number">Número</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-hash"></i></div>
           </div>
-          <div class="input-group-text"><i class="bi bi-building"></i></div>
         </div>
-      </div>
-    </div>
-    <!-- 4ª linha: nome do endereço + comentários-->
-    <div class="row g-2 mb-1">
-      <div class="col-6">
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <input
-              formControlName="name"
-              type="text"
-              class="form-control"
-              placeholder="Nome do Endereço"
-              [class.is-invalid]="isInvalid('name')"
-            />
-            <label for="name">Nome do Endereço</label>
+
+        <!-- 3ª linha: estado + cidade -->
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <select
+                formControlName="state"
+                class="form-select"
+                [class.is-invalid]="isInvalid('state')"
+              >
+                <option [ngValue]="null">Selecione o estado</option>
+                @for (
+                  estado of estados;
+                  track trackByEstadoId(i, estado);
+                  let i = $index
+                ) {
+                  <option [value]="estado.sigla">
+                    {{ estado.nome }}
+                  </option>
+                }
+              </select>
+              <label for="state">Estado</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-flag"></i></div>
           </div>
-          <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
         </div>
-      </div>
-      <div class="col-6">
-        <div class="input-group">
-          <div class="form-floating flex-grow-1">
-            <input
-              formControlName="comments"
-              type="text"
-              class="form-control"
-              placeholder="Comentários"
-            />
-            <label for="comments">Comentários</label>
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <select
+                formControlName="city"
+                class="form-select"
+                [class.is-invalid]="isInvalid('city')"
+              >
+                <option [ngValue]="null">Selecione a cidade</option>
+                @for (
+                  cidade of cidades;
+                  track trackByCidadeId(i, cidade);
+                  let i = $index
+                ) {
+                  <option [value]="cidade.nome">
+                    {{ cidade.nome }}
+                  </option>
+                }
+              </select>
+              <label for="city">Cidade</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-building"></i></div>
           </div>
-          <div class="input-group-text">
-            <i class="bi bi-chat-left-text"></i>
+        </div>
+
+        <!-- 4ª linha: nome do endereço + comentários-->
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="name"
+                type="text"
+                class="form-control"
+                placeholder="Nome do Endereço"
+                [class.is-invalid]="isInvalid('name')"
+              />
+              <label for="name">Nome do Endereço</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="comments"
+                type="text"
+                class="form-control"
+                placeholder="Comentários"
+              />
+              <label for="comments">Comentários</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-chat-left-text"></i>
+            </div>
           </div>
         </div>
       </div>
@@ -173,10 +176,10 @@
           class="btn btn-secondary me-2"
           (click)="doCancel()"
         >
-          Cancel
+          Cancelar
         </button>
         <button type="submit" class="btn btn-success" [disabled]="form.invalid">
-          Save
+          Salvar
         </button>
       </div>
     }

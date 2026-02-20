@@ -1,8 +1,3 @@
-/* Fonte menor para todo o formulário */
-.order-product-form-wrapper form {
-  font-size: 0.92rem;
-}
-
 /* Títulos das sessões */
 .order-product-form-wrapper h5 {
   font-size: 1rem;
@@ -11,13 +6,3 @@
   margin-top: 1.2rem;
 }
 
-/* Linha fina separando sessões (exceto o primeiro título) */
-.order-product-form-wrapper h5 {
-  border-top: 1px solid #e0e0e0;
-  padding-top: 0.8rem;
-}
-
-.order-product-form-wrapper h5:first-of-type {
-  border-top: none;
-  padding-top: 0;
-}

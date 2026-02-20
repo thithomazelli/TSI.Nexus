@@ -120,7 +120,7 @@ export class OrdersComponent {
           <button class="btn btn-primary btn-sm" data-action="view">
             <i class="fas fa-eye" data-action="view"></i>
           </button>
-          <button class="btn btn-secondary btn-sm text-white" data-action="edit">
+          <button class="btn btn-info btn-sm text-white" data-action="edit">
             <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">

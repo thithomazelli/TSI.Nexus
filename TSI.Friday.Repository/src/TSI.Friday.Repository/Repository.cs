@@ -1,8 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1;
 using TSI.Friday.Contracts.Interfaces;
-using TSI.Friday.Contracts.Models;
 using TSI.Friday.Data;
 
 namespace TSI.Friday.Repository
@@ -128,7 +126,8 @@ namespace TSI.Friday.Repository
 
             var entity = await query.FirstOrDefaultAsync();
 
-            return entity ?? throw new InvalidOperationException("No entity found matching the filter.");
+            return entity
+                ?? throw new InvalidOperationException("No entity found matching the filter.");
         }
 
         /// <inheritdoc />

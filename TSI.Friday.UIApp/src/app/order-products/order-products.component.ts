@@ -144,6 +144,7 @@ export class OrderProductsComponent {
       >(`${this.baseEndPoint}/remove`, orderProduct)
       .subscribe((response: WebApiResponse<OrderProduct>) => {
         this.rowData = this.rowData.filter((p) => p.id !== orderProduct.id);
+        this.orderProductsUpdated.emit(this.parentOrderId ?? 0);
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -154,9 +155,15 @@ export class OrderProductsComponent {
   }
 
   onOpenModal(initialState: any) {
+    const initialStateWithParent = {
+      ...initialState,
+      parentId: this.parentOrderId,
+      parentData: { orderProducts: this.rowData },
+    };
+
     const ref = this.modalService.showTemplateModal(
       OrderProductsDetailsModalComponent,
-      initialState,
+      initialStateWithParent,
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {

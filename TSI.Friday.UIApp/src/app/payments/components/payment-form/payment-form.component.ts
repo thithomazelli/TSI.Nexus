@@ -256,7 +256,7 @@ export class PaymentFormComponent
 
   private initForm(): void {
     const commonControls = {
-      type: ['', Validators.required],
+      type: [this.compact ? 'Incoming' : '', Validators.required],
       method: ['', Validators.required],
       status: ['', Validators.required],
       date: [new Date(), Validators.required],
@@ -281,10 +281,11 @@ export class PaymentFormComponent
         });
 
     // Bloqueia campos quando isEdit for true
-    if (this.isEdit && this.form) {
+    if ((this.isEdit && this.form) || this.compact) {
       this.form.get('clientName')?.disable();
       this.form.get('orderNumber')?.disable();
       this.form.get('totalOfInstallments')?.disable();
+      this.form.get('type')?.disable();
     }
   }
 

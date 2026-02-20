@@ -1,4 +1,5 @@
-﻿using TSI.Friday.Contracts.Enums;
+﻿using System.Linq;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Utilities;
@@ -34,7 +35,9 @@ namespace TSI.Friday.Services
 
             try
             {
-                var productDuplicatedMessage = await CheckIfProductIsDuplicatedAndGetErrorMessage(product);
+                var productDuplicatedMessage = await CheckIfProductIsDuplicatedAndGetErrorMessage(
+                    product
+                );
 
                 if (!string.IsNullOrEmpty(productDuplicatedMessage))
                 {
@@ -52,7 +55,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar o Produto {product.Name} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível cadastrar o Produto {product.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -65,7 +69,9 @@ namespace TSI.Friday.Services
 
             try
             {
-                var productDuplicatedMessage = await CheckIfProductIsDuplicatedAndGetErrorMessage(product);
+                var productDuplicatedMessage = await CheckIfProductIsDuplicatedAndGetErrorMessage(
+                    product
+                );
 
                 if (!string.IsNullOrEmpty(productDuplicatedMessage))
                 {
@@ -83,7 +89,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados do Produto {product.Name} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar os dados do Produto {product.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -105,7 +112,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover o Produto {product.Name} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover o Produto {product.Name} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -125,7 +133,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -140,14 +149,16 @@ namespace TSI.Friday.Services
             {
                 result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Produto {result.Data.Name} encontrado com sucesso"
-                    : $"Nenhum Produto com o ID {id} foi encontrado";
+                result.Message =
+                    result.Data != null
+                        ? $"Produto {result.Data.Name} encontrado com sucesso"
+                        : $"Nenhum Produto com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -161,17 +172,46 @@ namespace TSI.Friday.Services
             try
             {
                 result.Data = await _repository.FirstOrDefaultAsync(_ => _.Sku.Equals(sku));
-                result.Status = ResponseStatus.Success; result.Message = result.Data != null
-                    ? $"Produto {result.Data.Name} encontrado com sucesso"
-                    : $"Nenhum Produto com Sku {sku} foi encontrado";
+                result.Status = ResponseStatus.Success;
+                result.Message =
+                    result.Data != null
+                        ? $"Produto {result.Data.Name} encontrado com sucesso"
+                        : $"Nenhum Produto com Sku {sku} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Adjusts the stock for a batch of products.
+        /// </summary>
+        /// <param name="deltas">A dictionary where the key is the product ID and the value is the stock change amount.</param>
+        public async Task AdjustStockAsync(IDictionary<int, int> deltas)
+        {
+            if (deltas == null || deltas.Count == 0)
+            {
+                return;
+            }
+
+            // Get products by ids
+            var ids = deltas.Keys.ToList();
+            var products = await _repository.QueryAsync(p => ids.Contains(p.Id));
+
+            foreach (var prod in products)
+            {
+                if (deltas.TryGetValue(prod.Id, out var delta))
+                {
+                    prod.QuantityInStock += delta;
+                }
+            }
+
+            await _repository.UpdateRangeAsync(products);
         }
 
         #endregion Public methods
@@ -195,7 +235,6 @@ namespace TSI.Friday.Services
                 return $"Já existe um Produto cadastrado com Sku {product.Sku}.";
             }
 
-
             return string.Empty;
         }
 
@@ -206,8 +245,7 @@ namespace TSI.Friday.Services
         /// <returns>True when the Name is duplicated; Otherwise false.</returns>
         private Task<bool> IsNameDuplicated(Product product)
         {
-            return _repository
-                .AnyAsync(_ => _.Id != product.Id && _.Name == product.Name);
+            return _repository.AnyAsync(_ => _.Id != product.Id && _.Name == product.Name);
         }
 
         /// <summary>
@@ -217,8 +255,9 @@ namespace TSI.Friday.Services
         /// <returns>True when the sku is duplicated; Otherwise false.</returns>
         private Task<bool> IsSkuDuplicated(Product product)
         {
-            return _repository
-                .AnyAsync(_ => _.Id != product.Id && !string.IsNullOrEmpty(_.Sku) && _.Sku == product.Sku);
+            return _repository.AnyAsync(_ =>
+                _.Id != product.Id && !string.IsNullOrEmpty(_.Sku) && _.Sku == product.Sku
+            );
         }
 
         #endregion Private methods

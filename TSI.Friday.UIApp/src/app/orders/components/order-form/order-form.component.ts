@@ -21,6 +21,8 @@ import {
   OrderProduct,
 } from '@friday/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+
 import { Observable, startWith, map } from 'rxjs';
 import { ClientDetailsModalComponent } from '../../../clients/components/client-details-modal/client-details-modal.component';
 import { OrderProductsDetailsModalComponent } from '../../../order-products/components/order-product-details-modal/order-products-details-modal.component';
@@ -93,9 +95,9 @@ export class OrderFormComponent
   async onClientBlur(): Promise<void> {
     setTimeout(() => {
       const clientName = this.form.get('clientName')!.value?.trim();
-      if (!clientName) {
-        this.markAsTouched('clientName');
-        this.form.get('clientName')!.setErrors({ required: true });
+      const clientId = this.form.get('clientId')!.value;
+      if (!clientName || !clientId) {
+        this.cleanClientSelection();
         return;
       }
       // Verifica se o nome existe na lista de clientes
@@ -123,22 +125,27 @@ export class OrderFormComponent
                   this.form.get('clientName')!.setValue(result.name);
                   this.form.get('clientId')!.setValue(result.id);
                 } else {
-                  this.form.get('clientName')!.setValue('');
-                  this.markAsTouched('clientName');
-                  this.form.get('clientName')!.setErrors({ required: true });
+                  this.cleanClientSelection();
                 }
               });
           },
         });
         confirmRef.afterClosed().subscribe((confirmed: boolean) => {
           if (!confirmed) {
-            this.form.get('clientName')!.setValue('');
-            this.markAsTouched('clientName');
-            this.form.get('clientName')!.setErrors({ required: true });
+            this.cleanClientSelection();
           }
         });
       }
     }, 200);
+  }
+
+  private cleanClientSelection(): void {
+    this.form.get('clientId')!.setValue('');
+    this.markAsTouched('clientId');
+    this.form.get('clientId')!.setErrors({ required: true });
+    this.form.get('clientName')!.setValue('');
+    this.markAsTouched('clientName');
+    this.form.get('clientName')!.setErrors({ required: true });
   }
 
   submit(): void {
@@ -146,7 +153,9 @@ export class OrderFormComponent
       this.form.markAllAsTouched();
       return;
     }
-    this.save.emit(this.form.getRawValue());
+
+    Object.assign(this.data!, this.form.getRawValue());
+    this.save.emit(this.data!);
   }
 
   doCancel(): void {
@@ -199,11 +208,21 @@ export class OrderFormComponent
         ref.close();
       });
     }
+
+    console.log('Form status:', this.form.status);
+    console.log('Form errors:', this.form.errors);
+    console.log('Controles com erro:');
+    Object.keys(this.form.controls).forEach((key) => {
+      const control = this.form.get(key);
+      if (control && control.invalid) {
+        console.log(`- ${key}:`, control.errors);
+      }
+    });
   }
 
   private updatePriceFields(): void {
     const total = this.data?.orderProducts?.reduce(
-      (sum, p) => sum + (p?.price || 0) * (p?.quantity || 0),
+      (sum, p) => sum + (p?.totalPrice || 0) * (p?.quantity || 0),
       0,
     );
     this.data!.price = total;
@@ -246,7 +265,7 @@ export class OrderFormComponent
       orderNumber: [''],
       clientId: [null],
       clientName: [''],
-      description: ['', Validators.required],
+      description: [''],
       status: [OrderStatus.Open, Validators.required],
       price: [{ value: 0, disabled: true }],
       priceFormatted: [{ value: 0, disabled: true }],

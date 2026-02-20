@@ -47,5 +47,11 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="sku">The Sku to be used on the search.</param>
         /// <returns>One Product object according to the Sku defined as parameter.</returns>
         Task<WebApiResponse<Product>> FindBySku(string sku);
+
+        /// <summary>
+        /// Adjust stock for a batch of products. Key = productId, Value = delta (can be negative).
+        /// </summary>
+        /// <param name="deltas">Dictionary of productId -> delta</param>
+        Task AdjustStockAsync(IDictionary<int, int> deltas);
     }
 }
