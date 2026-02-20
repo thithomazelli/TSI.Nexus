@@ -135,7 +135,6 @@ export class PaymentsComponent {
       cellRenderer: (params: ICellRendererParams) => {
         const value = params.value;
         let color = 'secondary';
-        // Importar OrderStatus corretamente no topo do arquivo se necessário
         let label = value;
         if (value === 'Approved') {
           color = 'success';
@@ -175,7 +174,7 @@ export class PaymentsComponent {
       },
     },
     {
-      headerName: '',
+      headerName: 'Ações',
       sortable: false,
       filter: false,
       resizable: false,

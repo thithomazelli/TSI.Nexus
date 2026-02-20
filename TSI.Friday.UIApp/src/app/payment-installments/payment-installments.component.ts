@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import {
   ApiService,
@@ -7,6 +7,7 @@ import {
   ModalService,
   Order,
   Payment,
+  PaymentInstallment,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -29,6 +30,9 @@ export class PaymentInstallmentsComponent {
 
   @Input()
   data?: Client | Order | Payment | null = null;
+
+  @Output()
+  refreshParent = new EventEmitter<void>();
 
   baseEndPoint = ApiType.PaymentInstallments;
   rowData: Payment[] = [];
@@ -217,11 +221,16 @@ export class PaymentInstallmentsComponent {
     this.getPayments();
   }
 
-  deleteOrder(order: Payment): void {
+  deleteOrder(paymentInstallment: PaymentInstallment): void {
     this.apiService
-      .delete<WebApiResponse<Payment>>(`${this.baseEndPoint}/remove`, order)
-      .subscribe((response: WebApiResponse<Payment>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== order.id);
+      .delete<
+        WebApiResponse<PaymentInstallment>
+      >(`${this.baseEndPoint}/remove`, paymentInstallment)
+      .subscribe((response: WebApiResponse<PaymentInstallment>) => {
+        this.rowData = this.rowData.filter(
+          (p) => p.id !== paymentInstallment.id,
+        );
+        this.refreshParent.emit();
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -238,6 +247,7 @@ export class PaymentInstallmentsComponent {
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
+        this.refreshParent.emit();
         this.getPayments();
         ref.close();
       });
@@ -247,9 +257,9 @@ export class PaymentInstallmentsComponent {
   private getPayments(): void {
     this.apiService
       .get<
-        WebApiResponse<Payment[]>
+        WebApiResponse<PaymentInstallment[]>
       >(`${this.baseEndPoint}/getBy${this.entity}Id/${this.data?.id}`)
-      .subscribe((response: WebApiResponse<Payment[]>) => {
+      .subscribe((response: WebApiResponse<PaymentInstallment[]>) => {
         this.rowData = response.data ?? [];
       });
   }

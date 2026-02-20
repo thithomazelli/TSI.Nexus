@@ -5,7 +5,6 @@ import {
   ApiType,
   NotificationService,
   Payment,
-  PaymentInstallment,
   WebApiResponse,
 } from '@friday/core';
 
@@ -72,6 +71,12 @@ export class PaymentDetailsPageComponent {
 
   cancel(): void {
     this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+  }
+
+  onPaymentUpdated(): void {
+    if (this.id) {
+      this.loadPayment(this.id);
+    }
   }
 
   private loadPayment(id: number): void {

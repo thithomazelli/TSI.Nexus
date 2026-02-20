@@ -84,6 +84,7 @@
                   <app-payment-installments
                     [entity]="'Payment'"
                     [data]="data"
+                    (refreshParent)="onPaymentUpdated()"
                   ></app-payment-installments>
                 }
               </div>
