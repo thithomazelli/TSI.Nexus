@@ -99,42 +99,44 @@ export class ClientFormComponent
       raw.birthday = null;
     }
 
-    // Se vier address preenchido, mova para addresses
-    if (raw.address && Object.keys(raw.address).some((k) => raw.address[k])) {
-      if (!this.data!.addresses) {
-        this.data!.addresses = [];
+    if (!this.isEdit) {
+      // Se vier address preenchido, mova para addresses
+      if (raw.address && Object.keys(raw.address).some((k) => raw.address[k])) {
+        if (!this.data!.addresses) {
+          this.data!.addresses = [];
+        }
+        // Se address já existe em addresses (por id ou igualdade), substitui, senão adiciona
+        const idx = this.data!.addresses.findIndex(
+          (a) => a.id && raw.address.id && a.id === raw.address.id,
+        );
+
+        if (idx !== -1) {
+          this.data!.addresses[idx] = raw.address;
+        } else {
+          this.data!.addresses.push(raw.address);
+        }
       }
-      // Se address já existe em addresses (por id ou igualdade), substitui, senão adiciona
-      const idx = this.data!.addresses.findIndex(
-        (a) => a.id && raw.address.id && a.id === raw.address.id,
-      );
 
-      if (idx !== -1) {
-        this.data!.addresses[idx] = raw.address;
-      } else {
-        this.data!.addresses.push(raw.address);
+      // Atualiza as propriedades de data com os valores do formulário, exceto address
+      const { address, ...rest } = raw;
+      Object.assign(this.data!, rest);
+
+      // Remove o atributo address do objeto final, se existir
+      if ('address' in this.data!) {
+        delete (this.data as any).address;
       }
-    }
 
-    // Atualiza as propriedades de data com os valores do formulário, exceto address
-    const { address, ...rest } = raw;
-    Object.assign(this.data!, rest);
-
-    // Remove o atributo address do objeto final, se existir
-    if ('address' in this.data!) {
-      delete (this.data as any).address;
-    }
-
-    // Se não tiver endereço default, define o primeiro como default
-    if (!this.data?.addresses.find((addr) => addr.isDefault)) {
-      this.data!.addresses![0].isDefault = true;
-    }
-
-    this.data?.addresses.find((addr) => {
-      if (addr.id == null) {
-        delete addr.id;
+      // Se não tiver endereço default, define o primeiro como default
+      if (!this.data?.addresses.find((addr) => addr.isDefault)) {
+        this.data!.addresses![0].isDefault = true;
       }
-    });
+
+      this.data?.addresses.find((addr) => {
+        if (addr.id == null) {
+          delete addr.id;
+        }
+      });
+    }
 
     this.save.emit(this.data);
   }
@@ -272,7 +274,7 @@ export class ClientFormComponent
       nationalRegistry: ['', this.cnpjValidator()],
       birthday: [null],
       photo: [''],
-      address: addressGroup,
+      address: this.canDisplayAddressForm ? addressGroup : null,
     };
 
     this.form = !this.isEdit
