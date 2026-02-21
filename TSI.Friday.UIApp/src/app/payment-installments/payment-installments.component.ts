@@ -154,7 +154,7 @@ export class PaymentInstallmentsComponent {
       },
     },
     {
-      field: 'clientName',
+      field: 'businessPartnerName',
       headerName: 'Cliente',
       sortable: true,
       filter: true,

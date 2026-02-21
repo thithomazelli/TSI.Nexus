@@ -14,6 +14,6 @@ export interface PaymentInstallment extends BaseModel {
   price?: number;
   orderId?: number;
   orderNumber?: string;
-  clientId?: number;
-  clientName?: string;
+  businessPartnerId?: number;
+  businessPartnerName?: string;
 }

@@ -45,7 +45,7 @@ namespace TSI.Friday.Services.Services
         )
         {
             // use uploads folder outside of frontend public to avoid watcher reloads
-            var workspaceRoot = Path.GetFullPath(Path.Combine("C:\\Users\\leona\\Documents\\Projects\\TSI\\TSI.Friday"));
+            var workspaceRoot = Path.GetFullPath(Path.Combine("D:\\Development\\TSI.Friday"));
             var uploadsRoot = Path.Combine(workspaceRoot, "uploads");
             Directory.CreateDirectory(uploadsRoot);
 
@@ -63,7 +63,9 @@ namespace TSI.Friday.Services.Services
             {
                 case "BusinessPartner":
                 {
-                    var businessPartner = await _businessPartnerRepository.GetByIdAsync(int.Parse(entityId));
+                    var businessPartner = await _businessPartnerRepository.GetByIdAsync(
+                        int.Parse(entityId)
+                    );
                     previousFileName = businessPartner?.Photo;
                     applyEntityUpdate = async () =>
                     {

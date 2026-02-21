@@ -30,9 +30,9 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<PaymentDto>> Remove(PaymentDto paymentDto);
 
         /// <summary>
-        /// Method responsible to get all registers available on the payment data table.
+        /// Method responsible to get all registers available on the payment database.
         /// </summary>
-        /// <returns>All registers found on the payment data table.</returns>
+        /// <returns>All registers found on the payment database.</returns>
         Task<WebApiResponse<IEnumerable<PaymentDto>>> FindAll();
 
         /// <summary>
@@ -47,6 +47,8 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>List of payment according to the BusinessPartnerID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByBusinessPartnerId(int? businessPartnerId);
+        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByBusinessPartnerId(
+            int? businessPartnerId
+        );
     }
 }

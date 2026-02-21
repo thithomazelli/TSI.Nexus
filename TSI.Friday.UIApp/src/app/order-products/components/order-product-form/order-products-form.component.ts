@@ -162,13 +162,13 @@ export class OrderProductsFormComponent
   }
 
   async initAddressInfo() {
-    if (!this._orderData?.clientId) {
+    if (!this._orderData?.businessPartnerId) {
       this.customerAddresses = [];
       return;
     }
     const response = await firstValueFrom(
       this.apiService.get<WebApiResponse<Address[]>>(
-        `${ApiType.Addresses}/getAllByClientId/${this._orderData.clientId}`,
+        `${ApiType.Addresses}/getAllByBusinessPartnerId/${this._orderData.businessPartnerId}`,
       ),
     );
     this.customerAddresses = (response.data ?? []).map(
@@ -415,7 +415,7 @@ export class OrderProductsFormComponent
       isEdit: true,
       data: address,
       id: address.id,
-      parentId: address.clientId,
+      parentId: address.businessPartnerId,
     };
 
     const dialogRef = this.modalService.showTemplateModal(
@@ -443,7 +443,7 @@ export class OrderProductsFormComponent
   openAddAddressModal() {
     const initialState = {
       isEdit: false,
-      parentId: this._orderData?.clientId,
+      parentId: this._orderData?.businessPartnerId,
     };
 
     const dialogRef = this.modalService.showTemplateModal(

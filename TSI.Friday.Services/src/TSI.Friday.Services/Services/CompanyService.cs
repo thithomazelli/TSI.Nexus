@@ -16,6 +16,12 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Company> _repository;
         private readonly IMapper _mapper;
+        private readonly IDictionary<BusinessPartnerType, string> _businessPartnerMap =
+            new Dictionary<BusinessPartnerType, string>
+            {
+                { BusinessPartnerType.Client, "Cliente" },
+                { BusinessPartnerType.Supplier, "Fornecedor" },
+            };
 
         #endregion Properties
 
@@ -32,7 +38,9 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<BusinessPartnerDto>> Add(BusinessPartnerDto businessPartnerDto)
+        public async Task<WebApiResponse<BusinessPartnerDto>> Add(
+            BusinessPartnerDto businessPartnerDto
+        )
         {
             WebApiResponse<BusinessPartnerDto> result = new();
 
@@ -54,20 +62,23 @@ namespace TSI.Friday.Services
 
                 result.Data = businessPartnerDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"BusinessPartnere {businessPartnerDto.Name} cadastrado com sucesso.";
+                result.Message =
+                    $"{_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} cadastrado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível cadastrar o BusinessPartnere {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível cadastrar o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<BusinessPartnerDto>> Update(BusinessPartnerDto businessPartnerDto)
+        public async Task<WebApiResponse<BusinessPartnerDto>> Update(
+            BusinessPartnerDto businessPartnerDto
+        )
         {
             WebApiResponse<BusinessPartnerDto> result = new();
 
@@ -85,12 +96,16 @@ namespace TSI.Friday.Services
                 }
 
                 // Load tracked entity including Addresses so EF can detect changes on navigation
-                var existing = await _repository.GetByIdAsync(businessPartnerDto.Id, c => c.Addresses);
+                var existing = await _repository.GetByIdAsync(
+                    businessPartnerDto.Id,
+                    c => c.Addresses
+                );
 
                 if (existing == null)
                 {
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"BusinessPartnere com Id {businessPartnerDto.Id} não encontrado.";
+                    result.Message =
+                        $"{_businessPartnerMap[businessPartnerDto.Type]} com Id {businessPartnerDto.Id} não encontrado.";
                     return result;
                 }
 
@@ -101,20 +116,23 @@ namespace TSI.Friday.Services
 
                 result.Data = businessPartnerDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"BusinessPartnere {businessPartnerDto.Name} atualizado com sucesso.";
+                result.Message =
+                    $"{_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível atualizar os dados do BusinessPartnere {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível atualizar os dados do {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<BusinessPartnerDto>> FindByNationalRegistry(string nationalRegistry)
+        public async Task<WebApiResponse<BusinessPartnerDto>> FindByNationalRegistry(
+            string nationalRegistry
+        )
         {
             WebApiResponse<BusinessPartnerDto> result = new();
 
@@ -127,14 +145,14 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"BusinessPartnere {result.Data.Name} encontrado com sucesso."
-                        : $"Nenhum BusinessPartnere com o CNPJ {nationalRegistry} foi encontrado";
+                        ? $"{_businessPartnerMap[businessPartnerEntity.Type]} {result.Data.Name} encontrado com sucesso."
+                        : $"Nenhum registro com o CNPJ {nationalRegistry} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de BusinessPartners na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -155,17 +173,17 @@ namespace TSI.Friday.Services
         {
             if (await IsNameDuplicated(companyDto))
             {
-                return $"Já existe um BusinessPartnere cadastrado com Nome {companyDto.Name}.";
+                return $"Já existe um BusinessPartner cadastrado com Nome {companyDto.Name}.";
             }
 
             if (await IsEmailDuplicated(companyDto))
             {
-                return $"Já existe um BusinessPartnere cadastrado com E-mail {companyDto.Email}.";
+                return $"Já existe um BusinessPartner cadastrado com E-mail {companyDto.Email}.";
             }
 
             if (await IsNationalRegistryDuplicated(companyDto))
             {
-                return $"Já existe um BusinessPartnere cadastrado com o CNPJ {companyDto.NationalRegistry}.";
+                return $"Já existe um BusinessPartner cadastrado com o CNPJ {companyDto.NationalRegistry}.";
             }
 
             return string.Empty;

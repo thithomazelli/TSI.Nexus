@@ -29,9 +29,9 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<Product>> Remove(Product product);
 
         /// <summary>
-        /// Method responsible to get all registers available on The product data table.
+        /// Method responsible to get all registers available on The product database.
         /// </summary>
-        /// <returns>All registers found on The product data table.</returns>
+        /// <returns>All registers found on The product database.</returns>
         Task<WebApiResponse<IEnumerable<Product>>> FindAll();
 
         /// <summary>

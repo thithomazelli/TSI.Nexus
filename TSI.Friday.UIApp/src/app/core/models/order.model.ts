@@ -6,8 +6,8 @@ import { Payment } from './payment.model';
 export interface Order extends BaseModel {
   id?: number;
   orderNumber?: string;
-  clientId?: number;
-  clientName?: string;
+  businessPartnerId?: number;
+  businessPartnerName?: string;
   status?: OrderStatus;
   description?: string;
   discount?: number;

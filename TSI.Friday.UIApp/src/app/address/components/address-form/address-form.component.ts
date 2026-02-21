@@ -81,7 +81,7 @@ export class AddressFormComponent
     if (changes['isEdit'] && !changes['isEdit'].firstChange) {
       if (this.isEdit) {
         this.form.get('id')?.disable();
-        this.form.get('clientId')?.disable();
+        this.form.get('businessPartnerId')?.disable();
       }
     }
     // Sempre reconfigura lógica do form ao mudar inputs
@@ -265,7 +265,7 @@ export class AddressFormComponent
       street: ['', Validators.required],
       number: [null, Validators.required],
       comments: [''],
-      clientId: [''],
+      businessPartnerId: [''],
       country: ['BR', Validators.required],
       isDefault: [false],
     };

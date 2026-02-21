@@ -251,7 +251,7 @@ export class ClientFormComponent
       street: ['', Validators.required],
       number: [null, Validators.required],
       comments: [''],
-      clientId: [null],
+      businessPartnerId: [null],
       country: ['BR', Validators.required],
       isDefault: [false],
     });
@@ -267,7 +267,7 @@ export class ClientFormComponent
           ),
         ],
       ],
-      type: ['Física', [Validators.required]],
+      documentType: ['Física', [Validators.required]],
       phone: ['', []],
       mobile: ['', []],
       socialSecurityCard: ['', this.cpfValidator()],
@@ -286,11 +286,11 @@ export class ClientFormComponent
           ...commonControls,
         });
 
-    this.form.get('type')?.valueChanges.subscribe((type) => {
-      this.updateFieldValidators(type, true);
+    this.form.get('documentType')?.valueChanges.subscribe((documentType) => {
+      this.updateFieldValidators(documentType, true);
     });
     // Inicializa validações corretas para o tipo atual
-    this.updateFieldValidators(this.form.get('type')?.value, false);
+    this.updateFieldValidators(this.form.get('documentType')?.value, false);
   }
 
   private resetAddressForm(): void {
@@ -353,7 +353,7 @@ export class ClientFormComponent
 
   private disableEditFields(): void {
     if (this.isEdit && this.form) {
-      this.form.get('type')?.disable();
+      this.form.get('documentType')?.disable();
       this.form.get('socialSecurityCard')?.disable();
       this.form.get('nationalRegistry')?.disable();
     }
@@ -371,15 +371,18 @@ export class ClientFormComponent
     }
   }
 
-  private updateFieldValidators(type: string, clearBirthday: boolean): void {
-    if (type === 'Física') {
+  private updateFieldValidators(
+    documentType: string,
+    clearBirthday: boolean,
+  ): void {
+    if (documentType === 'Física') {
       this.form
         .get('socialSecurityCard')
         ?.setValidators([Validators.required, this.cpfValidator()]);
       this.form.get('nationalRegistry')?.clearValidators();
       this.form.get('nationalRegistry')?.setValue('');
       this.form.get('birthday')?.setValidators([Validators.required]);
-    } else if (type === 'Jurídica') {
+    } else if (documentType === 'Jurídica') {
       this.form
         .get('nationalRegistry')
         ?.setValidators([Validators.required, this.cnpjValidator()]);

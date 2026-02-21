@@ -154,8 +154,9 @@ export class ClientsOrdersListComponent {
     const initialStateWithClient = {
       ...initialState,
       data: <Order>{
-        clientId: this.parentData?.id,
-        clientName: this.parentData?.name,
+        businessPartnerId: this.parentData?.id,
+        businessPartnerName: this.parentData?.name,
+        orderProducts: [],
       },
     };
 
@@ -175,7 +176,7 @@ export class ClientsOrdersListComponent {
     this.apiService
       .get<
         WebApiResponse<Order[]>
-      >(`${this._baseEndPoint}/getByClientId/${this.parentData?.id}`)
+      >(`${this._baseEndPoint}/getByBusinessPartnerId/${this.parentData?.id}`)
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
       });

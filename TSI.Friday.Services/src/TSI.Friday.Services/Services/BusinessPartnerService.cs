@@ -16,6 +16,12 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<BusinessPartner> _repository;
         private readonly IMapper _mapper;
+        private readonly IDictionary<BusinessPartnerType, string> _businessPartnerMap =
+            new Dictionary<BusinessPartnerType, string>
+            {
+                { BusinessPartnerType.Client, "Cliente" },
+                { BusinessPartnerType.Supplier, "Fornecedor" },
+            };
 
         #endregion Properties
 
@@ -33,7 +39,9 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<BusinessPartnerDto>> Remove(BusinessPartnerDto businessPartnerDto)
+        public async Task<WebApiResponse<BusinessPartnerDto>> Remove(
+            BusinessPartnerDto businessPartnerDto
+        )
         {
             WebApiResponse<BusinessPartnerDto> result = new();
 
@@ -42,33 +50,41 @@ namespace TSI.Friday.Services
                 var businessPartner = await _repository.GetByIdAsync(businessPartnerDto.Id);
                 if (businessPartner == null)
                 {
-                    throw new Exception($"BusinessPartnere com Id {businessPartnerDto.Id} não encontrado.");
+                    throw new Exception(
+                        $"{_businessPartnerMap[businessPartnerDto.Type]} com Id {businessPartnerDto.Id} não encontrado."
+                    );
                 }
 
                 await _repository.RemoveAsync(businessPartner);
 
                 result.Data = businessPartnerDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"BusinessPartnere {businessPartner.Name} removido com sucesso.";
+                result.Message =
+                    $"{_businessPartnerMap[businessPartnerDto.Type]} {businessPartner.Name} removido com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível remover o BusinessPartnere {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
+                    $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<BusinessPartnerDto>>> FindAll()
+        public async Task<WebApiResponse<IEnumerable<BusinessPartnerDto>>> FindAllByType(
+            BusinessPartnerType businessPartnerType
+        )
         {
             WebApiResponse<IEnumerable<BusinessPartnerDto>> result = new();
 
             try
             {
-                var businessPartners = await _repository.GetAllAsync(c => c.Addresses);
+                var businessPartners = await _repository.QueryAsync(
+                    _ => businessPartnerType.Equals(_.Type),
+                    c => c.Addresses
+                );
 
                 result.Data = _mapper.Map<IEnumerable<BusinessPartnerDto>>(businessPartners);
                 result.Status = ResponseStatus.Success;
@@ -78,7 +94,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de {_businessPartnerMap[businessPartnerType]} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -96,14 +112,14 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"BusinessPartnere {result.Data.Name} encontrado com sucesso"
-                        : $"Nenhum BusinessPartnere com o ID {id} foi encontrado";
+                        ? $"{_businessPartnerMap[businessPartnerEntity.Type]} {result.Data.Name} encontrado com sucesso"
+                        : $"Nenhum registro com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -116,19 +132,21 @@ namespace TSI.Friday.Services
 
             try
             {
-                var businessPartnerEntity = await _repository.FirstOrDefaultAsync(x => x.Email == email);
+                var businessPartnerEntity = await _repository.FirstOrDefaultAsync(x =>
+                    x.Email == email
+                );
                 result.Data = _mapper.Map<BusinessPartnerDto>(businessPartnerEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"BusinessPartnere {result.Data.Name} encontrado com sucesso."
-                        : $"Nenhum BusinessPartnere com o E-mail {email} foi encontrado";
+                        ? $"{_businessPartnerMap[businessPartnerEntity.Type]} {result.Data.Name} encontrado com sucesso."
+                        : $"Nenhum registro com o E-mail {email} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros na base de dados. Erro: {ex.Message}";
             }
 
             return result;

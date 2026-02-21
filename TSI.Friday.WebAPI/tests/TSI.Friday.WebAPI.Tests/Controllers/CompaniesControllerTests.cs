@@ -34,7 +34,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = companyMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {companyMock.Name} cadastrado com sucesso.",
+                Message = $"BusinessPartner {companyMock.Name} cadastrado com sucesso.",
             };
 
             _companyServiceMock
@@ -89,7 +89,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = companyMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {companyMock.Name} atualizado com sucesso.",
+                Message = $"BusinessPartner {companyMock.Name} atualizado com sucesso.",
             };
 
             _companyServiceMock
@@ -145,7 +145,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = companyMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {companyMock.Name} encontrado com sucesso.",
+                Message = $"BusinessPartner {companyMock.Name} encontrado com sucesso.",
             };
 
             _companyServiceMock

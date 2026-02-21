@@ -38,6 +38,14 @@ namespace TSI.Friday.Services.Tests.Services
                     Id = 1,
                     Name = "TSI Soluções em Informática",
                     Email = "thiago.thomazelli@tsi.com.br",
+                    Type = BusinessPartnerType.Client,
+                },
+                new Company
+                {
+                    Id = 2,
+                    Name = "Nicole Psicologa Ltda",
+                    Email = "nicole@psicologia.com.br",
+                    Type = BusinessPartnerType.Supplier,
                 },
             };
         }
@@ -56,7 +64,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {businessPartnerMock.Name} removido com sucesso.",
+                Message = $"Cliente {businessPartnerMock.Name} removido com sucesso.",
             };
 
             _repository
@@ -90,7 +98,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível remover o BusinessPartnere {businessPartnerMock.Name} da base de dados. Erro: {exception.Message}",
+                    $"Não foi possível remover o Cliente {businessPartnerMock.Name} da base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(new Company());
@@ -121,13 +129,13 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             var exception = new Exception(
-                $"BusinessPartnere com Id {businessPartnerMock.Id} não encontrado."
+                $"Cliente com Id {businessPartnerMock.Id} não encontrado."
             );
             var expectedResult = new WebApiResponse<BusinessPartner>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível remover o BusinessPartnere {businessPartnerMock.Name} da base de dados. Erro: {exception.Message}",
+                    $"Não foi possível remover o Cliente {businessPartnerMock.Name} da base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ThrowsAsync(exception);
@@ -144,33 +152,91 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task BusinessPartnerService_FindAll_ShouldReturnAListOfPeople_WhenDataTableHasRegisters()
+        public async Task BusinessPartnerService_FindAllByType_ShouldReturnAListOfClients_WhenDataTableHasRegisters()
         {
             // Arrange
+            var clientsMock = _businessPartnerListMock
+                .Where(_ => BusinessPartnerType.Client.Equals(_.Type))
+                .ToList();
+
             var expectedResult = new WebApiResponse<IEnumerable<BusinessPartnerDto>>
             {
-                Data = _mapper.Map<IEnumerable<BusinessPartnerDto>>(_businessPartnerListMock),
+                Data = _mapper.Map<IEnumerable<BusinessPartnerDto>>(clientsMock),
                 Status = ResponseStatus.Success,
-                Message = $"{_businessPartnerListMock.Count} registro(s) encontrado(s).",
+                Message = $"{clientsMock.Count()} registro(s) encontrado(s).",
             };
 
             _repository
-                .Setup(_ => _.GetAllAsync(c => c.Addresses))
-                .ReturnsAsync(_businessPartnerListMock);
+                .Setup(_ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    )
+                )
+                .ReturnsAsync(clientsMock);
 
             // Act
-            var result = await _businessPartnerService.FindAll();
+            var result = await _businessPartnerService.FindAllByType(BusinessPartnerType.Client);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            _repository.Verify(_ => _.GetAllAsync(c => c.Addresses), Times.Once);
+            _repository.Verify(
+                _ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    ),
+                Times.Once
+            );
         }
 
         [Fact]
-        public async Task BusinessPartnerService_FindAll_ShouldReturnAnEmptyData_WhenDataTableHasNoRegisters()
+        public async Task BusinessPartnerService_FindAllByType_ShouldReturnAListOfSuppliers_WhenDataTableHasRegisters()
+        {
+            // Arrange
+            var suppliersMock = _businessPartnerListMock
+                .Where(_ => BusinessPartnerType.Supplier.Equals(_.Type))
+                .ToList();
+
+            var expectedResult = new WebApiResponse<IEnumerable<BusinessPartnerDto>>
+            {
+                Data = _mapper.Map<IEnumerable<BusinessPartnerDto>>(suppliersMock),
+                Status = ResponseStatus.Success,
+                Message = $"{suppliersMock.Count()} registro(s) encontrado(s).",
+            };
+
+            _repository
+                .Setup(_ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    )
+                )
+                .ReturnsAsync(suppliersMock);
+
+            // Act
+            var result = await _businessPartnerService.FindAllByType(BusinessPartnerType.Supplier);
+
+            // Assert
+            expectedResult.Should().BeEquivalentTo(result);
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+
+            _repository.Verify(
+                _ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    ),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task BusinessPartnerService_FindAllByType_ShouldReturnAnEmptyData_WhenDataTableHasNoRegisters()
         {
             // Arrange
             var expectedResult = new WebApiResponse<IEnumerable<BusinessPartnerDto>>
@@ -181,11 +247,16 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             _repository
-                .Setup(_ => _.GetAllAsync(c => c.Addresses))
+                .Setup(_ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    )
+                )
                 .ReturnsAsync(new List<BusinessPartner>());
 
             // Act
-            var result = await _businessPartnerService.FindAll();
+            var result = await _businessPartnerService.FindAllByType(BusinessPartnerType.Supplier);
 
             // Assert
             Assert.Equal(expectedResult.Data, result.Data);
@@ -193,11 +264,18 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetAllAsync(c => c.Addresses), Times.Once);
+            _repository.Verify(
+                _ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    ),
+                Times.Once
+            );
         }
 
         [Fact]
-        public async Task BusinessPartnerService_FindAll_ShouldReturnAnEmptyListAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task BusinessPartnerService_FindAllByType_ShouldReturnAnEmptyListAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             var exception = new Exception();
@@ -205,20 +283,34 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros de Cliente na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.GetAllAsync(c => c.Addresses)).ThrowsAsync(exception);
+            _repository
+                .Setup(_ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    )
+                )
+                .ThrowsAsync(exception);
 
             // Act
-            var result = await _businessPartnerService.FindAll();
+            var result = await _businessPartnerService.FindAllByType(BusinessPartnerType.Client);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetAllAsync(c => c.Addresses), Times.Once);
+            _repository.Verify(
+                _ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        c => c.Addresses
+                    ),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -233,7 +325,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = _mapper.Map<BusinessPartnerDto>(businessPartnerMock),
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {businessPartnerMock.Name} encontrado com sucesso",
+                Message = $"Cliente {businessPartnerMock.Name} encontrado com sucesso",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(businessPartnerMock);
@@ -258,7 +350,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum BusinessPartnere com o ID {idMock} foi encontrado",
+                Message = $"Nenhum registro com o ID {idMock} foi encontrado",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(value: null);
@@ -285,7 +377,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros na base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(idMock)).ThrowsAsync(exception);
@@ -314,7 +406,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = expectedDto,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {expectedDto.Name} encontrado com sucesso.",
+                Message = $"Cliente {expectedDto.Name} encontrado com sucesso.",
             };
 
             _repository
@@ -343,7 +435,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum BusinessPartnere com o E-mail {emailMock} foi encontrado",
+                Message = $"Nenhum registro com o E-mail {emailMock} foi encontrado",
             };
 
             _repository
@@ -377,7 +469,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros na base de dados. Erro: {exception.Message}",
             };
 
             _repository

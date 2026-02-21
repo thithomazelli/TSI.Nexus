@@ -35,9 +35,9 @@ namespace TSI.Friday.Contracts.Interfaces
         );
 
         /// <summary>
-        /// Method responsible to get all registers available on the paymentInstallment data table.
+        /// Method responsible to get all registers available on the paymentInstallment database.
         /// </summary>
-        /// <returns>All registers found on the paymentInstallment data table.</returns>
+        /// <returns>All registers found on the paymentInstallment database.</returns>
         Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindAll();
 
         /// <summary>

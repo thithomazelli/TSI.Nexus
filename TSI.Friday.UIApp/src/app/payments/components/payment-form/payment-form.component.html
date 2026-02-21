@@ -49,25 +49,27 @@
           </div>
         </div>
 
-        <!-- Second line: clientId and orderId -->
+        <!-- Second line: businessPartnerId and orderId -->
         @if (!compact && showClientAndOrder) {
           <div class="col-6">
             <div class="input-group">
               <div class="form-floating flex-fill">
                 <input
-                  formControlName="clientName"
+                  formControlName="businessPartnerName"
                   type="text"
                   placeholder="Cliente"
                   class="form-control"
-                  id="clientName"
+                  id="businessPartnerName"
                   [matAutocomplete]="clientAuto"
                   (blur)="onClientBlur()"
                 />
-                <label for="clientName">Cliente</label>
+                <label for="businessPartnerName">Cliente</label>
                 <mat-autocomplete
                   #clientAuto="matAutocomplete"
                   (optionSelected)="
-                    form.get('clientId')?.setValue($event.option.value.id)
+                    form
+                      .get('businessPartnerId')
+                      ?.setValue($event.option.value.id)
                   "
                 >
                   <mat-option

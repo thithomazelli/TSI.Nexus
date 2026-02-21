@@ -7,7 +7,6 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
-using TSI.Friday.Repository;
 
 namespace TSI.Friday.Services.Tests.Services
 {
@@ -54,7 +53,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = companyDto,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {companyDto.Name} cadastrado com sucesso.",
+                Message = $"Cliente {companyDto.Name} cadastrado com sucesso.",
             };
 
             _repository.Setup(_ => _.AddAsync(It.IsAny<Company>()));
@@ -90,7 +89,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um BusinessPartnere cadastrado com Nome {companyDto.Name}.",
+                Message = $"Já existe um BusinessPartner cadastrado com Nome {companyDto.Name}.",
             };
 
             _repository
@@ -125,8 +124,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message =
-                    $"Já existe um BusinessPartnere cadastrado com E-mail {companyDto.Email}.",
+                Message = $"Já existe um BusinessPartner cadastrado com E-mail {companyDto.Email}.",
             };
 
             _repository
@@ -164,7 +162,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com o CNPJ {companyDto.NationalRegistry}.",
+                    $"Já existe um BusinessPartner cadastrado com o CNPJ {companyDto.NationalRegistry}.",
             };
 
             _repository
@@ -202,7 +200,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível cadastrar o BusinessPartnere {companyDto.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível cadastrar o Cliente {companyDto.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
@@ -236,7 +234,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = companyDto,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {companyDto.Name} atualizado com sucesso.",
+                Message = $"Cliente {companyDto.Name} atualizado com sucesso.",
             };
 
             _repository
@@ -271,7 +269,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um BusinessPartnere cadastrado com Nome {companyDto.Name}.",
+                Message = $"Já existe um BusinessPartner cadastrado com Nome {companyDto.Name}.",
             };
 
             _repository
@@ -306,8 +304,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message =
-                    $"Já existe um BusinessPartnere cadastrado com E-mail {companyDto.Email}.",
+                Message = $"Já existe um BusinessPartner cadastrado com E-mail {companyDto.Email}.",
             };
 
             _repository
@@ -345,7 +342,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com o CNPJ {companyDto.NationalRegistry}.",
+                    $"Já existe um BusinessPartner cadastrado com o CNPJ {companyDto.NationalRegistry}.",
             };
 
             _repository
@@ -385,7 +382,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível atualizar os dados do BusinessPartnere {companyDto.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível atualizar os dados do Cliente {companyDto.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
@@ -420,7 +417,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = expectedDto,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {expectedDto.Name} encontrado com sucesso.",
+                Message = $"Cliente {expectedDto.Name} encontrado com sucesso.",
             };
 
             _repository
@@ -447,8 +444,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message =
-                    $"Nenhum BusinessPartnere com o CNPJ {nationalRegistraMock} foi encontrado",
+                Message = $"Nenhum registro com o CNPJ {nationalRegistraMock} foi encontrado",
             };
 
             _repository
@@ -480,7 +476,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros de BusinessPartners na base de dados. Erro: {exception.Message}",
             };
 
             _repository

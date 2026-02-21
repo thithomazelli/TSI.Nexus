@@ -12,14 +12,16 @@ import {
 export class BusinessPartnerService {
   private businessPartners$ = new BehaviorSubject<BusinessPartner[]>([]);
   private loaded = false;
-  private _baseEndPoint = ApiType.Clients;
+  private _baseEndPoint = ApiType.BusinessPartners;
 
   constructor(private apiService: ApiService) {}
 
-  getBusinessPartners(forceRefresh = false): Observable<BusinessPartner[]> {
+  getClients(forceRefresh = false): Observable<BusinessPartner[]> {
     if (!this.loaded || forceRefresh) {
       this.apiService
-        .get<WebApiResponse<BusinessPartner[]>>(`${this._baseEndPoint}/getAll`)
+        .get<WebApiResponse<BusinessPartner[]>>(
+          `${this._baseEndPoint}/getAllClients`,
+        )
         .pipe(
           tap((response) => {
             this.businessPartners$.next(response.data);
@@ -37,7 +39,7 @@ export class BusinessPartnerService {
 
   refreshBusinessPartners(): void {
     this.loaded = false;
-    this.getBusinessPartners(true).subscribe();
+    this.getClients(true).subscribe();
   }
 
   addOrUpdateBusinessPartner(businessPartner: BusinessPartner): void {

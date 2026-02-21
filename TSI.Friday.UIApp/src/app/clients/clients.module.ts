@@ -25,7 +25,6 @@ import { OrdersSharedModule } from '../orders/components/orders-shared.module';
     AddressModule,
     PaymentInstallmentsModule,
     CommonModule,
-    NgxMaskDirective,
   ],
   exports: [],
 })

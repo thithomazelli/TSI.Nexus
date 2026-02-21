@@ -200,7 +200,7 @@ export class AddressComponent {
     this.apiService
       .get<
         WebApiResponse<Address[]>
-      >(`${this._baseEndPoint}/getAllByClientId/${this.parentData?.id}`)
+      >(`${this._baseEndPoint}/getAllByBusinessPartnerId/${this.parentData?.id}`)
       .subscribe((response: WebApiResponse<Address[]>) => {
         this.rowData = response.data ?? [];
       });

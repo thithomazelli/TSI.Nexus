@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
 
@@ -38,14 +39,30 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get all companies available on database
+        /// Get all clients available on database
         /// </summary>
-        /// <returns>List of all businessPartners from database</returns>
+        /// <returns>List of all clients from database</returns>
         [HttpGet]
-        [Route("GetAll")]
-        public async Task<IActionResult> GetAll()
+        [Route("GetAllClients")]
+        public async Task<IActionResult> GetAllClients()
         {
-            var webApiResponse = await _businessPartnerService.FindAll();
+            var webApiResponse = await _businessPartnerService.FindAllByType(
+                BusinessPartnerType.Client
+            );
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get all suppliers available on database
+        /// </summary>
+        /// <returns>List of all clients from database</returns>
+        [HttpGet]
+        [Route("GetAllSuppliers")]
+        public async Task<IActionResult> GetAllSuppliers()
+        {
+            var webApiResponse = await _businessPartnerService.FindAllByType(
+                BusinessPartnerType.Supplier
+            );
             return Ok(webApiResponse);
         }
 

@@ -22,15 +22,15 @@
 
           <div class="col-12 col-md-6">
             <div class="form-floating">
-              <select formControlName="type" class="form-select">
+              <select formControlName="documentType" class="form-select">
                 <option value="Física">Pessoa Física</option>
                 <option value="Jurídica">Pessoa Jurídica</option>
               </select>
-              <label for="type">Tipo de Cliente</label>
+              <label for="documentType">Tipo de Pessoa</label>
             </div>
           </div>
           <div class="col-12 col-md-6">
-            @if (form.get("type")?.value === "Física") {
+            @if (form.get("documentType")?.value === "Física") {
               <div class="input-group">
                 <div class="form-floating flex-grow-1">
                   <input
@@ -71,10 +71,10 @@
             }
           </div>
 
-          @if (form.get("type")?.value === "Física") {
+          @if (form.get("documentType")?.value === "Física") {
             <div class="col-12">
               <app-date-field
-                [formControlName]="'birthday'"
+                formControlName="birthday"
                 [label]="'Data de Nascimento'"
               ></app-date-field>
             </div>

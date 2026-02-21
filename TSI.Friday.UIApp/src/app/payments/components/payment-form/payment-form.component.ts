@@ -8,7 +8,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 
 import {
@@ -48,6 +48,9 @@ export class PaymentFormComponent
 
   @Input()
   compact = false;
+
+  @Input()
+  formGroup: FormGroup<any> | null = null;
 
   @Output()
   save = new EventEmitter<Payment>();
@@ -111,7 +114,11 @@ export class PaymentFormComponent
   }
 
   ngOnInit(): void {
-    this.initForm();
+    if (this.formGroup) {
+      this.form = this.formGroup;
+    } else {
+      this.initForm();
+    }
     this.patchFormWithData();
     this.onConditionChanges();
     this.onTypeChanges();
@@ -164,30 +171,32 @@ export class PaymentFormComponent
 
   async onClientBlur(): Promise<void> {
     setTimeout(() => {
-      const clientName = this.form.get('clientName')!.value?.trim();
-      if (!clientName) {
-        this.markAsTouched('clientName');
-        this.form.get('clientName')!.setErrors({ required: true });
+      const businessPartnerName = this.form
+        .get('businessPartnerName')!
+        .value?.trim();
+      if (!businessPartnerName) {
+        this.markAsTouched('businessPartnerName');
+        this.form.get('businessPartnerName')!.setErrors({ required: true });
         return;
       }
       // Verifica se o nome existe na lista de clientes
       const clients = (this.businessPartners$ as any).source
         .value as BusinessPartner[];
-      const found = clients.find((c) => c.name === clientName);
+      const found = clients.find((c) => c.name === businessPartnerName);
       if (found) {
-        this.form.get('clientId')!.setValue(found.id);
-        this.form.get('clientName')!.setValue(found.name);
+        this.form.get('businessPartnerId')!.setValue(found.id);
+        this.form.get('businessPartnerName')!.setValue(found.name);
       } else {
         const confirmRef = this.modalService.showConfirmation({
           title: 'Cliente não encontrado',
-          message: `O cliente "${clientName}" não existe. Deseja adicioná-lo?`,
+          message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
           cancelButtonText: 'Cancelar',
           confirmButtonText: 'Sim',
           confirmDelete: async () => {
             // Abrir modal de adicionar cliente
             const clientFormRef: MatDialogRef<any> =
               this.modalService.showTemplateModal(ClientDetailsModalComponent, {
-                data: { name: clientName },
+                data: { name: businessPartnerName },
                 width: '600px',
                 disableClose: true,
               });
@@ -198,23 +207,25 @@ export class PaymentFormComponent
                   this.businessPartnerService.addOrUpdateBusinessPartner(
                     result,
                   );
-                  this.form.get('clientName')!.setValue(result.name);
-                  this.form.get('clientId')!.setValue(result.id);
+                  this.form.get('businessPartnerName')!.setValue(result.name);
+                  this.form.get('businessPartnerId')!.setValue(result.id);
                 } else {
-                  this.form.get('clientName')!.setValue('');
-                  this.markAsTouched('clientName');
-                  this.form.get('clientName')!.setErrors({ required: true });
-                  this.form.get('clientId')!.setValue(null);
+                  this.form.get('businessPartnerName')!.setValue('');
+                  this.markAsTouched('businessPartnerName');
+                  this.form
+                    .get('businessPartnerName')!
+                    .setErrors({ required: true });
+                  this.form.get('businessPartnerId')!.setValue(null);
                 }
               });
           },
         });
         confirmRef.afterClosed().subscribe((confirmed: boolean) => {
           if (!confirmed) {
-            this.form.get('clientName')!.setValue('');
-            this.markAsTouched('clientName');
-            this.form.get('clientName')!.setErrors({ required: true });
-            this.form.get('clientId')!.setValue(null);
+            this.form.get('businessPartnerName')!.setValue('');
+            this.markAsTouched('businessPartnerName');
+            this.form.get('businessPartnerName')!.setErrors({ required: true });
+            this.form.get('businessPartnerId')!.setValue(null);
           }
         });
       }
@@ -271,8 +282,8 @@ export class PaymentFormComponent
       totalOfInstallments: [1, [Validators.min(1)]],
       pricePerInstallment: [0, [Validators.min(0)]],
       pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
-      clientId: [null],
-      clientName: [''],
+      businessPartnerId: [null],
+      businessPartnerName: [''],
       orderId: [null],
       orderNumber: [''],
     };
@@ -284,8 +295,8 @@ export class PaymentFormComponent
         });
 
     // Bloqueia campos quando isEdit for true
-    if ((this.isEdit && this.form) || this.compact) {
-      this.form.get('clientName')?.disable();
+    if (this.isEdit && this.form) {
+      this.form.get('businessPartnerName')?.disable();
       this.form.get('orderNumber')?.disable();
       this.form.get('totalOfInstallments')?.disable();
       this.form.get('type')?.disable();
@@ -334,14 +345,18 @@ export class PaymentFormComponent
   }
 
   private setupAutoComplete(): void {
-    this.clientNameAutoComplete();
+    if (this.compact) {
+      return;
+    }
+
+    this.businessPartnerNameAutoComplete();
     this.orderNumberAutoComplete();
   }
 
-  private clientNameAutoComplete() {
-    this.businessPartners$ = this.businessPartnerService.getBusinessPartners();
+  private businessPartnerNameAutoComplete() {
+    this.businessPartners$ = this.businessPartnerService.getClients();
     this.filteredBusinessPartners$ = this.form
-      .get('clientName')!
+      .get('businessPartnerName')!
       .valueChanges.pipe(
         startWith(''),
         map((value: string | BusinessPartner) => {
@@ -385,34 +400,42 @@ export class PaymentFormComponent
 
   private onTypeChanges(): void {
     const typeCtrl = this.form?.get('type');
-    const clientNameCtrl = this.form?.get('clientName');
-    if (typeCtrl && clientNameCtrl) {
+    const businessPartnerNameCtrl = this.form?.get('businessPartnerName');
+    if (typeCtrl && businessPartnerNameCtrl) {
       this.typeSub = typeCtrl.valueChanges.subscribe((val) => {
         this.showClientAndOrder = val === PaymentType.Incoming;
         if (val === PaymentType.Incoming) {
-          clientNameCtrl.setValidators([Validators.required]);
+          businessPartnerNameCtrl.setValidators([Validators.required]);
         } else {
-          clientNameCtrl.clearValidators();
+          businessPartnerNameCtrl.clearValidators();
         }
-        clientNameCtrl.updateValueAndValidity();
+        businessPartnerNameCtrl.updateValueAndValidity();
       });
       // Inicializa o valor ao criar o form
       this.showClientAndOrder = typeCtrl.value === PaymentType.Incoming;
       if (typeCtrl.value === PaymentType.Incoming) {
-        clientNameCtrl.setValidators([Validators.required]);
+        businessPartnerNameCtrl.setValidators([Validators.required]);
       } else {
-        clientNameCtrl.clearValidators();
+        businessPartnerNameCtrl.clearValidators();
       }
-      clientNameCtrl.updateValueAndValidity();
+      businessPartnerNameCtrl.updateValueAndValidity();
     }
   }
 
   private onConditionChanges(): void {
     const conditionCtrl = this.form?.get('condition');
     if (conditionCtrl) {
-      this.conditionSub = conditionCtrl.valueChanges.subscribe((val) => {
-        this.isInstallment = val === PaymentCondition.InInstallments;
-      });
+      this.conditionSub = conditionCtrl.valueChanges.subscribe(
+        (paymentCondition) => {
+          this.isInstallment =
+            paymentCondition === PaymentCondition.InInstallments;
+          if (paymentCondition !== PaymentCondition.InInstallments) {
+            const price = this.form.get('priceFormatted');
+            this.form.get('totalOfInstallments')?.setValue(1);
+            this.form.get('pricePerInstallment')?.setValue(price);
+          }
+        },
+      );
       // Inicializa o valor ao criar o form
       this.isInstallment =
         conditionCtrl.value === PaymentCondition.InInstallments;

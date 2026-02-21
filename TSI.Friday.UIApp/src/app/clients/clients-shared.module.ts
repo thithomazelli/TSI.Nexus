@@ -4,10 +4,16 @@ import { ClientDetailsModalComponent } from './components/client-details-modal/c
 import { ClientFormComponent } from './components/client-form/client-form.component';
 import { AddressModule } from '../address/address.module';
 import { SharedModule } from '../shared/shared.module';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @NgModule({
   declarations: [ClientDetailsModalComponent, ClientFormComponent],
-  imports: [CommonModule, SharedModule, AddressModule],
-  exports: [ClientDetailsModalComponent, ClientFormComponent, SharedModule],
+  imports: [CommonModule, SharedModule, AddressModule, NgxMaskDirective],
+  exports: [
+    ClientDetailsModalComponent,
+    ClientFormComponent,
+    SharedModule,
+    NgxMaskDirective,
+  ],
 })
 export class ClientsSharedModule {}

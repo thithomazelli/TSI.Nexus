@@ -141,8 +141,8 @@ export class PaymentInstallmentFormComponent
       installmentNumber: [0],
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
-      clientId: [null],
-      clientName: [''],
+      businessPartnerId: [null],
+      businessPartnerName: [''],
       orderId: [null],
       orderNumber: [''],
       paymentId: [null],
@@ -156,7 +156,7 @@ export class PaymentInstallmentFormComponent
 
     // Bloqueia campos quando isEdit for true
     if (this.isEdit && this.form) {
-      this.form.get('clientName')?.disable();
+      this.form.get('businessPartnerName')?.disable();
       this.form.get('orderNumber')?.disable();
       this.form.get('type')?.disable();
     }

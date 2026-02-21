@@ -23,7 +23,7 @@ export class ClientDetailsPageComponent {
   loading = false;
   activeTab: 'details' | 'address' | 'orders' | 'payments' = 'details';
 
-  private _baseEndPoint: ApiType = ApiType.Clients;
+  private _baseEndPoint: ApiType = ApiType.BusinessPartners;
 
   constructor(
     private activatedRoute: ActivatedRoute,

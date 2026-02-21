@@ -25,7 +25,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
   data?: Individual | Company | null = <BusinessPartner>{};
   id: number | null = null;
 
-  private _baseEndPoint: ApiType = ApiType.Clients;
+  private _baseEndPoint: ApiType = ApiType.BusinessPartners;
 
   constructor(
     private apiService: ApiService,
@@ -42,9 +42,9 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
     }
   }
 
-  save(businessPartner: Individual | Company): void {
+  save(businessPartner: Company | Individual): void {
     this._baseEndPoint =
-      businessPartner.type === 'Física'
+      businessPartner.documentType === 'Física'
         ? ApiType.Individuals
         : ApiType.Companies;
 

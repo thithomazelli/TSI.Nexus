@@ -16,7 +16,9 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public BusinessPartnersControllerTests()
         {
             _businessPartnerServiceMock = new Mock<IBusinessPartnerService>();
-            _businessPartnerController = new BusinessPartnersController(_businessPartnerServiceMock.Object);
+            _businessPartnerController = new BusinessPartnersController(
+                _businessPartnerServiceMock.Object
+            );
         }
 
         [Fact]
@@ -34,7 +36,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {businessPartnerMock.Name} removido com sucesso.",
+                Message = $"BusinessPartner {businessPartnerMock.Name} removido com sucesso.",
             };
 
             _businessPartnerServiceMock
@@ -50,11 +52,14 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(businessPartnerMock, response.Data);
 
-            _businessPartnerServiceMock.Verify(_ => _.Remove(It.IsAny<BusinessPartnerDto>()), Times.Once);
+            _businessPartnerServiceMock.Verify(
+                _ => _.Remove(It.IsAny<BusinessPartnerDto>()),
+                Times.Once
+            );
         }
 
         [Fact]
-        public async Task BusinessPartnersController_GetAll_ShouldGetAllBusinessPartner_WhenMethodIsCalled()
+        public async Task BusinessPartnersController_GetAllClients_ShouldGetAllClients_WhenMethodIsCalled()
         {
             // Arrange
             var businessPartnerMock = new List<BusinessPartnerDto>
@@ -64,12 +69,14 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                     Name = "Thiago Thomazelli Ferreira",
                     Email = "thiago.thomazelli@tsi.com.br",
                     NationalRegistry = "11.222.333/0001-44",
+                    Type = BusinessPartnerType.Client,
                 },
                 new()
                 {
                     Name = "Leonardo Thomazelli Ferreira",
                     Email = "leonardo.thomazelli@tsi.com.br",
                     NationalRegistry = "44.333.222/0001-11",
+                    Type = BusinessPartnerType.Client,
                 },
             };
 
@@ -80,18 +87,75 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Message = $"{businessPartnerMock.Count()} registro(s) encontrado(s).",
             };
 
-            _businessPartnerServiceMock.Setup(_ => _.FindAll()).ReturnsAsync(expectedResult);
+            _businessPartnerServiceMock
+                .Setup(_ => _.FindAllByType(BusinessPartnerType.Client))
+                .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _businessPartnerController.GetAll();
+            var result = await _businessPartnerController.GetAllClients();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<WebApiResponse<IEnumerable<BusinessPartnerDto>>>(okResult.Value);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<BusinessPartnerDto>>>(
+                okResult.Value
+            );
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(businessPartnerMock, response.Data);
 
-            _businessPartnerServiceMock.Verify(_ => _.FindAll(), Times.Once);
+            _businessPartnerServiceMock.Verify(
+                _ => _.FindAllByType(BusinessPartnerType.Client),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task BusinessPartnersController_GetAllSuppliers_ShouldGetAllSuppliers_WhenMethodIsCalled()
+        {
+            // Arrange
+            var businessPartnerMock = new List<BusinessPartnerDto>
+            {
+                new()
+                {
+                    Name = "Thiago Thomazelli Ferreira",
+                    Email = "thiago.thomazelli@tsi.com.br",
+                    NationalRegistry = "11.222.333/0001-44",
+                    Type = BusinessPartnerType.Supplier,
+                },
+                new()
+                {
+                    Name = "Leonardo Thomazelli Ferreira",
+                    Email = "leonardo.thomazelli@tsi.com.br",
+                    NationalRegistry = "44.333.222/0001-11",
+                    Type = BusinessPartnerType.Supplier,
+                },
+            };
+
+            var expectedResult = new WebApiResponse<IEnumerable<BusinessPartnerDto>>
+            {
+                Data = businessPartnerMock,
+                Status = ResponseStatus.Success,
+                Message = $"{businessPartnerMock.Count()} registro(s) encontrado(s).",
+            };
+
+            _businessPartnerServiceMock
+                .Setup(_ => _.FindAllByType(BusinessPartnerType.Supplier))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _businessPartnerController.GetAllSuppliers();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<BusinessPartnerDto>>>(
+                okResult.Value
+            );
+            Assert.Equal(ResponseStatus.Success, response.Status);
+            Assert.Equal(businessPartnerMock, response.Data);
+
+            _businessPartnerServiceMock.Verify(
+                _ => _.FindAllByType(BusinessPartnerType.Supplier),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -113,7 +177,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = individualMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {individualMock.Name} encontrado com sucesso",
+                Message = $"BusinessPartner {individualMock.Name} encontrado com sucesso",
             };
 
             _businessPartnerServiceMock
@@ -150,7 +214,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = individualMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {individualMock.Name} encontrado com sucesso.",
+                Message = $"BusinessPartner {individualMock.Name} encontrado com sucesso.",
             };
 
             _businessPartnerServiceMock

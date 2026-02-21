@@ -9,7 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   BusinessPartnerService,
   BusinessPartner,
@@ -19,9 +19,9 @@ import {
   ModalService,
   CurrencyService,
   OrderProduct,
+  PaymentType,
 } from '@friday/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 import { Observable, startWith, map } from 'rxjs';
 import { ClientDetailsModalComponent } from '../../../clients/components/client-details-modal/client-details-modal.component';
@@ -92,29 +92,35 @@ export class OrderFormComponent
     }
   }
 
+  get paymentFormGroup(): FormGroup {
+    return this.form.get('payment') as FormGroup;
+  }
+
   async onClientBlur(): Promise<void> {
     setTimeout(() => {
-      const clientName = this.form.get('clientName')!.value?.trim();
-      const clientId = this.form.get('clientId')!.value;
-      if (!clientName || !clientId) {
+      const businessPartnerName = this.form
+        .get('businessPartnerName')!
+        .value?.trim();
+      const businessPartnerId = this.form.get('businessPartnerId')!.value;
+      if (!businessPartnerName || !businessPartnerId) {
         this.cleanClientSelection();
         return;
       }
       // Verifica se o nome existe na lista de clientes
       const clients = (this.businessPartners$ as any).source
         .value as BusinessPartner[];
-      const found = clients.find((c) => c.name === clientName);
+      const found = clients.find((c) => c.name === businessPartnerName);
       if (!found) {
         const confirmRef = this.modalService.showConfirmation({
           title: 'Cliente não encontrado',
-          message: `O cliente "${clientName}" não existe. Deseja adicioná-lo?`,
+          message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
           cancelButtonText: 'Cancelar',
           confirmButtonText: 'Sim',
           confirmDelete: async () => {
             // Abrir modal de adicionar cliente
             const clientFormRef: MatDialogRef<any> =
               this.modalService.showTemplateModal(ClientDetailsModalComponent, {
-                data: { name: clientName },
+                data: { name: businessPartnerName },
                 width: '600px',
                 disableClose: true,
               });
@@ -125,8 +131,8 @@ export class OrderFormComponent
                   this.businessPartnerService.addOrUpdateBusinessPartner(
                     result,
                   );
-                  this.form.get('clientName')!.setValue(result.name);
-                  this.form.get('clientId')!.setValue(result.id);
+                  this.form.get('businessPartnerName')!.setValue(result.name);
+                  this.form.get('businessPartnerId')!.setValue(result.id);
                 } else {
                   this.cleanClientSelection();
                 }
@@ -142,15 +148,6 @@ export class OrderFormComponent
     }, 200);
   }
 
-  private cleanClientSelection(): void {
-    this.form.get('clientId')!.setValue('');
-    this.markAsTouched('clientId');
-    this.form.get('clientId')!.setErrors({ required: true });
-    this.form.get('clientName')!.setValue('');
-    this.markAsTouched('clientName');
-    this.form.get('clientName')!.setErrors({ required: true });
-  }
-
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -158,6 +155,10 @@ export class OrderFormComponent
     }
 
     Object.assign(this.data!, this.form.getRawValue());
+
+    if (this.data?.payment?.id == null) {
+      delete this.data!.payment!.id;
+    }
     this.save.emit(this.data!);
   }
 
@@ -184,7 +185,7 @@ export class OrderFormComponent
       parentData: data,
     };
 
-    if (!this.form.get('clientId')?.value) {
+    if (!this.form.get('businessPartnerId')?.value) {
       this.modalService.showNotification(
         false,
         '',
@@ -211,13 +212,118 @@ export class OrderFormComponent
         ref.close();
       });
     }
+  }
 
-    Object.keys(this.form.controls).forEach((key) => {
-      const control = this.form.get(key);
-      if (control && control.invalid) {
-        console.log(`- ${key}:`, control.errors);
-      }
+  private initForm(): void {
+    const paymentGroup = this.formBuilder.group({
+      id: [null],
+      type: [PaymentType.Incoming],
+      date: [new Date(), Validators.required],
+      method: ['', Validators.required],
+      status: ['', Validators.required],
+      category: ['Recebimentos'],
+      condition: ['', Validators.required],
+      totalOfInstallments: [1, [Validators.min(1)]],
+      price: [0, [Validators.min(0)]],
+      pricePerInstallment: [0, [Validators.min(0)]],
+      pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
     });
+
+    this.form = this.formBuilder.group({
+      orderNumber: [''],
+      businessPartnerId: [null],
+      businessPartnerName: [
+        { value: '', disabled: this.data?.businessPartnerId != null },
+      ],
+      description: [''],
+      status: [OrderStatus.Open, Validators.required],
+      price: [{ value: 0, disabled: true }],
+      priceFormatted: [{ value: 0, disabled: true }],
+      discount: [0, [Validators.min(0), Validators.max(100)]],
+      totalPrice: [{ value: 0, disabled: true }],
+      totalPriceFormatted: [{ value: 0, disabled: true }],
+      payment: paymentGroup,
+    });
+
+    if (this.isEdit) {
+      this.form.addControl('id', this.formBuilder.control(''));
+    } else {
+      if (this.data?.businessPartnerId != null) {
+        return;
+      }
+
+      this.form.get('businessPartnerName')!.valueChanges.subscribe((name) => {
+        const businessPartner = (
+          this.businessPartners$ as any
+        ).source.value.find(
+          (c: BusinessPartner) => (c.name || c.name) === name,
+        );
+        if (businessPartner) {
+          this.form.get('businessPartnerId')!.setValue(businessPartner.id);
+        }
+      });
+    }
+  }
+
+  private patchFormWithData(): void {
+    if (this.data && this.form) {
+      // Garante que price e totalPrice nunca sejam undefined ou null
+      const patch = {
+        ...this.data,
+        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
+        totalPriceFormatted: this.currencyService.formatCurrencyBRL(
+          this.data.totalPrice,
+        ),
+        pricePerInstallmentFormatted: this.currencyService.formatCurrencyBRL(
+          this.data.payment?.pricePerInstallment,
+        ),
+      };
+
+      this.form.patchValue(patch);
+    }
+  }
+
+  private cleanClientSelection(): void {
+    this.form.get('businessPartnerId')!.setValue('');
+    this.markAsTouched('businessPartnerId');
+    this.form.get('businessPartnerId')!.setErrors({ required: true });
+    this.form.get('businessPartnerName')!.setValue('');
+    this.markAsTouched('businessPartnerName');
+    this.form.get('businessPartnerName')!.setErrors({ required: true });
+  }
+
+  private setupAutoComplete(): void {
+    this.businessPartners$ = this.businessPartnerService.getClients();
+    this.filteredBusinessPartners$ = this.form
+      .get('businessPartnerName')!
+      .valueChanges.pipe(
+        startWith(''),
+        map((value) => {
+          const filterValue = value?.toLowerCase() || '';
+          if (!filterValue) {
+            return [];
+          }
+          return (this.businessPartners$ as any).source.value.filter(
+            (businessPartner: BusinessPartner) =>
+              (businessPartner.name || businessPartner.name || '')
+                .toLowerCase()
+                .includes(filterValue),
+          );
+        }),
+      );
+  }
+
+  private disableEditFields(): void {
+    if (this.isEdit && this.form) {
+      this.form.get('businessPartnerName')?.disable();
+      this.form.get('orderNumber')?.disable();
+    }
+  }
+
+  private totalPriceChange(): void {
+    this.form
+      .get('discount')
+      ?.valueChanges.subscribe(() => this.updateTotalPriceFields());
   }
 
   private updatePriceFields(): void {
@@ -240,88 +346,14 @@ export class OrderFormComponent
     this.form
       .get('totalPriceFormatted')
       ?.setValue(this.currencyService.formatCurrencyBRL(total));
-  }
 
-  private setupAutoComplete(): void {
-    this.businessPartners$ = this.businessPartnerService.getBusinessPartners();
-    this.filteredBusinessPartners$ = this.form
-      .get('clientName')!
-      .valueChanges.pipe(
-        startWith(''),
-        map((value) => {
-          const filterValue = value?.toLowerCase() || '';
-          if (!filterValue) {
-            return [];
-          }
-          return (this.businessPartners$ as any).source.value.filter(
-            (businessPartner: BusinessPartner) =>
-              (businessPartner.name || businessPartner.name || '')
-                .toLowerCase()
-                .includes(filterValue),
-          );
-        }),
-      );
-  }
+    const paymentGroup = this.paymentFormGroup;
+    const installments = paymentGroup?.get('totalOfInstallments')?.value || 1;
+    const pricePerInstallment = total / (installments > 0 ? installments : 1);
 
-  private initForm(): void {
-    this.form = this.formBuilder.group({
-      orderNumber: [''],
-      clientId: [null],
-      clientName: [{ value: '', disabled: this.data?.clientId != null }],
-      description: [''],
-      status: [OrderStatus.Open, Validators.required],
-      price: [{ value: 0, disabled: true }],
-      priceFormatted: [{ value: 0, disabled: true }],
-      discount: [0, [Validators.min(0), Validators.max(100)]],
-      totalPrice: [{ value: 0, disabled: true }],
-      totalPriceFormatted: [{ value: 0, disabled: true }],
-    });
-
-    if (this.isEdit) {
-      this.form.addControl('id', this.formBuilder.control(''));
-    } else {
-      if (this.data?.clientId != null) {
-        return;
-      }
-
-      this.form.get('clientName')!.valueChanges.subscribe((name) => {
-        const businessPartner = (
-          this.businessPartners$ as any
-        ).source.value.find(
-          (c: BusinessPartner) => (c.name || c.name) === name,
-        );
-        if (businessPartner) {
-          this.form.get('clientId')!.setValue(businessPartner.id);
-        }
-      });
-    }
-  }
-
-  private patchFormWithData(): void {
-    if (this.data && this.form) {
-      // Garante que price e totalPrice nunca sejam undefined ou null
-      const patch = {
-        ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-        totalPriceFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.totalPrice,
-        ),
-      };
-
-      this.form.patchValue(patch);
-    }
-  }
-
-  private disableEditFields(): void {
-    if (this.isEdit && this.form) {
-      this.form.get('clientName')?.disable();
-      this.form.get('orderNumber')?.disable();
-    }
-  }
-
-  private totalPriceChange(): void {
-    this.form
-      .get('discount')
-      ?.valueChanges.subscribe(() => this.updateTotalPriceFields());
+    paymentGroup.get('price')?.setValue(total);
+    paymentGroup
+      .get('pricePerInstallmentFormatted')
+      ?.setValue(this.currencyService.formatCurrencyBRL(pricePerInstallment));
   }
 }

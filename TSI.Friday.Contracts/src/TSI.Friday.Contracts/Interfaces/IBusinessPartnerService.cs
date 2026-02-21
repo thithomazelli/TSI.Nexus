@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 
@@ -15,10 +16,12 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<BusinessPartnerDto>> Remove(BusinessPartnerDto businessPartnerDto);
 
         /// <summary>
-        /// Method responsible to get all registers available on The businessPartner data table.
+        /// Method responsible to get all registers available on the businessPartner database based on the type informed.
         /// </summary>
-        /// <returns>All registers found on The businessPartner data table.</returns>
-        Task<WebApiResponse<IEnumerable<BusinessPartnerDto>>> FindAll();
+        /// <returns>All registers found on the businessPartner database.</returns>
+        Task<WebApiResponse<IEnumerable<BusinessPartnerDto>>> FindAllByType(
+            BusinessPartnerType businessPartnerType
+        );
 
         /// <summary>
         /// Method responsible to get only one BusinessPartner based on the ID received as parameter.

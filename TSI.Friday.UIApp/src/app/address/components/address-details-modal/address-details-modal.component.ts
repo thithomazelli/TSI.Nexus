@@ -43,7 +43,7 @@ export class AddressDetailsModalComponent extends FormBaseComponent {
   }
 
   save(address: Address): void {
-    address.clientId = this.parentId;
+    address.businessPartnerId = this.parentId;
 
     if (this.isEdit && this.id) {
       this.apiService

@@ -43,10 +43,10 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<ProductPhoto>> FindDefaultByProduct(int productId);
 
         /// <summary>
-        /// Method responsible to get all registers available on The productPhoto data table.
+        /// Method responsible to get all registers available on The productPhoto database.
         /// </summary>
         /// <param name="productPhoto">The productPhoto object to be removed.</param>
-        /// <returns>All registers found on the ProductPhoto data table.</returns>
+        /// <returns>All registers found on the ProductPhoto database.</returns>
         Task<WebApiResponse<IEnumerable<ProductPhoto>>> FindAllByProduct(int productId);
     }
 }

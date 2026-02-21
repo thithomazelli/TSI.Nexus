@@ -97,7 +97,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {businessPartnerMock.Name} cadastrado com sucesso.",
+                Message = $"Cliente {businessPartnerMock.Name} cadastrado com sucesso.",
             };
 
             _repository.Setup(_ => _.AddAsync(It.IsAny<Individual>()));
@@ -134,7 +134,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com Nome {businessPartnerMock.Name}.",
+                    $"Já existe um BusinessPartner cadastrado com Nome {businessPartnerMock.Name}.",
             };
 
             _repository
@@ -170,7 +170,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com E-mail {businessPartnerMock.Email}.",
+                    $"Já existe um BusinessPartner cadastrado com E-mail {businessPartnerMock.Email}.",
             };
 
             _repository
@@ -208,7 +208,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
+                    $"Já existe um BusinessPartner cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
             };
 
             _repository
@@ -248,7 +248,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
+                    $"Já existe um BusinessPartner cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
             };
 
             _repository
@@ -287,7 +287,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível cadastrar o BusinessPartnere {businessPartnerMock.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível cadastrar o Cliente {businessPartnerMock.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
@@ -320,7 +320,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {businessPartnerMock.Name} atualizado com sucesso.",
+                Message = $"Cliente {businessPartnerMock.Name} atualizado com sucesso.",
             };
 
             _repository
@@ -357,7 +357,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com Nome {businessPartnerMock.Name}.",
+                    $"Já existe um BusinessPartner cadastrado com Nome {businessPartnerMock.Name}.",
             };
 
             _repository
@@ -393,7 +393,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com E-mail {businessPartnerMock.Email}.",
+                    $"Já existe um BusinessPartner cadastrado com E-mail {businessPartnerMock.Email}.",
             };
 
             _repository
@@ -431,7 +431,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
+                    $"Já existe um BusinessPartner cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
             };
 
             _repository
@@ -471,7 +471,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartnere cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
+                    $"Já existe um BusinessPartner cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
             };
 
             _repository
@@ -510,7 +510,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível atualizar os dados do BusinessPartnere {businessPartnerMock.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível atualizar os dados do Cliente {businessPartnerMock.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
@@ -545,7 +545,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"BusinessPartnere {businessPartnerMock.Name} encontrado com sucesso.",
+                Message = $"Cliente {businessPartnerMock.Name} encontrado com sucesso.",
             };
 
             _repository
@@ -572,8 +572,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message =
-                    $"Nenhum BusinessPartnere com o CPF {socialSecurityCardMock} foi encontrado",
+                Message = $"Nenhum registro com o CPF {socialSecurityCardMock} foi encontrado",
             };
 
             _repository
@@ -605,7 +604,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros na base de dados. Erro: {exception.Message}",
             };
 
             _repository

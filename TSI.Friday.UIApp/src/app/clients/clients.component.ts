@@ -20,7 +20,7 @@ import { ClientDetailsModalComponent } from './components/client-details-modal/c
   styleUrl: './clients.component.scss',
 })
 export class ClientsComponent {
-  private _baseEndPoint = ApiType.Clients;
+  private _baseEndPoint = ApiType.BusinessPartners;
 
   rowData: BusinessPartner[] = [];
   columnDefs: ColDef[] = [
@@ -42,7 +42,7 @@ export class ClientsComponent {
       },
     },
     {
-      field: 'type',
+      field: 'documentType',
       headerName: 'Tipo',
       sortable: true,
       filter: true,
@@ -54,15 +54,15 @@ export class ClientsComponent {
       filter: true,
       flex: 1,
       cellRenderer: (params: ValueFormatterParams) => {
-        const type = params.data?.type;
+        const documentType = params.data?.documentType;
         let value =
-          type === 'Física'
+          documentType === 'Física'
             ? params.data?.socialSecurityCard || ''
             : params.data?.nationalRegistry || '';
         const digits = value.replace(/\D/g, '');
-        if (type === 'Física' && digits.length === 11) {
+        if (documentType === 'Física' && digits.length === 11) {
           return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-        } else if (type !== 'Física' && digits.length === 14) {
+        } else if (documentType !== 'Física' && digits.length === 14) {
           return digits.replace(
             /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
             '$1.$2.$3/$4-$5',
@@ -171,7 +171,9 @@ export class ClientsComponent {
 
   private getBusinessPartners(): void {
     this.apiService
-      .get<WebApiResponse<BusinessPartner[]>>(`${this._baseEndPoint}/getAll`)
+      .get<
+        WebApiResponse<BusinessPartner[]>
+      >(`${this._baseEndPoint}/getAllClients`)
       .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
       });

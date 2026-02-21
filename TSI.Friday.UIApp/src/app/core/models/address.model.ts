@@ -11,7 +11,7 @@ export class Address {
   country?: string | null;
   comments?: string | null;
   type?: AddressType | null;
-  clientId?: number | null;
+  businessPartnerId?: number | null;
   isDefault?: boolean | null;
 
   constructor(init?: Partial<Address>) {

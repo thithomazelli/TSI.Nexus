@@ -46,7 +46,7 @@ export class OrdersComponent {
       },
     },
     {
-      field: 'clientName',
+      field: 'businessPartnerName',
       headerName: 'Client Name',
       sortable: true,
       filter: true,
