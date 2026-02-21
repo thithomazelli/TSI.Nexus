@@ -178,11 +178,11 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_FindByClientId_ShouldReturnPaymentInstallments_WhenClientIdIsValid()
+        public async Task PaymentInstallmentService_FindByBusinessPartnerId_ShouldReturnPaymentInstallments_WhenBusinessPartnerIdIsValid()
         {
             // Arrange
-            const int clientId = 1;
-            var payments = _paymentInstallmentsMock.Where(p => p.ClientId == clientId).ToList();
+            const int businessPartnerId = 1;
+            var payments = _paymentInstallmentsMock.Where(p => p.BusinessPartnerId == businessPartnerId).ToList();
             _repository
                 .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
                 .ReturnsAsync(payments);
@@ -195,7 +195,7 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             // Act
-            var result = await _paymentInstallmentService.FindByClientId(clientId);
+            var result = await _paymentInstallmentService.FindByBusinessPartnerId(businessPartnerId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);

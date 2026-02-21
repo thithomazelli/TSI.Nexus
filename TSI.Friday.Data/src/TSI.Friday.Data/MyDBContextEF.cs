@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
 using TSI.Friday.Contracts.Models;
 
 namespace TSI.Friday.Data
@@ -11,7 +11,8 @@ namespace TSI.Friday.Data
         /// MyDBContextEF constructor created to initialize the DbContext based on DbContextOptions object received as parameter.
         /// </summary>
         /// <param name="options"></param>
-        public MyDBContextEF(DbContextOptions<MyDBContextEF> options) : base(options)
+        public MyDBContextEF(DbContextOptions<MyDBContextEF> options)
+            : base(options)
         {
             // Do not create DB triggers here. Use SaveChangesInterceptor to maintain related aggregates in application layer.
         }
@@ -19,8 +20,8 @@ namespace TSI.Friday.Data
         #region DbSets
 
         public DbSet<Address> Address { get; set; }
-        
-        public DbSet<Client> Client { get; set; }
+
+        public DbSet<BusinessPartner> BusinessPartner { get; set; }
 
         public DbSet<User> User { get; set; }
 
@@ -29,6 +30,8 @@ namespace TSI.Friday.Data
         public DbSet<OrderProduct> OrderProduct { get; set; }
 
         public DbSet<Payment> Payment { get; set; }
+
+        public DbSet<PaymentInstallment> PaymentInstallment { get; set; }
 
         public DbSet<Product> Product { get; set; }
 
@@ -44,37 +47,45 @@ namespace TSI.Friday.Data
         /// <param name="modelBuilder"></param>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Client>()
-                .HasDiscriminator(c => c.Type)
-                    .HasValue<Individual>("Física")
-                    .HasValue<Company>("Jurídica");
+            modelBuilder
+                .Entity<BusinessPartner>()
+                .HasDiscriminator(c => c.DocumentType)
+                .HasValue<Individual>("Física")
+                .HasValue<Company>("Jurídica");
 
-            modelBuilder.Entity<Client>()
-                .Property("Type")
+            modelBuilder
+                .Entity<BusinessPartner>()
+                .Property("DocumentType")
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .IsRequired();
 
-            modelBuilder.Entity<Order>()
-                .HasIndex(o => o.OrderNumber)
-                .IsUnique();
+            modelBuilder.Entity<Order>().HasIndex(o => o.OrderNumber).IsUnique();
 
             // Configure Sequence entity explicitly to keep model consistent with migrations
             modelBuilder.Entity<Sequence>(b =>
             {
                 b.HasKey(s => s.Name);
-                b.Property(s => s.Name).HasMaxLength(100).IsRequired().HasColumnType("varchar(100)");
+                b.Property(s => s.Name)
+                    .HasMaxLength(100)
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
                 b.Property(s => s.NextVal).IsRequired().HasColumnType("bigint");
                 b.ToTable("Sequence");
             });
 
-            modelBuilder.Entity<Order>()
+            modelBuilder
+                .Entity<Order>()
                 .Property(op => op.TotalPrice)
                 .HasComputedColumnSql("(Price - (Price * Discount / 100.0))", stored: true);
 
-            modelBuilder.Entity<OrderProduct>()
+            modelBuilder
+                .Entity<OrderProduct>()
                 .Property(op => op.TotalPrice)
-                .HasComputedColumnSql("((Price * Quantity) - ((Price * Quantity) * Discount / 100.0))", stored: true);
+                .HasComputedColumnSql(
+                    "((Price * Quantity) - ((Price * Quantity) * Discount / 100.0))",
+                    stored: true
+                );
 
             base.OnModelCreating(modelBuilder);
         }
@@ -84,9 +95,7 @@ namespace TSI.Friday.Data
             base.ConfigureConventions(configurationBuilder);
 
             // Store all enums as strings globally
-            configurationBuilder
-                .Properties<Enum>()
-                .HaveConversion<string>();
+            configurationBuilder.Properties<Enum>().HaveConversion<string>();
         }
     }
 }

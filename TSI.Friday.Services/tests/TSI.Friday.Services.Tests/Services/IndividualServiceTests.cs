@@ -15,7 +15,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly IndividualService _individualService;
         private readonly Mock<IRepository<Individual>> _repository;
-        private readonly IList<ClientDto> _clientListMock;
+        private readonly IList<BusinessPartnerDto> _businessPartnerListMock;
         private readonly IMapper _mapper;
 
         public IndividualServiceTests()
@@ -28,7 +28,7 @@ namespace TSI.Friday.Services.Tests.Services
 
             _individualService = new IndividualService(_repository.Object, _mapper);
 
-            _clientListMock = new List<ClientDto>
+            _businessPartnerListMock = new List<BusinessPartnerDto>
             {
                 new()
                 {
@@ -88,12 +88,16 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Add_ShouldAddIndividualSuccessfully_WhenMethodIsCalledWithAValidObjectAndIndividualIsNotDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto { Id = 1, Name = "Thiago Thomazelli Ferreira" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerMock = new BusinessPartnerDto
             {
-                Data = clientMock,
+                Id = 1,
+                Name = "Thiago Thomazelli Ferreira",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
+            {
+                Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {clientMock.Name} cadastrado com sucesso.",
+                Message = $"BusinessPartnere {businessPartnerMock.Name} cadastrado com sucesso.",
             };
 
             _repository.Setup(_ => _.AddAsync(It.IsAny<Individual>()));
@@ -102,10 +106,10 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(false);
 
             // Act
-            var result = await _individualService.Add(clientMock);
+            var result = await _individualService.Add(businessPartnerMock);
 
             // Assert
-            Assert.Equal(expectedResult.Data, clientMock);
+            Assert.Equal(expectedResult.Data, businessPartnerMock);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
@@ -121,11 +125,16 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Add_ShouldNotAddIndividualAndReturnAnErrorMessage_WhenNameIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto { Id = 1, Name = "Thiago Thomazelli Ferreira" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "Thiago Thomazelli Ferreira",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com Nome {clientMock.Name}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com Nome {businessPartnerMock.Name}.",
             };
 
             _repository
@@ -133,7 +142,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Add(clientMock);
+            var result = await _individualService.Add(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -151,16 +160,17 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Add_ShouldNotAddIndividualAndReturnAnErrorMessage_WhenEmailIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto
+            var businessPartnerMock = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com E-mail {clientMock.Email}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com E-mail {businessPartnerMock.Email}.",
             };
 
             _repository
@@ -169,7 +179,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Add(clientMock);
+            var result = await _individualService.Add(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -187,18 +197,18 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Add_ShouldNotAddIndividualAndReturnAnErrorMessage_WhenSocialSecurityCardIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto
+            var businessPartnerMock = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
                 SocialSecurityCard = "111.222.333-44",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um Cliente cadastrado com o CPF {clientMock.SocialSecurityCard}.",
+                    $"Já existe um BusinessPartnere cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
             };
 
             _repository
@@ -208,7 +218,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Add(clientMock);
+            var result = await _individualService.Add(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -226,7 +236,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Add_ShouldNotAddIndividualAndReturnAnErrorMessage_WhenNationalIdCardIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto
+            var businessPartnerMock = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "Thiago Thomazelli Ferreira",
@@ -234,10 +244,11 @@ namespace TSI.Friday.Services.Tests.Services
                 SocialSecurityCard = "111.222.333-44",
                 NationalIdCard = "11.222.333-4",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com o RG {clientMock.NationalIdCard}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
             };
 
             _repository
@@ -248,7 +259,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Add(clientMock);
+            var result = await _individualService.Add(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -267,12 +278,16 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var exception = new Exception();
-            var clientMock = new ClientDto { Id = 1, Name = "Thiago Thomazelli Ferreira" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "Thiago Thomazelli Ferreira",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível cadastrar o Cliente {clientMock.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível cadastrar o BusinessPartnere {businessPartnerMock.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
@@ -281,7 +296,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Setup(_ => _.AddAsync(It.IsAny<Individual>())).ThrowsAsync(exception);
 
             // Act
-            var result = await _individualService.Add(clientMock);
+            var result = await _individualService.Add(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -295,13 +310,17 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Update_ShouldUpdateIndividualSuccessfully_WhenMethodIsCalledWithAValidObjectAndIndividualIsNotDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto { Id = 1, Name = "Thiago Thomazelli Ferreira" };
-
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerMock = new BusinessPartnerDto
             {
-                Data = clientMock,
+                Id = 1,
+                Name = "Thiago Thomazelli Ferreira",
+            };
+
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
+            {
+                Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {clientMock.Name} atualizado com sucesso.",
+                Message = $"BusinessPartnere {businessPartnerMock.Name} atualizado com sucesso.",
             };
 
             _repository
@@ -309,15 +328,15 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(new List<Individual>());
 
             _repository
-                .Setup(_ => _.GetByIdAsync(clientMock.Id, c => c.Addresses))
+                .Setup(_ => _.GetByIdAsync(businessPartnerMock.Id, c => c.Addresses))
                 .ReturnsAsync(new Individual());
             _repository.Setup(_ => _.UpdateAsync(It.IsAny<Individual>()));
 
             // Act
-            var result = await _individualService.Update(clientMock);
+            var result = await _individualService.Update(businessPartnerMock);
 
             // Assert
-            Assert.Equal(expectedResult.Data, clientMock);
+            Assert.Equal(expectedResult.Data, businessPartnerMock);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
@@ -329,11 +348,16 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Update_ShouldNotUpdateIndividualAndReturnAnErrorMessage_WhenNameIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto { Id = 1, Name = "Thiago Thomazelli Ferreira" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "Thiago Thomazelli Ferreira",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com Nome {clientMock.Name}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com Nome {businessPartnerMock.Name}.",
             };
 
             _repository
@@ -341,7 +365,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Update(clientMock);
+            var result = await _individualService.Update(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -359,16 +383,17 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Update_ShouldNotUpdateIndividualAndReturnAnErrorMessage_WhenEmailIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto
+            var businessPartnerMock = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com E-mail {clientMock.Email}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com E-mail {businessPartnerMock.Email}.",
             };
 
             _repository
@@ -377,7 +402,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Update(clientMock);
+            var result = await _individualService.Update(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -395,18 +420,18 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Update_ShouldNotUpdateIndividualAndReturnAnErrorMessage_WhenSocialSecurityCardIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto
+            var businessPartnerMock = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
                 SocialSecurityCard = "111.222.333-44",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um Cliente cadastrado com o CPF {clientMock.SocialSecurityCard}.",
+                    $"Já existe um BusinessPartnere cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
             };
 
             _repository
@@ -416,7 +441,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Update(clientMock);
+            var result = await _individualService.Update(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -434,7 +459,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task IndividualService_Update_ShouldUpdateAddIndividualAndReturnAnErrorMessage_WhenNationalIdCardIsDuplicated()
         {
             // Arrange
-            var clientMock = new ClientDto
+            var businessPartnerMock = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "Thiago Thomazelli Ferreira",
@@ -442,10 +467,11 @@ namespace TSI.Friday.Services.Tests.Services
                 SocialSecurityCard = "111.222.333-44",
                 NationalIdCard = "11.222.333-4",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com o RG {clientMock.NationalIdCard}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
             };
 
             _repository
@@ -456,7 +482,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _individualService.Update(clientMock);
+            var result = await _individualService.Update(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -475,16 +501,20 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var exception = new Exception();
-            var clientMock = new ClientDto { Id = 1, Name = "Thiago Thomazelli Ferreira" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "Thiago Thomazelli Ferreira",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível atualizar os dados do Cliente {clientMock.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível atualizar os dados do BusinessPartnere {businessPartnerMock.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
-                .Setup(_ => _.GetByIdAsync(clientMock.Id, c => c.Addresses))
+                .Setup(_ => _.GetByIdAsync(businessPartnerMock.Id, c => c.Addresses))
                 .ReturnsAsync(new Individual());
             _repository
                 .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
@@ -492,7 +522,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Setup(_ => _.UpdateAsync(It.IsAny<Individual>())).ThrowsAsync(exception);
 
             // Act
-            var result = await _individualService.Update(clientMock);
+            var result = await _individualService.Update(businessPartnerMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -507,20 +537,20 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const string socialSecurityCardMock = "111.222.333-44";
-            var clientMock = _clientListMock.FirstOrDefault(_ =>
+            var businessPartnerMock = _businessPartnerListMock.FirstOrDefault(_ =>
                 socialSecurityCardMock.Equals(_.SocialSecurityCard)
             );
 
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
-                Data = clientMock,
+                Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {clientMock.Name} encontrado com sucesso.",
+                Message = $"BusinessPartnere {businessPartnerMock.Name} encontrado com sucesso.",
             };
 
             _repository
                 .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
-                .ReturnsAsync(_mapper.Map<Individual>(clientMock));
+                .ReturnsAsync(_mapper.Map<Individual>(businessPartnerMock));
 
             // Act
             var result = await _individualService.FindBySocialSecurityCard(socialSecurityCardMock);
@@ -538,11 +568,12 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const string socialSecurityCardMock = "000.000.000-00";
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum Cliente com o CPF {socialSecurityCardMock} foi encontrado",
+                Message =
+                    $"Nenhum BusinessPartnere com o CPF {socialSecurityCardMock} foi encontrado",
             };
 
             _repository
@@ -570,11 +601,11 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             const string socialSecurityCardMock = "000.000.000-00";
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
             };
 
             _repository

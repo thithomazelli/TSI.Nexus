@@ -31,7 +31,7 @@ namespace TSI.Friday.Services.Tests.Services
                 {
                     Id = 1,
                     Description = "Pagamento 1",
-                    ClientId = 1,
+                    BusinessPartnerId = 1,
                     OrderId = 1,
                     Status = PaymentStatus.Pending,
                 },
@@ -39,7 +39,7 @@ namespace TSI.Friday.Services.Tests.Services
                 {
                     Id = 2,
                     Description = "Pagamento 2",
-                    ClientId = 2,
+                    BusinessPartnerId = 2,
                     OrderId = 1,
                 },
             };
@@ -53,7 +53,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Id = 3,
                 Description = "Pagamento 3",
-                ClientId = 3,
+                BusinessPartnerId = 3,
                 OrderId = 2,
             };
             _repository.Setup(r => r.AddAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
@@ -151,11 +151,13 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task PaymentService_FindByClientId_ShouldReturnPayments_WhenClientIdIsValid()
+        public async Task PaymentService_FindByBusinessPartnerId_ShouldReturnPayments_WhenBusinessPartnerIdIsValid()
         {
             // Arrange
-            const int clientId = 1;
-            var paymentDtoList = _paymentsMock.Where(p => p.ClientId == clientId).ToList();
+            const int businessPartnerId = 1;
+            var paymentDtoList = _paymentsMock
+                .Where(p => p.BusinessPartnerId == businessPartnerId)
+                .ToList();
             var paymentEntityList = _mapper.Map<IList<Payment>>(paymentDtoList);
             _repository
                 .Setup(_ =>
@@ -171,7 +173,7 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             // Act
-            var result = await _paymentService.FindByClientId(clientId);
+            var result = await _paymentService.FindByBusinessPartnerId(businessPartnerId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);

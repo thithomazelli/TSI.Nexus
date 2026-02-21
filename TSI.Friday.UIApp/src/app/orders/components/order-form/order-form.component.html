@@ -4,7 +4,7 @@
       <section>
         <div class="row g-1 mb-1">
           <div *ngIf="isEdit" class="col-12 col-md-4">
-            <div class="input-group mb-1">
+            <div class="input-group">
               <div class="form-floating">
                 <input
                   formControlName="orderNumber"
@@ -21,7 +21,7 @@
           </div>
 
           <div class="col-12 col-md-8">
-            <div class="input-group mb-1">
+            <div class="input-group">
               <div class="form-floating">
                 <input
                   type="text"
@@ -36,10 +36,12 @@
                 <label for="clientName">Cliente</label>
                 <mat-autocomplete #auto="matAutocomplete">
                   <mat-option
-                    *ngFor="let client of filteredClients$ | async"
-                    [value]="client.name"
+                    *ngFor="
+                      let businessPartner of filteredBusinessPartners$ | async
+                    "
+                    [value]="businessPartner.name"
                   >
-                    {{ client.name }}
+                    {{ businessPartner.name }}
                   </mat-option>
                 </mat-autocomplete>
               </div>
@@ -48,7 +50,7 @@
           </div>
 
           <div *ngIf="!compact" class="col-12 col-md-8">
-            <div class="input-group mb-1">
+            <div class="input-group">
               <div class="form-floating">
                 <input
                   formControlName="description"

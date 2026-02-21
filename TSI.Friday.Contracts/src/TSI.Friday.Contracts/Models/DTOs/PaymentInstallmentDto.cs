@@ -23,9 +23,9 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public int PaymentId { get; set; }
 
-        public int? ClientId { get; set; }
+        public int? BusinessPartnerId { get; set; }
 
-        public string ClientName { get; set; }
+        public string BusinessPartnerName { get; set; }
 
         public int? OrderId { get; set; }
 

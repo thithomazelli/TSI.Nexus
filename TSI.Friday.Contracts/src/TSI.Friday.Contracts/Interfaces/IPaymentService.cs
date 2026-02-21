@@ -43,10 +43,10 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<PaymentDto>> FindById(int? id);
 
         /// <summary>
-        /// Method responsible to get a list of Paymentes based on the ClientID received as parameter.
+        /// Method responsible to get a list of Paymentes based on the BusinessPartnerID received as parameter.
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
-        /// <returns>List of payment according to the ClientID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByClientId(int? clientId);
+        /// <returns>List of payment according to the BusinessPartnerID defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByBusinessPartnerId(int? businessPartnerId);
     }
 }

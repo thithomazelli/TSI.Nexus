@@ -40,16 +40,16 @@ namespace TSI.Friday.Services.Tests.Services
                     Id = 1,
                     OrderNumber = "ORD-00001",
                     Description = "Pedido Teste1",
-                    ClientId = 1,
-                    ClientName = "ORD",
+                    BusinessPartnerId = 1,
+                    BusinessPartnerName = "ORD",
                 },
                 new OrderDto
                 {
                     Id = 2,
                     OrderNumber = "THG-00002",
                     Description = "Pedido Teste2",
-                    ClientId = 2,
-                    ClientName = "THG",
+                    BusinessPartnerId = 2,
+                    BusinessPartnerName = "THG",
                 },
             };
         }
@@ -63,7 +63,7 @@ namespace TSI.Friday.Services.Tests.Services
                 Id = 3,
                 OrderNumber = "ORD-00001",
                 Description = "Novo Pedido",
-                ClientName = "ORD",
+                BusinessPartnerName = "ORD",
             };
             var orderEntity = _mapper.Map<Order>(orderDto);
 
@@ -124,9 +124,11 @@ namespace TSI.Friday.Services.Tests.Services
             const int id = 1;
             var orderDto = _orderListMock.First(o => o.Id == id);
             var orderEntity = _mapper.Map<Order>(orderDto);
-            orderEntity.Client = new Individual { Name = "ORD" };
+            orderEntity.BusinessPartner = new Individual { Name = "ORD" };
 
-            _repository.Setup(r => r.GetByIdAsync(id, o => o.Client)).ReturnsAsync(orderEntity);
+            _repository
+                .Setup(r => r.GetByIdAsync(id, o => o.BusinessPartner))
+                .ReturnsAsync(orderEntity);
 
             var expected = new WebApiResponse<OrderDto>
             {
@@ -140,7 +142,7 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetByIdAsync(id, o => o.Client), Times.Once);
+            _repository.Verify(r => r.GetByIdAsync(id, o => o.BusinessPartner), Times.Once);
         }
 
         [Fact]
@@ -148,7 +150,9 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const int id = 10;
-            _repository.Setup(r => r.GetByIdAsync(id, o => o.Client)).ReturnsAsync((Order)null);
+            _repository
+                .Setup(r => r.GetByIdAsync(id, o => o.BusinessPartner))
+                .ReturnsAsync((Order)null);
 
             var expected = new WebApiResponse<OrderDto>
             {
@@ -162,7 +166,7 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetByIdAsync(id, o => o.Client), Times.Once);
+            _repository.Verify(r => r.GetByIdAsync(id, o => o.BusinessPartner), Times.Once);
         }
 
         [Fact]
@@ -170,9 +174,9 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var ordersMock = _mapper.Map<IList<Order>>(_orderListMock);
-            ordersMock[0].Client = new Individual { Name = "ORD" };
-            ordersMock[1].Client = new Individual { Name = "THG" };
-            _repository.Setup(r => r.GetAllAsync(o => o.Client)).ReturnsAsync(ordersMock);
+            ordersMock[0].BusinessPartner = new Individual { Name = "ORD" };
+            ordersMock[1].BusinessPartner = new Individual { Name = "THG" };
+            _repository.Setup(r => r.GetAllAsync(o => o.BusinessPartner)).ReturnsAsync(ordersMock);
 
             var expected = new WebApiResponse<IEnumerable<OrderDto>>
             {
@@ -186,7 +190,7 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetAllAsync(o => o.Client), Times.Once);
+            _repository.Verify(r => r.GetAllAsync(o => o.BusinessPartner), Times.Once);
         }
     }
 }

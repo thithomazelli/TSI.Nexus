@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   ApiService,
   ApiType,
-  Client,
+  BusinessPartner,
   ModalService,
   Order,
   Payment,
@@ -29,7 +29,7 @@ export class PaymentInstallmentsComponent {
   entity: string = '';
 
   @Input()
-  data?: Client | Order | Payment | null = null;
+  data?: BusinessPartner | Order | Payment | null = null;
 
   @Output()
   refreshParent = new EventEmitter<void>();

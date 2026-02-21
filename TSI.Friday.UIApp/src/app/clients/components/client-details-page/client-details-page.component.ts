@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   ApiService,
   ApiType,
-  Client,
+  BusinessPartner,
   Company,
   Individual,
   NotificationService,
@@ -38,22 +38,24 @@ export class ClientDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      this.loadClient(Number(idParam));
+      this.loadBusinessPartner(Number(idParam));
     } else {
       this.isEdit = false;
       this.data = null;
     }
   }
 
-  save(client: Company | Individual): void {
+  save(businessPartner: Company | Individual): void {
     this._baseEndPoint =
-      client.type === 'Física' ? ApiType.Individuals : ApiType.Companies;
+      businessPartner.documentType === 'Física'
+        ? ApiType.Individuals
+        : ApiType.Companies;
 
     if (this.isEdit && this.id) {
       this.apiService
         .put<
           WebApiResponse<Company | Individual>
-        >(`${this._baseEndPoint}/update`, client)
+        >(`${this._baseEndPoint}/update`, businessPartner)
         .subscribe((response: WebApiResponse<Company | Individual>) => {
           this.notificationService.showMessage(
             response.status,
@@ -62,8 +64,10 @@ export class ClientDetailsPageComponent {
         });
     } else {
       this.apiService
-        .post<WebApiResponse<Client>>(`${this._baseEndPoint}/add`, client)
-        .subscribe((response: WebApiResponse<Client>) => {
+        .post<
+          WebApiResponse<BusinessPartner>
+        >(`${this._baseEndPoint}/add`, businessPartner)
+        .subscribe((response: WebApiResponse<BusinessPartner>) => {
           this.routerService.navigateByUrl(
             `/${this._baseEndPoint}/${response.data.id}`,
           );
@@ -84,12 +88,14 @@ export class ClientDetailsPageComponent {
     this.data = JSON.parse(JSON.stringify(this.data));
   }
 
-  private loadClient(id: number): void {
+  private loadBusinessPartner(id: number): void {
     this.loading = true;
     this.apiService
-      .get<WebApiResponse<Client>>(`${this._baseEndPoint}/getById/${id}`)
+      .get<
+        WebApiResponse<BusinessPartner>
+      >(`${this._baseEndPoint}/getById/${id}`)
       .subscribe({
-        next: (response: WebApiResponse<Client>) => {
+        next: (response: WebApiResponse<BusinessPartner>) => {
           this.loading = false;
 
           if (response.data == null) {

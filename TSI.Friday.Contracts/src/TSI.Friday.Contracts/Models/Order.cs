@@ -22,13 +22,16 @@ namespace TSI.Friday.Contracts.Models
 
         public decimal Discount { get; set; }
 
-        [ForeignKey("Client")]
-        public int ClientId { get; set; }
+        [ForeignKey("BusinessPartner")]
+        public int BusinessPartnerId { get; set; }
 
-        public Client Client { get; set; }
+        public BusinessPartner BusinessPartner { get; set; }
+
+        [ForeignKey("Payment")]
+        public int PaymentId { get; set; }
+
+        public Payment Payment { get; set; }
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = [];
-
-        public ICollection<Payment> Payments { get; set; } = [];
     }
 }

@@ -18,10 +18,7 @@ namespace TSI.Friday.Services
         /// <inheritdoc />
         public async Task<bool> SendEmailAsync(EmailSendDto emailSend)
         {
-            MailjetClient client = new(
-                _config["Mailjet:ApiKey"],
-                _config["Mailjet:SecretKey"]
-            );
+            MailjetClient client = new(_config["Mailjet:ApiKey"], _config["Mailjet:SecretKey"]);
 
             var email = new TransactionalEmailBuilder()
                 .WithFrom(new SendContact(_config["Email:From"], _config["Email:ApplicationName"]))

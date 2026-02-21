@@ -136,14 +136,14 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<AddressDto>>> FindByClientId(int? clientId)
+        public async Task<WebApiResponse<IEnumerable<AddressDto>>> FindByBusinessPartnerId(int? businessPartnerId)
         {
             WebApiResponse<IEnumerable<AddressDto>> result = new();
 
             try
             {
                 var addressesEntity = await _repository.QueryAsync(_ =>
-                    _.ClientId.Equals(clientId)
+                    _.BusinessPartnerId.Equals(businessPartnerId)
                 );
                 var addressesDto = _mapper.Map<IEnumerable<AddressDto>>(addressesEntity).ToList();
 
@@ -168,7 +168,7 @@ namespace TSI.Friday.Services
         private async Task<bool> SetDefaultAddress(AddressDto addressDto)
         {
             var addressEntity = _mapper.Map<Address>(addressDto);
-            var anyAddresses = await _repository.AnyAsync(a => a.ClientId == addressDto.ClientId);
+            var anyAddresses = await _repository.AnyAsync(a => a.BusinessPartnerId == addressDto.BusinessPartnerId);
 
             if (!anyAddresses)
             {
@@ -191,7 +191,7 @@ namespace TSI.Friday.Services
             }
 
             var existingDefaults = await _repository.QueryAsync(a =>
-                a.ClientId == addressDto.ClientId && a.Id != addressDto.Id && a.IsDefault
+                a.BusinessPartnerId == addressDto.BusinessPartnerId && a.Id != addressDto.Id && a.IsDefault
             );
 
             if (existingDefaults == null)

@@ -28,36 +28,36 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <summary>
         /// Add company on database
         /// </summary>
-        /// <param name="clientDto">Object to be added</param>
+        /// <param name="businessPartnerDto">Object to be added</param>
         /// <returns></returns>
         [HttpPost]
         [Route("Add")]
-        public async Task<IActionResult> Add([FromBody] ClientDto clientDto)
+        public async Task<IActionResult> Add([FromBody] BusinessPartnerDto businessPartnerDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var webApiResponse = await _companyService.Add(clientDto);
+            var webApiResponse = await _companyService.Add(businessPartnerDto);
             return Ok(webApiResponse);
         }
 
         /// <summary>
         /// Update company available on database
         /// </summary>
-        /// <param name="clientDto">Object to be updated</param>
+        /// <param name="businessPartnerDto">Object to be updated</param>
         /// <returns></returns>
         [HttpPut]
         [Route("Update")]
-        public async Task<IActionResult> Update([FromBody] ClientDto clientDto)
+        public async Task<IActionResult> Update([FromBody] BusinessPartnerDto businessPartnerDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var webApiResponse = await _companyService.Update(clientDto);
+            var webApiResponse = await _companyService.Update(businessPartnerDto);
             return Ok(webApiResponse);
         }
 

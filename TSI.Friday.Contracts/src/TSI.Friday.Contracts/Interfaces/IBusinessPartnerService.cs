@@ -1,0 +1,37 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using TSI.Friday.Contracts.Models.DTOs;
+using TSI.Friday.Contracts.Utilities;
+
+namespace TSI.Friday.Contracts.Interfaces
+{
+    public interface IBusinessPartnerService
+    {
+        /// <summary>
+        /// Remove a BusinessPartner based on the object received.
+        /// </summary>
+        /// <param name="businessPartnerDto">The businessPartner DTO object to be removed.</param>
+        /// <returns>Return an WebApiReponse with the results for this operation.</returns>
+        Task<WebApiResponse<BusinessPartnerDto>> Remove(BusinessPartnerDto businessPartnerDto);
+
+        /// <summary>
+        /// Method responsible to get all registers available on The businessPartner data table.
+        /// </summary>
+        /// <returns>All registers found on The businessPartner data table.</returns>
+        Task<WebApiResponse<IEnumerable<BusinessPartnerDto>>> FindAll();
+
+        /// <summary>
+        /// Method responsible to get only one BusinessPartner based on the ID received as parameter.
+        /// </summary>
+        /// <param name="id">The ID to be used on the search.</param>
+        /// <returns>One BusinessPartner object according to the ID defined as parameter.</returns>
+        Task<WebApiResponse<BusinessPartnerDto>> FindById(int? id);
+
+        /// <summary>
+        /// Should find a list of people based on the email received as parameter.
+        /// </summary>
+        /// <param name="email">The Email to be used on the search.</param>
+        /// <returns>A list of people that has the Email equal to the one that was received as parameter.</returns>
+        Task<WebApiResponse<BusinessPartnerDto>> FindByEmail(string email);
+    }
+}

@@ -1,0 +1,78 @@
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using TSI.Friday.Contracts.Interfaces;
+using TSI.Friday.Contracts.Models.DTOs;
+
+namespace TSI.Friday.WebAPI.Controllers
+{
+    [Authorize]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class BusinessPartnersController : Controller
+    {
+        /// <summary>
+        /// BusinessPartnerService object created to access the service model.
+        /// </summary>
+        private readonly IBusinessPartnerService _businessPartnerService;
+
+        /// <summary>
+        /// BusinessPartnersController constructor create to initialize the "_businessPartnerService" using Dependency Injection.
+        /// </summary>
+        /// <param name="businessPartnerService ">IBusinessPartnerService object used to initialize the internal variable using Dependency Injection.</param>
+        public BusinessPartnersController(IBusinessPartnerService businessPartnerService)
+        {
+            _businessPartnerService = businessPartnerService;
+        }
+
+        /// <summary>
+        /// Remove businessPartner when it is identified on database
+        /// </summary>
+        /// <param name="businessPartner">Object to be removed</param>
+        [HttpDelete]
+        [Route("Remove")]
+        public async Task<IActionResult> Remove([FromBody] BusinessPartnerDto businessPartner)
+        {
+            var webApiResponse = await _businessPartnerService.Remove(businessPartner);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get all companies available on database
+        /// </summary>
+        /// <returns>List of all businessPartners from database</returns>
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var webApiResponse = await _businessPartnerService.FindAll();
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get businessPartner by id
+        /// </summary>
+        /// <param name="businessPartnerId">BusinessPartner id to be used in the search</param>
+        /// <returns>The businessPartner object based on the id informed</returns>
+        [HttpGet]
+        [Route("GetById/{businessPartnerId}")]
+        public async Task<IActionResult> GetById(int? businessPartnerId)
+        {
+            var webApiResponse = await _businessPartnerService.FindById(businessPartnerId);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get businessPartner by email
+        /// </summary>
+        /// <param name="email">Email to be used in the search</param>
+        /// <returns>The businessPartner object based on the email informed</returns>
+        [HttpGet]
+        [Route("GetByEmail/{email}")]
+        public async Task<IActionResult> GetByEmail(string email)
+        {
+            var webApiResponse = await _businessPartnerService.FindByEmail(email);
+            return Ok(webApiResponse);
+        }
+    }
+}

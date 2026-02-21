@@ -27,9 +27,9 @@ namespace TSI.Friday.Contracts.Models
 
         public bool IsDefault { get; set; }
 
-        [ForeignKey("Client")]
-        public int ClientId { get; set; }
+        [ForeignKey("BusinessPartner")]
+        public int BusinessPartnerId { get; set; }
 
-        public Client Client { get; set; }
+        public BusinessPartner BusinessPartner { get; set; }
     }
 }

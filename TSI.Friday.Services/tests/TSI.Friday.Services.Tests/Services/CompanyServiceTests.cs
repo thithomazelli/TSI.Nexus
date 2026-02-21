@@ -44,13 +44,17 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Add_ShouldAddCompanySuccessfully_WhenMethodIsCalledWithAValidObjectAndCompanyIsNotDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
+            var companyDto = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
 
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = companyDto,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {companyDto.Name} cadastrado com sucesso.",
+                Message = $"BusinessPartnere {companyDto.Name} cadastrado com sucesso.",
             };
 
             _repository.Setup(_ => _.AddAsync(It.IsAny<Company>()));
@@ -78,11 +82,15 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Add_ShouldNotAddCompanyAndReturnAnErrorMessage_WhenNameIsDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var companyDto = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com Nome {companyDto.Name}.",
+                Message = $"Já existe um BusinessPartnere cadastrado com Nome {companyDto.Name}.",
             };
 
             _repository
@@ -108,16 +116,17 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Add_ShouldNotAddCompanyAndReturnAnErrorMessage_WhenEmailIsDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto
+            var companyDto = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com E-mail {companyDto.Email}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com E-mail {companyDto.Email}.",
             };
 
             _repository
@@ -144,18 +153,18 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Add_ShouldNotAddCompanyAndReturnAnErrorMessage_WhenNationalRegistryIsDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto
+            var companyDto = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
                 NationalRegistry = "11.222.3333/0001-44",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um Cliente cadastrado com o CNPJ {companyDto.NationalRegistry}.",
+                    $"Já existe um BusinessPartnere cadastrado com o CNPJ {companyDto.NationalRegistry}.",
             };
 
             _repository
@@ -184,12 +193,16 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var exception = new Exception();
-            var companyDto = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var companyDto = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível cadastrar o Cliente {companyDto.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível cadastrar o BusinessPartnere {companyDto.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
@@ -212,14 +225,18 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Update_ShouldUpdateCompanySuccessfully_WhenMethodIsCalledWithAValidObjectAndCompanyIsNotDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
+            var companyDto = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
             var companyEntity =
                 _companyListMock.FirstOrDefault(_ => _.Id == companyDto.Id) ?? new Company();
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = companyDto,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {companyDto.Name} atualizado com sucesso.",
+                Message = $"BusinessPartnere {companyDto.Name} atualizado com sucesso.",
             };
 
             _repository
@@ -246,11 +263,15 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Update_ShouldNotUpdateCompanyAndReturnAnErrorMessage_WhenNameIsDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var companyDto = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com Nome {companyDto.Name}.",
+                Message = $"Já existe um BusinessPartnere cadastrado com Nome {companyDto.Name}.",
             };
 
             _repository
@@ -276,16 +297,17 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Update_ShouldNotUpdateCompanyAndReturnAnErrorMessage_WhenEmailIsDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto
+            var companyDto = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com E-mail {companyDto.Email}.",
+                Message =
+                    $"Já existe um BusinessPartnere cadastrado com E-mail {companyDto.Email}.",
             };
 
             _repository
@@ -312,18 +334,18 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task CompanyService_Update_ShouldNotUpdateCompanyAndReturnAnErrorMessage_WhenNationalRegistryIsDuplicated()
         {
             // Arrange
-            var companyDto = new ClientDto
+            var companyDto = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
                 NationalRegistry = "11.222.3333/0001-44",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um Cliente cadastrado com o CNPJ {companyDto.NationalRegistry}.",
+                    $"Já existe um BusinessPartnere cadastrado com o CNPJ {companyDto.NationalRegistry}.",
             };
 
             _repository
@@ -352,14 +374,18 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var exception = new Exception();
-            var companyDto = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
+            var companyDto = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
             var companyEntity =
                 _companyListMock.FirstOrDefault(_ => _.Id == companyDto.Id) ?? new Company();
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível atualizar os dados do Cliente {companyDto.Name} na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível atualizar os dados do BusinessPartnere {companyDto.Name} na base de dados. Erro: {exception.Message}",
             };
 
             _repository
@@ -389,12 +415,12 @@ namespace TSI.Friday.Services.Tests.Services
             var companyEntity = _companyListMock.FirstOrDefault(_ =>
                 nationalRegistraMock.Equals(_.NationalRegistry)
             );
-            var expectedDto = _mapper.Map<ClientDto>(companyEntity);
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedDto = _mapper.Map<BusinessPartnerDto>(companyEntity);
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = expectedDto,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {expectedDto.Name} encontrado com sucesso.",
+                Message = $"BusinessPartnere {expectedDto.Name} encontrado com sucesso.",
             };
 
             _repository
@@ -417,11 +443,12 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const string nationalRegistraMock = "11.222.3333/0001-44";
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum Cliente com o CNPJ {nationalRegistraMock} foi encontrado",
+                Message =
+                    $"Nenhum BusinessPartnere com o CNPJ {nationalRegistraMock} foi encontrado",
             };
 
             _repository
@@ -449,11 +476,11 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             const string nationalRegistraMock = "11.222.3333/0001-44";
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
             };
 
             _repository

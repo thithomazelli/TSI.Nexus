@@ -9,22 +9,22 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <summary>
         /// Add a new Individual based on the object received.
         /// </summary>
-        /// <param name="clientDto">The client dto object defined.</param>
+        /// <param name="businessPartnerDto">The businessPartner dto object defined.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
-        Task<WebApiResponse<ClientDto>> Add(ClientDto clientDto);
+        Task<WebApiResponse<BusinessPartnerDto>> Add(BusinessPartnerDto businessPartnerDto);
 
         /// <summary>
         /// Update a Individual based on the object received.
         /// </summary>
-        /// <param name="clientDto">The client dto object updated.</param>
+        /// <param name="businessPartnerDto">The businessPartner dto object updated.</param>
         /// <returns>Return an WebApiReponse with the results for this operation.</returns>
-        Task<WebApiResponse<ClientDto>> Update(ClientDto clientDto);
+        Task<WebApiResponse<BusinessPartnerDto>> Update(BusinessPartnerDto businessPartnerDto);
 
         /// <summary>
         /// Should find a Individual that based on the SocialSecurityCard received as parameter.
         /// </summary>
         /// <param name="socialSecurityCard">The SocialSecurityCard to be used on the search.</param>
         /// <returns>One Individual object according to the SocialSecurityCard defined as parameter.</returns>
-        Task<WebApiResponse<ClientDto>> FindBySocialSecurityCard(string socialSecurityCard);
+        Task<WebApiResponse<BusinessPartnerDto>> FindBySocialSecurityCard(string socialSecurityCard);
     }
 }

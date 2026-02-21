@@ -27,10 +27,10 @@ namespace TSI.Friday.Contracts.Models
 
         public Payment Payment { get; set; } = null!;
 
-        [ForeignKey("Client")]
-        public int? ClientId { get; set; }
+        [ForeignKey("BusinessPartner")]
+        public int? BusinessPartnerId { get; set; }
 
-        public Client Client { get; set; }
+        public BusinessPartner BusinessPartner { get; set; }
 
         [ForeignKey("Order")]
         public int? OrderId { get; set; }

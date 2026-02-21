@@ -33,8 +33,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public string OrderNumber { get; set; }
 
-        public int? ClientId { get; set; }
+        public int? BusinessPartnerId { get; set; }
 
-        public string ClientName { get; set; }
+        public string BusinessPartnerName { get; set; }
     }
 }

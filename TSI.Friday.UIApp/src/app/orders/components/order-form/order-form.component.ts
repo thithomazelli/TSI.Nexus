@@ -11,8 +11,8 @@ import {
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import {
-  ClientService,
-  Client,
+  BusinessPartnerService,
+  BusinessPartner,
   Order,
   OrderStatus,
   FormBaseComponent,
@@ -60,8 +60,8 @@ export class OrderFormComponent
   @Input()
   errors: string[] | undefined;
 
-  clients$!: Observable<Client[]>;
-  filteredClients$!: Observable<Client[]>;
+  businessPartners$!: Observable<BusinessPartner[]>;
+  filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
   orderStatusOptions = [
     { value: OrderStatus.Open, label: 'Em Aberto' },
@@ -71,7 +71,7 @@ export class OrderFormComponent
 
   constructor(
     private formBuilder: FormBuilder,
-    private clientService: ClientService,
+    private businessPartnerService: BusinessPartnerService,
     private modalService: ModalService,
     private currencyService: CurrencyService,
   ) {
@@ -101,7 +101,8 @@ export class OrderFormComponent
         return;
       }
       // Verifica se o nome existe na lista de clientes
-      const clients = (this.clients$ as any).source.value as Client[];
+      const clients = (this.businessPartners$ as any).source
+        .value as BusinessPartner[];
       const found = clients.find((c) => c.name === clientName);
       if (!found) {
         const confirmRef = this.modalService.showConfirmation({
@@ -119,9 +120,11 @@ export class OrderFormComponent
               });
             clientFormRef
               .afterClosed()
-              .subscribe((result: Client | undefined) => {
+              .subscribe((result: BusinessPartner | undefined) => {
                 if (result) {
-                  this.clientService.addOrUpdateClient(result);
+                  this.businessPartnerService.addOrUpdateBusinessPartner(
+                    result,
+                  );
                   this.form.get('clientName')!.setValue(result.name);
                   this.form.get('clientId')!.setValue(result.id);
                 } else {
@@ -240,21 +243,24 @@ export class OrderFormComponent
   }
 
   private setupAutoComplete(): void {
-    this.clients$ = this.clientService.getClients();
-    this.filteredClients$ = this.form.get('clientName')!.valueChanges.pipe(
-      startWith(''),
-      map((value) => {
-        const filterValue = value?.toLowerCase() || '';
-        if (!filterValue) {
-          return [];
-        }
-        return (this.clients$ as any).source.value.filter((client: Client) =>
-          (client.name || client.name || '')
-            .toLowerCase()
-            .includes(filterValue),
-        );
-      }),
-    );
+    this.businessPartners$ = this.businessPartnerService.getBusinessPartners();
+    this.filteredBusinessPartners$ = this.form
+      .get('clientName')!
+      .valueChanges.pipe(
+        startWith(''),
+        map((value) => {
+          const filterValue = value?.toLowerCase() || '';
+          if (!filterValue) {
+            return [];
+          }
+          return (this.businessPartners$ as any).source.value.filter(
+            (businessPartner: BusinessPartner) =>
+              (businessPartner.name || businessPartner.name || '')
+                .toLowerCase()
+                .includes(filterValue),
+          );
+        }),
+      );
   }
 
   private initForm(): void {
@@ -279,11 +285,13 @@ export class OrderFormComponent
       }
 
       this.form.get('clientName')!.valueChanges.subscribe((name) => {
-        const client = (this.clients$ as any).source.value.find(
-          (c: Client) => (c.name || c.name) === name,
+        const businessPartner = (
+          this.businessPartners$ as any
+        ).source.value.find(
+          (c: BusinessPartner) => (c.name || c.name) === name,
         );
-        if (client) {
-          this.form.get('clientId')!.setValue(client.id);
+        if (businessPartner) {
+          this.form.get('clientId')!.setValue(businessPartner.id);
         }
       });
     }

@@ -8,7 +8,7 @@ import {
   WebApiResponse,
   Individual,
   Company,
-  Client,
+  BusinessPartner,
 } from '@friday/core';
 
 @Component({
@@ -22,7 +22,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
   saved = new EventEmitter<void>();
 
   isEdit = false;
-  data?: Individual | Company | null = <Client>{};
+  data?: Individual | Company | null = <BusinessPartner>{};
   id: number | null = null;
 
   private _baseEndPoint: ApiType = ApiType.Clients;
@@ -37,20 +37,22 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
     // Recebe dados do modal
     if (dialogData) {
       this.isEdit = dialogData.isEdit ?? false;
-      this.data = dialogData.data ?? <Client>{};
+      this.data = dialogData.data ?? <BusinessPartner>{};
       this.id = dialogData.id ?? null;
     }
   }
 
-  save(client: Individual | Company): void {
+  save(businessPartner: Individual | Company): void {
     this._baseEndPoint =
-      client.type === 'Física' ? ApiType.Individuals : ApiType.Companies;
+      businessPartner.type === 'Física'
+        ? ApiType.Individuals
+        : ApiType.Companies;
 
     if (this.isEdit && this.id) {
       this.apiService
         .put<
           WebApiResponse<Company | Individual>
-        >(`${this._baseEndPoint}/update`, client)
+        >(`${this._baseEndPoint}/update`, businessPartner)
         .subscribe((response: WebApiResponse<Company | Individual>) => {
           this.saved.emit();
           this.modalService.showSweetNotification(
@@ -64,7 +66,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
       this.apiService
         .post<
           WebApiResponse<Company | Individual>
-        >(`${this._baseEndPoint}/add`, client)
+        >(`${this._baseEndPoint}/add`, businessPartner)
         .subscribe((response: WebApiResponse<Company | Individual>) => {
           this.saved.emit();
           this.modalService.hideModal(this.dialogRef);

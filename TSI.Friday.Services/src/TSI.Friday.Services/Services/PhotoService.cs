@@ -11,7 +11,7 @@ namespace TSI.Friday.Services.Services
         #region Properties
 
         private readonly IWebHostEnvironment _env;
-        private readonly IRepository<Client> _clientRepository;
+        private readonly IRepository<BusinessPartner> _businessPartnerRepository;
         private readonly IRepository<Product> _productRepository;
         private readonly IRepository<User> _userRepository;
 
@@ -26,13 +26,13 @@ namespace TSI.Friday.Services.Services
         /// <param name="env"></param>
         public PhotoService(
             IWebHostEnvironment env,
-            IRepository<Client> clientRepository,
+            IRepository<BusinessPartner> businessPartnerRepository,
             IRepository<Product> productRepository,
             IRepository<User> userRepository
         )
         {
             _env = env;
-            _clientRepository = clientRepository;
+            _businessPartnerRepository = businessPartnerRepository;
             _productRepository = productRepository;
             _userRepository = userRepository;
         }
@@ -61,16 +61,16 @@ namespace TSI.Friday.Services.Services
 
             switch (entityFolder)
             {
-                case "Client":
+                case "BusinessPartner":
                 {
-                    var client = await _clientRepository.GetByIdAsync(int.Parse(entityId));
-                    previousFileName = client?.Photo;
+                    var businessPartner = await _businessPartnerRepository.GetByIdAsync(int.Parse(entityId));
+                    previousFileName = businessPartner?.Photo;
                     applyEntityUpdate = async () =>
                     {
-                        if (client != null)
+                        if (businessPartner != null)
                         {
-                            client.Photo = fileName;
-                            await _clientRepository.UpdateAsync(client);
+                            businessPartner.Photo = fileName;
+                            await _businessPartnerRepository.UpdateAsync(businessPartner);
                         }
                     };
                     break;

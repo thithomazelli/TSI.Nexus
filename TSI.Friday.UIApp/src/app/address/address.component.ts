@@ -5,7 +5,7 @@ import {
   Address,
   ModalService,
   WebApiResponse,
-  Client,
+  BusinessPartner,
 } from '@friday/core';
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { AddressDetailsModalComponent } from './components/address-details-modal/address-details-modal.component';
@@ -18,7 +18,7 @@ import { AddressDetailsModalComponent } from './components/address-details-modal
 })
 export class AddressComponent {
   @Input()
-  parentData?: Client | null = null;
+  parentData?: BusinessPartner | null = null;
 
   private _baseEndPoint = ApiType.Addresses;
 

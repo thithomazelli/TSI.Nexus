@@ -11,6 +11,7 @@ import { PaymentInstallmentsModule } from '../payment-installments/payment-insta
 import { OrdersSharedModule } from './components/orders-shared.module';
 import { ClientsSharedModule } from '../clients/clients-shared.module';
 import { PaymentsSharedModule } from '../payments/payments-shared.module';
+import { OrderProductsModule } from '../order-products/order-products.module';
 
 @NgModule({
   declarations: [OrdersComponent, OrderDetailsPageComponent],
@@ -23,6 +24,7 @@ import { PaymentsSharedModule } from '../payments/payments-shared.module';
     ProductsModule,
     PaymentsSharedModule,
     PaymentInstallmentsModule,
+    OrderProductsModule,
   ],
   exports: [],
 })

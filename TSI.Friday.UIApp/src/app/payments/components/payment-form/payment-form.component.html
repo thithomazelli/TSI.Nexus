@@ -71,10 +71,12 @@
                   "
                 >
                   <mat-option
-                    *ngFor="let client of filteredClients$ | async"
-                    [value]="client.name"
+                    *ngFor="
+                      let businessPartner of filteredBusinessPartners$ | async
+                    "
+                    [value]="businessPartner.name"
                   >
-                    {{ client.name }}
+                    {{ businessPartner.name }}
                   </mat-option>
                 </mat-autocomplete>
               </div>

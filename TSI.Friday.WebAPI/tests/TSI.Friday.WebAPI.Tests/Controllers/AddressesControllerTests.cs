@@ -180,10 +180,10 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task AddressesController_GetAllByClientId_ShouldGetAllAddressesByClient_WhenMethodIsCalled()
+        public async Task AddressesController_GetAllByBusinessPartnerId_ShouldGetAllAddressesByBusinessPartner_WhenMethodIsCalled()
         {
             // Arrange
-            const int clientIdMock = 1;
+            const int businessPartnerIdMock = 1;
             var addressMock = new List<AddressDto>
             {
                 new() {
@@ -196,7 +196,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                     City = "Santo André",
                     Country = "BR",
                     Comments = "Casa",
-                    ClientId = 1
+                    BusinessPartnerId = 1
                 },  
                 new() {
                     Id = 2,
@@ -208,7 +208,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                     City = "Santo André",
                     Country = "BR",
                     Comments = "Casa",
-                    ClientId = 1
+                    BusinessPartnerId = 1
                 },
             };
 
@@ -219,11 +219,11 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Message = $"{addressMock.Count()} registro(s) encontrado(s)."
             };
 
-            _addressServiceMock.Setup(_ => _.FindByClientId(It.IsAny<int>()))
+            _addressServiceMock.Setup(_ => _.FindByBusinessPartnerId(It.IsAny<int>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _addressesController.GetAllByClientId(clientIdMock);
+            var result = await _addressesController.GetAllByBusinessPartnerId(businessPartnerIdMock);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -231,7 +231,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(addressMock, response.Data);
 
-            _addressServiceMock.Verify(_ => _.FindByClientId(It.IsAny<int>()), Times.Once);
+            _addressServiceMock.Verify(_ => _.FindByBusinessPartnerId(It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
@@ -250,7 +250,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 City = "Santo André",
                 Country = "BR",
                 Comments = "Casa",
-                ClientId = 1
+                BusinessPartnerId = 1
             };
 
             var expectedResult = new WebApiResponse<AddressDto>

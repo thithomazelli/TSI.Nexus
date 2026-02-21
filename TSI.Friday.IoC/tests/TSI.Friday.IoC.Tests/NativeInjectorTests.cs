@@ -18,7 +18,7 @@ namespace TSI.Friday.IoC.Tests
 
             // Assert - check registrations without resolving instances
             services.Any(sd => sd.ServiceType == typeof(IAddressService)).Should().BeTrue();
-            services.Any(sd => sd.ServiceType == typeof(IClientService)).Should().BeTrue();
+            services.Any(sd => sd.ServiceType == typeof(IBusinessPartnerService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(ICompanyService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IEmailService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IIndividualService)).Should().BeTrue();
@@ -26,7 +26,10 @@ namespace TSI.Friday.IoC.Tests
             services.Any(sd => sd.ServiceType == typeof(IOrderProductService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IOrderService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IPaymentService)).Should().BeTrue();
-            services.Any(sd => sd.ServiceType == typeof(IPaymentInstallmentService)).Should().BeTrue();
+            services
+                .Any(sd => sd.ServiceType == typeof(IPaymentInstallmentService))
+                .Should()
+                .BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IPhotoService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IProductPhotoService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IProductService)).Should().BeTrue();
@@ -45,7 +48,10 @@ namespace TSI.Friday.IoC.Tests
 
             // Assert
             services.Any(sd => sd.ServiceType == typeof(IRepository<Address>)).Should().BeTrue();
-            services.Any(sd => sd.ServiceType == typeof(IRepository<Client>)).Should().BeTrue();
+            services
+                .Any(sd => sd.ServiceType == typeof(IRepository<BusinessPartner>))
+                .Should()
+                .BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IRepository<Company>)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IRepository<Individual>)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IRepository<Order>)).Should().BeTrue();

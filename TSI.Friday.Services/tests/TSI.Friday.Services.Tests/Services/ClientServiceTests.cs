@@ -11,27 +11,27 @@ using TSI.Friday.IoC;
 
 namespace TSI.Friday.Services.Tests.Services
 {
-    public class ClientServiceTests
+    public class BusinessPartnerServiceTests
     {
-        private readonly ClientService _clientService;
-        private readonly Mock<IRepository<Client>> _repository;
-        private readonly IList<Client> _clientListMock;
+        private readonly BusinessPartnerService _businessPartnerService;
+        private readonly Mock<IRepository<BusinessPartner>> _repository;
+        private readonly IList<BusinessPartner> _businessPartnerListMock;
         private readonly IMapper _mapper;
 
-        public ClientServiceTests()
+        public BusinessPartnerServiceTests()
         {
-            _repository = new Mock<IRepository<Client>>();
+            _repository = new Mock<IRepository<BusinessPartner>>();
 
-            // Configure AutoMapper for tests (map Client -> ClientDto, including derived-type fields)
+            // Configure AutoMapper for tests (map BusinessPartner -> BusinessPartnerDto, including derived-type fields)
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<MappingProfile>();
             });
             _mapper = config.CreateMapper();
 
-            _clientService = new ClientService(_repository.Object, _mapper);
+            _businessPartnerService = new BusinessPartnerService(_repository.Object, _mapper);
 
-            _clientListMock = new List<Client>
+            _businessPartnerListMock = new List<BusinessPartner>
             {
                 new Company
                 {
@@ -43,29 +43,29 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_Remove_ShouldRemoveClientSuccessfully_WhenMethodIsCalledWithAValidObject()
+        public async Task BusinessPartnerService_Remove_ShouldRemoveBusinessPartnerSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var clientMock = new ClientDto
+            var businessPartnerMock = new BusinessPartnerDto
             {
                 Id = 1,
                 Name = "TSI Soluções em Informática",
-                Type = "Física",
+                DocumentType = "Física",
             };
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
-                Data = clientMock,
+                Data = businessPartnerMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {clientMock.Name} removido com sucesso.",
+                Message = $"BusinessPartnere {businessPartnerMock.Name} removido com sucesso.",
             };
 
             _repository
                 .Setup(_ => _.GetByIdAsync(It.IsAny<int>()))
-                .ReturnsAsync(_mapper.Map<Individual>(clientMock));
-            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Client>()));
+                .ReturnsAsync(_mapper.Map<Individual>(businessPartnerMock));
+            _repository.Setup(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()));
 
             // Act
-            var result = await _clientService.Remove(clientMock);
+            var result = await _businessPartnerService.Remove(businessPartnerMock);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
@@ -73,27 +73,33 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             _repository.Verify(_ => _.GetByIdAsync(It.IsAny<int>()), Times.Once);
-            _repository.Verify(_ => _.RemoveAsync(It.IsAny<Client>()), Times.Once);
+            _repository.Verify(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()), Times.Once);
         }
 
         [Fact]
-        public async Task ClientService_Remove_ShouldNotRemoveClientAndReturnsAndError_WhenRepositoryGetsAnError()
+        public async Task BusinessPartnerService_Remove_ShouldNotRemoveBusinessPartnerAndReturnsAndError_WhenRepositoryGetsAnError()
         {
             // Arrange
             var exception = new Exception();
-            var clientMock = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
-            var expectedResult = new WebApiResponse<Client>
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartner>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível remover o Cliente {clientMock.Name} da base de dados. Erro: {exception.Message}",
+                    $"Não foi possível remover o BusinessPartnere {businessPartnerMock.Name} da base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(new Company());
-            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Client>())).ThrowsAsync(exception);
+            _repository
+                .Setup(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()))
+                .ThrowsAsync(exception);
 
             // Act
-            var result = await _clientService.Remove(clientMock);
+            var result = await _businessPartnerService.Remove(businessPartnerMock);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
@@ -101,51 +107,59 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             _repository.Verify(_ => _.GetByIdAsync(It.IsAny<int>()), Times.Once);
-            _repository.Verify(_ => _.RemoveAsync(It.IsAny<Client>()), Times.Once);
+            _repository.Verify(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()), Times.Once);
         }
 
         [Fact]
-        public async Task ClientService_Remove_ShouldNotRemoveClientAndReturnsAndError_WhenClientIsNotFound()
+        public async Task BusinessPartnerService_Remove_ShouldNotRemoveBusinessPartnerAndReturnsAndError_WhenBusinessPartnerIsNotFound()
         {
             // Arrange
-            var clientMock = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = 1,
+                Name = "TSI Soluções em Informática",
+            };
 
-            var exception = new Exception($"Cliente com Id {clientMock.Id} não encontrado.");
-            var expectedResult = new WebApiResponse<Client>
+            var exception = new Exception(
+                $"BusinessPartnere com Id {businessPartnerMock.Id} não encontrado."
+            );
+            var expectedResult = new WebApiResponse<BusinessPartner>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível remover o Cliente {clientMock.Name} da base de dados. Erro: {exception.Message}",
+                    $"Não foi possível remover o BusinessPartnere {businessPartnerMock.Name} da base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ThrowsAsync(exception);
 
             // Act
-            var result = await _clientService.Remove(clientMock);
+            var result = await _businessPartnerService.Remove(businessPartnerMock);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            _repository.Verify(_ => _.RemoveAsync(It.IsAny<Client>()), Times.Never);
+            _repository.Verify(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()), Times.Never);
         }
 
         [Fact]
-        public async Task ClientService_FindAll_ShouldReturnAListOfPeople_WhenDataTableHasRegisters()
+        public async Task BusinessPartnerService_FindAll_ShouldReturnAListOfPeople_WhenDataTableHasRegisters()
         {
             // Arrange
-            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            var expectedResult = new WebApiResponse<IEnumerable<BusinessPartnerDto>>
             {
-                Data = _mapper.Map<IEnumerable<ClientDto>>(_clientListMock),
+                Data = _mapper.Map<IEnumerable<BusinessPartnerDto>>(_businessPartnerListMock),
                 Status = ResponseStatus.Success,
-                Message = $"{_clientListMock.Count} registro(s) encontrado(s).",
+                Message = $"{_businessPartnerListMock.Count} registro(s) encontrado(s).",
             };
 
-            _repository.Setup(_ => _.GetAllAsync(c => c.Addresses)).ReturnsAsync(_clientListMock);
+            _repository
+                .Setup(_ => _.GetAllAsync(c => c.Addresses))
+                .ReturnsAsync(_businessPartnerListMock);
 
             // Act
-            var result = await _clientService.FindAll();
+            var result = await _businessPartnerService.FindAll();
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
@@ -156,22 +170,22 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_FindAll_ShouldReturnAnEmptyData_WhenDataTableHasNoRegisters()
+        public async Task BusinessPartnerService_FindAll_ShouldReturnAnEmptyData_WhenDataTableHasNoRegisters()
         {
             // Arrange
-            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            var expectedResult = new WebApiResponse<IEnumerable<BusinessPartnerDto>>
             {
-                Data = new List<ClientDto>(),
+                Data = new List<BusinessPartnerDto>(),
                 Status = ResponseStatus.Success,
                 Message = $"{0} registro(s) encontrado(s).",
             };
 
             _repository
                 .Setup(_ => _.GetAllAsync(c => c.Addresses))
-                .ReturnsAsync(new List<Client>());
+                .ReturnsAsync(new List<BusinessPartner>());
 
             // Act
-            var result = await _clientService.FindAll();
+            var result = await _businessPartnerService.FindAll();
 
             // Assert
             Assert.Equal(expectedResult.Data, result.Data);
@@ -183,21 +197,21 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_FindAll_ShouldReturnAnEmptyListAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task BusinessPartnerService_FindAll_ShouldReturnAnEmptyListAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            var expectedResult = new WebApiResponse<IEnumerable<BusinessPartnerDto>>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetAllAsync(c => c.Addresses)).ThrowsAsync(exception);
 
             // Act
-            var result = await _clientService.FindAll();
+            var result = await _businessPartnerService.FindAll();
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -208,22 +222,24 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_FindById_ShouldReturnAClientSuccessfully_WhenIdIsValid()
+        public async Task BusinessPartnerService_FindById_ShouldReturnABusinessPartnerSuccessfully_WhenIdIsValid()
         {
             // Arrange
             const int idMock = 1;
-            var clientMock = _clientListMock.FirstOrDefault(_ => idMock.Equals(_.Id));
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerMock = _businessPartnerListMock.FirstOrDefault(_ =>
+                idMock.Equals(_.Id)
+            );
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
-                Data = _mapper.Map<ClientDto>(clientMock),
+                Data = _mapper.Map<BusinessPartnerDto>(businessPartnerMock),
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {clientMock.Name} encontrado com sucesso",
+                Message = $"BusinessPartnere {businessPartnerMock.Name} encontrado com sucesso",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(clientMock);
+            _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(businessPartnerMock);
 
             // Act
-            var result = await _clientService.FindById(idMock);
+            var result = await _businessPartnerService.FindById(idMock);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
@@ -234,21 +250,21 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenIdIsInvalid()
+        public async Task BusinessPartnerService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenIdIsInvalid()
         {
             // Arrange
             const int idMock = 10;
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum Cliente com o ID {idMock} foi encontrado",
+                Message = $"Nenhum BusinessPartnere com o ID {idMock} foi encontrado",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(value: null);
 
             // Act
-            var result = await _clientService.FindById(idMock);
+            var result = await _businessPartnerService.FindById(idMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -260,22 +276,22 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task BusinessPartnerService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             const int idMock = 1;
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(idMock)).ThrowsAsync(exception);
 
             // Act
-            var result = await _clientService.FindById(idMock);
+            var result = await _businessPartnerService.FindById(idMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -286,52 +302,58 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_FindByEmail_ShouldReturnALisfOfClientsSuccessfully_WhenEmailIsValid()
+        public async Task BusinessPartnerService_FindByEmail_ShouldReturnALisfOfBusinessPartnersSuccessfully_WhenEmailIsValid()
         {
             // Arrange
             const string emailMock = "thiago.thomazelli@tsi.com.br";
-            var clientEntity = _clientListMock.FirstOrDefault(_ => emailMock.Equals(_.Email));
-            var expectedDto = _mapper.Map<ClientDto>(clientEntity);
-            var expectedResult = new WebApiResponse<ClientDto>
+            var businessPartnerEntity = _businessPartnerListMock.FirstOrDefault(_ =>
+                emailMock.Equals(_.Email)
+            );
+            var expectedDto = _mapper.Map<BusinessPartnerDto>(businessPartnerEntity);
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = expectedDto,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {expectedDto.Name} encontrado com sucesso.",
+                Message = $"BusinessPartnere {expectedDto.Name} encontrado com sucesso.",
             };
 
             _repository
-                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()))
-                .ReturnsAsync(clientEntity);
+                .Setup(_ =>
+                    _.FirstOrDefaultAsync(It.IsAny<Expression<Func<BusinessPartner, bool>>>())
+                )
+                .ReturnsAsync(businessPartnerEntity);
 
             // Act
-            var result = await _clientService.FindByEmail(emailMock);
+            var result = await _businessPartnerService.FindByEmail(emailMock);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
             _repository.Verify(
-                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()),
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<BusinessPartner, bool>>>()),
                 Times.Once
             );
         }
 
         [Fact]
-        public async Task ClientService_FindByEmail_ShouldReturnAnEmptyData_WhenEmailIsNotFound()
+        public async Task BusinessPartnerService_FindByEmail_ShouldReturnAnEmptyData_WhenEmailIsNotFound()
         {
             // Arrange
             const string emailMock = "thiago@tsi.com";
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum Cliente com o E-mail {emailMock} foi encontrado",
+                Message = $"Nenhum BusinessPartnere com o E-mail {emailMock} foi encontrado",
             };
 
             _repository
-                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()))
+                .Setup(_ =>
+                    _.FirstOrDefaultAsync(It.IsAny<Expression<Func<BusinessPartner, bool>>>())
+                )
                 .ReturnsAsync(null as Company);
 
             // Act
-            var result = await _clientService.FindByEmail(emailMock);
+            var result = await _businessPartnerService.FindByEmail(emailMock);
 
             // Assert
             Assert.Equal(expectedResult.Data, result.Data);
@@ -340,30 +362,32 @@ namespace TSI.Friday.Services.Tests.Services
 
             expectedResult.Should().BeEquivalentTo(result);
             _repository.Verify(
-                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()),
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<BusinessPartner, bool>>>()),
                 Times.Once
             );
         }
 
         [Fact]
-        public async Task ClientService_FindByEmail_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task BusinessPartnerService_FindByEmail_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
             const string emailMock = "thiago@tsi.com";
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
+                    $"Não foi possível acessar os registros de BusinessPartneres na base de dados. Erro: {exception.Message}",
             };
 
             _repository
-                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()))
+                .Setup(_ =>
+                    _.FirstOrDefaultAsync(It.IsAny<Expression<Func<BusinessPartner, bool>>>())
+                )
                 .ThrowsAsync(exception);
 
             // Act
-            var result = await _clientService.FindByEmail(emailMock);
+            var result = await _businessPartnerService.FindByEmail(emailMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
@@ -371,7 +395,7 @@ namespace TSI.Friday.Services.Tests.Services
 
             expectedResult.Should().BeEquivalentTo(result);
             _repository.Verify(
-                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()),
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<BusinessPartner, bool>>>()),
                 Times.Once
             );
         }

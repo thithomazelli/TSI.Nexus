@@ -32,7 +32,7 @@ namespace TSI.Friday.IoC
             #region Services
 
             services.AddScoped<IAddressService, AddressService>();
-            services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IIndividualService, IndividualService>();
@@ -52,7 +52,7 @@ namespace TSI.Friday.IoC
             #region Repositories
 
             services.AddScoped<IRepository<Address>, Repository<Address>>();
-            services.AddScoped<IRepository<Client>, Repository<Client>>();
+            services.AddScoped<IRepository<BusinessPartner>, Repository<BusinessPartner>>();
             services.AddScoped<IRepository<Company>, Repository<Company>>();
             services.AddScoped<IRepository<Individual>, Repository<Individual>>();
             services.AddScoped<IRepository<Order>, Repository<Order>>();

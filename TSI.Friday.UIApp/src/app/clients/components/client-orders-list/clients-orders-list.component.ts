@@ -4,7 +4,7 @@ import {
   ApiType,
   ModalService,
   WebApiResponse,
-  Client,
+  BusinessPartner,
   Order,
 } from '@friday/core';
 import {
@@ -22,7 +22,7 @@ import { OrderDetailsModalComponent } from '../../../orders/components/order-det
 })
 export class ClientsOrdersListComponent {
   @Input()
-  parentData?: Client | null = null;
+  parentData?: BusinessPartner | null = null;
 
   private _baseEndPoint = ApiType.Orders;
 

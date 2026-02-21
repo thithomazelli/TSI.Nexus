@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
 {
-    public class ClientDto
+    public class BusinessPartnerDto
     {
         public int Id { get; set; }
 
@@ -17,7 +18,9 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public string Photo { get; set; }
 
-        public string Type { get; set; }
+        public string DocumentType { get; set; }
+
+        public BusinessPartnerType Type { get; set; }
 
         public string SocialSecurityCard { get; set; }
 

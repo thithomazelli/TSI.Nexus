@@ -23,7 +23,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task IndividualsController_Add_ShouldAddIndividualSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var individualMock = new ClientDto
+            var individualMock = new BusinessPartnerDto
             {
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
@@ -32,15 +32,15 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Birthday = DateTime.Now,
             };
 
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = individualMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {individualMock.Name} cadastrado com sucesso.",
+                Message = $"BusinessPartnere {individualMock.Name} cadastrado com sucesso.",
             };
 
             _individualServiceMock
-                .Setup(_ => _.Add(It.IsAny<ClientDto>()))
+                .Setup(_ => _.Add(It.IsAny<BusinessPartnerDto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -48,22 +48,22 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<WebApiResponse<ClientDto>>(okResult.Value);
+            var response = Assert.IsType<WebApiResponse<BusinessPartnerDto>>(okResult.Value);
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(individualMock, response.Data);
 
-            _individualServiceMock.Verify(_ => _.Add(It.IsAny<ClientDto>()), Times.Once);
+            _individualServiceMock.Verify(_ => _.Add(It.IsAny<BusinessPartnerDto>()), Times.Once);
         }
 
         [Fact]
         public async Task IndividualsController_Add_ShouldNotAddIndividualSuccessfully_WhenMethodIsCalledWithAnInvalidObject()
         {
             // Arrange
-            var individualMock = new ClientDto();
+            var individualMock = new BusinessPartnerDto();
 
             _individualController.ModelState.AddModelError("Name", "Name is required");
 
-            _individualServiceMock.Setup(_ => _.Add(It.IsAny<ClientDto>()));
+            _individualServiceMock.Setup(_ => _.Add(It.IsAny<BusinessPartnerDto>()));
 
             // Act
             var result = await _individualController.Add(individualMock);
@@ -73,14 +73,14 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var modelState = Assert.IsType<SerializableError>(badRequest.Value);
             Assert.True(modelState.ContainsKey("Name"));
 
-            _individualServiceMock.Verify(_ => _.Add(It.IsAny<ClientDto>()), Times.Never);
+            _individualServiceMock.Verify(_ => _.Add(It.IsAny<BusinessPartnerDto>()), Times.Never);
         }
 
         [Fact]
         public async Task IndividualsController_Update_ShouldUpdateIndividualSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var individualMock = new ClientDto
+            var individualMock = new BusinessPartnerDto
             {
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
@@ -89,15 +89,15 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Birthday = DateTime.Now,
             };
 
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = individualMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {individualMock.Name} atualizado com sucesso.",
+                Message = $"BusinessPartnere {individualMock.Name} atualizado com sucesso.",
             };
 
             _individualServiceMock
-                .Setup(_ => _.Update(It.IsAny<ClientDto>()))
+                .Setup(_ => _.Update(It.IsAny<BusinessPartnerDto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -105,22 +105,22 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<WebApiResponse<ClientDto>>(okResult.Value);
+            var response = Assert.IsType<WebApiResponse<BusinessPartnerDto>>(okResult.Value);
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(individualMock, response.Data);
 
-            _individualServiceMock.Verify(_ => _.Update(It.IsAny<ClientDto>()), Times.Once);
+            _individualServiceMock.Verify(_ => _.Update(It.IsAny<BusinessPartnerDto>()), Times.Once);
         }
 
         [Fact]
         public async Task IndividualsController_Update_ShouldNotUpdateIndividualSuccessfully_WhenMethodIsCalledWithAnInvalidObject()
         {
             // Arrange
-            var individualMock = new ClientDto();
+            var individualMock = new BusinessPartnerDto();
 
             _individualController.ModelState.AddModelError("Name", "Name is duplicated");
 
-            _individualServiceMock.Setup(_ => _.Update(It.IsAny<ClientDto>()));
+            _individualServiceMock.Setup(_ => _.Update(It.IsAny<BusinessPartnerDto>()));
 
             // Act
             var result = await _individualController.Update(individualMock);
@@ -130,7 +130,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var modelState = Assert.IsType<SerializableError>(badRequest.Value);
             Assert.True(modelState.ContainsKey("Name"));
 
-            _individualServiceMock.Verify(_ => _.Update(It.IsAny<ClientDto>()), Times.Never);
+            _individualServiceMock.Verify(_ => _.Update(It.IsAny<BusinessPartnerDto>()), Times.Never);
         }
 
         [Fact]
@@ -138,7 +138,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         {
             // Arrange
             const string socialSecurityCardMock = "111.222.333-44";
-            var individualMock = new ClientDto
+            var individualMock = new BusinessPartnerDto
             {
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
@@ -147,11 +147,11 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Birthday = DateTime.Now,
             };
 
-            var expectedResult = new WebApiResponse<ClientDto>
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = individualMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {individualMock.Name} encontrado com sucesso.",
+                Message = $"BusinessPartnere {individualMock.Name} encontrado com sucesso.",
             };
 
             _individualServiceMock
@@ -165,7 +165,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<WebApiResponse<ClientDto>>(okResult.Value);
+            var response = Assert.IsType<WebApiResponse<BusinessPartnerDto>>(okResult.Value);
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(individualMock, response.Data);
 

@@ -9,9 +9,9 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public string OrderNumber { get; set; }
 
-        public int ClientId { get; set; }
+        public int BusinessPartnerId { get; set; }
 
-        public string ClientName { get; set; }
+        public string BusinessPartnerName { get; set; }
 
         public OrderStatus Status { get; set; }
 
@@ -22,6 +22,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public decimal Price { get; set; }
 
         public decimal TotalPrice { get; set; }
+
+        public Payment Payment { get; set; }
 
         public ICollection<OrderProductDto> OrderProducts { get; set; } = [];
     }

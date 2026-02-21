@@ -184,15 +184,15 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByClientId(
-            int? clientId
+        public async Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByBusinessPartnerId(
+            int? businessPartnerId
         )
         {
             WebApiResponse<IEnumerable<PaymentInstallmentDto>> result = new();
 
             try
             {
-                var payments = await _repository.QueryAsync(p => p.ClientId == clientId);
+                var payments = await _repository.QueryAsync(p => p.BusinessPartnerId == businessPartnerId);
                 result.Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -201,7 +201,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Parcelas do Pagamento baseado no Cliente {clientId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Parcelas do Pagamento baseado no BusinessPartnere {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;

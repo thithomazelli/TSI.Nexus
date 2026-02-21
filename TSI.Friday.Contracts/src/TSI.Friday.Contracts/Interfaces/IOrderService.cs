@@ -49,11 +49,11 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<OrderDto>> FindByOrderNumber(string orderNumber);
 
         /// <summary>
-        /// Method responsible to get a list of Orders based on the ClientID received as parameter.
+        /// Method responsible to get a list of Orders based on the BusinessPartnerID received as parameter.
         /// </summary>
-        /// <param name="clientId">The ID to be used on the search.</param>
-        /// <returns>List of order according to the ClientID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<OrderDto>>> FindByClientId(int? clientId);
+        /// <param name="businessPartnerId">The ID to be used on the search.</param>
+        /// <returns>List of order according to the BusinessPartnerID defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<OrderDto>>> FindByBusinessPartnerId(int? businessPartnerId);
 
         /// <summary>
         /// Method responsible to get a list of Orders based on the ProductID received as parameter.

@@ -81,10 +81,10 @@ namespace TSI.Friday.WebAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("GetAllByClientId/{clientId}")]
-        public async Task<IActionResult> GetAllByClientId(int? clientId)
+        [Route("GetAllByBusinessPartnerId/{businessPartnerId}")]
+        public async Task<IActionResult> GetAllByBusinessPartnerId(int? businessPartnerId)
         {
-            var webApiResponse = await _addressService.FindByClientId(clientId);
+            var webApiResponse = await _addressService.FindByBusinessPartnerId(businessPartnerId);
             return Ok(webApiResponse);
         }
 

@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import {
   ApiService,
   ApiType,
-  Client,
+  BusinessPartner,
   ModalService,
   WebApiResponse,
 } from '@friday/core';
@@ -22,7 +22,7 @@ import { ClientDetailsModalComponent } from './components/client-details-modal/c
 export class ClientsComponent {
   private _baseEndPoint = ApiType.Clients;
 
-  rowData: Client[] = [];
+  rowData: BusinessPartner[] = [];
   columnDefs: ColDef[] = [
     {
       field: 'id',
@@ -134,18 +134,20 @@ export class ClientsComponent {
   ) {}
 
   ngOnInit(): void {
-    this.getClients();
+    this.getBusinessPartners();
   }
 
-  refreshClients(): void {
-    this.getClients();
+  refreshBusinessPartners(): void {
+    this.getBusinessPartners();
   }
 
-  deleteClient(client: Client): void {
+  deleteBusinessPartner(businessPartner: BusinessPartner): void {
     this.apiService
-      .delete<WebApiResponse<Client>>(`${this._baseEndPoint}/remove`, client)
-      .subscribe((response: WebApiResponse<Client>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== client.id);
+      .delete<
+        WebApiResponse<BusinessPartner>
+      >(`${this._baseEndPoint}/remove`, businessPartner)
+      .subscribe((response: WebApiResponse<BusinessPartner>) => {
+        this.rowData = this.rowData.filter((p) => p.id !== businessPartner.id);
         this.modalService.showSweetNotification(
           '',
           response.message,
@@ -161,16 +163,16 @@ export class ClientsComponent {
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
-        this.refreshClients();
+        this.refreshBusinessPartners();
         ref.close();
       });
     }
   }
 
-  private getClients(): void {
+  private getBusinessPartners(): void {
     this.apiService
-      .get<WebApiResponse<Client[]>>(`${this._baseEndPoint}/getAll`)
-      .subscribe((response: WebApiResponse<Client[]>) => {
+      .get<WebApiResponse<BusinessPartner[]>>(`${this._baseEndPoint}/getAll`)
+      .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
       });
   }

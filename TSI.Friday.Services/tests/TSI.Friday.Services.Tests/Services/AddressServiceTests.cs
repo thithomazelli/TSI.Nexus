@@ -1,7 +1,7 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using FluentAssertions;
 using Moq;
-using System.Linq.Expressions;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -20,7 +20,7 @@ namespace TSI.Friday.Services.Tests.Services
 
         public AddressServiceTests()
         {
-            // Configure AutoMapper for tests (map Client -> ClientDto, including derived-type fields)
+            // Configure AutoMapper for tests (map BusinessPartner -> BusinessPartnerDto, including derived-type fields)
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<MappingProfile>();
@@ -34,7 +34,7 @@ namespace TSI.Friday.Services.Tests.Services
                 new AddressDto
                 {
                     Id = 1,
-                    ClientId = 1,
+                    BusinessPartnerId = 1,
                     Type = AddressType.Home,
                     Country = "Brasil",
                     City = "Santo André",
@@ -48,7 +48,7 @@ namespace TSI.Friday.Services.Tests.Services
                 new AddressDto
                 {
                     Id = 2,
-                    ClientId = 1,
+                    BusinessPartnerId = 1,
                     Type = AddressType.Office,
                     Country = "Brasil",
                     City = "Santo André",
@@ -56,8 +56,8 @@ namespace TSI.Friday.Services.Tests.Services
                     ZipCode = "09260-290",
                     Street = "Rua Osório de Almeida",
                     Number = 950,
-                    Comments = ""
-                }
+                    Comments = "",
+                },
             };
         }
 
@@ -70,7 +70,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = "Endereço cadastrado com sucesso."
+                Message = "Endereço cadastrado com sucesso.",
             };
 
             _repository.Setup(_ => _.AddAsync(It.IsAny<Address>()));
@@ -97,11 +97,11 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível cadastrar o Endereço na base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível cadastrar o Endereço na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.AddAsync(It.IsAny<Address>()))
-                .ThrowsAsync(exception);
+            _repository.Setup(_ => _.AddAsync(It.IsAny<Address>())).ThrowsAsync(exception);
 
             // Act
             var result = await _addressService.Add(addressMock);
@@ -124,7 +124,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = "Endereço atualizado com sucesso."
+                Message = "Endereço atualizado com sucesso.",
             };
 
             _repository.Setup(_ => _.UpdateAsync(It.IsAny<Address>()));
@@ -151,11 +151,11 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível atualizar o Endereço na base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível atualizar o Endereço na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.UpdateAsync(It.IsAny<Address>()))
-                .ThrowsAsync(exception);
+            _repository.Setup(_ => _.UpdateAsync(It.IsAny<Address>())).ThrowsAsync(exception);
 
             // Act
             var result = await _addressService.Update(addressMock);
@@ -178,7 +178,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = "Endereço removido com sucesso."
+                Message = "Endereço removido com sucesso.",
             };
 
             _repository.Setup(_ => _.RemoveAsync(It.IsAny<Address>()));
@@ -205,11 +205,11 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível remover o Endereço na base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível remover o Endereço na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Address>()))
-                .ThrowsAsync(exception);
+            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Address>())).ThrowsAsync(exception);
 
             // Act
             var result = await _addressService.Remove(addressMock);
@@ -228,15 +228,18 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const int idMock = 1;
-            var addressMock = _addressListMock.FirstOrDefault(_ => idMock.Equals(_.ClientId));
+            var addressMock = _addressListMock.FirstOrDefault(_ =>
+                idMock.Equals(_.BusinessPartnerId)
+            );
             var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = "Endereço foi encontrado com sucesso"
+                Message = "Endereço foi encontrado com sucesso",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock))
+            _repository
+                .Setup(_ => _.GetByIdAsync(idMock))
                 .ReturnsAsync(_mapper.Map<Address>(addressMock));
 
             // Act
@@ -259,11 +262,10 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum Endereço com o ID {idMock} foi encontrado"
+                Message = $"Nenhum Endereço com o ID {idMock} foi encontrado",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock))
-                .ReturnsAsync(value: null);
+            _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(value: null);
 
             // Act
             var result = await _addressService.FindById(idMock);
@@ -286,11 +288,11 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<AddressDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock))
-                .ThrowsAsync(exception);
+            _repository.Setup(_ => _.GetByIdAsync(idMock)).ThrowsAsync(exception);
 
             // Act
             var result = await _addressService.FindById(idMock);
@@ -305,48 +307,53 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task AddressService_FindByClientId_ShouldReturnALisfOfAddressesSuccessfully_WhenClientIdIsValid()
+        public async Task AddressService_FindByBusinessPartnerId_ShouldReturnALisfOfAddressesSuccessfully_WhenBusinessPartnerIdIsValid()
         {
             // Arrange
-            const int clientIdMock = 1;
+            const int businessPartnerIdMock = 1;
             var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
                 Data = _addressListMock,
                 Status = ResponseStatus.Success,
-                Message = $"{_addressListMock.Count} registro(s) encontrado(s)."
+                Message = $"{_addressListMock.Count} registro(s) encontrado(s).",
             };
 
-            _repository.Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
                 .ReturnsAsync(_mapper.Map<IList<Address>>(_addressListMock));
 
             // Act
-            var result = await _addressService.FindByClientId(clientIdMock);
+            var result = await _addressService.FindByBusinessPartnerId(businessPartnerIdMock);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            _repository.Verify(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
+            _repository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()),
+                Times.Once
+            );
         }
 
         [Fact]
-        public async Task AddressService_FindByClientId_ShouldReturnAnEmptyData_WhenClientIdIsInvalid()
+        public async Task AddressService_FindByBusinessPartnerId_ShouldReturnAnEmptyData_WhenBusinessPartnerIdIsInvalid()
         {
             // Arrange
-            const int clientIdMock = 10;
+            const int businessPartnerIdMock = 10;
             var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
                 Data = new List<AddressDto>(),
                 Status = ResponseStatus.Success,
-                Message = $"{0} registro(s) encontrado(s)."
+                Message = $"{0} registro(s) encontrado(s).",
             };
 
-            _repository.Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
                 .ReturnsAsync(new List<Address>());
 
             // Act
-            var result = await _addressService.FindByClientId(clientIdMock);
+            var result = await _addressService.FindByBusinessPartnerId(businessPartnerIdMock);
 
             // Assert
             Assert.Equal(expectedResult.Data, result.Data);
@@ -354,26 +361,31 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
+            _repository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()),
+                Times.Once
+            );
         }
 
         [Fact]
-        public async Task AddressService_FindByClientId_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task AddressService_FindByBusinessPartnerId_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
-            const int clientIdMock = 1;
+            const int businessPartnerIdMock = 1;
             var exception = new Exception();
             var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
                 .ThrowsAsync(exception);
 
             // Act
-            var result = await _addressService.FindByClientId(clientIdMock);
+            var result = await _addressService.FindByBusinessPartnerId(businessPartnerIdMock);
 
             // Assert
             Assert.Null(result.Data);
@@ -381,8 +393,10 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()), Times.Once);
+            _repository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()),
+                Times.Once
+            );
         }
-
     }
 }

@@ -167,7 +167,7 @@ namespace TSI.Friday.Services
             try
             {
                 var payments = await _repository.GetAllAsync(
-                    c => c.Client,
+                    c => c.BusinessPartner,
                     o => o.Order,
                     p => p.Installments
                 );
@@ -238,14 +238,16 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByClientId(int? clientId)
+        public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByBusinessPartnerId(
+            int? businessPartnerId
+        )
         {
             WebApiResponse<IEnumerable<PaymentDto>> result = new();
 
             try
             {
                 var payments = await _repository.QueryAsync(
-                    p => p.ClientId == clientId,
+                    p => p.BusinessPartnerId == businessPartnerId,
                     p => p.Installments
                 );
                 var paymentDtos = payments
@@ -268,7 +270,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Pagamentos do Cliente {clientId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Pagamentos do BusinessPartnere {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -303,7 +305,7 @@ namespace TSI.Friday.Services
                             ? paymentDto.Price / paymentDto.TotalOfInstallments
                             : paymentDto.Price,
                     OrderId = paymentDto.OrderId,
-                    ClientId = paymentDto.ClientId,
+                    BusinessPartnerId = paymentDto.BusinessPartnerId,
                 };
 
                 if (

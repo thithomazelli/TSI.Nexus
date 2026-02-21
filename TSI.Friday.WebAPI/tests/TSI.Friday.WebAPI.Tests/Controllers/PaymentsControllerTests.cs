@@ -22,17 +22,17 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             _paymentsMock = new List<PaymentDto>
             {
-                new PaymentDto { Id =1, Description = "Pagamento1", ClientId =1, OrderId =1 },
-                new PaymentDto { Id =2, Description = "Pagamento2", ClientId =2, OrderId =1 }
+                new PaymentDto { Id =1, Description = "Pagamento1", BusinessPartnerId =1, OrderId =1 },
+                new PaymentDto { Id =2, Description = "Pagamento2", BusinessPartnerId =2, OrderId =1 }
             };
         }
 
         [Fact]
-        public async Task GetByClientId_ShouldReturnOkWithPayments_WhenServiceReturnsPayments()
+        public async Task GetByBusinessPartnerId_ShouldReturnOkWithPayments_WhenServiceReturnsPayments()
         {
             // Arrange
-            const int clientId =1;
-            var payments = _paymentsMock.Where(p => p.ClientId == clientId).ToList();
+            const int businessPartnerId =1;
+            var payments = _paymentsMock.Where(p => p.BusinessPartnerId == businessPartnerId).ToList();
             var expected = new WebApiResponse<IEnumerable<PaymentDto>>
             {
                 Data = payments,
@@ -40,16 +40,16 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Message = $"{payments.Count} registro(s) encontrado(s)."
             };
 
-            _serviceMock.Setup(s => s.FindByClientId(clientId)).ReturnsAsync(expected);
+            _serviceMock.Setup(s => s.FindByBusinessPartnerId(businessPartnerId)).ReturnsAsync(expected);
 
             // Act
-            var result = await _controller.GetByClientId(clientId);
+            var result = await _controller.GetByBusinessPartnerId(businessPartnerId);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<WebApiResponse<IEnumerable<PaymentDto>>>(ok.Value);
             response.Should().BeEquivalentTo(expected);
-            _serviceMock.Verify(s => s.FindByClientId(clientId), Times.Once);
+            _serviceMock.Verify(s => s.FindByBusinessPartnerId(businessPartnerId), Times.Once);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task Add_ShouldReturnOkWithCreatedPayment_WhenModelIsValid()
         {
             // Arrange
-            var payment = new PaymentDto { Id =3, Description = "Pagamento3", ClientId =3, OrderId =2 };
+            var payment = new PaymentDto { Id =3, Description = "Pagamento3", BusinessPartnerId =3, OrderId =2 };
             var expected = new WebApiResponse<PaymentDto>
             {
                 Data = payment,

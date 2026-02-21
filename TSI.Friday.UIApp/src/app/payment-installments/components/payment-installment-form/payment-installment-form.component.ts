@@ -11,7 +11,7 @@ import {
 import { FormBuilder, Validators } from '@angular/forms';
 
 import {
-  Client,
+  BusinessPartner,
   CurrencyService,
   FormBaseComponent,
   Order,
@@ -68,8 +68,8 @@ export class PaymentInstallmentFormComponent
     { label: 'Cartão de Crédito', value: PaymentMethod.CreditCard },
   ];
 
-  clients$!: Observable<Client[]>;
-  filteredClients$!: Observable<Client[]>;
+  businessPartners$!: Observable<BusinessPartner[]>;
+  filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
   orders$!: Observable<Order[]>;
   filteredOrders$!: Observable<Order[]>;

@@ -48,7 +48,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var prefix = BuildPrefixFromClientName(orderDto.ClientName);
+                var prefix = BuildPrefixFromBusinessPartnerName(orderDto.BusinessPartnerName);
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
 
@@ -169,7 +169,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orders = await _repository.GetAllAsync(o => o.Client);
+                var orders = await _repository.GetAllAsync(o => o.BusinessPartner);
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -191,7 +191,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var order = await _repository.GetByIdAsync(id, o => o.Client);
+                var order = await _repository.GetByIdAsync(id, o => o.BusinessPartner);
 
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;
@@ -219,7 +219,7 @@ namespace TSI.Friday.Services
             {
                 var order = await _repository.FirstOrDefaultAsync(
                     o => o.OrderNumber == orderNumber,
-                    o => o.Client
+                    o => o.BusinessPartner
                 );
 
                 result.Data = _mapper.Map<OrderDto>(order);
@@ -240,13 +240,17 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByClientId(int? clientId)
+        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByBusinessPartnerId(
+            int? businessPartnerId
+        )
         {
             WebApiResponse<IEnumerable<OrderDto>> result = new();
 
             try
             {
-                var orders = await _repository.QueryAsync(o => o.ClientId == clientId);
+                var orders = await _repository.QueryAsync(o =>
+                    o.BusinessPartnerId == businessPartnerId
+                );
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -255,7 +259,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Pedidos do Cliente {clientId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Pedidos do BusinessPartnere {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -289,13 +293,13 @@ namespace TSI.Friday.Services
 
         #region Private methods
 
-        private static string BuildPrefixFromClientName(string? clientName)
+        private static string BuildPrefixFromBusinessPartnerName(string? businessPartnerName)
         {
             // Remove non-letter characters and whitespace, keep only A-Z letters
             var cleaned = string.Empty;
-            if (!string.IsNullOrWhiteSpace(clientName))
+            if (!string.IsNullOrWhiteSpace(businessPartnerName))
             {
-                cleaned = Regex.Replace(clientName.Normalize(), "[^A-Za-z]", string.Empty);
+                cleaned = Regex.Replace(businessPartnerName.Normalize(), "[^A-Za-z]", string.Empty);
                 cleaned = cleaned.ToUpperInvariant();
             }
 

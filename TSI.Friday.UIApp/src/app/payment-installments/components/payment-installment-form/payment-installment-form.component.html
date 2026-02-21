@@ -1,7 +1,7 @@
 <div class="payment-form-wrapper">
   <form [formGroup]="form" (ngSubmit)="submit()">
     <!-- First line: Type and Method -->
-    <div class="row g-2 mb-1">
+    <div class="row g-1 mb-1">
       <div class="col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill select-floating">
@@ -49,7 +49,7 @@
 
     <!-- Second line: clientId and orderId -->
     @if (showClientAndOrder) {
-      <div class="row g-2 mb-1">
+      <div class="row g-1 mb-1">
         <div class="col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill">
@@ -84,7 +84,7 @@
     }
 
     <!-- Third line: status and date -->
-    <div class="row g-2 mb-1">
+    <div class="row g-1 mb-1">
       <div class="col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill select-floating">
@@ -107,7 +107,7 @@
       </div>
     </div>
 
-    <div class="row g-2 mb-1">
+    <div class="row g-1 mb-1">
       <div class="col-6">
         <app-date-field
           formControlName="date"
@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <div class="row g-2 mb-1">
+    <div class="row g-1 mb-1">
       <div class="col-12">
         <div class="input-group">
           <div class="form-floating flex-fill">
@@ -134,7 +134,7 @@
       </div>
     </div>
 
-    <div class="row g-2 mb-1">
+    <div class="row g-1 mb-1">
       <div class="col-md-6">
         <div class="input-group">
           <div class="form-floating flex-grow-1">
@@ -155,7 +155,7 @@
     </div>
 
     @if (isInstallment) {
-      <div class="row g-2 mb-1">
+      <div class="row g-1 mb-1">
         <div class="col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill">

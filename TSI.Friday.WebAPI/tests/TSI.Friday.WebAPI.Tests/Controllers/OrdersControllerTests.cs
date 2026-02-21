@@ -22,8 +22,8 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             _ordersMock = new List<OrderDto>
             {
-                new OrderDto { Id =1, OrderNumber = "ORD-001", Description = "Pedido1", ClientId =1 },
-                new OrderDto { Id =2, OrderNumber = "ORD-002", Description = "Pedido2", ClientId =1 }
+                new OrderDto { Id =1, OrderNumber = "ORD-001", Description = "Pedido1", BusinessPartnerId =1 },
+                new OrderDto { Id =2, OrderNumber = "ORD-002", Description = "Pedido2", BusinessPartnerId =1 }
             };
         }
 
@@ -79,7 +79,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task Add_ShouldReturnOkWithCreatedOrder_WhenModelIsValid()
         {
             // Arrange
-            var order = new OrderDto { Id =3, OrderNumber = "ORD-003", Description = "Novo Pedido", ClientId =2 };
+            var order = new OrderDto { Id =3, OrderNumber = "ORD-003", Description = "Novo Pedido", BusinessPartnerId =2 };
             var expected = new WebApiResponse<OrderDto>
             {
                 Data = order,

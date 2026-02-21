@@ -12,8 +12,8 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 
 import {
-  Client,
-  ClientService,
+  BusinessPartner,
+  BusinessPartnerService,
   CurrencyService,
   FormBaseComponent,
   ModalService,
@@ -94,8 +94,8 @@ export class PaymentFormComponent
   private typeSub?: Subscription;
   private installmentsSub?: Subscription;
 
-  clients$!: Observable<Client[]>;
-  filteredClients$!: Observable<Client[]>;
+  businessPartners$!: Observable<BusinessPartner[]>;
+  filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
   orders$!: Observable<Order[]>;
   filteredOrders$!: Observable<Order[]>;
@@ -103,7 +103,7 @@ export class PaymentFormComponent
   constructor(
     private formBuilder: FormBuilder,
     private currencyService: CurrencyService,
-    private clientService: ClientService,
+    private businessPartnerService: BusinessPartnerService,
     private orderService: OrderService,
     private modalService: ModalService,
   ) {
@@ -171,7 +171,8 @@ export class PaymentFormComponent
         return;
       }
       // Verifica se o nome existe na lista de clientes
-      const clients = (this.clients$ as any).source.value as Client[];
+      const clients = (this.businessPartners$ as any).source
+        .value as BusinessPartner[];
       const found = clients.find((c) => c.name === clientName);
       if (found) {
         this.form.get('clientId')!.setValue(found.id);
@@ -192,9 +193,11 @@ export class PaymentFormComponent
               });
             clientFormRef
               .afterClosed()
-              .subscribe((result: Client | undefined) => {
+              .subscribe((result: BusinessPartner | undefined) => {
                 if (result) {
-                  this.clientService.addOrUpdateClient(result);
+                  this.businessPartnerService.addOrUpdateBusinessPartner(
+                    result,
+                  );
                   this.form.get('clientName')!.setValue(result.name);
                   this.form.get('clientId')!.setValue(result.id);
                 } else {
@@ -336,24 +339,27 @@ export class PaymentFormComponent
   }
 
   private clientNameAutoComplete() {
-    this.clients$ = this.clientService.getClients();
-    this.filteredClients$ = this.form.get('clientName')!.valueChanges.pipe(
-      startWith(''),
-      map((value: string | Client) => {
-        let filterValue = '';
-        if (typeof value === 'string') {
-          filterValue = value.toLowerCase();
-        } else if (value && typeof value === 'object') {
-          filterValue = value.name?.toLowerCase() || '';
-        }
-        if (!filterValue) {
-          return [];
-        }
-        return (this.clients$ as any).source.value.filter((client: Client) =>
-          (client.name || '').toLowerCase().includes(filterValue),
-        );
-      }),
-    );
+    this.businessPartners$ = this.businessPartnerService.getBusinessPartners();
+    this.filteredBusinessPartners$ = this.form
+      .get('clientName')!
+      .valueChanges.pipe(
+        startWith(''),
+        map((value: string | BusinessPartner) => {
+          let filterValue = '';
+          if (typeof value === 'string') {
+            filterValue = value.toLowerCase();
+          } else if (value && typeof value === 'object') {
+            filterValue = value.name?.toLowerCase() || '';
+          }
+          if (!filterValue) {
+            return [];
+          }
+          return (this.businessPartners$ as any).source.value.filter(
+            (businessPartner: BusinessPartner) =>
+              (businessPartner.name || '').toLowerCase().includes(filterValue),
+          );
+        }),
+      );
   }
 
   private orderNumberAutoComplete() {

@@ -18,7 +18,7 @@ import {
 } from '@angular/forms';
 import {
   Address,
-  Client,
+  BusinessPartner,
   Company,
   FormBaseComponent,
   Individual,
@@ -41,7 +41,7 @@ export class ClientFormComponent
   isEdit = false;
 
   @Input()
-  data?: Individual | Company | null = <Client>{};
+  data?: Individual | Company | null = <BusinessPartner>{};
 
   @Input()
   compact = false;

@@ -107,14 +107,14 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get orders by client id
+        /// Get orders by businessPartner id
         /// </summary>
-        /// <param name="clientId">Client id to be used in the search</param>
+        /// <param name="businessPartnerId">BusinessPartner id to be used in the search</param>
         [HttpGet]
-        [Route("GetByClientId/{clientId}")]
-        public async Task<IActionResult> GetByClientId(int? clientId)
+        [Route("GetByBusinessPartnerId/{businessPartnerId}")]
+        public async Task<IActionResult> GetByBusinessPartnerId(int? businessPartnerId)
         {
-            var webApiResponse = await _orderService.FindByClientId(clientId);
+            var webApiResponse = await _orderService.FindByBusinessPartnerId(businessPartnerId);
             return Ok(webApiResponse);
         }
 

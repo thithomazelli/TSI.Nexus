@@ -6,7 +6,7 @@ export * from './account/reset-password';
 
 export * from './address.model';
 export * from './base.model';
-export * from './client.model';
+export * from './business-partner.model';
 export * from './company.model';
 export * from './individual.model';
 export * from './order.model';
