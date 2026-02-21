@@ -24,6 +24,46 @@ import { PaymentDetailsModalComponent } from './components/payment-details-modal
 export class PaymentsComponent {
   baseEndPoint = ApiType.Payments;
   rowData: Payment[] = [];
+  typeMap: { [key: string]: string } = {
+    Incoming: 'Entrada',
+    Outgoing: 'Saída',
+  };
+  typeIconMap: { [key: string]: string } = {
+    Incoming: '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>',
+    Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
+  };
+  conditionMap: { [key: string]: string } = {
+    FullPayment: 'À vista',
+    Installment: 'Parcelado',
+  };
+  statusMap: { [key: string]: string } = {
+    Approved: 'Pago',
+    Pending: 'Em Aberto',
+    Delayed: 'Atrasado',
+  };
+  statusColorMap: { [key: string]: string } = {
+    Approved: 'success',
+    Pending: 'info',
+    Delayed: 'warning',
+    default: 'secondary',
+  };
+
+  getTypeLabel(type: string): string {
+    return this.typeMap[type] ?? type ?? '';
+  }
+  getTypeIcon(type: string): string {
+    return this.typeIconMap[type] ?? '';
+  }
+  getConditionLabel(condition: string): string {
+    return this.conditionMap[condition] ?? condition ?? '';
+  }
+  getStatusLabel(status: string): string {
+    return this.statusMap[status] ?? status ?? '';
+  }
+  getStatusColor(status: string): string {
+    return this.statusColorMap[status] ?? this.statusColorMap['default'];
+  }
+
   columnDefs: ColDef[] = [
     {
       field: 'id',
@@ -53,21 +93,11 @@ export class PaymentsComponent {
       maxWidth: 120,
       resizable: true,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.type === 'Incoming' ? 'Entrada' : 'Saída';
+        return this.getTypeLabel(params.data?.type);
       },
       cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        let icon = '';
-        let text = '';
-        if (value === 'Incoming') {
-          icon = '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>';
-          text = 'Entrada';
-        } else {
-          icon =
-            '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>';
-          text = 'Saída';
-        }
-        return icon + text;
+        const type = params.value ?? '';
+        return this.getTypeIcon(type) + this.getTypeLabel(type);
       },
     },
     {
@@ -104,17 +134,10 @@ export class PaymentsComponent {
       flex: 2,
       maxWidth: 120,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.condition === 'FullPayment'
-          ? 'À vista'
-          : 'Parcelado';
+        return this.getConditionLabel(params.data?.condition);
       },
       valueFormatter: (params: ValueFormatterParams): string => {
-        const value = params.value ?? '';
-        if (value === 'FullPayment') {
-          return 'À vista';
-        } else {
-          return 'Parcelado';
-        }
+        return this.getConditionLabel(params.value);
       },
     },
     {
@@ -125,27 +148,12 @@ export class PaymentsComponent {
       flex: 2,
       maxWidth: 100,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.status === 'Approved'
-          ? 'Pago'
-          : params.data?.status === 'Pending'
-            ? 'Em Aberto'
-            : 'Atrasado';
-        ('');
+        return this.getStatusLabel(params.data?.status);
       },
       cellRenderer: (params: ICellRendererParams) => {
-        const value = params.value;
-        let color = 'secondary';
-        let label = value;
-        if (value === 'Approved') {
-          color = 'success';
-          label = 'Pago';
-        } else if (value === 'Pending') {
-          color = 'info';
-          label = 'Em Aberto';
-        } else if (value === 'Delayed') {
-          color = 'warning';
-          label = 'Atrasado';
-        }
+        const status = params.value;
+        const color = this.getStatusColor(status);
+        const label = this.getStatusLabel(status);
         return `<span class="badge bg-${color}">${label}</span>`;
       },
     },

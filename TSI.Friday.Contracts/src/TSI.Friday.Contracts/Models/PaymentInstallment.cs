@@ -4,7 +4,7 @@ using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models
 {
-    public class PaymentInstallment
+    public class PaymentInstallment : BaseModel
     {
         public int Id { get; set; }
 

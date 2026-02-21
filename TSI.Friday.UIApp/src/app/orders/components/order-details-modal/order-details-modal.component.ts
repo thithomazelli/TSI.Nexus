@@ -21,6 +21,7 @@ export class OrderDetailsModalComponent extends FormBaseComponent {
   saved = new EventEmitter<void>();
 
   isEdit = false;
+
   data?: Order | null = <Order>{
     orderProducts: [],
   };

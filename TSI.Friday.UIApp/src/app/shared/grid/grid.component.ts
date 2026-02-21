@@ -125,10 +125,6 @@ export class GridComponent<T> implements OnInit {
   }
 
   private viewAction(data: any): void {
-    if (this.baseEndPoint === ApiType.Clients) {
-      this.baseEndPoint = data.type === 'Física' ? 'individuals' : 'companies';
-    }
-
     this.routerService.navigateByUrl(`/${this.baseEndPoint}/${data.id}`);
   }
 

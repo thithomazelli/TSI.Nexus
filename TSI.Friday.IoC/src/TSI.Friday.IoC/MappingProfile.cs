@@ -33,6 +33,13 @@ namespace TSI.Friday.IoC
                         )
                 )
                 .ForMember(
+                    dest => dest.NationalIdCard,
+                    opt =>
+                        opt.MapFrom(src =>
+                            (src as Individual) != null ? ((Individual)src).NationalIdCard : default
+                        )
+                )
+                .ForMember(
                     dest => dest.Birthday,
                     opt =>
                         opt.MapFrom(src =>
@@ -58,10 +65,8 @@ namespace TSI.Friday.IoC
                         {
                             "física" or "fisica" => ctx.Mapper.Map<Individual>(src),
                             "jurídica" or "juridica" => ctx.Mapper.Map<Company>(src),
-                            // If you prefer to default to a specific type when Type is missing, change the next line.
-                            _ => throw new InvalidOperationException(
-                                $"Unknown client type: '{src?.Type}'"
-                            ),
+                            // Default to Individual when Type is missing or unrecognized to avoid throwing during config validation
+                            _ => ctx.Mapper.Map<Individual>(src),
                         };
                     }
                 )

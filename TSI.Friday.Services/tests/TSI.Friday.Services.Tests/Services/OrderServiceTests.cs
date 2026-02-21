@@ -14,33 +14,43 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly OrderService _orderService;
         private readonly Mock<IRepository<Order>> _repository;
+        private readonly Mock<IProductService> _productService;
         private readonly Mock<ISequenceService> _sequenceService;
-        private readonly IList<Order> _orderListMock;
+        private readonly IList<OrderDto> _orderListMock;
         private readonly IMapper _mapper;
 
         public OrderServiceTests()
         {
-            _repository = new Mock<IRepository<Order>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
+            _repository = new Mock<IRepository<Order>>();
+            _productService = new Mock<IProductService>();
+            _sequenceService = new Mock<ISequenceService>();
             _mapper = config.CreateMapper();
-            _orderService = new OrderService(_repository.Object, _sequenceService.Object, _mapper);
+            _orderService = new OrderService(
+                _repository.Object,
+                _productService.Object,
+                _sequenceService.Object,
+                _mapper
+            );
 
-            _orderListMock = new List<Order>
+            _orderListMock = new List<OrderDto>
             {
-                new Order
+                new OrderDto
                 {
-                    Id =1,
-                    OrderNumber = "ORD-001",
+                    Id = 1,
+                    OrderNumber = "ORD-00001",
                     Description = "Pedido Teste1",
-                    ClientId =1
+                    ClientId = 1,
+                    ClientName = "ORD",
                 },
-                new Order
+                new OrderDto
                 {
-                    Id =2,
-                    OrderNumber = "ORD-002",
+                    Id = 2,
+                    OrderNumber = "THG-00002",
                     Description = "Pedido Teste2",
-                    ClientId =2
-                }
+                    ClientId = 2,
+                    ClientName = "THG",
+                },
             };
         }
 
@@ -48,15 +58,28 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderService_Add_ShouldAddOrderSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var orderDto = new OrderDto { Id =3, OrderNumber = "ORD-003", Description = "Novo Pedido" };
+            var orderDto = new OrderDto
+            {
+                Id = 3,
+                OrderNumber = "ORD-00001",
+                Description = "Novo Pedido",
+                ClientName = "ORD",
+            };
             var orderEntity = _mapper.Map<Order>(orderDto);
+
             _repository.Setup(r => r.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
 
             var expected = new WebApiResponse<OrderDto>
             {
-                Data = orderDto,
+                Data = new OrderDto
+                {
+                    Id = 3,
+                    OrderNumber = "ORD-00001",
+                    Description = "Novo Pedido",
+                },
                 Status = ResponseStatus.Success,
-                Message = $"Pedido {orderDto.OrderNumber} cadastrado com sucesso."
+                Message = $"Pedido {orderDto.OrderNumber} cadastrado com sucesso.",
             };
 
             // Act
@@ -71,15 +94,19 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderService_Remove_ShouldRemoveOrderSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var orderDto = _mapper.Map<OrderDto>(_orderListMock.First());
-            var orderEntity = _mapper.Map<Order>(orderDto);
+            var orderDto = _orderListMock.First();
+            var orderEntity = _mapper.Map<Order>(_orderListMock.First());
+
+            _repository
+                .Setup(r => r.GetByIdAsync(It.IsAny<int>(), o => o.OrderProducts))
+                .ReturnsAsync(orderEntity);
             _repository.Setup(r => r.RemoveAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<OrderDto>
             {
                 Data = orderDto,
                 Status = ResponseStatus.Success,
-                Message = $"Pedido {orderDto.OrderNumber} removido com sucesso."
+                Message = $"Pedido {orderDto.OrderNumber} removido com sucesso.",
             };
 
             // Act
@@ -94,15 +121,18 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderService_FindById_ShouldReturnOrder_WhenIdIsValid()
         {
             // Arrange
-            const int id =1;
-            var order = _orderListMock.First(o => o.Id == id);
-            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(order);
+            const int id = 1;
+            var orderDto = _orderListMock.First(o => o.Id == id);
+            var orderEntity = _mapper.Map<Order>(orderDto);
+            orderEntity.Client = new Individual { Name = "ORD" };
+
+            _repository.Setup(r => r.GetByIdAsync(id, o => o.Client)).ReturnsAsync(orderEntity);
 
             var expected = new WebApiResponse<OrderDto>
             {
-                Data = _mapper.Map<OrderDto>(order),
+                Data = orderDto,
                 Status = ResponseStatus.Success,
-                Message = $"Pedido {order.OrderNumber} encontrado com sucesso"
+                Message = $"Pedido {orderDto.OrderNumber} encontrado com sucesso",
             };
 
             // Act
@@ -110,21 +140,21 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetByIdAsync(id), Times.Once);
+            _repository.Verify(r => r.GetByIdAsync(id, o => o.Client), Times.Once);
         }
 
         [Fact]
         public async Task OrderService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
         {
             // Arrange
-            const int id =10;
-            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((Order)null);
+            const int id = 10;
+            _repository.Setup(r => r.GetByIdAsync(id, o => o.Client)).ReturnsAsync((Order)null);
 
             var expected = new WebApiResponse<OrderDto>
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum Pedido com o ID {id} foi encontrado"
+                Message = $"Nenhum Pedido com o ID {id} foi encontrado",
             };
 
             // Act
@@ -132,20 +162,23 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetByIdAsync(id), Times.Once);
+            _repository.Verify(r => r.GetByIdAsync(id, o => o.Client), Times.Once);
         }
 
         [Fact]
         public async Task OrderService_FindAll_ShouldReturnOrders_WhenDataExists()
         {
             // Arrange
-            _repository.Setup(r => r.GetAllAsync()).ReturnsAsync(_orderListMock);
+            var ordersMock = _mapper.Map<IList<Order>>(_orderListMock);
+            ordersMock[0].Client = new Individual { Name = "ORD" };
+            ordersMock[1].Client = new Individual { Name = "THG" };
+            _repository.Setup(r => r.GetAllAsync(o => o.Client)).ReturnsAsync(ordersMock);
 
             var expected = new WebApiResponse<IEnumerable<OrderDto>>
             {
-                Data = _mapper.Map<IEnumerable<OrderDto>>(_orderListMock),
+                Data = _orderListMock,
                 Status = ResponseStatus.Success,
-                Message = $"{_orderListMock.Count} registro(s) encontrado(s)."
+                Message = $"{_orderListMock.Count} registro(s) encontrado(s).",
             };
 
             // Act
@@ -153,7 +186,7 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetAllAsync(), Times.Once);
+            _repository.Verify(r => r.GetAllAsync(o => o.Client), Times.Once);
         }
     }
 }

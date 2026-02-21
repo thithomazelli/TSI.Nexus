@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -8,7 +7,10 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageReference
+      Include="AutoMapper.Extensions.Microsoft.DependencyInjection"
+      Version="12.0.1"
+    />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,5 +18,4 @@
     <ProjectReference Include="..\..\..\TSI.Friday.Repository\src\TSI.Friday.Repository\TSI.Friday.Repository.csproj" />
     <ProjectReference Include="..\..\..\TSI.Friday.Services\src\TSI.Friday.Services\TSI.Friday.Services.csproj" />
   </ItemGroup>
-
 </Project>

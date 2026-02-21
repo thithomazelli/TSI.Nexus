@@ -4,8 +4,6 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace TSI.Friday.Services
 {
@@ -18,7 +16,6 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<OrderProduct> _repository;
         private readonly IRepository<Order> _orderRepository;
-        private readonly IRepository<Product> _productRepository;
         private readonly IProductService _productService;
         private readonly IMapper _mapper;
 
@@ -33,26 +30,14 @@ namespace TSI.Friday.Services
         public OrderProductService(
             IRepository<OrderProduct> repository,
             IRepository<Order> orderRepository,
-            IRepository<Product> productRepository,
             IProductService productService,
             IMapper mapper
         )
         {
             _repository = repository;
             _orderRepository = orderRepository;
-            _productRepository = productRepository;
             _productService = productService;
             _mapper = mapper;
-        }
-
-        // Backwards-compatible constructor used by tests and callers that don't provide IProductService.
-        public OrderProductService(
-            IRepository<OrderProduct> repository,
-            IRepository<Order> orderRepository,
-            IRepository<Product> productRepository,
-            IMapper mapper
-        ) : this(repository, orderRepository, productRepository, new ProductService(productRepository), mapper)
-        {
         }
 
         /// <inheritdoc />
@@ -69,7 +54,7 @@ namespace TSI.Friday.Services
                 // Update product stock: batch via product service
                 var deltas = new Dictionary<int, int>
                 {
-                    { orderProductEntity.ProductId, -Convert.ToInt32(orderProductEntity.Quantity) }
+                    { orderProductEntity.ProductId, -Convert.ToInt32(orderProductEntity.Quantity) },
                 };
                 await _productService.AdjustStockAsync(deltas);
 
@@ -107,7 +92,10 @@ namespace TSI.Friday.Services
 
                 if (newQuantity != 0)
                 {
-                    var deltas = new Dictionary<int, int> { { orderProductDto.ProductId, newQuantity } };
+                    var deltas = new Dictionary<int, int>
+                    {
+                        { orderProductDto.ProductId, newQuantity },
+                    };
                     await _productService.AdjustStockAsync(deltas);
                 }
 
@@ -141,7 +129,10 @@ namespace TSI.Friday.Services
                 await _repository.RemoveAsync(existing);
 
                 // Add back quantity to product
-                var deltas = new Dictionary<int, int> { { existing.ProductId, Convert.ToInt32(existing.Quantity) } };
+                var deltas = new Dictionary<int, int>
+                {
+                    { existing.ProductId, Convert.ToInt32(existing.Quantity) },
+                };
                 await _productService.AdjustStockAsync(deltas);
 
                 // Recalculate order price and update order
@@ -221,11 +212,18 @@ namespace TSI.Friday.Services
         private async Task RecalculateAndUpdateOrderAsync(int orderId)
         {
             var items = await _repository.QueryAsync(op => op.OrderId == orderId);
-            var sum = items.Sum(op =>
-                (op.Price * op.Quantity) - ((op.Price * op.Quantity) * op.Discount / 100m)
-            );
+            var sum =
+                items?.Sum(op =>
+                    (op.Price * op.Quantity) - ((op.Price * op.Quantity) * op.Discount / 100m)
+                ) ?? 0;
 
             var order = await _orderRepository.GetByIdAsync(orderId);
+
+            if (order == null)
+            {
+                return;
+            }
+
             order.Price = sum;
             await _orderRepository.UpdateAsync(order);
         }

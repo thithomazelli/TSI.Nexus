@@ -36,6 +36,30 @@ export class PaymentInstallmentsComponent {
 
   baseEndPoint = ApiType.PaymentInstallments;
   rowData: Payment[] = [];
+  typeMap: { [key: string]: string } = {
+    Incoming: 'Entrada',
+    Outgoing: 'Saída',
+  };
+  typeIconMap: { [key: string]: string } = {
+    Incoming: '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>',
+    Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
+  };
+  conditionMap: { [key: string]: string } = {
+    FullPayment: 'À vista',
+    Installment: 'Parcelado',
+  };
+  statusMap: { [key: string]: string } = {
+    Approved: 'Pago',
+    Pending: 'Em Aberto',
+    Delayed: 'Atrasado',
+  };
+  statusColorMap: { [key: string]: string } = {
+    Approved: 'success',
+    Pending: 'info',
+    Delayed: 'warning',
+    default: 'secondary',
+  };
+
   columnDefs: ColDef[] = [
     {
       field: 'id',
@@ -65,21 +89,11 @@ export class PaymentInstallmentsComponent {
       maxWidth: 120,
       resizable: true,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.type === 'Incoming' ? 'Entrada' : 'Saída';
+        return this.getTypeLabel(params.data?.type);
       },
       cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        let icon = '';
-        let text = '';
-        if (value === 'Incoming') {
-          icon = '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>';
-          text = 'Entrada';
-        } else {
-          icon =
-            '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>';
-          text = 'Saída';
-        }
-        return icon + text;
+        const type = params.value ?? '';
+        return this.getTypeIcon(type) + this.getTypeLabel(type);
       },
     },
     {
@@ -116,17 +130,10 @@ export class PaymentInstallmentsComponent {
       flex: 2,
       maxWidth: 120,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.condition === 'FullPayment'
-          ? 'À vista'
-          : 'Parcelado';
+        return this.getConditionLabel(params.data?.condition);
       },
       valueFormatter: (params: ValueFormatterParams): string => {
-        const value = params.value ?? '';
-        if (value === 'FullPayment') {
-          return 'À vista';
-        } else {
-          return 'Parcelado';
-        }
+        return this.getConditionLabel(params.value);
       },
     },
     {
@@ -137,28 +144,12 @@ export class PaymentInstallmentsComponent {
       flex: 2,
       maxWidth: 100,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.status === 'Approved'
-          ? 'Pago'
-          : params.data?.status === 'Pending'
-            ? 'Em Aberto'
-            : 'Atrasado';
-        ('');
+        return this.getStatusLabel(params.data?.status);
       },
       cellRenderer: (params: ICellRendererParams) => {
-        const value = params.value;
-        let color = 'secondary';
-        // Importar OrderStatus corretamente no topo do arquivo se necessário
-        let label = value;
-        if (value === 'Approved') {
-          color = 'success';
-          label = 'Pago';
-        } else if (value === 'Pending') {
-          color = 'info';
-          label = 'Em Aberto';
-        } else if (value === 'Delayed') {
-          color = 'warning';
-          label = 'Atrasado';
-        }
+        const status = params.value;
+        const color = this.getStatusColor(status);
+        const label = this.getStatusLabel(status);
         return `<span class="badge bg-${color}">${label}</span>`;
       },
     },
@@ -262,5 +253,25 @@ export class PaymentInstallmentsComponent {
       .subscribe((response: WebApiResponse<PaymentInstallment[]>) => {
         this.rowData = response.data ?? [];
       });
+  }
+
+  private getTypeLabel(type: string): string {
+    return this.typeMap[type] ?? type ?? '';
+  }
+
+  private getTypeIcon(type: string): string {
+    return this.typeIconMap[type] ?? '';
+  }
+
+  private getConditionLabel(condition: string): string {
+    return this.conditionMap[condition] ?? condition ?? '';
+  }
+
+  private getStatusLabel(status: string): string {
+    return this.statusMap[status] ?? status ?? '';
+  }
+
+  private getStatusColor(status: string): string {
+    return this.statusColorMap[status] ?? this.statusColorMap['default'];
   }
 }

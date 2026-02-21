@@ -19,7 +19,7 @@ namespace TSI.Friday.Contracts.Models
 
         public PaymentCondition Condition { get; set; }
 
-        public ICollection<PaymentInstallment> Installments { get; set; }
+        public ICollection<PaymentInstallment> Installments { get; set; } = [];
 
         [ForeignKey("Order")]
         public int? OrderId { get; set; }

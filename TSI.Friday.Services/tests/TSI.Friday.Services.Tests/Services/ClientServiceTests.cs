@@ -1,7 +1,7 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using FluentAssertions;
 using Moq;
-using System.Linq.Expressions;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -38,7 +38,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Id = 1,
                     Name = "TSI Soluções em Informática",
                     Email = "thiago.thomazelli@tsi.com.br",
-                }
+                },
             };
         }
 
@@ -50,16 +50,18 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Id = 1,
                 Name = "TSI Soluções em Informática",
-                Type = "Física"
+                Type = "Física",
             };
             var expectedResult = new WebApiResponse<ClientDto>
             {
                 Data = clientMock,
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {clientMock.Name} removido com sucesso."
+                Message = $"Cliente {clientMock.Name} removido com sucesso.",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(_mapper.Map<Individual>(clientMock));
+            _repository
+                .Setup(_ => _.GetByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(_mapper.Map<Individual>(clientMock));
             _repository.Setup(_ => _.RemoveAsync(It.IsAny<Client>()));
 
             // Act
@@ -79,20 +81,16 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var exception = new Exception();
-            var clientMock = new ClientDto
-            {
-                Id = 1,
-                Name = "TSI Soluções em Informática"
-            };
+            var clientMock = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
             var expectedResult = new WebApiResponse<Client>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível remover o Cliente {clientMock.Name} da base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível remover o Cliente {clientMock.Name} da base de dados. Erro: {exception.Message}",
             };
 
             _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(new Company());
-            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Client>()))
-                .ThrowsAsync(exception);
+            _repository.Setup(_ => _.RemoveAsync(It.IsAny<Client>())).ThrowsAsync(exception);
 
             // Act
             var result = await _clientService.Remove(clientMock);
@@ -110,19 +108,15 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task ClientService_Remove_ShouldNotRemoveClientAndReturnsAndError_WhenClientIsNotFound()
         {
             // Arrange
-            var clientMock = new ClientDto
-            {
-                Id = 1,
-                Name = "TSI Soluções em Informática"
-            };
+            var clientMock = new ClientDto { Id = 1, Name = "TSI Soluções em Informática" };
 
             var exception = new Exception($"Cliente com Id {clientMock.Id} não encontrado.");
             var expectedResult = new WebApiResponse<Client>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível remover o Cliente {clientMock.Name} da base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível remover o Cliente {clientMock.Name} da base de dados. Erro: {exception.Message}",
             };
-
 
             _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ThrowsAsync(exception);
 
@@ -138,6 +132,82 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
+        public async Task ClientService_FindAll_ShouldReturnAListOfPeople_WhenDataTableHasRegisters()
+        {
+            // Arrange
+            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            {
+                Data = _mapper.Map<IEnumerable<ClientDto>>(_clientListMock),
+                Status = ResponseStatus.Success,
+                Message = $"{_clientListMock.Count} registro(s) encontrado(s).",
+            };
+
+            _repository.Setup(_ => _.GetAllAsync(c => c.Addresses)).ReturnsAsync(_clientListMock);
+
+            // Act
+            var result = await _clientService.FindAll();
+
+            // Assert
+            expectedResult.Should().BeEquivalentTo(result);
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+
+            _repository.Verify(_ => _.GetAllAsync(c => c.Addresses), Times.Once);
+        }
+
+        [Fact]
+        public async Task ClientService_FindAll_ShouldReturnAnEmptyData_WhenDataTableHasNoRegisters()
+        {
+            // Arrange
+            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            {
+                Data = new List<ClientDto>(),
+                Status = ResponseStatus.Success,
+                Message = $"{0} registro(s) encontrado(s).",
+            };
+
+            _repository
+                .Setup(_ => _.GetAllAsync(c => c.Addresses))
+                .ReturnsAsync(new List<Client>());
+
+            // Act
+            var result = await _clientService.FindAll();
+
+            // Assert
+            Assert.Equal(expectedResult.Data, result.Data);
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+
+            expectedResult.Should().BeEquivalentTo(result);
+            _repository.Verify(_ => _.GetAllAsync(c => c.Addresses), Times.Once);
+        }
+
+        [Fact]
+        public async Task ClientService_FindAll_ShouldReturnAnEmptyListAndAnErrorMessage_WhenRepositoryGetsAnError()
+        {
+            // Arrange
+            var exception = new Exception();
+            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            {
+                Status = ResponseStatus.Error,
+                Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
+            };
+
+            _repository.Setup(_ => _.GetAllAsync(c => c.Addresses)).ThrowsAsync(exception);
+
+            // Act
+            var result = await _clientService.FindAll();
+
+            // Assert
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+
+            expectedResult.Should().BeEquivalentTo(result);
+            _repository.Verify(_ => _.GetAllAsync(c => c.Addresses), Times.Once);
+        }
+
+        [Fact]
         public async Task ClientService_FindById_ShouldReturnAClientSuccessfully_WhenIdIsValid()
         {
             // Arrange
@@ -147,11 +217,10 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = _mapper.Map<ClientDto>(clientMock),
                 Status = ResponseStatus.Success,
-                Message = $"Cliente {clientMock.Name} encontrado com sucesso"
+                Message = $"Cliente {clientMock.Name} encontrado com sucesso",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock))
-                .ReturnsAsync(clientMock);
+            _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(clientMock);
 
             // Act
             var result = await _clientService.FindById(idMock);
@@ -173,11 +242,10 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"Nenhum Cliente com o ID {idMock} foi encontrado"
+                Message = $"Nenhum Cliente com o ID {idMock} foi encontrado",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock))
-                .ReturnsAsync(value: null);
+            _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(value: null);
 
             // Act
             var result = await _clientService.FindById(idMock);
@@ -200,11 +268,11 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<ClientDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock))
-                .ThrowsAsync(exception);
+            _repository.Setup(_ => _.GetByIdAsync(idMock)).ThrowsAsync(exception);
 
             // Act
             var result = await _clientService.FindById(idMock);
@@ -218,46 +286,52 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ClientService_FindAll_ShouldReturnAListOfPeople_WhenDataTableHasRegisters()
+        public async Task ClientService_FindByEmail_ShouldReturnALisfOfClientsSuccessfully_WhenEmailIsValid()
         {
             // Arrange
-            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            const string emailMock = "thiago.thomazelli@tsi.com.br";
+            var clientEntity = _clientListMock.FirstOrDefault(_ => emailMock.Equals(_.Email));
+            var expectedDto = _mapper.Map<ClientDto>(clientEntity);
+            var expectedResult = new WebApiResponse<ClientDto>
             {
-                Data = _mapper.Map<IEnumerable<ClientDto>>(_clientListMock),
+                Data = expectedDto,
                 Status = ResponseStatus.Success,
-                Message = $"{_clientListMock.Count} registro(s) encontrado(s)."
+                Message = $"Cliente {expectedDto.Name} encontrado com sucesso.",
             };
 
-            _repository.Setup(_ => _.GetAllAsync())
-                .ReturnsAsync(_clientListMock);
+            _repository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()))
+                .ReturnsAsync(clientEntity);
 
             // Act
-            var result = await _clientService.FindAll();
+            var result = await _clientService.FindByEmail(emailMock);
 
             // Assert
             expectedResult.Should().BeEquivalentTo(result);
-            Assert.Equal(expectedResult.Status, result.Status);
-            Assert.Equal(expectedResult.Message, result.Message);
-
-            _repository.Verify(_ => _.GetAllAsync(), Times.Once);
+            _repository.Verify(
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()),
+                Times.Once
+            );
         }
 
         [Fact]
-        public async Task ClientService_FindAll_ShouldReturnAnEmptyData_WhenDataTableHasNoRegisters()
+        public async Task ClientService_FindByEmail_ShouldReturnAnEmptyData_WhenEmailIsNotFound()
         {
             // Arrange
-            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            const string emailMock = "thiago@tsi.com";
+            var expectedResult = new WebApiResponse<ClientDto>
             {
-                Data = new List<ClientDto>(),
+                Data = null,
                 Status = ResponseStatus.Success,
-                Message = $"{0} registro(s) encontrado(s)."
+                Message = $"Nenhum Cliente com o E-mail {emailMock} foi encontrado",
             };
 
-            _repository.Setup(_ => _.GetAllAsync())
-                .ReturnsAsync(new List<Client>());
+            _repository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()))
+                .ReturnsAsync(null as Company);
 
             // Act
-            var result = await _clientService.FindAll();
+            var result = await _clientService.FindByEmail(emailMock);
 
             // Assert
             Assert.Equal(expectedResult.Data, result.Data);
@@ -265,32 +339,41 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetAllAsync(), Times.Once);
+            _repository.Verify(
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()),
+                Times.Once
+            );
         }
 
         [Fact]
-        public async Task ClientService_FindAll_ShouldReturnAnEmptyListAndAnErrorMessage_WhenRepositoryGetsAnError()
+        public async Task ClientService_FindByEmail_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
+            const string emailMock = "thiago@tsi.com";
             var exception = new Exception();
-            var expectedResult = new WebApiResponse<IEnumerable<ClientDto>>
+            var expectedResult = new WebApiResponse<ClientDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}"
+                Message =
+                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.GetAllAsync())
+            _repository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()))
                 .ThrowsAsync(exception);
 
             // Act
-            var result = await _clientService.FindAll();
+            var result = await _clientService.FindByEmail(emailMock);
 
             // Assert
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetAllAsync(), Times.Once);
+            _repository.Verify(
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Client, bool>>>()),
+                Times.Once
+            );
         }
     }
 }

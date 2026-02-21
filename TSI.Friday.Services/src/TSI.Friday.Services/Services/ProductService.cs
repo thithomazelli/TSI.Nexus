@@ -201,7 +201,8 @@ namespace TSI.Friday.Services
 
             // Get products by ids
             var ids = deltas.Keys.ToList();
-            var products = await _repository.QueryAsync(p => ids.Contains(p.Id));
+            var products =
+                await _repository.QueryAsync(p => ids.Contains(p.Id)) ?? new List<Product>();
 
             foreach (var prod in products)
             {

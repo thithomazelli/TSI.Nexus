@@ -206,6 +206,14 @@ namespace TSI.Friday.Services
             try
             {
                 var payment = await _repository.GetByIdAsync(id, p => p.Installments);
+
+                if (payment == null)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = $"Pagamento com Id {id} não encontrado.";
+                    return result;
+                }
+
                 var dto = _mapper.Map<PaymentDto>(payment);
                 var price = ComputePriceFromInstallments(payment.Installments);
                 var status = ComputeStatusFromInstallments(payment.Installments);

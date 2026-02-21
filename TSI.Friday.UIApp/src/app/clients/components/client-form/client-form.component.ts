@@ -88,6 +88,25 @@ export class ClientFormComponent
     }
   }
 
+  get addressFormGroup(): FormGroup {
+    return this.form.get('address') as FormGroup;
+  }
+
+  /**
+   * Retorna o endereço selecionado de forma segura para o template
+   */
+  get selectedAddress(): Address | null {
+    if (
+      this.selectedAddressIndex !== null &&
+      Array.isArray(this.data?.addresses) &&
+      this.selectedAddressIndex >= 0 &&
+      this.selectedAddressIndex < this.data.addresses.length
+    ) {
+      return this.data.addresses[this.selectedAddressIndex];
+    }
+    return null;
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -99,7 +118,7 @@ export class ClientFormComponent
       raw.birthday = null;
     }
 
-    if (!this.isEdit) {
+    if (this.compact) {
       // Se vier address preenchido, mova para addresses
       if (raw.address && Object.keys(raw.address).some((k) => raw.address[k])) {
         if (!this.data!.addresses) {
@@ -150,25 +169,6 @@ export class ClientFormComponent
     if (this.addressFormGroup.valid) {
       this.saveAddress(this.addressFormGroup.value);
     }
-  }
-
-  get addressFormGroup(): FormGroup {
-    return this.form.get('address') as FormGroup;
-  }
-
-  /**
-   * Retorna o endereço selecionado de forma segura para o template
-   */
-  get selectedAddress(): Address | null {
-    if (
-      this.selectedAddressIndex !== null &&
-      Array.isArray(this.data?.addresses) &&
-      this.selectedAddressIndex >= 0 &&
-      this.selectedAddressIndex < this.data.addresses.length
-    ) {
-      return this.data.addresses[this.selectedAddressIndex];
-    }
-    return null;
   }
 
   displayNewAddress(): void {
@@ -274,7 +274,7 @@ export class ClientFormComponent
       nationalRegistry: ['', this.cnpjValidator()],
       birthday: [null],
       photo: [''],
-      address: this.canDisplayAddressForm ? addressGroup : null,
+      address: this.compact ? addressGroup : null,
     };
 
     this.form = !this.isEdit

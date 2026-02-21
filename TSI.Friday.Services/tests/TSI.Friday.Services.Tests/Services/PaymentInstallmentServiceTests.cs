@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using FluentAssertions;
 using Moq;
 using TSI.Friday.Contracts.Enums;
@@ -12,9 +13,9 @@ namespace TSI.Friday.Services.Tests.Services
 {
     public class PaymentInstallmentServiceTests
     {
-        private readonly PaymentInstallmentService _service;
+        private readonly PaymentInstallmentService _paymentInstallmentService;
         private readonly Mock<IRepository<PaymentInstallment>> _repository;
-        private readonly IList<PaymentInstallment> _paymentsMock;
+        private readonly IList<PaymentInstallment> _paymentInstallmentsMock;
         private readonly IMapper _mapper;
 
         public PaymentInstallmentServiceTests()
@@ -22,9 +23,9 @@ namespace TSI.Friday.Services.Tests.Services
             _repository = new Mock<IRepository<PaymentInstallment>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
-            _service = new PaymentInstallmentService(_repository.Object, _mapper);
+            _paymentInstallmentService = new PaymentInstallmentService(_repository.Object, _mapper);
 
-            _paymentsMock = new List<PaymentInstallment>
+            _paymentInstallmentsMock = new List<PaymentInstallment>
             {
                 new PaymentInstallment
                 {
@@ -45,7 +46,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentInstallmentService_Add_ShouldAddPaymentInstallmentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentDto = new PaymentInstallmentDto
+            var paymentInstallmentDto = new PaymentInstallmentDto
             {
                 Id = 3,
                 Description = "Pagamento 3",
@@ -57,13 +58,14 @@ namespace TSI.Friday.Services.Tests.Services
 
             var expected = new WebApiResponse<PaymentInstallmentDto>
             {
-                Data = paymentDto,
+                Data = paymentInstallmentDto,
                 Status = ResponseStatus.Success,
-                Message = $"Pagamento {paymentDto.Description} cadastrado com sucesso.",
+                Message =
+                    $"Parcela do pagamento {paymentInstallmentDto.Description} cadastrada com sucesso.",
             };
 
             // Act
-            var result = await _service.Add(paymentDto);
+            var result = await _paymentInstallmentService.Add(paymentInstallmentDto);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
@@ -74,20 +76,23 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentInstallmentService_Update_ShouldUpdatePaymentInstallmentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentDto = _mapper.Map<PaymentInstallmentDto>(_paymentsMock.First());
+            var paymentInstallmentDto = _mapper.Map<PaymentInstallmentDto>(
+                _paymentInstallmentsMock.First()
+            );
             _repository
                 .Setup(r => r.UpdateAsync(It.IsAny<PaymentInstallment>()))
                 .Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<PaymentInstallmentDto>
             {
-                Data = paymentDto,
+                Data = paymentInstallmentDto,
                 Status = ResponseStatus.Success,
-                Message = $"Pagamento {paymentDto.Description} atualizado com sucesso.",
+                Message =
+                    $"Parcela do pagamento {paymentInstallmentDto.Description} atualizada com sucesso.",
             };
 
             // Act
-            var result = await _service.Update(paymentDto);
+            var result = await _paymentInstallmentService.Update(paymentInstallmentDto);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
@@ -98,20 +103,23 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentInstallmentService_Remove_ShouldRemovePaymentInstallmentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentDto = _mapper.Map<PaymentInstallmentDto>(_paymentsMock.First());
+            var paymentInstallmentDto = _mapper.Map<PaymentInstallmentDto>(
+                _paymentInstallmentsMock.First()
+            );
             _repository
                 .Setup(r => r.RemoveAsync(It.IsAny<PaymentInstallment>()))
                 .Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<PaymentInstallmentDto>
             {
-                Data = paymentDto,
+                Data = paymentInstallmentDto,
                 Status = ResponseStatus.Success,
-                Message = $"Pagamento {paymentDto.Description} removido com sucesso.",
+                Message =
+                    $"Parcela do pagamento {paymentInstallmentDto.Description} removida com sucesso.",
             };
 
             // Act
-            var result = await _service.Remove(paymentDto);
+            var result = await _paymentInstallmentService.Remove(paymentInstallmentDto);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
@@ -123,18 +131,18 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const int id = 1;
-            var payment = _paymentsMock.First(p => p.Id == id);
+            var payment = _paymentInstallmentsMock.First(p => p.Id == id);
             _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(payment);
 
             var expected = new WebApiResponse<PaymentInstallmentDto>
             {
                 Data = _mapper.Map<PaymentInstallmentDto>(payment),
                 Status = ResponseStatus.Success,
-                Message = $"Pagamento {payment.Description} encontrado com sucesso",
+                Message = $"Parcela do pagamento {payment.Description} encontrada com sucesso",
             };
 
             // Act
-            var result = await _service.FindById(id);
+            var result = await _paymentInstallmentService.FindById(id);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
@@ -146,15 +154,9 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const int paymentId = 1;
-            var payments = _paymentsMock.Where(p => p.PaymentId == paymentId).ToList();
+            var payments = _paymentInstallmentsMock.Where(p => p.PaymentId == paymentId).ToList();
             _repository
-                .Setup(r =>
-                    r.QueryAsync(
-                        It.IsAny<System.Linq.Expressions.Expression<
-                            Func<PaymentInstallment, bool>
-                        >>()
-                    )
-                )
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
                 .ReturnsAsync(payments);
 
             var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
@@ -165,17 +167,12 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             // Act
-            var result = await _service.FindByPaymentId(paymentId);
+            var result = await _paymentInstallmentService.FindByPaymentId(paymentId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r =>
-                    r.QueryAsync(
-                        It.IsAny<System.Linq.Expressions.Expression<
-                            Func<PaymentInstallment, bool>
-                        >>()
-                    ),
+                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
                 Times.Once
             );
         }
@@ -185,15 +182,9 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const int clientId = 1;
-            var payments = _paymentsMock.Where(p => p.ClientId == clientId).ToList();
+            var payments = _paymentInstallmentsMock.Where(p => p.ClientId == clientId).ToList();
             _repository
-                .Setup(r =>
-                    r.QueryAsync(
-                        It.IsAny<System.Linq.Expressions.Expression<
-                            Func<PaymentInstallment, bool>
-                        >>()
-                    )
-                )
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
                 .ReturnsAsync(payments);
 
             var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
@@ -204,17 +195,12 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             // Act
-            var result = await _service.FindByClientId(clientId);
+            var result = await _paymentInstallmentService.FindByClientId(clientId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r =>
-                    r.QueryAsync(
-                        It.IsAny<System.Linq.Expressions.Expression<
-                            Func<PaymentInstallment, bool>
-                        >>()
-                    ),
+                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
                 Times.Once
             );
         }
@@ -224,15 +210,9 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             const int orderId = 1;
-            var payments = _paymentsMock.Where(p => p.OrderId == orderId).ToList();
+            var payments = _paymentInstallmentsMock.Where(p => p.OrderId == orderId).ToList();
             _repository
-                .Setup(r =>
-                    r.QueryAsync(
-                        It.IsAny<System.Linq.Expressions.Expression<
-                            Func<PaymentInstallment, bool>
-                        >>()
-                    )
-                )
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
                 .ReturnsAsync(payments);
 
             var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
@@ -243,17 +223,12 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             // Act
-            var result = await _service.FindByOrderId(orderId);
+            var result = await _paymentInstallmentService.FindByOrderId(orderId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r =>
-                    r.QueryAsync(
-                        It.IsAny<System.Linq.Expressions.Expression<
-                            Func<PaymentInstallment, bool>
-                        >>()
-                    ),
+                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
                 Times.Once
             );
         }

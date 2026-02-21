@@ -151,9 +151,17 @@ export class ClientsOrdersListComponent {
   }
 
   onOpenModal(initialState: any) {
+    const initialStateWithClient = {
+      ...initialState,
+      data: <Order>{
+        clientId: this.parentData?.id,
+        clientName: this.parentData?.name,
+      },
+    };
+
     const ref = this.modalService.showTemplateModal(
       OrderDetailsModalComponent,
-      initialState,
+      initialStateWithClient,
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {

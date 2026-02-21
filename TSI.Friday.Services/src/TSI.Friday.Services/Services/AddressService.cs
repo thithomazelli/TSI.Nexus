@@ -194,7 +194,7 @@ namespace TSI.Friday.Services
                 a.ClientId == addressDto.ClientId && a.Id != addressDto.Id && a.IsDefault
             );
 
-            if (!existingDefaults.Any())
+            if (existingDefaults == null)
             {
                 return;
             }

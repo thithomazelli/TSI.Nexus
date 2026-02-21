@@ -33,14 +33,6 @@ export class ClientDetailsPageComponent {
   ) {}
 
   ngOnInit(): void {
-    // Usa a URL do router para pegar o primeiro segmento
-    const rootSegment = this.routerService.url.split('/')[1];
-    if (rootSegment === 'individuals') {
-      this._baseEndPoint = ApiType.Individuals;
-    } else if (rootSegment === 'companies') {
-      this._baseEndPoint = ApiType.Companies;
-    }
-
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {
@@ -95,11 +87,9 @@ export class ClientDetailsPageComponent {
   private loadClient(id: number): void {
     this.loading = true;
     this.apiService
-      .get<
-        WebApiResponse<Company | Individual>
-      >(`${this._baseEndPoint}/getById/${id}`)
+      .get<WebApiResponse<Client>>(`${this._baseEndPoint}/getById/${id}`)
       .subscribe({
-        next: (response: WebApiResponse<Company | Individual>) => {
+        next: (response: WebApiResponse<Client>) => {
           this.loading = false;
 
           if (response.data == null) {

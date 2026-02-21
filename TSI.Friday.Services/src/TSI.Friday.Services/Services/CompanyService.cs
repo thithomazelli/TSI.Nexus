@@ -97,34 +97,6 @@ namespace TSI.Friday.Services
                 // Map simple/scalar properties from DTO to tracked entity
                 _mapper.Map(clientDto, existing);
 
-                // Synchronize Addresses collection
-                var incoming = (clientDto.Addresses ?? new List<AddressDto>()).ToList();
-
-                // Update or add incoming addresses
-                foreach (var addrDto in incoming)
-                {
-                    if (addrDto.Id == 0)
-                    {
-                        // new address
-                        var newAddr = _mapper.Map<Address>(addrDto);
-                        existing.Addresses.Add(newAddr);
-                    }
-                    else
-                    {
-                        var existAddr = existing.Addresses.FirstOrDefault(a => a.Id == addrDto.Id);
-                        if (existAddr != null)
-                        {
-                            _mapper.Map(addrDto, existAddr);
-                        }
-                        else
-                        {
-                            // incoming references an address not currently loaded - map and add
-                            var addAddr = _mapper.Map<Address>(addrDto);
-                            existing.Addresses.Add(addAddr);
-                        }
-                    }
-                }
-
                 await _repository.UpdateAsync(existing);
 
                 result.Data = clientDto;
@@ -136,82 +108,6 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> Remove(ClientDto clientDto)
-        {
-            WebApiResponse<ClientDto> result = new();
-
-            try
-            {
-                var companyEntity = await _repository.GetByIdAsync(clientDto.Id);
-                if (companyEntity == null)
-                {
-                    throw new Exception($"Cliente com Id {clientDto.Id} não encontrado.");
-                }
-
-                await _repository.RemoveAsync(companyEntity);
-
-                result.Data = clientDto;
-                result.Status = ResponseStatus.Success;
-                result.Message = $"Cliente {companyEntity.Name} removido com sucesso.";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<ClientDto>>> FindAll()
-        {
-            WebApiResponse<IEnumerable<ClientDto>> result = new();
-
-            try
-            {
-                var clientEntityList = await _repository.GetAllAsync();
-                result.Data = _mapper.Map<IEnumerable<ClientDto>>(clientEntityList);
-                result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> FindById(int? id)
-        {
-            WebApiResponse<ClientDto> result = new();
-
-            try
-            {
-                var clientEntity = await _repository.GetByIdAsync(id);
-                result.Data = _mapper.Map<ClientDto>(clientEntity);
-                result.Status = ResponseStatus.Success;
-                result.Message =
-                    result.Data != null
-                        ? $"Cliente {result.Data.Name} encontrado com sucesso"
-                        : $"Nenhum Cliente com o ID {id} foi encontrado";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -233,31 +129,6 @@ namespace TSI.Friday.Services
                     result.Data != null
                         ? $"Cliente {result.Data.Name} encontrado com sucesso."
                         : $"Nenhum Cliente com o CNPJ {nationalRegistry} foi encontrado";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> FindByEmail(string email)
-        {
-            WebApiResponse<ClientDto> result = new();
-
-            try
-            {
-                var clientEntity = await _repository.FirstOrDefaultAsync(x => x.Email == email);
-                result.Data = _mapper.Map<ClientDto>(clientEntity);
-                result.Status = ResponseStatus.Success;
-                result.Message =
-                    result.Data != null
-                        ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                        : $"Nenhum Cliente com o E-mail {email} foi encontrado";
             }
             catch (Exception ex)
             {

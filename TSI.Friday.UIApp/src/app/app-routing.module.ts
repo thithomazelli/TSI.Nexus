@@ -18,18 +18,6 @@ const routes: Routes = [
       import('./clients/clients.module').then((m) => m.ClientsModule),
   },
   {
-    path: 'companies',
-    canActivate: [AuthorizationGuard],
-    loadChildren: () =>
-      import('./clients/clients.module').then((m) => m.ClientsModule),
-  },
-  {
-    path: 'individuals',
-    canActivate: [AuthorizationGuard],
-    loadChildren: () =>
-      import('./clients/clients.module').then((m) => m.ClientsModule),
-  },
-  {
     path: 'payments',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>

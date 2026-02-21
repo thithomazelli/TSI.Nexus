@@ -30,9 +30,9 @@ namespace TSI.Friday.Services
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
         public OrderService(
             IRepository<Order> repository,
+            IProductService productService,
             ISequenceService sequenceService,
-            IMapper mapper,
-            IProductService productService
+            IMapper mapper
         )
         {
             _repository = repository;
@@ -127,7 +127,7 @@ namespace TSI.Friday.Services
                 var orderEntity = await _repository.GetByIdAsync(orderDto.Id, o => o.OrderProducts);
 
                 // compute deltas before removal
-                if (orderEntity.OrderProducts != null)
+                if (orderEntity?.OrderProducts != null)
                 {
                     var deltas = new Dictionary<int, int>();
                     foreach (var op in orderEntity.OrderProducts)

@@ -72,23 +72,28 @@
           </div>
 
           @if (form.get("type")?.value === "Física") {
-            <app-date-field
-              formControlName="birthday"
-              [label]="'Data de Nascimento'"
-            ></app-date-field>
-          }
-          <div class="input-group mb-1">
-            <div class="form-floating">
-              <input
-                formControlName="email"
-                type="email"
-                placeholder="Email"
-                class="form-control"
-                [class.is-invalid]="isInvalid('email')"
-              />
-              <label for="email">Email</label>
+            <div class="col-12">
+              <app-date-field
+                formControlName="birthday"
+                [label]="'Data de Nascimento'"
+              ></app-date-field>
             </div>
-            <div class="input-group-text"><i class="bi bi-envelope"></i></div>
+          }
+
+          <div class="col-12">
+            <div class="input-group mb-1">
+              <div class="form-floating">
+                <input
+                  formControlName="email"
+                  type="email"
+                  placeholder="Email"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('email')"
+                />
+                <label for="email">Email</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-envelope"></i></div>
+            </div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -130,8 +135,8 @@
       </section>
       <hr class="my-3" style="border-top: 1px solid #ddd" />
 
-      <!-- Sessão 2: Endereço (exibe apenas se compact for false) -->
-      @if (!compact) {
+      <!-- Sessão 2: Endereço (exibe apenas se compact for true) -->
+      @if (compact) {
         <section style="font-size: 0.95em">
           <h5 class="mt-4 mb-2">Endereços</h5>
           <div>

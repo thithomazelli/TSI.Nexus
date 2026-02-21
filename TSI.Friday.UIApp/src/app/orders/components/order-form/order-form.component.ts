@@ -209,9 +209,6 @@ export class OrderFormComponent
       });
     }
 
-    console.log('Form status:', this.form.status);
-    console.log('Form errors:', this.form.errors);
-    console.log('Controles com erro:');
     Object.keys(this.form.controls).forEach((key) => {
       const control = this.form.get(key);
       if (control && control.invalid) {
@@ -264,7 +261,7 @@ export class OrderFormComponent
     this.form = this.formBuilder.group({
       orderNumber: [''],
       clientId: [null],
-      clientName: [''],
+      clientName: [{ value: '', disabled: this.data?.clientId != null }],
       description: [''],
       status: [OrderStatus.Open, Validators.required],
       price: [{ value: 0, disabled: true }],
@@ -277,7 +274,10 @@ export class OrderFormComponent
     if (this.isEdit) {
       this.form.addControl('id', this.formBuilder.control(''));
     } else {
-      // Atualiza clientId ao selecionar cliente
+      if (this.data?.clientId != null) {
+        return;
+      }
+
       this.form.get('clientName')!.valueChanges.subscribe((name) => {
         const client = (this.clients$ as any).source.value.find(
           (c: Client) => (c.name || c.name) === name,
