@@ -14,6 +14,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly OrderService _orderService;
         private readonly Mock<IRepository<Order>> _repository;
+        private readonly Mock<IPaymentService> _paymentService;
         private readonly Mock<IProductService> _productService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly IList<OrderDto> _orderListMock;
@@ -23,11 +24,13 @@ namespace TSI.Friday.Services.Tests.Services
         {
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _repository = new Mock<IRepository<Order>>();
+            _paymentService = new Mock<IPaymentService>();
             _productService = new Mock<IProductService>();
             _sequenceService = new Mock<ISequenceService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
                 _repository.Object,
+                _paymentService.Object,
                 _productService.Object,
                 _sequenceService.Object,
                 _mapper
@@ -64,10 +67,11 @@ namespace TSI.Friday.Services.Tests.Services
                 OrderNumber = "ORD-00001",
                 Description = "Novo Pedido",
                 BusinessPartnerName = "ORD",
+                Payment = new PaymentDto(),
             };
-            var orderEntity = _mapper.Map<Order>(orderDto);
 
             _repository.Setup(r => r.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            _paymentService.Setup(_ => _.Add(It.IsAny<PaymentDto>()));
             _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
 
             var expected = new WebApiResponse<OrderDto>

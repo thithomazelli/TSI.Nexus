@@ -201,7 +201,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Parcelas do Pagamento baseado no BusinessPartnere {businessPartnerId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Parcelas do Pagamento baseado no BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;

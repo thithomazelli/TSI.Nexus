@@ -23,7 +23,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal TotalPrice { get; set; }
 
-        public Payment Payment { get; set; }
+        public PaymentDto Payment { get; set; }
 
         public ICollection<OrderProductDto> OrderProducts { get; set; } = [];
     }

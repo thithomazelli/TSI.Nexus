@@ -16,9 +16,10 @@ namespace TSI.Friday.Services
         /// Repository object created to access the Order registers on database using EntityFramework.
         /// </summary>
         private readonly IRepository<Order> _repository;
+        private readonly IPaymentService _paymentService;
+        private readonly IProductService _productService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
-        private readonly IProductService _productService;
 
         #endregion Properties
 
@@ -30,15 +31,17 @@ namespace TSI.Friday.Services
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
         public OrderService(
             IRepository<Order> repository,
+            IPaymentService paymentService,
             IProductService productService,
             ISequenceService sequenceService,
             IMapper mapper
         )
         {
             _repository = repository;
+            _paymentService = paymentService;
+            _productService = productService;
             _sequenceService = sequenceService;
             _mapper = mapper;
-            _productService = productService;
         }
 
         /// <inheritdoc />
@@ -52,8 +55,41 @@ namespace TSI.Friday.Services
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
 
-                var orderEntity = _mapper.Map<Order>(orderDto);
+                // If there is a payment in the DTO, persist the Order first (without Payment)
+                var hasPayment = orderDto.Payment != null;
+
+                Order orderEntity;
+                PaymentDto? savedPayment = null;
+
+                // map without including Payment to get Order Id
+                var temp = new OrderDto
+                {
+                    Id = orderDto.Id,
+                    OrderNumber = orderDto.OrderNumber,
+                    BusinessPartnerId = orderDto.BusinessPartnerId,
+                    BusinessPartnerName = orderDto.BusinessPartnerName,
+                    Status = orderDto.Status,
+                    Description = orderDto.Description,
+                    Discount = orderDto.Discount,
+                    Price = orderDto.Price,
+                    TotalPrice = orderDto.TotalPrice,
+                    OrderProducts = orderDto.OrderProducts,
+                };
+
+                orderEntity = _mapper.Map<Order>(temp);
                 await _repository.AddAsync(orderEntity);
+
+                var paymentDto = orderDto.Payment!;
+                paymentDto.OrderId = orderEntity.Id;
+                var paymentResult = await _paymentService.Add(paymentDto);
+
+                if (paymentResult?.Status == ResponseStatus.Success && paymentResult?.Data != null)
+                {
+                    // ensure Order references the created Payment
+                    orderEntity.PaymentId = paymentResult.Data.Id;
+                    await _repository.UpdateAsync(orderEntity);
+                    savedPayment = paymentResult.Data;
+                }
 
                 // adjust stock in batch if product service available
                 if (orderEntity.OrderProducts.Any())
@@ -79,7 +115,11 @@ namespace TSI.Friday.Services
                     }
                 }
 
-                result.Data = _mapper.Map<OrderDto>(orderEntity);
+                // prepare response DTO
+                var responseDto = _mapper.Map<OrderDto>(orderEntity);
+                responseDto.Payment = savedPayment;
+
+                result.Data = responseDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} cadastrado com sucesso.";
             }
@@ -100,10 +140,22 @@ namespace TSI.Friday.Services
 
             try
             {
+                // First update Order basic data (without handling Payment) to ensure it exists
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.UpdateAsync(orderEntity);
 
+                var paymentDto = orderDto.Payment;
+                paymentDto.OrderId = orderEntity.Id;
+
+                var updRes = await _paymentService.Update(paymentDto);
+                if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
+                {
+                    orderDto.Payment = updRes.Data;
+                }
+
                 result.Data = _mapper.Map<OrderDto>(orderEntity);
+                result.Data.Payment = orderDto.Payment;
+
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} atualizado com sucesso.";
             }
@@ -126,6 +178,14 @@ namespace TSI.Friday.Services
             {
                 var orderEntity = await _repository.GetByIdAsync(orderDto.Id, o => o.OrderProducts);
 
+                if (orderEntity == null)
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Error;
+                    result.Message = $"Pedido {orderDto.OrderNumber} não encontrado.";
+                    return result;
+                }
+
                 // compute deltas before removal
                 if (orderEntity?.OrderProducts != null)
                 {
@@ -133,7 +193,7 @@ namespace TSI.Friday.Services
                     foreach (var op in orderEntity.OrderProducts)
                     {
                         var pid = op.ProductId;
-                        var delta = Convert.ToInt32(op.Quantity); // add back to stock
+                        var delta = Convert.ToInt32(op.Quantity);
                         if (deltas.ContainsKey(pid))
                             deltas[pid] += delta;
                         else
@@ -259,7 +319,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Pedidos do BusinessPartnere {businessPartnerId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Pedidos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;
