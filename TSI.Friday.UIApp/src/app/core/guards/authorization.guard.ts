@@ -33,11 +33,6 @@ export class AuthorizationGuard implements CanActivateChild {
 
           if (!isAccountRoute) {
             this.modalService.hideModal();
-            this.modalService.showSweetNotification(
-              'Restricted Area',
-              'Leave immediately!',
-              'error',
-            );
           }
 
           // Navigate to login without causing the modal for account routes
