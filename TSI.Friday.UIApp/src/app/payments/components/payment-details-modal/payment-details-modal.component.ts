@@ -21,7 +21,7 @@ export class PaymentDetailsModalComponent {
 
   isEdit = false;
   data?: Payment | null = null;
-  id: number | null = null;
+  id: string | null = null;
 
   private _baseEndPoint: ApiType = ApiType.Payments;
 

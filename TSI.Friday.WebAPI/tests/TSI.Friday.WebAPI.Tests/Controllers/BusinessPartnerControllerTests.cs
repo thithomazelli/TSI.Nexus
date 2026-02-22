@@ -162,7 +162,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task BusinessPartnersController_GetById_ShouldGetBusinessPartnerById_WhenMethodIsCalled()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var individualMock = new BusinessPartnerDto
             {
                 Id = idMock,
@@ -181,7 +181,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             };
 
             _businessPartnerServiceMock
-                .Setup(_ => _.FindById(It.IsAny<int?>()))
+                .Setup(_ => _.FindById(It.IsAny<Guid?>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -193,7 +193,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(individualMock, response.Data);
 
-            _businessPartnerServiceMock.Verify(_ => _.FindById(It.IsAny<int?>()), Times.Once);
+            _businessPartnerServiceMock.Verify(_ => _.FindById(It.IsAny<Guid?>()), Times.Once);
         }
 
         [Fact]

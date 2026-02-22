@@ -43,7 +43,7 @@ namespace TSI.Friday.Services
                 var paymentEntity = _mapper.Map<Payment>(paymentDto);
                 await _repository.AddAsync(paymentEntity);
 
-                result.Data = paymentDto;
+                result.Data = _mapper.Map<PaymentDto>(paymentEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pagamento {paymentDto.Description} cadastrado com sucesso.";
             }
@@ -199,7 +199,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<PaymentDto>> FindById(int? id)
+        public async Task<WebApiResponse<PaymentDto>> FindById(Guid? id)
         {
             WebApiResponse<PaymentDto> result = new();
 
@@ -239,7 +239,7 @@ namespace TSI.Friday.Services
 
         /// <inheritdoc />
         public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByBusinessPartnerId(
-            int? businessPartnerId
+            Guid? businessPartnerId
         )
         {
             WebApiResponse<IEnumerable<PaymentDto>> result = new();

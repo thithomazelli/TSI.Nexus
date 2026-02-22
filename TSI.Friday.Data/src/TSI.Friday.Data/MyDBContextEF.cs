@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection.Emit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TSI.Friday.Contracts.Models;
@@ -87,6 +88,8 @@ namespace TSI.Friday.Data
                     stored: true
                 );
 
+            AddIndexByCreateDateForDataTables(modelBuilder);
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -96,6 +99,27 @@ namespace TSI.Friday.Data
 
             // Store all enums as strings globally
             configurationBuilder.Properties<Enum>().HaveConversion<string>();
+        }
+
+        private void AddIndexByCreateDateForDataTables(ModelBuilder modelBuilder)
+        {
+            // Create index on CreateDate for all entities that have this property (inherited from BaseModel)
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                // Check if the CLR type has a property named CreateDate
+                var clrType = entityType.ClrType;
+                if (clrType == null)
+                {
+                    continue;
+                }
+
+                var prop = clrType.GetProperty("CreateDate");
+                if (prop != null)
+                {
+                    // Ensure the entity is part of the model and define an index on the shadow/property
+                    modelBuilder.Entity(clrType).HasIndex("CreateDate");
+                }
+            }
         }
     }
 }

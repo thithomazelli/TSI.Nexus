@@ -7,8 +7,6 @@ namespace TSI.Friday.Contracts.Models
 {
     public class OrderProduct : BaseModel
     {
-        public int Id { get; set; }
-
         public string Description { get; set; } = string.Empty;
 
         public decimal Quantity { get; set; }
@@ -27,18 +25,18 @@ namespace TSI.Friday.Contracts.Models
         public OrderProductStatus Status { get; set; }
 
         [ForeignKey("Address")]
-        public int? AddressId { get; set; }
+        public Guid? AddressId { get; set; }
 
         public virtual Address Address { get; set; }
 
         [ForeignKey("Order")]
-        public int OrderId { get; set; }
+        public Guid OrderId { get; set; }
 
         [Required]
         public virtual Order Order { get; set; } = null!;
 
         [ForeignKey("Product")]
-        public int ProductId { get; set; }
+        public Guid ProductId { get; set; }
 
         [Required]
         public virtual Product Product { get; set; } = null!;

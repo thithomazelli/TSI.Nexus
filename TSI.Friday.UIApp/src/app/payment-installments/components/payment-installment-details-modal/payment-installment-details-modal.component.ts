@@ -21,7 +21,9 @@ export class PaymentInstallmentDetailsModalComponent {
 
   isEdit = false;
   data?: Payment | null = null;
-  id: number | null = null;
+  id: string | null = null;
+  parentId: string | null = null;
+  parentData: any;
 
   private _baseEndPoint: ApiType = ApiType.PaymentInstallments;
 
@@ -35,6 +37,8 @@ export class PaymentInstallmentDetailsModalComponent {
       this.isEdit = dialogData.isEdit ?? false;
       this.data = dialogData.data ?? null;
       this.id = dialogData.id ?? null;
+      this.parentId = dialogData.parentId ?? null;
+      this.parentData = dialogData.parentData ?? null;
     }
   }
 

@@ -18,10 +18,10 @@ import { OrderProductsDetailsModalComponent } from './components/order-product-d
 })
 export class OrderProductsComponent {
   @Input()
-  parentOrderId?: number | null = null;
+  parentOrderId?: string | null = null;
 
   @Output()
-  orderProductsUpdated = new EventEmitter<number>();
+  orderProductsUpdated = new EventEmitter<string>();
 
   baseEndPoint = ApiType.OrderProducts;
 
@@ -144,7 +144,7 @@ export class OrderProductsComponent {
       >(`${this.baseEndPoint}/remove`, orderProduct)
       .subscribe((response: WebApiResponse<OrderProduct>) => {
         this.rowData = this.rowData.filter((p) => p.id !== orderProduct.id);
-        this.orderProductsUpdated.emit(this.parentOrderId ?? 0);
+        this.orderProductsUpdated.emit(this.parentOrderId ?? '');
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -168,7 +168,7 @@ export class OrderProductsComponent {
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
         this.getOrderProducts();
-        this.orderProductsUpdated.emit(this.parentOrderId ?? 0);
+        this.orderProductsUpdated.emit(this.parentOrderId ?? '');
         ref.close();
       });
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
@@ -45,27 +46,29 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One paymentInstallment object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<PaymentInstallmentDto>> FindById(int? id);
+        Task<WebApiResponse<PaymentInstallmentDto>> FindById(Guid? id);
 
         /// <summary>
         /// Method responsible to get a list of PaymentInstallments based on the PaymentID received as parameter.
         /// </summary>
         /// <param name="paymentId">The ID to be used on the search.</param>
         /// <returns>List of paymentInstallments according to the PaymentID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByPaymentId(int? paymentId);
+        Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByPaymentId(Guid? paymentId);
 
         /// <summary>
         /// Method responsible to get a list of PaymentInstallments based on the BusinessPartnerID received as parameter.
         /// </summary>
         /// <param name="businessPartnerId">The ID to be used on the search.</param>
         /// <returns>List of paymentInstallments according to the BusinessPartnerID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByBusinessPartnerId(int? businessPartnerId);
+        Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByBusinessPartnerId(
+            Guid? businessPartnerId
+        );
 
         /// <summary>
         /// Method responsible to get a list of PaymentInstallments based on the OrderID received as parameter.
         /// </summary>
         /// <param name="orderId">The ID to be used on the search.</param>
         /// <returns>List of paymentInstallments according to the OrderID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByOrderId(int? orderId);
+        Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByOrderId(Guid? orderId);
     }
 }

@@ -29,15 +29,15 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new PaymentInstallment
                 {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Description = "Pagamento 1",
-                    PaymentId = 1,
+                    PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
                 new PaymentInstallment
                 {
-                    Id = 2,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Description = "Pagamento 2",
-                    PaymentId = 2,
+                    PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                 },
             };
         }
@@ -48,9 +48,9 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var paymentInstallmentDto = new PaymentInstallmentDto
             {
-                Id = 3,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                 Description = "Pagamento 3",
-                PaymentId = 3,
+                PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
             };
             _repository
                 .Setup(r => r.AddAsync(It.IsAny<PaymentInstallment>()))
@@ -130,7 +130,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentInstallmentService_FindById_ShouldReturnPaymentInstallment_WhenIdIsValid()
         {
             // Arrange
-            const int id = 1;
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var payment = _paymentInstallmentsMock.First(p => p.Id == id);
             _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(payment);
 
@@ -153,7 +153,8 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentInstallmentService_FindByPaymentId_ShouldReturnPaymentInstallments_WhenPaymentIdIsValid()
         {
             // Arrange
-            const int paymentId = 1;
+            var paymentId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            ;
             var payments = _paymentInstallmentsMock.Where(p => p.PaymentId == paymentId).ToList();
             _repository
                 .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
@@ -181,8 +182,11 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentInstallmentService_FindByBusinessPartnerId_ShouldReturnPaymentInstallments_WhenBusinessPartnerIdIsValid()
         {
             // Arrange
-            const int businessPartnerId = 1;
-            var payments = _paymentInstallmentsMock.Where(p => p.BusinessPartnerId == businessPartnerId).ToList();
+            var businessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            ;
+            var payments = _paymentInstallmentsMock
+                .Where(p => p.BusinessPartnerId == businessPartnerId)
+                .ToList();
             _repository
                 .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
                 .ReturnsAsync(payments);
@@ -195,7 +199,9 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             // Act
-            var result = await _paymentInstallmentService.FindByBusinessPartnerId(businessPartnerId);
+            var result = await _paymentInstallmentService.FindByBusinessPartnerId(
+                businessPartnerId
+            );
 
             // Assert
             expected.Should().BeEquivalentTo(result);
@@ -209,7 +215,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentInstallmentService_FindByOrderId_ShouldReturnPaymentInstallments_WhenOrderIdIsValid()
         {
             // Arrange
-            const int orderId = 1;
+            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var payments = _paymentInstallmentsMock.Where(p => p.OrderId == orderId).ToList();
             _repository
                 .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))

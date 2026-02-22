@@ -5,6 +5,8 @@ namespace TSI.Friday.Contracts.Models
 {
     public abstract class BaseModel
     {
+        public Guid Id { get; set; }
+
         [DataType(DataType.DateTime)]
         public DateTime CreateDate { get; set; }
 

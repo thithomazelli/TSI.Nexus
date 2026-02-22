@@ -4,7 +4,7 @@ import { PaymentType } from '../enums/payment-type.enum';
 import { BaseModel } from './base.model';
 
 export interface PaymentInstallment extends BaseModel {
-  id: number;
+  id: string;
   type?: PaymentType;
   status?: PaymentStatus;
   method?: PaymentMethod;
@@ -12,8 +12,9 @@ export interface PaymentInstallment extends BaseModel {
   description?: string;
   installmentNumber?: number;
   price?: number;
-  orderId?: number;
+  paymentId?: string;
+  orderId?: string;
   orderNumber?: string;
-  businessPartnerId?: number;
+  businessPartnerId?: string;
   businessPartnerName?: string;
 }

@@ -52,7 +52,7 @@ namespace TSI.Friday.Services
                 await _repository.AddAsync(orderProductEntity);
 
                 // Update product stock: batch via product service
-                var deltas = new Dictionary<int, int>
+                var deltas = new Dictionary<Guid, int>
                 {
                     { orderProductEntity.ProductId, -Convert.ToInt32(orderProductEntity.Quantity) },
                 };
@@ -92,7 +92,7 @@ namespace TSI.Friday.Services
 
                 if (newQuantity != 0)
                 {
-                    var deltas = new Dictionary<int, int>
+                    var deltas = new Dictionary<Guid, int>
                     {
                         { orderProductDto.ProductId, newQuantity },
                     };
@@ -129,7 +129,7 @@ namespace TSI.Friday.Services
                 await _repository.RemoveAsync(existing);
 
                 // Add back quantity to product
-                var deltas = new Dictionary<int, int>
+                var deltas = new Dictionary<Guid, int>
                 {
                     { existing.ProductId, Convert.ToInt32(existing.Quantity) },
                 };
@@ -154,7 +154,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByOrderId(int? orderId)
+        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByOrderId(Guid? orderId)
         {
             WebApiResponse<IEnumerable<OrderProductDto>> result = new();
 
@@ -181,7 +181,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<OrderProductDto>> FindById(int? id)
+        public async Task<WebApiResponse<OrderProductDto>> FindById(Guid? id)
         {
             WebApiResponse<OrderProductDto> result = new();
 
@@ -209,7 +209,7 @@ namespace TSI.Friday.Services
 
         #region Private methods
 
-        private async Task RecalculateAndUpdateOrderAsync(int orderId)
+        private async Task RecalculateAndUpdateOrderAsync(Guid orderId)
         {
             var items = await _repository.QueryAsync(op => op.OrderId == orderId);
             var sum =

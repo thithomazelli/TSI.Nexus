@@ -25,7 +25,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var productMock = new Product
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Sku = "SKU001",
                 Name = "Caçamba",
                 Unit = ProductUnit.Unit,
@@ -81,7 +81,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var productMock = new Product
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Sku = "SKU001",
                 Name = "Caçamba",
                 Unit = ProductUnit.Unit,
@@ -137,7 +137,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var productMock = new Product
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Sku = "SKU001",
                 Name = "Caçamba",
                 Unit = ProductUnit.Unit,
@@ -173,14 +173,14 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var productMock = new List<Product>
             {
                 new() {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Sku = "SKU001",
                     Name = "Caçamba",
                     Unit = ProductUnit.Unit,
                     Price = 25.00M
                 },
                 new() {
-                    Id = 2,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Sku = "SKU002",
                     Name = "Descarte de Reciclagem",
                     Unit = ProductUnit.Kilogram,
@@ -214,10 +214,10 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task ProductsController_GetById_ShouldGetProductById_WhenMethodIsCalled()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var productMock = new Product
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Sku = "SKU001",
                 Name = "Caçamba",
                 Unit = ProductUnit.Unit,
@@ -231,7 +231,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Message = $"Produto {productMock.Name} encontrado com sucesso"
             };
 
-            _productServiceMock.Setup(_ => _.FindById(It.IsAny<int?>()))
+            _productServiceMock.Setup(_ => _.FindById(It.IsAny<Guid?>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -243,7 +243,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(productMock, response.Data);
 
-            _productServiceMock.Verify(_ => _.FindById(It.IsAny<int?>()), Times.Once);
+            _productServiceMock.Verify(_ => _.FindById(It.IsAny<Guid?>()), Times.Once);
         }
 
         [Fact]
@@ -253,7 +253,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var skuMock = "SKU001";
             var productMock = new Product
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Sku = "SKU001",
                 Name = "Caçamba",
                 Unit = ProductUnit.Unit,

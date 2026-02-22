@@ -101,7 +101,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<BusinessPartnerDto>> FindById(int? id)
+        public async Task<WebApiResponse<BusinessPartnerDto>> FindById(Guid? id)
         {
             WebApiResponse<BusinessPartnerDto> result = new();
 

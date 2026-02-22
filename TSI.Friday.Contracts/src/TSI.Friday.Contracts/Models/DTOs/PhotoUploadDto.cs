@@ -11,7 +11,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
     {
         public string Entity { get; set; }
 
-        public int EntityId { get; set; }
+        public Guid EntityId { get; set; }
 
         public IFormFile File { get; set; }
     }

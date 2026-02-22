@@ -7,7 +7,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 {
     public class OrderProductDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Description { get; set; }
 
@@ -27,15 +27,15 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public OrderProductStatus Status { get; set; }
 
-        public int OrderId { get; set; }
+        public Guid OrderId { get; set; }
 
-        public int AddressId { get; set; }
+        public Guid AddressId { get; set; }
 
         public Address Address { get; set; }
 
         public string OrderNumber { get; set; }
 
-        public int ProductId { get; set; }
+        public Guid ProductId { get; set; }
 
         public string ProductName { get; set; }
 

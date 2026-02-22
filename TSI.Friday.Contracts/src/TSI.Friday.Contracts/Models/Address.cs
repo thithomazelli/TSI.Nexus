@@ -1,12 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models
 {
     public class Address : BaseModel
     {
-        public int Id { get; set; }
-
         public string Name { get; set; }
 
         public string Street { get; set; }
@@ -28,7 +27,7 @@ namespace TSI.Friday.Contracts.Models
         public bool IsDefault { get; set; }
 
         [ForeignKey("BusinessPartner")]
-        public int BusinessPartnerId { get; set; }
+        public Guid BusinessPartnerId { get; set; }
 
         public BusinessPartner BusinessPartner { get; set; }
     }

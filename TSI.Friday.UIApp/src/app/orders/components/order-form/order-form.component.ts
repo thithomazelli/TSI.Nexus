@@ -20,6 +20,9 @@ import {
   CurrencyService,
   OrderProduct,
   PaymentType,
+  PaymentStatus,
+  PaymentCondition,
+  PaymentMethod,
 } from '@friday/core';
 import { MatDialogRef } from '@angular/material/dialog';
 
@@ -154,11 +157,19 @@ export class OrderFormComponent
       return;
     }
 
-    Object.assign(this.data!, this.form.getRawValue());
+    // Garante que paymentGroup tenha os campos de cliente atualizados
+    const formValue = this.form.getRawValue();
+    if (formValue.payment) {
+      formValue.payment.businessPartnerId = formValue.businessPartnerId;
+      formValue.payment.businessPartnerName = formValue.businessPartnerName;
+    }
+
+    Object.assign(this.data!, formValue);
 
     if (this.data?.payment?.id == null) {
       delete this.data!.payment!.id;
     }
+
     this.save.emit(this.data!);
   }
 
@@ -219,10 +230,10 @@ export class OrderFormComponent
       id: [null],
       type: [PaymentType.Incoming],
       date: [new Date(), Validators.required],
-      method: ['', Validators.required],
-      status: ['', Validators.required],
+      method: [PaymentMethod.Cash, Validators.required],
+      status: [PaymentStatus.Pending, Validators.required],
       category: ['Recebimentos'],
-      condition: ['', Validators.required],
+      condition: [PaymentCondition.FullPayment, Validators.required],
       totalOfInstallments: [1, [Validators.min(1)]],
       price: [0, [Validators.min(0)]],
       pricePerInstallment: [0, [Validators.min(0)]],

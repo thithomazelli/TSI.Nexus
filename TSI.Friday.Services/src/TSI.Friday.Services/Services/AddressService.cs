@@ -110,7 +110,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<AddressDto>> FindById(int? id)
+        public async Task<WebApiResponse<AddressDto>> FindById(Guid? id)
         {
             WebApiResponse<AddressDto> result = new();
 
@@ -136,7 +136,9 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<AddressDto>>> FindByBusinessPartnerId(int? businessPartnerId)
+        public async Task<WebApiResponse<IEnumerable<AddressDto>>> FindByBusinessPartnerId(
+            Guid? businessPartnerId
+        )
         {
             WebApiResponse<IEnumerable<AddressDto>> result = new();
 
@@ -168,7 +170,9 @@ namespace TSI.Friday.Services
         private async Task<bool> SetDefaultAddress(AddressDto addressDto)
         {
             var addressEntity = _mapper.Map<Address>(addressDto);
-            var anyAddresses = await _repository.AnyAsync(a => a.BusinessPartnerId == addressDto.BusinessPartnerId);
+            var anyAddresses = await _repository.AnyAsync(a =>
+                a.BusinessPartnerId == addressDto.BusinessPartnerId
+            );
 
             if (!anyAddresses)
             {
@@ -191,7 +195,9 @@ namespace TSI.Friday.Services
             }
 
             var existingDefaults = await _repository.QueryAsync(a =>
-                a.BusinessPartnerId == addressDto.BusinessPartnerId && a.Id != addressDto.Id && a.IsDefault
+                a.BusinessPartnerId == addressDto.BusinessPartnerId
+                && a.Id != addressDto.Id
+                && a.IsDefault
             );
 
             if (existingDefaults == null)

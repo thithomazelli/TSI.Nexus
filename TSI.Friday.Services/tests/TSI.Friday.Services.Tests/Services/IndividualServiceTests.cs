@@ -32,7 +32,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new()
                 {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Name = "Thiago Thomazelli Ferreira",
                     Email = "thiago.thomazelli@tsi.com.br",
                     SocialSecurityCard = "111.222.333-44",
@@ -41,42 +41,42 @@ namespace TSI.Friday.Services.Tests.Services
                 },
                 new()
                 {
-                    Id = 2,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Name = "Leonardo Thomazelli Ferreira",
                     Email = "leonardo.thomazelli@tsi.com.br",
                     Birthday = DateTime.Now.AddDays(1),
                 },
                 new()
                 {
-                    Id = 3,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                     Name = "Fábio Moraes",
                     Email = "fabio.moraes@tsi.com.br",
                     Birthday = DateTime.Now.AddDays(2),
                 },
                 new()
                 {
-                    Id = 4,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000004"),
                     Name = "Felipe Rocha",
                     Email = "felipe.rocha@tsi.com.br",
                     Birthday = DateTime.Now.AddDays(3),
                 },
                 new()
                 {
-                    Id = 5,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000005"),
                     Name = "Renan Amarantes Fernandes",
                     Email = "renan.fernandes@tsi.com.br",
                     Birthday = DateTime.Now.AddDays(4),
                 },
                 new()
                 {
-                    Id = 6,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000006"),
                     Name = "Rafael Spessotto",
                     Email = "rafael.spessotto@tsi.com.br",
                     Birthday = DateTime.Now.AddDays(-5),
                 },
                 new()
                 {
-                    Id = 7,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000007"),
                     Name = "Administrator",
                     Email = "admin@tsi.com.br",
                     Birthday = DateTime.Now.AddDays(5),
@@ -90,7 +90,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
@@ -127,7 +127,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
@@ -162,7 +162,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
@@ -199,7 +199,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
                 SocialSecurityCard = "111.222.333-44",
@@ -238,7 +238,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
                 SocialSecurityCard = "111.222.333-44",
@@ -280,7 +280,7 @@ namespace TSI.Friday.Services.Tests.Services
             var exception = new Exception();
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
@@ -312,7 +312,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
             };
 
@@ -350,7 +350,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
@@ -385,7 +385,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
@@ -422,7 +422,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
                 SocialSecurityCard = "111.222.333-44",
@@ -461,7 +461,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
                 Email = "thiago.thomazelli@tsi.com.br",
                 SocialSecurityCard = "111.222.333-44",
@@ -503,7 +503,7 @@ namespace TSI.Friday.Services.Tests.Services
             var exception = new Exception();
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Thiago Thomazelli Ferreira",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
@@ -88,7 +89,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="orderId">Order id to be used in the search</param>
         [HttpGet]
         [Route("GetById/{orderId}")]
-        public async Task<IActionResult> GetById(int? orderId)
+        public async Task<IActionResult> GetById(Guid? orderId)
         {
             var webApiResponse = await _orderService.FindById(orderId);
             return Ok(webApiResponse);
@@ -112,7 +113,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="businessPartnerId">BusinessPartner id to be used in the search</param>
         [HttpGet]
         [Route("GetByBusinessPartnerId/{businessPartnerId}")]
-        public async Task<IActionResult> GetByBusinessPartnerId(int? businessPartnerId)
+        public async Task<IActionResult> GetByBusinessPartnerId(Guid? businessPartnerId)
         {
             var webApiResponse = await _orderService.FindByBusinessPartnerId(businessPartnerId);
             return Ok(webApiResponse);
@@ -124,7 +125,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="productId">Product id to be used in the search</param>
         [HttpGet]
         [Route("GetByProductId/{productId}")]
-        public async Task<IActionResult> GetByProductId(int? productId)
+        public async Task<IActionResult> GetByProductId(Guid? productId)
         {
             var webApiResponse = await _orderService.FindByProductId(productId);
             return Ok(webApiResponse);

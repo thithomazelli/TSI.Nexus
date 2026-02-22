@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Enums;
@@ -73,7 +74,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns>The businessPartner object based on the id informed</returns>
         [HttpGet]
         [Route("GetById/{businessPartnerId}")]
-        public async Task<IActionResult> GetById(int? businessPartnerId)
+        public async Task<IActionResult> GetById(Guid? businessPartnerId)
         {
             var webApiResponse = await _businessPartnerService.FindById(businessPartnerId);
             return Ok(webApiResponse);

@@ -141,7 +141,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<Product>> FindById(int? id)
+        public async Task<WebApiResponse<Product>> FindById(Guid? id)
         {
             WebApiResponse<Product> result = new();
 
@@ -192,7 +192,7 @@ namespace TSI.Friday.Services
         /// Adjusts the stock for a batch of products.
         /// </summary>
         /// <param name="deltas">A dictionary where the key is the product ID and the value is the stock change amount.</param>
-        public async Task AdjustStockAsync(IDictionary<int, int> deltas)
+        public async Task AdjustStockAsync(IDictionary<Guid, int> deltas)
         {
             if (deltas == null || deltas.Count == 0)
             {

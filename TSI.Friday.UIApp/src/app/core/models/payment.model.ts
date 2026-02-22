@@ -5,7 +5,7 @@ import { BaseModel } from './base.model';
 import { PaymentInstallment } from './payment-installment.model';
 
 export interface Payment extends BaseModel {
-  id?: number;
+  id?: string;
   type?: PaymentType;
   date?: Date;
   category?: string;
@@ -16,9 +16,9 @@ export interface Payment extends BaseModel {
   method?: PaymentMethod;
   status?: PaymentStatus;
   price?: number;
-  orderId?: number;
+  orderId?: string;
   orderNumber?: string;
-  businessPartnerId?: number;
+  businessPartnerId?: string;
   businessPartnerName?: string;
   installments?: PaymentInstallment[];
 }

@@ -135,7 +135,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<PaymentInstallmentDto>> FindById(int? id)
+        public async Task<WebApiResponse<PaymentInstallmentDto>> FindById(Guid? id)
         {
             WebApiResponse<PaymentInstallmentDto> result = new();
 
@@ -161,7 +161,7 @@ namespace TSI.Friday.Services
 
         /// <inheritdoc />
         public async Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByPaymentId(
-            int? paymentId
+            Guid? paymentId
         )
         {
             WebApiResponse<IEnumerable<PaymentInstallmentDto>> result = new();
@@ -184,15 +184,17 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByBusinessPartnerId(
-            int? businessPartnerId
-        )
+        public async Task<
+            WebApiResponse<IEnumerable<PaymentInstallmentDto>>
+        > FindByBusinessPartnerId(Guid? businessPartnerId)
         {
             WebApiResponse<IEnumerable<PaymentInstallmentDto>> result = new();
 
             try
             {
-                var payments = await _repository.QueryAsync(p => p.BusinessPartnerId == businessPartnerId);
+                var payments = await _repository.QueryAsync(p =>
+                    p.BusinessPartnerId == businessPartnerId
+                );
                 result.Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -209,7 +211,7 @@ namespace TSI.Friday.Services
 
         /// <inheritdoc />
         public async Task<WebApiResponse<IEnumerable<PaymentInstallmentDto>>> FindByOrderId(
-            int? orderId
+            Guid? orderId
         )
         {
             WebApiResponse<IEnumerable<PaymentInstallmentDto>> result = new();

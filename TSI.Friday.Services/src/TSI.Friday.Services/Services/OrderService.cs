@@ -55,46 +55,21 @@ namespace TSI.Friday.Services
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
 
-                // If there is a payment in the DTO, persist the Order first (without Payment)
-                var hasPayment = orderDto.Payment != null;
+                var paymentDto = orderDto.Payment;
 
-                Order orderEntity;
-                PaymentDto? savedPayment = null;
-
-                // map without including Payment to get Order Id
-                var temp = new OrderDto
+                if (paymentDto != null)
                 {
-                    Id = orderDto.Id,
-                    OrderNumber = orderDto.OrderNumber,
-                    BusinessPartnerId = orderDto.BusinessPartnerId,
-                    BusinessPartnerName = orderDto.BusinessPartnerName,
-                    Status = orderDto.Status,
-                    Description = orderDto.Description,
-                    Discount = orderDto.Discount,
-                    Price = orderDto.Price,
-                    TotalPrice = orderDto.TotalPrice,
-                    OrderProducts = orderDto.OrderProducts,
-                };
-
-                orderEntity = _mapper.Map<Order>(temp);
-                await _repository.AddAsync(orderEntity);
-
-                var paymentDto = orderDto.Payment!;
-                paymentDto.OrderId = orderEntity.Id;
-                var paymentResult = await _paymentService.Add(paymentDto);
-
-                if (paymentResult?.Status == ResponseStatus.Success && paymentResult?.Data != null)
-                {
-                    // ensure Order references the created Payment
-                    orderEntity.PaymentId = paymentResult.Data.Id;
-                    await _repository.UpdateAsync(orderEntity);
-                    savedPayment = paymentResult.Data;
+                    var paymentResult = await _paymentService.Add(paymentDto);
+                    orderDto.Payment = null;
                 }
+
+                var orderEntity = _mapper.Map<Order>(orderDto);
+                await _repository.AddAsync(orderEntity);
 
                 // adjust stock in batch if product service available
                 if (orderEntity.OrderProducts.Any())
                 {
-                    var deltas = new Dictionary<int, int>();
+                    var deltas = new Dictionary<Guid, int>();
                     foreach (var op in orderEntity.OrderProducts)
                     {
                         var pid = op.ProductId;
@@ -117,7 +92,6 @@ namespace TSI.Friday.Services
 
                 // prepare response DTO
                 var responseDto = _mapper.Map<OrderDto>(orderEntity);
-                responseDto.Payment = savedPayment;
 
                 result.Data = responseDto;
                 result.Status = ResponseStatus.Success;
@@ -189,7 +163,7 @@ namespace TSI.Friday.Services
                 // compute deltas before removal
                 if (orderEntity?.OrderProducts != null)
                 {
-                    var deltas = new Dictionary<int, int>();
+                    var deltas = new Dictionary<Guid, int>();
                     foreach (var op in orderEntity.OrderProducts)
                     {
                         var pid = op.ProductId;
@@ -245,7 +219,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<OrderDto>> FindById(int? id)
+        public async Task<WebApiResponse<OrderDto>> FindById(Guid? id)
         {
             WebApiResponse<OrderDto> result = new();
 
@@ -301,7 +275,7 @@ namespace TSI.Friday.Services
 
         /// <inheritdoc />
         public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByBusinessPartnerId(
-            int? businessPartnerId
+            Guid? businessPartnerId
         )
         {
             WebApiResponse<IEnumerable<OrderDto>> result = new();
@@ -326,7 +300,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByProductId(int? productId)
+        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByProductId(Guid? productId)
         {
             WebApiResponse<IEnumerable<OrderDto>> result = new();
 

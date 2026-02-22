@@ -23,7 +23,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
 
   isEdit = false;
   data?: Individual | Company | null = <BusinessPartner>{};
-  id: number | null = null;
+  id: string | null = null;
 
   private _baseEndPoint: ApiType = ApiType.BusinessPartners;
 

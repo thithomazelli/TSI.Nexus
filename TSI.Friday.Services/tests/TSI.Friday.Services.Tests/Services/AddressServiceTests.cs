@@ -33,8 +33,8 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new AddressDto
                 {
-                    Id = 1,
-                    BusinessPartnerId = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Type = AddressType.Home,
                     Country = "Brasil",
                     City = "Santo André",
@@ -47,8 +47,8 @@ namespace TSI.Friday.Services.Tests.Services
                 },
                 new AddressDto
                 {
-                    Id = 2,
-                    BusinessPartnerId = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Type = AddressType.Office,
                     Country = "Brasil",
                     City = "Santo André",
@@ -227,7 +227,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task AddressService_FindById_ShouldReturnAnAddressSuccessfully_WhenIdIsValid()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var addressMock = _addressListMock.FirstOrDefault(_ =>
                 idMock.Equals(_.BusinessPartnerId)
             );
@@ -257,7 +257,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task AddressService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenIdIsInvalid()
         {
             // Arrange
-            const int idMock = 10;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-00000000000A");
             var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = null,
@@ -283,7 +283,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task AddressService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var exception = new Exception();
             var expectedResult = new WebApiResponse<AddressDto>
             {
@@ -310,7 +310,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task AddressService_FindByBusinessPartnerId_ShouldReturnALisfOfAddressesSuccessfully_WhenBusinessPartnerIdIsValid()
         {
             // Arrange
-            const int businessPartnerIdMock = 1;
+            var businessPartnerIdMock = Guid.Parse("00000000-0000-0000-0000-00000000000A");
             var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
                 Data = _addressListMock,
@@ -340,7 +340,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task AddressService_FindByBusinessPartnerId_ShouldReturnAnEmptyData_WhenBusinessPartnerIdIsInvalid()
         {
             // Arrange
-            const int businessPartnerIdMock = 10;
+            var businessPartnerIdMock = Guid.Parse("00000000-0000-0000-0000-00000000000A");
             var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {
                 Data = new List<AddressDto>(),
@@ -371,7 +371,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task AddressService_FindByBusinessPartnerId_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
-            const int businessPartnerIdMock = 1;
+            var businessPartnerIdMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var exception = new Exception();
             var expectedResult = new WebApiResponse<IEnumerable<AddressDto>>
             {

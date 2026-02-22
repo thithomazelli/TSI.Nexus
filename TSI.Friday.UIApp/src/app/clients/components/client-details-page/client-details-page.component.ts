@@ -38,7 +38,7 @@ export class ClientDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      this.loadBusinessPartner(Number(idParam));
+      this.loadBusinessPartner(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
@@ -88,7 +88,7 @@ export class ClientDetailsPageComponent {
     this.data = JSON.parse(JSON.stringify(this.data));
   }
 
-  private loadBusinessPartner(id: number): void {
+  private loadBusinessPartner(id: string): void {
     this.loading = true;
     this.apiService
       .get<

@@ -1,296 +1,302 @@
 <div class="order-product-form-wrapper" [ngClass]="{ compact: compact }">
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <!-- Sessão 1: Informações do Produto -->
-    <section>
-      <h5 class="mt-3 mb-2">Informações do Produto</h5>
-      <div class="row g-1 mb-1">
-        <div class="col-6">
-          <div class="input-group position-relative">
-            <div class="form-floating flex-grow-1">
-              <input
-                type="text"
-                formControlName="productSku"
-                class="form-control"
-                [matAutocomplete]="skuAuto"
-                [class.is-invalid]="isInvalid('productSku')"
-                placeholder="SKU"
-                (blur)="onProductSkuBlur()"
-              />
-              <label for="productSku">SKU</label>
-              <mat-autocomplete
-                #skuAuto="matAutocomplete"
-                (optionSelected)="selectProduct($event.option.value)"
-              >
-                <mat-option
-                  *ngFor="let product of filteredProductsSku$ | async"
-                  [value]="product"
-                  [disabled]="product.disabled || product.alreadyUsed"
-                  [ngClass]="{ 'text-muted': product.disabled }"
-                >
-                  {{ product.sku }}
-                  <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
-                    >(já utilizado)</span
-                  >
-                  <span *ngIf="product.disabled" class="ms-1 text-muted"
-                    >(sem estoque)</span
-                  >
-                </mat-option>
-              </mat-autocomplete>
-            </div>
-            <div class="input-group-text"><i class="bi bi-upc"></i></div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="input-group position-relative">
-            <div class="form-floating flex-grow-1">
-              <input
-                type="text"
-                formControlName="productName"
-                class="form-control"
-                [class.is-invalid]="isInvalid('productName')"
-                placeholder="Nome do Produto"
-                [matAutocomplete]="nameAuto"
-                (blur)="onProductNameBlur()"
-              />
-              <label for="productName">Nome do Produto</label>
-              <mat-autocomplete
-                #nameAuto="matAutocomplete"
-                (optionSelected)="selectProduct($event.option.value)"
-              >
-                <mat-option
-                  *ngFor="let product of filteredProductsName$ | async"
-                  [value]="product"
-                  [disabled]="product.disabled || product.alreadyUsed"
-                  [ngClass]="{
-                    'text-muted': product.disabled || product.alreadyUsed,
-                  }"
-                >
-                  {{ product.name }}
-                  <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
-                    >(já utilizado)</span
-                  >
-                  <span *ngIf="product.disabled" class="ms-2 text-muted"
-                    >(sem estoque)</span
-                  >
-                </mat-option>
-              </mat-autocomplete>
-            </div>
-            <div class="input-group-text"><i class="bi bi-tag"></i></div>
-          </div>
-        </div>
-
-        <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <select formControlName="productType" class="form-select">
-                <option value="" disabled selected>Tipo</option>
-                <option
-                  *ngFor="let option of productTypeOptions"
-                  [value]="option.value"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-              <label for="productType">Tipo</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-tag"></i></div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <select formControlName="status" class="form-select" id="status">
-                <option value="" disabled selected>Status</option>
-                <option
-                  *ngFor="let option of orderProductStatusOptions"
-                  [value]="option.value"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-              <label for="status">Status</label>
-            </div>
-            <div class="input-group-text">
-              <i class="bi bi-info-circle"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sessão 2: Dados (apenas para Rental) -->
-    <ng-container>
+    <div class="modal-scrollable-area">
+      <!-- Sessão 1: Informações do Produto -->
       <section>
-        <h5 class="mt-4 mb-2">Dados</h5>
-        <!-- Endereço -->
-        <div class="address-block mb-3">
-          <div *ngIf="!showAllAddresses">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <strong>Entrega para {{ selectedAddress?.name }}</strong
-                ><br />
-                <span>{{ selectedAddress?.address }}</span>
+        <h5 class="mt-3 mb-2">Informações do Produto</h5>
+        <div class="row g-1 mb-1">
+          <div class="col-6">
+            <div class="input-group position-relative">
+              <div class="form-floating flex-grow-1">
+                <input
+                  type="text"
+                  formControlName="productSku"
+                  class="form-control"
+                  [matAutocomplete]="skuAuto"
+                  [class.is-invalid]="isInvalid('productSku')"
+                  placeholder="SKU"
+                  (blur)="onProductSkuBlur()"
+                />
+                <label for="productSku">SKU</label>
+                <mat-autocomplete
+                  #skuAuto="matAutocomplete"
+                  (optionSelected)="selectProduct($event.option.value)"
+                >
+                  <mat-option
+                    *ngFor="let product of filteredProductsSku$ | async"
+                    [value]="product"
+                    [disabled]="product.disabled || product.alreadyUsed"
+                    [ngClass]="{ 'text-muted': product.disabled }"
+                  >
+                    {{ product.sku }}
+                    <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                      >(já utilizado)</span
+                    >
+                    <span *ngIf="product.disabled" class="ms-1 text-muted"
+                      >(sem estoque)</span
+                    >
+                  </mat-option>
+                </mat-autocomplete>
               </div>
-              <a
-                href="#"
-                (click)="$event.preventDefault(); onChangeAddressClick()"
-                class="address-action"
-                >Alterar</a
-              >
+              <div class="input-group-text"><i class="bi bi-upc"></i></div>
             </div>
           </div>
-          <div *ngIf="showAllAddresses">
-            <div class="mb-2">
-              <strong
-                >Endereços de entrega ({{ customerAddresses.length }})</strong
-              >
-            </div>
-            <div [formGroup]="form">
-              <div class="row g-1 mb-1">
-                <div
-                  class="col-12 col-md-6"
-                  *ngFor="let addr of customerAddresses"
+          <div class="col-6">
+            <div class="input-group position-relative">
+              <div class="form-floating flex-grow-1">
+                <input
+                  type="text"
+                  formControlName="productName"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('productName')"
+                  placeholder="Nome do Produto"
+                  [matAutocomplete]="nameAuto"
+                  (blur)="onProductNameBlur()"
+                />
+                <label for="productName">Nome do Produto</label>
+                <mat-autocomplete
+                  #nameAuto="matAutocomplete"
+                  (optionSelected)="selectProduct($event.option.value)"
                 >
-                  <div class="d-flex align-items-start mb-2">
-                    <input
-                      type="radio"
-                      formControlName="addressId"
-                      [value]="addr.id"
-                      class="me-2 mt-1"
-                      (change)="onSelectAddressRadio()"
-                    />
-                    <div>
-                      <strong>{{ addr.name }}</strong
-                      ><br />
-                      <span>{{ addr.address }}</span
-                      ><br />
-                      <a
-                        href="#"
-                        class="address-link me-2"
-                        (click)="
-                          $event.preventDefault(); openEditAddressModal(addr)
-                        "
-                        >Editar endereço</a
-                      >
+                  <mat-option
+                    *ngFor="let product of filteredProductsName$ | async"
+                    [value]="product"
+                    [disabled]="product.disabled || product.alreadyUsed"
+                    [ngClass]="{
+                      'text-muted': product.disabled || product.alreadyUsed,
+                    }"
+                  >
+                    {{ product.name }}
+                    <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                      >(já utilizado)</span
+                    >
+                    <span *ngIf="product.disabled" class="ms-2 text-muted"
+                      >(sem estoque)</span
+                    >
+                  </mat-option>
+                </mat-autocomplete>
+              </div>
+              <div class="input-group-text"><i class="bi bi-tag"></i></div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <select formControlName="productType" class="form-select">
+                  <option value="" disabled selected>Tipo</option>
+                  <option
+                    *ngFor="let option of productTypeOptions"
+                    [value]="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <label for="productType">Tipo</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-tag"></i></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <select
+                  formControlName="status"
+                  class="form-select"
+                  id="status"
+                >
+                  <option value="" disabled selected>Status</option>
+                  <option
+                    *ngFor="let option of orderProductStatusOptions"
+                    [value]="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <label for="status">Status</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-info-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sessão 2: Dados (apenas para Rental) -->
+      <ng-container>
+        <section>
+          <h5 class="mt-4 mb-2">Dados</h5>
+          <!-- Endereço -->
+          <div class="address-block mb-3">
+            <div *ngIf="!showAllAddresses">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>Entrega para {{ selectedAddress?.name }}</strong
+                  ><br />
+                  <span>{{ selectedAddress?.address }}</span>
+                </div>
+                <a
+                  href="#"
+                  (click)="$event.preventDefault(); onChangeAddressClick()"
+                  class="address-action"
+                  >Alterar</a
+                >
+              </div>
+            </div>
+            <div *ngIf="showAllAddresses">
+              <div class="mb-2">
+                <strong
+                  >Endereços de entrega ({{ customerAddresses.length }})</strong
+                >
+              </div>
+              <div [formGroup]="form">
+                <div class="row g-1 mb-1">
+                  <div
+                    class="col-12 col-md-6"
+                    *ngFor="let addr of customerAddresses"
+                  >
+                    <div class="d-flex align-items-start mb-2">
+                      <input
+                        type="radio"
+                        formControlName="addressId"
+                        [value]="addr.id"
+                        class="me-2 mt-1"
+                        (change)="onSelectAddressRadio()"
+                      />
+                      <div>
+                        <strong>{{ addr.name }}</strong
+                        ><br />
+                        <span>{{ addr.address }}</span
+                        ><br />
+                        <a
+                          href="#"
+                          class="address-link me-2"
+                          (click)="
+                            $event.preventDefault(); openEditAddressModal(addr)
+                          "
+                          >Editar endereço</a
+                        >
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="mt-2">
-              <a
-                href="#"
-                class="address-link me-3"
-                (click)="$event.preventDefault(); openAddAddressModal()"
-                >Adicionar um novo endereço de entrega</a
-              >
+              <div class="mt-2">
+                <a
+                  href="#"
+                  class="address-link me-3"
+                  (click)="$event.preventDefault(); openAddAddressModal()"
+                  >Adicionar um novo endereço de entrega</a
+                >
+              </div>
             </div>
           </div>
-        </div>
-        <!-- Datas -->
+          <!-- Datas -->
+          <div class="row g-1 mb-1">
+            <div class="col-6">
+              <app-date-field
+                formControlName="startDate"
+                [label]="'Data Retirada'"
+              ></app-date-field>
+            </div>
+            <div class="col-6">
+              <app-date-field
+                #endDateField
+                formControlName="endDate"
+                [label]="'Data Entrega'"
+              ></app-date-field>
+            </div>
+          </div>
+        </section>
+      </ng-container>
+
+      <!-- Sessão 3: Painel de Preços -->
+      <section>
+        <h5 class="mt-4 mb-2">Painel de Preços</h5>
         <div class="row g-1 mb-1">
           <div class="col-6">
-            <app-date-field
-              formControlName="startDate"
-              [label]="'Data Retirada'"
-            ></app-date-field>
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="quantity"
+                  type="number"
+                  min="1"
+                  placeholder="Quantidade"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('quantity')"
+                  (blur)="onQuantityBlur()"
+                />
+                <label for="quantity">Quantidade</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-123"></i></div>
+            </div>
           </div>
           <div class="col-6">
-            <app-date-field
-              #endDateField
-              formControlName="endDate"
-              [label]="'Data Entrega'"
-            ></app-date-field>
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  placeholder="Desconto"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('discount')"
+                />
+                <label for="discount">Desconto</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-percent"></i></div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="priceFormatted"
+                  type="text"
+                  placeholder="Preço Sugerido"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('priceFormatted')"
+                  (blur)="onPriceBlur()"
+                />
+                <label for="price">Preço Sugerido</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="totalPriceFormatted"
+                  type="text"
+                  placeholder="Preço Total"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('totalPriceFormatted')"
+                />
+                <label for="totalPrice">Preço Total</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+            </div>
           </div>
         </div>
       </section>
-    </ng-container>
+    </div>
 
-    <!-- Sessão 3: Painel de Preços -->
-    <section>
-      <h5 class="mt-4 mb-2">Painel de Preços</h5>
-      <div class="row g-1 mb-1">
-        <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="quantity"
-                type="number"
-                min="1"
-                placeholder="Quantidade"
-                class="form-control"
-                [class.is-invalid]="isInvalid('quantity')"
-                (blur)="onQuantityBlur()"
-              />
-              <label for="quantity">Quantidade</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-123"></i></div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="discount"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                placeholder="Desconto"
-                class="form-control"
-                [class.is-invalid]="isInvalid('discount')"
-              />
-              <label for="discount">Desconto</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-percent"></i></div>
-          </div>
-        </div>
-
-        <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="priceFormatted"
-                type="text"
-                placeholder="Preço Sugerido"
-                class="form-control"
-                [class.is-invalid]="isInvalid('priceFormatted')"
-                (blur)="onPriceBlur()"
-              />
-              <label for="price">Preço Sugerido</label>
-            </div>
-            <div class="input-group-text">
-              <i class="bi bi-cash-coin"></i>
-            </div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="totalPriceFormatted"
-                type="text"
-                placeholder="Preço Total"
-                class="form-control"
-                [class.is-invalid]="isInvalid('totalPriceFormatted')"
-              />
-              <label for="totalPrice">Preço Total</label>
-            </div>
-            <div class="input-group-text">
-              <i class="bi bi-cash-coin"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="d-flex justify-content-end mt-3 gap-2">
-        <button type="button" class="btn btn-secondary" (click)="onCancel()">
-          Cancelar
-        </button>
-        <button type="submit" class="btn btn-success" [disabled]="form.invalid">
-          {{ isEdit ? "Salvar" : "Adicionar" }}
-        </button>
-      </div>
-    </section>
+    <div class="d-flex justify-content-end mt-3 gap-2">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+        {{ isEdit ? "Salvar" : "Adicionar" }}
+      </button>
+    </div>
   </form>
 </div>

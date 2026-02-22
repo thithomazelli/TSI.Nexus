@@ -29,7 +29,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new()
                 {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Name = "TSI Soluções em Informática",
                     Email = "thiago.thomazelli@tsi.com.br",
                     NationalRegistry = "11.222.3333/0001-44",
@@ -45,7 +45,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
 
@@ -83,7 +83,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
@@ -117,7 +117,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
@@ -153,7 +153,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
                 NationalRegistry = "11.222.3333/0001-44",
@@ -193,7 +193,7 @@ namespace TSI.Friday.Services.Tests.Services
             var exception = new Exception();
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
@@ -225,7 +225,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
             var companyEntity =
@@ -263,7 +263,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
@@ -297,7 +297,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
             };
@@ -333,7 +333,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
                 Email = "thiago.thomazelli@tsi.com.br",
                 NationalRegistry = "11.222.3333/0001-44",
@@ -373,7 +373,7 @@ namespace TSI.Friday.Services.Tests.Services
             var exception = new Exception();
             var companyDto = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
             var companyEntity =

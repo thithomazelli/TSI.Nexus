@@ -52,7 +52,7 @@ export class ProductsComponent implements OnInit {
       sortable: true,
       filter: true,
       flex: 1,
-      // minWidth: 150,
+      minWidth: 250,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         // href="#" prevents full page reload; onCellClicked handles navigation
@@ -60,21 +60,11 @@ export class ProductsComponent implements OnInit {
       },
     },
     {
-      field: 'description',
-      headerName: 'Descrição',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      // minWidth: 1500,
-      hide: true,
-    },
-    {
       field: 'price',
       headerName: 'Preço',
       sortable: true,
       filter: true,
-      // maxWidth: 120,
-      cellClass: 'text-start',
+      maxWidth: 120,
       valueFormatter: (params: ValueFormatterParams): string => {
         const v = params.value;
         if (v == null || v === '') return '';
@@ -114,7 +104,7 @@ export class ProductsComponent implements OnInit {
     },
     {
       field: 'quantityInStock',
-      headerName: 'Quantidade',
+      headerName: 'Estoque',
       sortable: true,
       filter: true,
       maxWidth: 120,

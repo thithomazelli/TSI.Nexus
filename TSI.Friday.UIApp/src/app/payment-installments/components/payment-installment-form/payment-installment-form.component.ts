@@ -16,6 +16,7 @@ import {
   FormBaseComponent,
   Order,
   Payment,
+  PaymentInstallment,
 } from '@friday/core';
 import { PaymentStatus } from '@friday/core';
 import { PaymentType } from '@friday/core';
@@ -37,13 +38,19 @@ export class PaymentInstallmentFormComponent
   isEdit = false;
 
   @Input()
+  parentId: string | null = null;
+
+  @Input()
+  parentData: Payment | undefined;
+
+  @Input()
   data?: Payment | null;
 
   @Input()
   compact = false;
 
   @Output()
-  save = new EventEmitter<Payment>();
+  save = new EventEmitter<PaymentInstallment>();
 
   @Output()
   cancel = new EventEmitter<void>();
@@ -124,7 +131,15 @@ export class PaymentInstallmentFormComponent
       this.form.markAllAsTouched();
       return;
     }
-    this.save.emit(this.form.getRawValue());
+
+    const rawValue = this.form.getRawValue();
+    // paymentId: [this.parentId],
+    // businessPartnerId: [this.parentData?.businessPartnerId],
+    // businessPartnerName: [this.parentData?.businessPartnerName],
+    // orderId: [this.parentData?.orderId],
+    // orderNumber: [this.parentData?.orderNumber],
+
+    this.save.emit(rawValue);
   }
 
   doCancel(): void {
@@ -141,12 +156,13 @@ export class PaymentInstallmentFormComponent
       installmentNumber: [0],
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
-      businessPartnerId: [null],
-      businessPartnerName: [''],
-      orderId: [null],
-      orderNumber: [''],
-      paymentId: [null],
+      paymentId: [this.parentId],
+      businessPartnerId: [this.parentData?.businessPartnerId],
+      businessPartnerName: [this.parentData?.businessPartnerName],
+      orderId: [this.parentData?.orderId],
+      orderNumber: [this.parentData?.orderNumber],
     };
+
     this.form = !this.isEdit
       ? this.formBuilder.group(commonControls)
       : this.formBuilder.group({

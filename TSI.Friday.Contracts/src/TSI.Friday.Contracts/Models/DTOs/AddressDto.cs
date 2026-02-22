@@ -1,10 +1,11 @@
-﻿using TSI.Friday.Contracts.Enums;
+﻿using System;
+using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
 {
     public class AddressDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Name { get; set; }
 
@@ -24,7 +25,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public AddressType Type { get; set; }
 
-        public int? BusinessPartnerId { get; set; }
+        public Guid? BusinessPartnerId { get; set; }
 
         public bool IsDefault { get; set; }
     }

@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using TSI.Friday.Contracts.Interfaces;
+using TSI.Friday.Contracts.Models;
 using TSI.Friday.Data;
 
 namespace TSI.Friday.Repository
@@ -31,6 +32,11 @@ namespace TSI.Friday.Repository
         /// <inheritdoc />
         public async Task AddAsync(T entity)
         {
+            if (entity is BaseModel bm && bm.Id == Guid.Empty)
+            {
+                bm.Id = Guid.NewGuid();
+            }
+
             await _myDbContext.Set<T>().AddAsync(entity);
             await SaveChangesAsync();
         }
@@ -133,7 +139,11 @@ namespace TSI.Friday.Repository
         /// <inheritdoc />
         public async Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter)
         {
-            return await _myDbContext.Set<T>().Where(filter).ToListAsync();
+            return await _myDbContext
+                .Set<T>()
+                .Where(filter)
+                .OrderBy(e => EF.Property<DateTime>(e, "CreateDate"))
+                .ToListAsync();
         }
 
         /// <inheritdoc />
@@ -152,7 +162,9 @@ namespace TSI.Friday.Repository
                 }
             }
 
-            var list = await query.ToListAsync();
+            var list = await query
+                .OrderBy(e => EF.Property<DateTime>(e, "CreateDate"))
+                .ToListAsync();
 
             return list ?? new List<T>();
         }
@@ -160,7 +172,10 @@ namespace TSI.Friday.Repository
         /// <inheritdoc />
         public async Task<IList<T>> GetAllAsync()
         {
-            return await _myDbContext.Set<T>().ToListAsync();
+            return await _myDbContext
+                .Set<T>()
+                .OrderBy(e => EF.Property<DateTime>(e, "CreateDate"))
+                .ToListAsync();
         }
 
         /// <inheritdoc />
@@ -176,7 +191,7 @@ namespace TSI.Friday.Repository
                 }
             }
 
-            return await query.ToListAsync();
+            return await query.OrderBy(e => EF.Property<DateTime>(e, "CreateDate")).ToListAsync();
         }
 
         #endregion Public methods

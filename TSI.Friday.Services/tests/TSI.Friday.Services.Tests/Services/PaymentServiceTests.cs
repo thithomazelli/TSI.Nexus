@@ -29,18 +29,18 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new PaymentDto
                 {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Description = "Pagamento 1",
-                    BusinessPartnerId = 1,
-                    OrderId = 1,
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    OrderId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Status = PaymentStatus.Pending,
                 },
                 new PaymentDto
                 {
-                    Id = 2,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Description = "Pagamento 2",
-                    BusinessPartnerId = 2,
-                    OrderId = 1,
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    OrderId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
             };
         }
@@ -51,10 +51,10 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var paymentDto = new PaymentDto
             {
-                Id = 3,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                 Description = "Pagamento 3",
-                BusinessPartnerId = 3,
-                OrderId = 2,
+                BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                OrderId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
             };
             _repository.Setup(r => r.AddAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
 
@@ -81,7 +81,7 @@ namespace TSI.Friday.Services.Tests.Services
             var paymentEntity = _mapper.Map<Payment>(paymentDto);
 
             _repository
-                .Setup(_ => _.GetByIdAsync(It.IsAny<int>(), p => p.Installments))
+                .Setup(_ => _.GetByIdAsync(It.IsAny<Guid>(), p => p.Installments))
                 .ReturnsAsync(paymentEntity);
             _repository.Setup(_ => _.UpdateAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
 
@@ -127,7 +127,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentService_FindById_ShouldReturnPayment_WhenIdIsValid()
         {
             // Arrange
-            const int id = 1;
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var paymentDto = _paymentsMock.First(p => p.Id == id);
             var paymentEntity = _mapper.Map<Payment>(paymentDto);
 
@@ -154,7 +154,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentService_FindByBusinessPartnerId_ShouldReturnPayments_WhenBusinessPartnerIdIsValid()
         {
             // Arrange
-            const int businessPartnerId = 1;
+            var businessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var paymentDtoList = _paymentsMock
                 .Where(p => p.BusinessPartnerId == businessPartnerId)
                 .ToList();

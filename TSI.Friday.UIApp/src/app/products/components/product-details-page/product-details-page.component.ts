@@ -17,7 +17,7 @@ import {
 export class ProductDetailsPageComponent {
   isEdit = false;
   data?: Product | null = null;
-  id: number | null = null;
+  id: string | null = null;
   loading = false;
   activeTab: 'form' | 'image' | 'extra' = 'form';
 
@@ -34,14 +34,9 @@ export class ProductDetailsPageComponent {
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {
-      const numericId = Number(idParam);
-      if (isNaN(numericId)) {
-        this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
-        return;
-      }
       this.isEdit = true;
-      this.id = numericId;
-      this.loadProduct(numericId);
+      this.id = idParam;
+      this.loadProduct(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
@@ -73,7 +68,7 @@ export class ProductDetailsPageComponent {
     this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
   }
 
-  private loadProduct(id: number): void {
+  private loadProduct(id: string): void {
     this.loading = true;
     this.apiService
       .get<WebApiResponse<Product>>(`${this._baseEndPoint}/getById/${id}`)

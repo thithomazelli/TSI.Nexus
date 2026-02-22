@@ -6,8 +6,6 @@ namespace TSI.Friday.Contracts.Models
 {
     public class PaymentInstallment : BaseModel
     {
-        public int Id { get; set; }
-
         public PaymentType Type { get; set; }
 
         public PaymentStatus Status { get; set; }
@@ -23,17 +21,17 @@ namespace TSI.Friday.Contracts.Models
         public decimal Price { get; set; }
 
         [ForeignKey("Payment")]
-        public int PaymentId { get; set; }
+        public Guid PaymentId { get; set; }
 
         public Payment Payment { get; set; } = null!;
 
         [ForeignKey("BusinessPartner")]
-        public int? BusinessPartnerId { get; set; }
+        public Guid? BusinessPartnerId { get; set; }
 
         public BusinessPartner BusinessPartner { get; set; }
 
         [ForeignKey("Order")]
-        public int? OrderId { get; set; }
+        public Guid? OrderId { get; set; }
 
         public Order Order { get; set; }
     }

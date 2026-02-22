@@ -5,7 +5,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 {
     public class PaymentInstallmentDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public PaymentType Type { get; set; }
 
@@ -21,13 +21,13 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal Price { get; set; }
 
-        public int PaymentId { get; set; }
+        public Guid PaymentId { get; set; }
 
-        public int? BusinessPartnerId { get; set; }
+        public Guid? BusinessPartnerId { get; set; }
 
         public string BusinessPartnerName { get; set; }
 
-        public int? OrderId { get; set; }
+        public Guid? OrderId { get; set; }
 
         public string OrderNumber { get; set; }
     }

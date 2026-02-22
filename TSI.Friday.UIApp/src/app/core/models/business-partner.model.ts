@@ -2,7 +2,7 @@ import { Address } from './address.model';
 import { BaseModel } from './base.model';
 
 export interface BusinessPartner extends BaseModel {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;

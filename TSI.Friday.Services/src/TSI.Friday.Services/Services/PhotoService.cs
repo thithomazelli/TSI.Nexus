@@ -1,5 +1,4 @@
-﻿using System.IO;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -40,113 +39,94 @@ namespace TSI.Friday.Services.Services
         /// <inheritdoc />
         public async Task<string> UploadImageAsync(
             string entityFolder,
-            string entityId,
+            Guid entityId,
             IFormFile file
         )
         {
-            // use uploads folder outside of frontend public to avoid watcher reloads
-            var workspaceRoot = Path.GetFullPath(Path.Combine("D:\\Development\\TSI.Friday"));
-            var uploadsRoot = Path.Combine(workspaceRoot, "uploads");
-            Directory.CreateDirectory(uploadsRoot);
-
-            var ext = Path.GetExtension(file.FileName);
-            var fileName = $"{Guid.NewGuid()}{ext}";
-            var dirPath = Path.Combine(uploadsRoot, entityFolder);
-            Directory.CreateDirectory(dirPath);
-            var filePath = Path.Combine(dirPath, fileName);
-
-            // determine previous file name from the entity so we can remove it after successful save
-            string? previousFileName = null;
-            Func<Task>? applyEntityUpdate = null;
-
-            switch (entityFolder)
-            {
-                case "BusinessPartner":
-                {
-                    var businessPartner = await _businessPartnerRepository.GetByIdAsync(
-                        int.Parse(entityId)
-                    );
-                    previousFileName = businessPartner?.Photo;
-                    applyEntityUpdate = async () =>
-                    {
-                        if (businessPartner != null)
-                        {
-                            businessPartner.Photo = fileName;
-                            await _businessPartnerRepository.UpdateAsync(businessPartner);
-                        }
-                    };
-                    break;
-                }
-                case "User":
-                {
-                    var user = await _userRepository.GetByIdAsync(entityId);
-                    previousFileName = user?.Photo;
-                    applyEntityUpdate = async () =>
-                    {
-                        if (user != null)
-                        {
-                            user.Photo = fileName;
-                            await _userRepository.UpdateAsync(user);
-                        }
-                    };
-                    break;
-                }
-                case "Product":
-                {
-                    var product = await _productRepository.GetByIdAsync(int.Parse(entityId));
-                    previousFileName = product?.Photo;
-                    applyEntityUpdate = async () =>
-                    {
-                        if (product != null)
-                        {
-                            product.Photo = fileName;
-                            await _productRepository.UpdateAsync(product);
-                        }
-                    };
-                    break;
-                }
-            }
-
-            // Save the file
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Apply the prepared entity update (only one GetById was executed above)
-            if (applyEntityUpdate != null)
-            {
-                await applyEntityUpdate();
-            }
-
-            // Move previous file to trash folder if it exists and is different from the new one
             try
             {
-                if (
-                    !string.IsNullOrWhiteSpace(previousFileName)
-                    && !string.Equals(
-                        previousFileName,
-                        fileName,
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                )
+                // use uploads folder outside of frontend public to avoid watcher reloads
+                var workspaceRoot = Path.GetFullPath(Path.Combine("D:\\Development\\TSI.Friday"));
+                var uploadsRoot = Path.Combine(workspaceRoot, "uploads");
+                Directory.CreateDirectory(uploadsRoot);
+
+                var ext = Path.GetExtension(file.FileName);
+                var fileName = $"{Guid.NewGuid()}{ext}";
+                var dirPath = Path.Combine(uploadsRoot, entityFolder);
+                Directory.CreateDirectory(dirPath);
+                var filePath = Path.Combine(dirPath, fileName);
+
+                // determine previous file name from the entity so we can remove it after successful save
+                string? previousFileName = null;
+                Func<Task>? applyEntityUpdate = null;
+
+                switch (entityFolder)
                 {
-                    var previousPath = Path.Combine(uploadsRoot, entityFolder, previousFileName);
-                    if (File.Exists(previousPath))
+                    case "BusinessPartner":
                     {
-                        var trashRoot = Path.Combine(workspaceRoot, "uploads_trash", entityFolder);
-                        Directory.CreateDirectory(trashRoot);
-                        var target = Path.Combine(trashRoot, previousFileName);
-                        File.Move(previousPath, target, overwrite: true);
+                        var businessPartner = await _businessPartnerRepository.GetByIdAsync(
+                            entityId
+                        );
+                        previousFileName = businessPartner?.Photo;
+                        applyEntityUpdate = async () =>
+                        {
+                            if (businessPartner != null)
+                            {
+                                businessPartner.Photo = fileName;
+                                await _businessPartnerRepository.UpdateAsync(businessPartner);
+                            }
+                        };
+                        break;
+                    }
+                    case "User":
+                    {
+                        var user = await _userRepository.GetByIdAsync(entityId.ToString());
+                        previousFileName = user?.Photo;
+                        applyEntityUpdate = async () =>
+                        {
+                            if (user != null)
+                            {
+                                user.Photo = fileName;
+                                await _userRepository.UpdateAsync(user);
+                            }
+                        };
+                        break;
+                    }
+                    case "Product":
+                    {
+                        var product = await _productRepository.GetByIdAsync(entityId);
+                        previousFileName = product?.Photo;
+                        applyEntityUpdate = async () =>
+                        {
+                            if (product != null)
+                            {
+                                product.Photo = fileName;
+                                await _productRepository.UpdateAsync(product);
+                            }
+                        };
+                        break;
                     }
                 }
-            }
-            catch
-            {
-                // ignore deletion errors (log if needed)
-            }
 
-            return fileName;
+                // Save the file
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Apply the prepared entity update (only one GetById was executed above)
+                if (applyEntityUpdate != null)
+                {
+                    await applyEntityUpdate();
+                }
+
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+                //return string.Empty;
+            }
         }
 
         #endregion Public methods

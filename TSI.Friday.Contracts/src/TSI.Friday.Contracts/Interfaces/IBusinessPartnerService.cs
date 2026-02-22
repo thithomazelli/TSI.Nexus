@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Models.DTOs;
@@ -28,7 +29,7 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One BusinessPartner object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<BusinessPartnerDto>> FindById(int? id);
+        Task<WebApiResponse<BusinessPartnerDto>> FindById(Guid? id);
 
         /// <summary>
         /// Should find a list of people based on the email received as parameter.

@@ -17,7 +17,7 @@ import {
 export class PaymentDetailsPageComponent {
   isEdit = false;
   data?: Payment | null = null;
-  id: number | null = null;
+  id: string | null = null;
   loading = false;
   activeTab: 'details' | 'payments' = 'details';
 
@@ -34,14 +34,9 @@ export class PaymentDetailsPageComponent {
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {
-      const numericId = Number(idParam);
-      if (isNaN(numericId)) {
-        this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
-        return;
-      }
       this.isEdit = true;
-      this.id = numericId;
-      this.loadPayment(numericId);
+      this.id = idParam;
+      this.loadPayment(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
@@ -79,7 +74,7 @@ export class PaymentDetailsPageComponent {
     }
   }
 
-  private loadPayment(id: number): void {
+  private loadPayment(id: string): void {
     this.loading = true;
     this.apiService
       .get<WebApiResponse<Payment>>(`${this._baseEndPoint}/getById/${id}`)

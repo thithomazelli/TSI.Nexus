@@ -6,8 +6,6 @@ namespace TSI.Friday.Contracts.Models
 {
     public abstract class BusinessPartner : BaseModel
     {
-        public int Id { get; set; }
-
         public string Name { get; set; }
 
         [Required(ErrorMessage = "Email is required")]

@@ -26,7 +26,7 @@ export class OrderDetailsModalComponent extends FormBaseComponent {
     orderProducts: [],
   };
 
-  id: number | null = null;
+  id: string | null = null;
   private _baseEndPoint: ApiType = ApiType.Orders;
 
   constructor(

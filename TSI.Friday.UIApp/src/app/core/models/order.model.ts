@@ -4,9 +4,9 @@ import { OrderProduct } from './order-product.model';
 import { Payment } from './payment.model';
 
 export interface Order extends BaseModel {
-  id?: number;
+  id?: string;
   orderNumber?: string;
-  businessPartnerId?: number;
+  businessPartnerId?: string;
   businessPartnerName?: string;
   status?: OrderStatus;
   description?: string;

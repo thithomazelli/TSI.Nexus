@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
@@ -89,7 +90,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="paymentId">Payment id to be used in the search</param>
         [HttpGet]
         [Route("GetById/{paymentId}")]
-        public async Task<IActionResult> GetById(int? paymentId)
+        public async Task<IActionResult> GetById(Guid? paymentId)
         {
             var webApiResponse = await _paymentService.FindById(paymentId);
             return Ok(webApiResponse);
@@ -101,7 +102,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="businessPartnerId">BusinessPartner id to be used in the search</param>
         [HttpGet]
         [Route("GetByBusinessPartnerId/{businessPartnerId}")]
-        public async Task<IActionResult> GetByBusinessPartnerId(int? businessPartnerId)
+        public async Task<IActionResult> GetByBusinessPartnerId(Guid? businessPartnerId)
         {
             var webApiResponse = await _paymentService.FindByBusinessPartnerId(businessPartnerId);
             return Ok(webApiResponse);

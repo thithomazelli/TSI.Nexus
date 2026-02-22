@@ -41,17 +41,17 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new OrderProduct
                 {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Description = "Item1",
-                    OrderId = 1,
-                    ProductId = 1,
+                    OrderId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    ProductId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
                 new OrderProduct
                 {
-                    Id = 2,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Description = "Item2",
-                    OrderId = 1,
-                    ProductId = 2,
+                    OrderId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    ProductId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                 },
             };
         }
@@ -62,10 +62,10 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var itemDto = new OrderProductDto
             {
-                Id = 3,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                 Description = "Item3",
-                OrderId = 2,
-                ProductId = 3,
+                OrderId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                ProductId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
             };
             _repository
                 .Setup(r => r.AddAsync(It.IsAny<OrderProduct>()))
@@ -116,7 +116,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var itemDto = _mapper.Map<OrderProductDto>(_itemsMock.First());
             _repository
-                .Setup(_ => _.GetByIdAsync(It.IsAny<int>()))
+                .Setup(_ => _.GetByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(new OrderProduct());
             _repository
                 .Setup(r => r.RemoveAsync(It.IsAny<OrderProduct>()))
@@ -141,7 +141,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderProductService_FindByOrderId_ShouldReturnItems_WhenOrderIdIsValid()
         {
             // Arrange
-            const int orderId = 1;
+            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var items = _itemsMock.Where(i => i.OrderId == orderId).ToList();
             _repository
                 .Setup(r =>
@@ -182,7 +182,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderProductService_FindById_ShouldReturnItem_WhenIdIsValid()
         {
             // Arrange
-            const int id = 1;
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var item = _itemsMock.First(i => i.Id == id);
             _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(item);
 

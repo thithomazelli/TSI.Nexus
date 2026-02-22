@@ -225,46 +225,44 @@
           </div>
         </div>
 
-        @if (isInstallment) {
-          <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="totalOfInstallments"
-                  type="number"
-                  min="1"
-                  step="1"
-                  placeholder="Total de parcelas"
-                  class="form-control"
-                  id="totalOfInstallments"
-                  [class.is-invalid]="isInvalid('totalOfInstallments')"
-                  [class.is-valid]="isValid('totalOfInstallments')"
-                />
-                <label for="totalOfInstallments">Total de parcelas</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-list-ol"></i>
-              </div>
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="totalOfInstallments"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Total de parcelas"
+                class="form-control"
+                id="totalOfInstallments"
+                [class.is-invalid]="isInvalid('totalOfInstallments')"
+                [class.is-valid]="isValid('totalOfInstallments')"
+              />
+              <label for="totalOfInstallments">Total de parcelas</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-list-ol"></i>
             </div>
           </div>
-          <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <input
-                  formControlName="pricePerInstallmentFormatted"
-                  type="text"
-                  placeholder="Valor por Parcela"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('pricePerInstallmentFormatted')"
-                  [class.is-valid]="isValid('pricePerInstallmentFormatted')"
-                  (blur)="onCurrencyBlur('pricePerInstallment')"
-                />
-                <label for="pricePerInstallment">Valor por Parcela</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-cash"></i></div>
+        </div>
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="pricePerInstallmentFormatted"
+                type="text"
+                placeholder="Valor por Parcela"
+                class="form-control"
+                [class.is-invalid]="isInvalid('pricePerInstallmentFormatted')"
+                [class.is-valid]="isValid('pricePerInstallmentFormatted')"
+                (blur)="onCurrencyBlur('pricePerInstallment')"
+              />
+              <label for="pricePerInstallment">Valor por Parcela</label>
             </div>
+            <div class="input-group-text"><i class="bi bi-cash"></i></div>
           </div>
-        }
+        </div>
       </div>
     </div>
 

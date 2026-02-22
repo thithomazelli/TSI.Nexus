@@ -40,18 +40,18 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new OrderDto
                 {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     OrderNumber = "ORD-00001",
                     Description = "Pedido Teste1",
-                    BusinessPartnerId = 1,
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     BusinessPartnerName = "ORD",
                 },
                 new OrderDto
                 {
-                    Id = 2,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     OrderNumber = "THG-00002",
                     Description = "Pedido Teste2",
-                    BusinessPartnerId = 2,
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     BusinessPartnerName = "THG",
                 },
             };
@@ -63,7 +63,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var orderDto = new OrderDto
             {
-                Id = 3,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                 OrderNumber = "ORD-00001",
                 Description = "Novo Pedido",
                 BusinessPartnerName = "ORD",
@@ -78,7 +78,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = new OrderDto
                 {
-                    Id = 3,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                     OrderNumber = "ORD-00001",
                     Description = "Novo Pedido",
                 },
@@ -102,7 +102,7 @@ namespace TSI.Friday.Services.Tests.Services
             var orderEntity = _mapper.Map<Order>(_orderListMock.First());
 
             _repository
-                .Setup(r => r.GetByIdAsync(It.IsAny<int>(), o => o.OrderProducts))
+                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), o => o.OrderProducts))
                 .ReturnsAsync(orderEntity);
             _repository.Setup(r => r.RemoveAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
 
@@ -125,7 +125,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderService_FindById_ShouldReturnOrder_WhenIdIsValid()
         {
             // Arrange
-            const int id = 1;
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var orderDto = _orderListMock.First(o => o.Id == id);
             var orderEntity = _mapper.Map<Order>(orderDto);
             orderEntity.BusinessPartner = new Individual { Name = "ORD" };
@@ -153,7 +153,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task OrderService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
         {
             // Arrange
-            const int id = 10;
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000010");
             _repository
                 .Setup(r => r.GetByIdAsync(id, o => o.BusinessPartner))
                 .ReturnsAsync((Order)null);

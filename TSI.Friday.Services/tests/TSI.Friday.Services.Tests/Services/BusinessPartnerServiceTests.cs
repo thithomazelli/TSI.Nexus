@@ -35,14 +35,14 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 new Company
                 {
-                    Id = 1,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Name = "TSI Soluções em Informática",
                     Email = "thiago.thomazelli@tsi.com.br",
                     Type = BusinessPartnerType.Client,
                 },
                 new Company
                 {
-                    Id = 2,
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Name = "Nicole Psicologa Ltda",
                     Email = "nicole@psicologia.com.br",
                     Type = BusinessPartnerType.Supplier,
@@ -56,7 +56,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
                 DocumentType = "Física",
             };
@@ -68,7 +68,7 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             _repository
-                .Setup(_ => _.GetByIdAsync(It.IsAny<int>()))
+                .Setup(_ => _.GetByIdAsync(It.IsAny<Guid>()))
                 .ReturnsAsync(_mapper.Map<Individual>(businessPartnerMock));
             _repository.Setup(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()));
 
@@ -80,7 +80,7 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            _repository.Verify(_ => _.GetByIdAsync(It.IsAny<int>()), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(It.IsAny<Guid>()), Times.Once);
             _repository.Verify(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()), Times.Once);
         }
 
@@ -91,7 +91,7 @@ namespace TSI.Friday.Services.Tests.Services
             var exception = new Exception();
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
             var expectedResult = new WebApiResponse<BusinessPartner>
@@ -101,7 +101,7 @@ namespace TSI.Friday.Services.Tests.Services
                     $"Não foi possível remover o Cliente {businessPartnerMock.Name} da base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(It.IsAny<int>())).ReturnsAsync(new Company());
+            _repository.Setup(_ => _.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Company());
             _repository
                 .Setup(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()))
                 .ThrowsAsync(exception);
@@ -114,7 +114,7 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            _repository.Verify(_ => _.GetByIdAsync(It.IsAny<int>()), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(It.IsAny<Guid>()), Times.Once);
             _repository.Verify(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()), Times.Once);
         }
 
@@ -124,7 +124,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerMock = new BusinessPartnerDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "TSI Soluções em Informática",
             };
 
@@ -317,7 +317,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task BusinessPartnerService_FindById_ShouldReturnABusinessPartnerSuccessfully_WhenIdIsValid()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var businessPartnerMock = _businessPartnerListMock.FirstOrDefault(_ =>
                 idMock.Equals(_.Id)
             );
@@ -345,7 +345,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task BusinessPartnerService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenIdIsInvalid()
         {
             // Arrange
-            const int idMock = 10;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000010");
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Data = null,
@@ -371,7 +371,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task BusinessPartnerService_FindById_ShouldReturnAnEmptyDataAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var exception = new Exception();
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {

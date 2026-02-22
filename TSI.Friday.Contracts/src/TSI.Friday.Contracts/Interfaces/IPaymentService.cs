@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
@@ -40,7 +41,7 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One payment object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<PaymentDto>> FindById(int? id);
+        Task<WebApiResponse<PaymentDto>> FindById(Guid? id);
 
         /// <summary>
         /// Method responsible to get a list of Paymentes based on the BusinessPartnerID received as parameter.
@@ -48,7 +49,7 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>List of payment according to the BusinessPartnerID defined as parameter.</returns>
         Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByBusinessPartnerId(
-            int? businessPartnerId
+            Guid? businessPartnerId
         );
     }
 }

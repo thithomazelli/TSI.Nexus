@@ -46,7 +46,7 @@ export class OrderProductsFormComponent
   endDateField: any;
 
   @Input()
-  parentId: number | null = null;
+  parentId: string | null = null;
 
   @Input()
   parentData: any;

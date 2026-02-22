@@ -9,6 +9,8 @@
   <app-payment-installment-form
     [isEdit]="isEdit"
     [data]="data"
+    [parentId]="parentId"
+    [parentData]="parentData"
     (save)="save($event)"
     (cancel)="close()"
     [compact]="false"

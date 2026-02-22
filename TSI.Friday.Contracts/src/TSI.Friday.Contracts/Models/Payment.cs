@@ -7,8 +7,6 @@ namespace TSI.Friday.Contracts.Models
 {
     public class Payment : BaseModel
     {
-        public int Id { get; set; }
-
         public PaymentType Type { get; set; }
 
         public DateTime Date { get; set; }
@@ -21,12 +19,12 @@ namespace TSI.Friday.Contracts.Models
 
         public ICollection<PaymentInstallment> Installments { get; set; } = [];
 
-        public int? OrderId { get; set; }
+        public Guid? OrderId { get; set; }
 
         public Order Order { get; set; }
 
         [ForeignKey("BusinessPartner")]
-        public int? BusinessPartnerId { get; set; }
+        public Guid? BusinessPartnerId { get; set; }
 
         public BusinessPartner BusinessPartner { get; set; }
     }

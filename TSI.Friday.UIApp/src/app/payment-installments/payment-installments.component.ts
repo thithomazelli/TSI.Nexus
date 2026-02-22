@@ -35,24 +35,30 @@ export class PaymentInstallmentsComponent {
   refreshParent = new EventEmitter<void>();
 
   baseEndPoint = ApiType.PaymentInstallments;
-  rowData: Payment[] = [];
+
+  rowData: PaymentInstallment[] = [];
+
   typeMap: { [key: string]: string } = {
     Incoming: 'Entrada',
     Outgoing: 'Saída',
   };
+
   typeIconMap: { [key: string]: string } = {
     Incoming: '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>',
     Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
   };
+
   conditionMap: { [key: string]: string } = {
     FullPayment: 'À vista',
     Installment: 'Parcelado',
   };
+
   statusMap: { [key: string]: string } = {
     Approved: 'Pago',
     Pending: 'Em Aberto',
     Delayed: 'Atrasado',
   };
+
   statusColorMap: { [key: string]: string } = {
     Approved: 'success',
     Pending: 'info',
@@ -230,11 +236,16 @@ export class PaymentInstallmentsComponent {
         );
       });
   }
-
   onOpenModal(initialState: any) {
+    const initialStateWithParent = {
+      ...initialState,
+      parentId: this.data?.id,
+      parentData: this.data,
+    };
+
     const ref = this.modalService.showTemplateModal(
       PaymentInstallmentDetailsModalComponent,
-      initialState,
+      initialStateWithParent,
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {

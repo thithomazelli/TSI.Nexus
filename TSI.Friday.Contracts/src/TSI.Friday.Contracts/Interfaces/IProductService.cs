@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Utilities;
@@ -39,7 +40,7 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One Product object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<Product>> FindById(int? id);
+        Task<WebApiResponse<Product>> FindById(Guid? id);
 
         /// <summary>
         /// Should find a Product that based on the Sku received as parameter.
@@ -52,6 +53,6 @@ namespace TSI.Friday.Contracts.Interfaces
         /// Adjust stock for a batch of products. Key = productId, Value = delta (can be negative).
         /// </summary>
         /// <param name="deltas">Dictionary of productId -> delta</param>
-        Task AdjustStockAsync(IDictionary<int, int> deltas);
+        Task AdjustStockAsync(IDictionary<Guid, int> deltas);
     }
 }

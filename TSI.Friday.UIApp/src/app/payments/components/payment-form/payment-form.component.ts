@@ -261,6 +261,7 @@ export class PaymentFormComponent
       this.form.markAllAsTouched();
       return;
     }
+
     this.save.emit(this.form.getRawValue());
   }
 
@@ -271,14 +272,14 @@ export class PaymentFormComponent
   private initForm(): void {
     const commonControls = {
       type: [this.compact ? 'Incoming' : '', Validators.required],
-      method: ['', Validators.required],
-      status: ['', Validators.required],
+      method: [PaymentMethod.Cash, Validators.required],
+      status: [PaymentStatus.Pending, Validators.required],
       date: [new Date(), Validators.required],
       category: ['', Validators.required],
       description: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
-      condition: ['', Validators.required],
+      condition: [PaymentCondition.FullPayment, Validators.required],
       totalOfInstallments: [1, [Validators.min(1)]],
       pricePerInstallment: [0, [Validators.min(0)]],
       pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
