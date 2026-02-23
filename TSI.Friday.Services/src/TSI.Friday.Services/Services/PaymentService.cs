@@ -90,55 +90,10 @@ namespace TSI.Friday.Services
                 // Map scalar fields (do not replace collection instance)
                 _mapper.Map(paymentDto, paymentEntity);
 
-                // Synchronize installments collection: add/update/remove while preserving EF tracking
-                var dtoInstallments = paymentDto.Installments ?? [];
-                var existingInstallments = paymentEntity.Installments?.ToList() ?? [];
-
-                // Update or add
-                foreach (var dto in dtoInstallments)
-                {
-                    var match = existingInstallments.FirstOrDefault(e =>
-                        e.Id == dto.Id && dto.Id != Guid.Empty
-                    );
-                    if (match != null)
-                    {
-                        // update existing installment fields
-                        match.Type = dto.Type;
-                        match.Status = dto.Status;
-                        match.Method = dto.Method;
-                        match.Date = dto.Date;
-                        match.Description = dto.Description;
-                        match.InstallmentNumber = dto.InstallmentNumber;
-                        match.Price = dto.Price;
-                        match.BusinessPartnerId = dto.BusinessPartnerId;
-                        match.OrderId = dto.OrderId;
-                        // PaymentId should remain as existing.PaymentId
-                    }
-                    else
-                    {
-                        // create new installment entity and add to existing collection
-                        var newInst = _mapper.Map<PaymentInstallment>(dto);
-                        // ensure navigation to parent so EF sets FK correctly
-                        newInst.Payment = paymentEntity;
-                        paymentEntity.Installments.Add(newInst);
-                    }
-                }
-
-                // Remove installments that are not in DTO
-                var dtoIds = new HashSet<Guid>(
-                    dtoInstallments.Where(d => d.Id != Guid.Empty).Select(d => d.Id)
-                );
-                var toRemove = paymentEntity
-                    .Installments.Where(e => e.Id != Guid.Empty && !dtoIds.Contains(e.Id))
-                    .ToList();
-                foreach (var rem in toRemove)
-                {
-                    paymentEntity.Installments.Remove(rem);
-                }
-
                 // Normalize installments prices if overall price changed
                 var updatedInstallments =
                     paymentEntity.Installments?.ToList() ?? new List<PaymentInstallment>();
+
                 var sumExisting = updatedInstallments.Sum(x => x.Price);
                 var count =
                     paymentDto.TotalOfInstallments > 0
