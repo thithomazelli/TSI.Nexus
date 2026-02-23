@@ -33,7 +33,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Pagamento 1",
                     BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     OrderId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Status = PaymentStatus.Pending,
+                    Status = PaymentStatus.Approved,
                 },
                 new PaymentDto
                 {
@@ -106,6 +106,9 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var paymentDto = _paymentsMock.First();
 
+            _repository
+                .Setup(_ => _.GetByIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(_mapper.Map<Payment>(paymentDto));
             _repository.Setup(r => r.RemoveAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<PaymentDto>
@@ -132,7 +135,9 @@ namespace TSI.Friday.Services.Tests.Services
             var paymentEntity = _mapper.Map<Payment>(paymentDto);
 
             _repository
-                .Setup(r => r.GetByIdAsync(id, p => p.Installments))
+                .Setup(r =>
+                    r.GetByIdAsync(id, c => c.BusinessPartner, o => o.Order, p => p.Installments)
+                )
                 .ReturnsAsync(paymentEntity);
 
             var expected = new WebApiResponse<PaymentDto>
@@ -147,7 +152,10 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetByIdAsync(id, p => p.Installments), Times.Once);
+            _repository.Verify(
+                r => r.GetByIdAsync(id, c => c.BusinessPartner, o => o.Order, p => p.Installments),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -161,7 +169,12 @@ namespace TSI.Friday.Services.Tests.Services
             var paymentEntityList = _mapper.Map<IList<Payment>>(paymentDtoList);
             _repository
                 .Setup(_ =>
-                    _.QueryAsync(It.IsAny<Expression<Func<Payment, bool>>>(), p => p.Installments)
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order,
+                        p => p.Installments
+                    )
                 )
                 .ReturnsAsync(paymentEntityList);
 
@@ -178,7 +191,13 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r => r.QueryAsync(It.IsAny<Expression<Func<Payment, bool>>>(), p => p.Installments),
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order,
+                        p => p.Installments
+                    ),
                 Times.Once
             );
         }

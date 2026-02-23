@@ -154,10 +154,15 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var paymentId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            ;
             var payments = _paymentInstallmentsMock.Where(p => p.PaymentId == paymentId).ToList();
             _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PaymentInstallment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    )
+                )
                 .ReturnsAsync(payments);
 
             var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
@@ -173,7 +178,12 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PaymentInstallment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    ),
                 Times.Once
             );
         }
@@ -188,7 +198,13 @@ namespace TSI.Friday.Services.Tests.Services
                 .Where(p => p.BusinessPartnerId == businessPartnerId)
                 .ToList();
             _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PaymentInstallment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    )
+                )
                 .ReturnsAsync(payments);
 
             var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
@@ -206,7 +222,12 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PaymentInstallment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    ),
                 Times.Once
             );
         }
@@ -218,7 +239,13 @@ namespace TSI.Friday.Services.Tests.Services
             var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var payments = _paymentInstallmentsMock.Where(p => p.OrderId == orderId).ToList();
             _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PaymentInstallment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    )
+                )
                 .ReturnsAsync(payments);
 
             var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
@@ -234,7 +261,12 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PaymentInstallment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    ),
                 Times.Once
             );
         }

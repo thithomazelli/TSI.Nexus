@@ -54,7 +54,7 @@ namespace TSI.Friday.Services
                 var prefix = BuildPrefixFromBusinessPartnerName(orderDto.BusinessPartnerName);
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
-                orderDto.Description = $"Pedido de Venda -  {orderDto.OrderNumber}";
+                orderDto.Description ??= $"Pedido de Venda -  {orderDto.OrderNumber}";
 
                 // Save Payment first (if provided) so we can assign PaymentId to Order before saving Order
                 var paymentResult = new WebApiResponse<PaymentDto>();
