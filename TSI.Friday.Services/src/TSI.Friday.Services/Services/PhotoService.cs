@@ -120,6 +120,30 @@ namespace TSI.Friday.Services.Services
                     await applyEntityUpdate();
                 }
 
+                // Delete previous file permanently if it exists and is different from the new one
+                if (
+                    !string.IsNullOrWhiteSpace(previousFileName)
+                    && !string.Equals(
+                        previousFileName,
+                        fileName,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+                {
+                    var previousPath = Path.Combine(uploadsRoot, entityFolder, previousFileName);
+                    if (File.Exists(previousPath))
+                    {
+                        try
+                        {
+                            File.Delete(previousPath);
+                        }
+                        catch
+                        {
+                            // ignore deletion errors to avoid breaking the upload process
+                        }
+                    }
+                }
+
                 return fileName;
             }
             catch (Exception ex)

@@ -60,6 +60,38 @@ export class ProductsComponent implements OnInit {
       },
     },
     {
+      field: 'quantityInStock',
+      headerName: 'Status',
+      sortable: true,
+      filter: true,
+      maxWidth: 120,
+      cellRenderer: (params: ICellRendererParams) => {
+        const value = params.value;
+        const type = params.data?.type;
+        let color = 'secondary';
+        let label = value;
+
+        if (type === 'Service') {
+          color = 'success';
+          label = 'Disponível';
+        } else if (value === 0) {
+          color = 'danger';
+          label = 'Indisponível';
+        } else {
+          color = 'success';
+          label = 'Disponível';
+        }
+        return `<span class="badge bg-${color}">${label}</span>`;
+      },
+    },
+    {
+      field: 'quantityInStock',
+      headerName: 'Estoque',
+      sortable: true,
+      filter: true,
+      maxWidth: 120,
+    },
+    {
       field: 'price',
       headerName: 'Preço',
       sortable: true,
@@ -101,13 +133,6 @@ export class ProductsComponent implements OnInit {
       cellRenderer: (params: ICellRendererParams) => {
         return this.getTypeLabel(params.data?.type);
       },
-    },
-    {
-      field: 'quantityInStock',
-      headerName: 'Estoque',
-      sortable: true,
-      filter: true,
-      maxWidth: 120,
     },
     {
       headerName: '',

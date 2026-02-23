@@ -24,7 +24,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal TotalPrice { get; set; }
 
-        public Guid PaymentId { get; set; }
+        public Guid? PaymentId { get; set; }
 
         public PaymentDto Payment { get; set; }
 

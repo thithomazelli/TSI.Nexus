@@ -26,8 +26,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public PaymentStatus Status { get; set; }
 
-        public ICollection<PaymentInstallmentDto> Installments { get; set; } =
-            new List<PaymentInstallmentDto>();
+        public ICollection<PaymentInstallmentDto> Installments { get; set; } = [];
 
         public Guid? OrderId { get; set; }
 

@@ -28,7 +28,7 @@ namespace TSI.Friday.Contracts.Models
         [ForeignKey("BusinessPartner")]
         public Guid? BusinessPartnerId { get; set; }
 
-        public BusinessPartner BusinessPartner { get; set; }
+        public BusinessPartner? BusinessPartner { get; set; }
 
         [ForeignKey("Order")]
         public Guid? OrderId { get; set; }

@@ -5,6 +5,7 @@ import {
   ApiType,
   ModalService,
   Payment,
+  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -24,45 +25,34 @@ import { PaymentDetailsModalComponent } from './components/payment-details-modal
 export class PaymentsComponent {
   baseEndPoint = ApiType.Payments;
   rowData: Payment[] = [];
+
   typeMap: { [key: string]: string } = {
     Incoming: 'Entrada',
     Outgoing: 'Saída',
   };
+
   typeIconMap: { [key: string]: string } = {
     Incoming: '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>',
     Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
   };
+
   conditionMap: { [key: string]: string } = {
     FullPayment: 'À vista',
-    Installment: 'Parcelado',
+    InInstallments: 'Parcelado',
   };
+
   statusMap: { [key: string]: string } = {
     Approved: 'Pago',
     Pending: 'Em Aberto',
     Delayed: 'Atrasado',
   };
+
   statusColorMap: { [key: string]: string } = {
     Approved: 'success',
     Pending: 'info',
     Delayed: 'warning',
     default: 'secondary',
   };
-
-  getTypeLabel(type: string): string {
-    return this.typeMap[type] ?? type ?? '';
-  }
-  getTypeIcon(type: string): string {
-    return this.typeIconMap[type] ?? '';
-  }
-  getConditionLabel(condition: string): string {
-    return this.conditionMap[condition] ?? condition ?? '';
-  }
-  getStatusLabel(status: string): string {
-    return this.statusMap[status] ?? status ?? '';
-  }
-  getStatusColor(status: string): string {
-    return this.statusColorMap[status] ?? this.statusColorMap['default'];
-  }
 
   columnDefs: ColDef[] = [
     {
@@ -79,7 +69,7 @@ export class PaymentsComponent {
       sortable: true,
       filter: true,
       flex: 2,
-      maxWidth: 250,
+      maxWidth: 400,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         return `<a data-action="view" class="ag-link">${value}</a>`;
@@ -141,6 +131,16 @@ export class PaymentsComponent {
       },
     },
     {
+      field: 'date',
+      headerName: 'Data',
+      sortable: true,
+      filter: true,
+      flex: 2,
+      maxWidth: 120,
+      valueFormatter: (params: ValueFormatterParams) =>
+        this.formatDateBR(params.value),
+    },
+    {
       field: 'status',
       headerName: 'Status',
       sortable: true,
@@ -157,6 +157,7 @@ export class PaymentsComponent {
         return `<span class="badge bg-${color}">${label}</span>`;
       },
     },
+
     {
       field: 'businessPartnerName',
       headerName: 'Cliente',
@@ -220,7 +221,10 @@ export class PaymentsComponent {
     this.apiService
       .delete<WebApiResponse<Payment>>(`${this.baseEndPoint}/remove`, order)
       .subscribe((response: WebApiResponse<Payment>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== order.id);
+        if (response.status === ResponseStatus.Success) {
+          this.rowData = this.rowData.filter((p) => p.id !== order.id);
+        }
+
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -249,5 +253,41 @@ export class PaymentsComponent {
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.rowData = response.data ?? [];
       });
+  }
+
+  private getTypeLabel(type: string): string {
+    return this.typeMap[type] ?? type ?? '';
+  }
+
+  private getTypeIcon(type: string): string {
+    return this.typeIconMap[type] ?? '';
+  }
+
+  private getConditionLabel(condition: string): string {
+    return this.conditionMap[condition] ?? condition ?? '';
+  }
+
+  private getStatusLabel(status: string): string {
+    return this.statusMap[status] ?? status ?? '';
+  }
+
+  private getStatusColor(status: string): string {
+    return this.statusColorMap[status] ?? this.statusColorMap['default'];
+  }
+
+  private formatDateBR(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 }

@@ -48,11 +48,6 @@ export class PaymentInstallmentsComponent {
     Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
   };
 
-  conditionMap: { [key: string]: string } = {
-    FullPayment: 'À vista',
-    Installment: 'Parcelado',
-  };
-
   statusMap: { [key: string]: string } = {
     Approved: 'Pago',
     Pending: 'Em Aberto',
@@ -77,11 +72,25 @@ export class PaymentInstallmentsComponent {
     },
     {
       field: 'description',
-      headerName: 'Description',
+      headerName: 'Descrição',
+      hide: true,
       sortable: true,
       filter: true,
       flex: 2,
-      maxWidth: 250,
+      maxWidth: 450,
+      cellRenderer: (params: ValueFormatterParams) => {
+        const value = params.value ?? '';
+        return `<a data-action="view" class="ag-link">${value}</a>`;
+      },
+    },
+
+    {
+      field: 'installmentNumber',
+      headerName: 'Parcela',
+      sortable: true,
+      filter: true,
+      flex: 2,
+      maxWidth: 100,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         return `<a data-action="view" class="ag-link">${value}</a>`;
@@ -129,20 +138,6 @@ export class PaymentInstallmentsComponent {
       },
     },
     {
-      field: 'condition',
-      headerName: 'Condição',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 120,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return this.getConditionLabel(params.data?.condition);
-      },
-      valueFormatter: (params: ValueFormatterParams): string => {
-        return this.getConditionLabel(params.value);
-      },
-    },
-    {
       field: 'status',
       headerName: 'Status',
       sortable: true,
@@ -158,6 +153,16 @@ export class PaymentInstallmentsComponent {
         const label = this.getStatusLabel(status);
         return `<span class="badge bg-${color}">${label}</span>`;
       },
+    },
+    {
+      field: 'date',
+      headerName: 'Data',
+      sortable: true,
+      filter: true,
+      flex: 2,
+      maxWidth: 120,
+      valueFormatter: (params: ValueFormatterParams) =>
+        this.formatDateBR(params.value),
     },
     {
       field: 'businessPartnerName',
@@ -188,7 +193,7 @@ export class PaymentInstallmentsComponent {
       sortable: false,
       filter: false,
       resizable: false,
-      width: 300,
+      maxWidth: 150,
       cellRenderer: () => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
@@ -211,11 +216,11 @@ export class PaymentInstallmentsComponent {
   ) {}
 
   ngOnInit(): void {
-    this.getPayments();
+    this.getPaymentInstallments();
   }
 
   refreshOrders(): void {
-    this.getPayments();
+    this.getPaymentInstallments();
   }
 
   deleteOrder(paymentInstallment: PaymentInstallment): void {
@@ -250,13 +255,13 @@ export class PaymentInstallmentsComponent {
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
         this.refreshParent.emit();
-        this.getPayments();
+        this.getPaymentInstallments();
         ref.close();
       });
     }
   }
 
-  private getPayments(): void {
+  private getPaymentInstallments(): void {
     this.apiService
       .get<
         WebApiResponse<PaymentInstallment[]>
@@ -274,15 +279,27 @@ export class PaymentInstallmentsComponent {
     return this.typeIconMap[type] ?? '';
   }
 
-  private getConditionLabel(condition: string): string {
-    return this.conditionMap[condition] ?? condition ?? '';
-  }
-
   private getStatusLabel(status: string): string {
     return this.statusMap[status] ?? status ?? '';
   }
 
   private getStatusColor(status: string): string {
     return this.statusColorMap[status] ?? this.statusColorMap['default'];
+  }
+
+  private formatDateBR(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 }

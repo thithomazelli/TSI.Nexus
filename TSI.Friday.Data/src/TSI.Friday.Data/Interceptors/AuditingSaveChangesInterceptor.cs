@@ -40,7 +40,6 @@ namespace TSI.Friday.Data.Interceptors
                 return await base.SavingChangesAsync(eventData, result, cancellationToken);
             }
 
-            var now = DateTime.UtcNow;
             string? userId = _currentUserService?.GetUserId();
             var userIdNonNull = userId ?? string.Empty;
 
@@ -58,11 +57,11 @@ namespace TSI.Friday.Data.Interceptors
 
                 if (entry.State == EntityState.Added)
                 {
-                    entity.CreateDate = now;
+                    entity.CreateDate = DateTime.UtcNow;
                     entity.CreateUserId = userIdNonNull;
                 }
 
-                entity.ModifyDate = now;
+                entity.ModifyDate = DateTime.UtcNow;
                 entity.ModifyUserId = userIdNonNull;
             }
 

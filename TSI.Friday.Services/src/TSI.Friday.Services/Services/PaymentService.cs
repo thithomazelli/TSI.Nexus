@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -41,6 +42,16 @@ namespace TSI.Friday.Services
             {
                 CreatePaymentInstallments(paymentDto);
                 var paymentEntity = _mapper.Map<Payment>(paymentDto);
+
+                // Ensure child installments reference the parent entity so EF will set FK correctly
+                if (paymentEntity.Installments != null)
+                {
+                    foreach (var inst in paymentEntity.Installments)
+                    {
+                        inst.Payment = paymentEntity;
+                    }
+                }
+
                 await _repository.AddAsync(paymentEntity);
 
                 result.Data = _mapper.Map<PaymentDto>(paymentEntity);
@@ -65,52 +76,99 @@ namespace TSI.Friday.Services
             try
             {
                 // Load tracked payment with installments from DB
-                var existing = await _repository.GetByIdAsync(paymentDto.Id, p => p.Installments);
-                if (existing == null)
+                var paymentEntity = await _repository.GetByIdAsync(
+                    paymentDto.Id,
+                    p => p.Installments
+                );
+                if (paymentEntity == null)
                 {
                     result.Status = ResponseStatus.Error;
                     result.Message = $"Pagamento com Id {paymentDto.Id} não encontrado.";
                     return result;
                 }
 
+                // Map scalar fields (do not replace collection instance)
+                _mapper.Map(paymentDto, paymentEntity);
+
+                // Synchronize installments collection: add/update/remove while preserving EF tracking
+                var dtoInstallments = paymentDto.Installments ?? [];
+                var existingInstallments = paymentEntity.Installments?.ToList() ?? [];
+
+                // Update or add
+                foreach (var dto in dtoInstallments)
+                {
+                    var match = existingInstallments.FirstOrDefault(e =>
+                        e.Id == dto.Id && dto.Id != Guid.Empty
+                    );
+                    if (match != null)
+                    {
+                        // update existing installment fields
+                        match.Type = dto.Type;
+                        match.Status = dto.Status;
+                        match.Method = dto.Method;
+                        match.Date = dto.Date;
+                        match.Description = dto.Description;
+                        match.InstallmentNumber = dto.InstallmentNumber;
+                        match.Price = dto.Price;
+                        match.BusinessPartnerId = dto.BusinessPartnerId;
+                        match.OrderId = dto.OrderId;
+                        // PaymentId should remain as existing.PaymentId
+                    }
+                    else
+                    {
+                        // create new installment entity and add to existing collection
+                        var newInst = _mapper.Map<PaymentInstallment>(dto);
+                        // ensure navigation to parent so EF sets FK correctly
+                        newInst.Payment = paymentEntity;
+                        paymentEntity.Installments.Add(newInst);
+                    }
+                }
+
+                // Remove installments that are not in DTO
+                var dtoIds = new HashSet<Guid>(
+                    dtoInstallments.Where(d => d.Id != Guid.Empty).Select(d => d.Id)
+                );
+                var toRemove = paymentEntity
+                    .Installments.Where(e => e.Id != Guid.Empty && !dtoIds.Contains(e.Id))
+                    .ToList();
+                foreach (var rem in toRemove)
+                {
+                    paymentEntity.Installments.Remove(rem);
+                }
+
                 // Normalize installments prices if overall price changed
-                var existingInstallments =
-                    existing.Installments?.ToList() ?? new List<PaymentInstallment>();
-                var sumExisting = existingInstallments.Sum(x => x.Price);
+                var updatedInstallments =
+                    paymentEntity.Installments?.ToList() ?? new List<PaymentInstallment>();
+                var sumExisting = updatedInstallments.Sum(x => x.Price);
                 var count =
                     paymentDto.TotalOfInstallments > 0
                         ? paymentDto.TotalOfInstallments
-                        : existingInstallments.Count;
+                        : updatedInstallments.Count;
 
-                if (count > 0 && paymentDto.Price != sumExisting && existingInstallments.Count > 0)
+                if (count > 0 && paymentDto.Price != sumExisting && updatedInstallments.Count > 0)
                 {
-                    var part = Math.Round(paymentDto.Price / count, 2);
-                    for (int i = 0; i < existingInstallments.Count; i++)
+                    var part = Math.Round(sumExisting / count, 2);
+                    for (int i = 0; i < updatedInstallments.Count; i++)
                     {
                         if (i < count - 1)
                         {
-                            existingInstallments[i].Price = part;
+                            updatedInstallments[i].Price = part;
                         }
                         else if (i == count - 1)
                         {
-                            var remainder = paymentDto.Price - part * (count - 1);
-                            existingInstallments[i].Price = Math.Round(remainder, 2);
+                            var remainder = sumExisting - part * (count - 1);
+                            updatedInstallments[i].Price = Math.Round(remainder, 2);
                         }
                         else
                         {
-                            existingInstallments[i].Price = 0m;
+                            updatedInstallments[i].Price = 0m;
                         }
                     }
                 }
 
                 // Update installments statuses if requested (except already approved)
-                var currentStatus = ComputeStatusFromInstallments(existingInstallments);
-                //if (paymentDto.Status != currentStatus)
-                //{
-                //}
-
                 foreach (
-                    var inst in existingInstallments.Where(_ => _.Status != PaymentStatus.Approved)
+                    var inst in updatedInstallments.Where(_ => _.Status != PaymentStatus.Approved)
                 )
                 {
                     if (inst.Date.ToUniversalTime().Date < DateTime.UtcNow.Date)
@@ -119,9 +177,9 @@ namespace TSI.Friday.Services
                     }
                 }
 
-                await _repository.UpdateAsync(existing);
+                await _repository.UpdateAsync(paymentEntity);
 
-                result.Data = paymentDto;
+                result.Data = _mapper.Map<PaymentDto>(paymentEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pagamento {paymentDto.Description} atualizado com sucesso.";
             }
@@ -142,12 +200,26 @@ namespace TSI.Friday.Services
 
             try
             {
-                var paymentEntity = _mapper.Map<Payment>(paymentDto);
+                // Load tracked entity from the DB to avoid tracking conflicts
+                var paymentEntity = await _repository.GetByIdAsync(paymentDto.Id);
+                if (paymentEntity == null)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = $"Pagamento com Id {paymentDto.Id} não encontrado.";
+                    return result;
+                }
+
                 await _repository.RemoveAsync(paymentEntity);
 
                 result.Data = paymentDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pagamento {paymentDto.Description} removido com sucesso.";
+            }
+            catch (DbUpdateException ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível remover o Pagamento {paymentDto?.Description}. Existe um pedido de vendas vinculado.";
             }
             catch (Exception ex)
             {
@@ -205,7 +277,12 @@ namespace TSI.Friday.Services
 
             try
             {
-                var payment = await _repository.GetByIdAsync(id, p => p.Installments);
+                var payment = await _repository.GetByIdAsync(
+                    id,
+                    c => c.BusinessPartner,
+                    o => o.Order,
+                    p => p.Installments
+                );
 
                 if (payment == null)
                 {
@@ -248,6 +325,8 @@ namespace TSI.Friday.Services
             {
                 var payments = await _repository.QueryAsync(
                     p => p.BusinessPartnerId == businessPartnerId,
+                    c => c.BusinessPartner,
+                    o => o.Order,
                     p => p.Installments
                 );
                 var paymentDtos = payments

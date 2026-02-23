@@ -27,7 +27,9 @@ namespace TSI.Friday.Contracts.Models
         [ForeignKey("Payment")]
         public Guid PaymentId { get; set; }
 
-        public Payment Payment { get; set; }
+        public Payment Payment { get; set; } = null!;
+
+        public ICollection<PaymentInstallment>? PaymentInstallments { get; set; } = [];
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = [];
     }

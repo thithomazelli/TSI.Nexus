@@ -233,8 +233,19 @@ export class OrderFormComponent
       method: [PaymentMethod.Cash, Validators.required],
       status: [PaymentStatus.Pending, Validators.required],
       category: ['Recebimentos'],
-      condition: [PaymentCondition.FullPayment, Validators.required],
-      totalOfInstallments: [1, [Validators.min(1)]],
+      condition: [
+        {
+          value: PaymentCondition.FullPayment,
+          disabled: this.isEdit ? true : false,
+        },
+      ],
+      totalOfInstallments: [
+        {
+          value: 1,
+          disabled: this.isEdit ? true : false,
+        },
+        Validators.required,
+      ],
       price: [0, [Validators.min(0)]],
       pricePerInstallment: [0, [Validators.min(0)]],
       pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
@@ -285,9 +296,14 @@ export class OrderFormComponent
         totalPriceFormatted: this.currencyService.formatCurrencyBRL(
           this.data.totalPrice,
         ),
-        pricePerInstallmentFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.payment?.pricePerInstallment,
-        ),
+        payment: {
+          ...this.data.payment,
+          totalOfInstallments: this.data.payment?.installments?.length || 1,
+          pricePerInstallmentFormatted: this.currencyService.formatCurrencyBRL(
+            (this.data.totalPrice ?? 0) /
+              (this.data.payment?.totalOfInstallments || 1),
+          ),
+        },
       };
 
       this.form.patchValue(patch);

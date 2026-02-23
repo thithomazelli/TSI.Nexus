@@ -67,6 +67,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (
+                    paymentDto.Status == PaymentStatus.Pending
+                    && paymentDto.Date.ToUniversalTime().Date < DateTime.UtcNow.Date
+                )
+                {
+                    paymentDto.Status = PaymentStatus.Delayed;
+                }
+
                 var paymentEntity = _mapper.Map<PaymentInstallment>(paymentDto);
                 await _repository.UpdateAsync(paymentEntity);
 
@@ -168,8 +176,14 @@ namespace TSI.Friday.Services
 
             try
             {
-                var payments = await _repository.QueryAsync(p => p.PaymentId == paymentId);
-                result.Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments);
+                var payments = await _repository.QueryAsync(
+                    p => p.PaymentId == paymentId,
+                    c => c.BusinessPartner,
+                    o => o.Order
+                );
+                result.Data = _mapper
+                    .Map<IEnumerable<PaymentInstallmentDto>>(payments)
+                    .OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }
@@ -192,10 +206,14 @@ namespace TSI.Friday.Services
 
             try
             {
-                var payments = await _repository.QueryAsync(p =>
-                    p.BusinessPartnerId == businessPartnerId
+                var payments = await _repository.QueryAsync(
+                    p => p.BusinessPartnerId == businessPartnerId,
+                    c => c.BusinessPartner,
+                    o => o.Order
                 );
-                result.Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments);
+                result.Data = _mapper
+                    .Map<IEnumerable<PaymentInstallmentDto>>(payments)
+                    .OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }
@@ -218,8 +236,14 @@ namespace TSI.Friday.Services
 
             try
             {
-                var payments = await _repository.QueryAsync(p => p.OrderId == orderId);
-                result.Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments);
+                var payments = await _repository.QueryAsync(
+                    p => p.OrderId == orderId,
+                    c => c.BusinessPartner,
+                    o => o.Order
+                );
+                result.Data = _mapper
+                    .Map<IEnumerable<PaymentInstallmentDto>>(payments)
+                    .OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }

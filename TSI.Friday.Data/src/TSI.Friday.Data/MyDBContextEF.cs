@@ -90,6 +90,25 @@ namespace TSI.Friday.Data
 
             AddIndexByCreateDateForDataTables(modelBuilder);
 
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Payment)
+                .WithOne(p => p.Order)
+                .HasForeignKey<Order>(o => o.PaymentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Payment>()
+                .HasMany(p => p.Installments)
+                .WithOne(i => i.Payment)
+                .HasForeignKey(i => i.PaymentId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentInstallment>()
+                .HasOne(pi => pi.Order)
+                .WithMany(o => o.PaymentInstallments)
+                .HasForeignKey(pi => pi.OrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             base.OnModelCreating(modelBuilder);
         }
 

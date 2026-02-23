@@ -13,7 +13,7 @@ namespace TSI.Friday.Services
         #region Properties
 
         /// <summary>
-        /// Repository object created to access the Order registers on database using EntityFramework.
+        /// OrderService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         private readonly IRepository<Order> _repository;
         private readonly IPaymentService _paymentService;
@@ -54,17 +54,37 @@ namespace TSI.Friday.Services
                 var prefix = BuildPrefixFromBusinessPartnerName(orderDto.BusinessPartnerName);
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
+                orderDto.Description = $"Pedido de Venda -  {orderDto.OrderNumber}";
+
+                // Save Payment first (if provided) so we can assign PaymentId to Order before saving Order
+                var paymentResult = new WebApiResponse<PaymentDto>();
 
                 var paymentDto = orderDto.Payment;
-
                 if (paymentDto != null)
                 {
-                    var paymentResult = await _paymentService.Add(paymentDto);
+                    paymentDto.OrderNumber = orderDto.OrderNumber;
+                    paymentDto.Description =
+                        $"Pagamento do Pedido de Venda - {orderDto.OrderNumber}";
+                    paymentResult = await _paymentService.Add(paymentDto);
                     orderDto.Payment = null;
+                    orderDto.PaymentId = paymentResult.Data?.Id ?? null;
                 }
 
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);
+
+                // Update Payment
+                if (paymentResult?.Data != null)
+                {
+                    paymentResult.Data.OrderId = orderEntity.Id;
+
+                    foreach (var payment in paymentResult.Data.Installments)
+                    {
+                        payment.OrderId = orderEntity.Id;
+                    }
+
+                    await _paymentService.Update(paymentResult.Data);
+                }
 
                 // adjust stock in batch if product service available
                 if (orderEntity.OrderProducts.Any())
@@ -150,7 +170,11 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orderEntity = await _repository.GetByIdAsync(orderDto.Id, o => o.OrderProducts);
+                var orderEntity = await _repository.GetByIdAsync(
+                    orderDto.Id,
+                    o => o.OrderProducts,
+                    p => p.Payment
+                );
 
                 if (orderEntity == null)
                 {
@@ -181,6 +205,9 @@ namespace TSI.Friday.Services
                 }
 
                 await _repository.RemoveAsync(orderEntity);
+
+                var paymentDto = _mapper.Map<PaymentDto>(orderEntity.Payment);
+                await _paymentService.Remove(paymentDto);
 
                 result.Data = orderDto;
                 result.Status = ResponseStatus.Success;
@@ -225,7 +252,12 @@ namespace TSI.Friday.Services
 
             try
             {
-                var order = await _repository.GetByIdAsync(id, o => o.BusinessPartner);
+                var order = await _repository.GetByIdAsync(
+                    id,
+                    o => o.BusinessPartner,
+                    p => p.Payment,
+                    pi => pi.Payment.Installments
+                );
 
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;

@@ -20,7 +20,7 @@
             </div>
           </div>
 
-          <div class="col-12 col-md-7">
+          <div class="col-12" [ngClass]="compact ? 'col-md-7' : 'col-md-8'">
             <div class="input-group">
               <div class="form-floating">
                 <input
@@ -49,7 +49,7 @@
             </div>
           </div>
 
-          <div *ngIf="!compact" class="col-12 col-md-8">
+          <div *ngIf="!compact" class="col-12">
             <div class="input-group">
               <div class="form-floating">
                 <input
@@ -68,7 +68,7 @@
             </div>
           </div>
 
-          <div class="col-6 col-md-5">
+          <div class="col-6" [ngClass]="compact ? 'col-md-5' : 'col-md-3'">
             <div class="input-group">
               <div class="form-floating flex-fill">
                 <select
@@ -92,7 +92,7 @@
             </div>
           </div>
 
-          <div class="col-6 col-md-4">
+          <div class="col-6" [ngClass]="compact ? 'col-md-4' : 'col-md-3'">
             <div class="input-group">
               <div class="form-floating">
                 <input
@@ -111,7 +111,7 @@
             </div>
           </div>
 
-          <div class="col-6 col-md-4">
+          <div class="col-6" [ngClass]="compact ? 'col-md-4' : 'col-md-3'">
             <div class="input-group">
               <div class="form-floating flex-fill">
                 <input
@@ -130,7 +130,7 @@
             </div>
           </div>
 
-          <div class="col-6 col-md-4">
+          <div class="col-6" [ngClass]="compact ? 'col-md-4' : 'col-md-3'">
             <div class="input-group">
               <div class="form-floating">
                 <input
