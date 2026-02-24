@@ -4,8 +4,8 @@ import {
   ApiService,
   ApiType,
   ModalService,
+  Transaction,
   Payment,
-  PaymentInstallment,
   WebApiResponse,
 } from '@friday/core';
 
@@ -20,10 +20,12 @@ export class PaymentDetailsModalComponent {
   saved = new EventEmitter<void>();
 
   isEdit = false;
-  data?: Payment | null = null;
-  id: number | null = null;
+  data?: Transaction | null = null;
+  id: string | null = null;
+  parentId: string | null = null;
+  parentData: any;
 
-  private _baseEndPoint: ApiType = ApiType.Payments;
+  private _baseEndPoint: ApiType = ApiType.Payment;
 
   constructor(
     private apiService: ApiService,
@@ -35,13 +37,17 @@ export class PaymentDetailsModalComponent {
       this.isEdit = dialogData.isEdit ?? false;
       this.data = dialogData.data ?? null;
       this.id = dialogData.id ?? null;
+      this.parentId = dialogData.parentId ?? null;
+      this.parentData = dialogData.parentData ?? null;
     }
   }
 
-  save(payment: Payment): void {
+  save(paymentInstallment: Payment): void {
     if (this.isEdit && this.id) {
       this.apiService
-        .put<WebApiResponse<Payment>>(`${this._baseEndPoint}/update`, payment)
+        .put<
+          WebApiResponse<Payment>
+        >(`${this._baseEndPoint}/update`, paymentInstallment)
         .subscribe((response: WebApiResponse<Payment>) => {
           this.saved.emit();
           this.modalService.hideModal(this.dialogRef);
@@ -53,7 +59,9 @@ export class PaymentDetailsModalComponent {
         });
     } else {
       this.apiService
-        .post<WebApiResponse<Payment>>(`${this._baseEndPoint}/add`, payment)
+        .post<
+          WebApiResponse<Payment>
+        >(`${this._baseEndPoint}/add`, paymentInstallment)
         .subscribe((response: WebApiResponse<Payment>) => {
           this.saved.emit();
           this.modalService.hideModal(this.dialogRef);

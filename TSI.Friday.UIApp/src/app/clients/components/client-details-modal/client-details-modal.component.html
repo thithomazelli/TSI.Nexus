@@ -1,6 +1,6 @@
 <div class="modal-header">
   <h5 class="modal-title">
-    {{ isEdit ? "Edit Client" : "Add Client" }}
+    {{ isEdit ? "Editar Cliente" : "Adicionar Cliente" }}
   </h5>
   <button type="button" class="btn-close" (click)="close()"></button>
 </div>
@@ -11,7 +11,7 @@
     [data]="data"
     (save)="save($event)"
     (cancel)="close()"
-    [compact]="false"
+    [compact]="true"
     [errors]="errorMessages"
   ></app-client-form>
 </div>

@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import {
   ApiService,
   ApiType,
-  Client,
+  BusinessPartner,
   ModalService,
   WebApiResponse,
 } from '@friday/core';
@@ -20,9 +20,9 @@ import { ClientDetailsModalComponent } from './components/client-details-modal/c
   styleUrl: './clients.component.scss',
 })
 export class ClientsComponent {
-  private _baseEndPoint = ApiType.Clients;
+  private _baseEndPoint = ApiType.BusinessPartners;
 
-  rowData: Client[] = [];
+  rowData: BusinessPartner[] = [];
   columnDefs: ColDef[] = [
     {
       field: 'id',
@@ -42,7 +42,7 @@ export class ClientsComponent {
       },
     },
     {
-      field: 'type',
+      field: 'documentType',
       headerName: 'Tipo',
       sortable: true,
       filter: true,
@@ -54,15 +54,15 @@ export class ClientsComponent {
       filter: true,
       flex: 1,
       cellRenderer: (params: ValueFormatterParams) => {
-        const type = params.data?.type;
+        const documentType = params.data?.documentType;
         let value =
-          type === 'Física'
+          documentType === 'Física'
             ? params.data?.socialSecurityCard || ''
             : params.data?.nationalRegistry || '';
         const digits = value.replace(/\D/g, '');
-        if (type === 'Física' && digits.length === 11) {
+        if (documentType === 'Física' && digits.length === 11) {
           return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-        } else if (type !== 'Física' && digits.length === 14) {
+        } else if (documentType !== 'Física' && digits.length === 14) {
           return digits.replace(
             /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
             '$1.$2.$3/$4-$5',
@@ -134,18 +134,20 @@ export class ClientsComponent {
   ) {}
 
   ngOnInit(): void {
-    this.getClients();
+    this.getBusinessPartners();
   }
 
-  refreshClients(): void {
-    this.getClients();
+  refreshBusinessPartners(): void {
+    this.getBusinessPartners();
   }
 
-  deleteClient(client: Client): void {
+  deleteBusinessPartner(businessPartner: BusinessPartner): void {
     this.apiService
-      .delete<WebApiResponse<Client>>(`${this._baseEndPoint}/remove`, client)
-      .subscribe((response: WebApiResponse<Client>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== client.id);
+      .delete<
+        WebApiResponse<BusinessPartner>
+      >(`${this._baseEndPoint}/remove`, businessPartner)
+      .subscribe((response: WebApiResponse<BusinessPartner>) => {
+        this.rowData = this.rowData.filter((p) => p.id !== businessPartner.id);
         this.modalService.showSweetNotification(
           '',
           response.message,
@@ -161,16 +163,18 @@ export class ClientsComponent {
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
-        this.refreshClients();
+        this.refreshBusinessPartners();
         ref.close();
       });
     }
   }
 
-  private getClients(): void {
+  private getBusinessPartners(): void {
     this.apiService
-      .get<WebApiResponse<Client[]>>(`${this._baseEndPoint}/getAll`)
-      .subscribe((response: WebApiResponse<Client[]>) => {
+      .get<
+        WebApiResponse<BusinessPartner[]>
+      >(`${this._baseEndPoint}/getAllClients`)
+      .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
       });
   }

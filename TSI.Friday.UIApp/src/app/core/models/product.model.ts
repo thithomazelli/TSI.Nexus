@@ -3,7 +3,7 @@ import { ProductType } from '../enums/product-type.enum';
 import { BaseModel } from './base.model';
 
 export interface Product extends BaseModel {
-  id: number;
+  id: string;
   sku: string;
   name: string;
   description: string;

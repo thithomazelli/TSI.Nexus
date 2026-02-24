@@ -21,11 +21,12 @@ export class OrderDetailsModalComponent extends FormBaseComponent {
   saved = new EventEmitter<void>();
 
   isEdit = false;
+
   data?: Order | null = <Order>{
     orderProducts: [],
   };
 
-  id: number | null = null;
+  id: string | null = null;
   private _baseEndPoint: ApiType = ApiType.Orders;
 
   constructor(

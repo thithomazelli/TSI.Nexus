@@ -43,15 +43,15 @@ export class ProductFormComponent
   cancel = new EventEmitter<void>();
 
   unitOptions = [
-    { label: 'Unit', value: ProductUnit.Unit },
-    { label: 'Kilogram', value: ProductUnit.Kilogram },
-    { label: 'Gram', value: ProductUnit.Gram },
+    { label: 'Unidade', value: ProductUnit.Unit },
+    { label: 'Quilograma', value: ProductUnit.Kilogram },
+    { label: 'Grama', value: ProductUnit.Gram },
   ];
 
   productTypeOptions = [
-    { label: 'Sale', value: ProductType.Sale },
-    { label: 'Rental', value: ProductType.Rental },
-    { label: 'Service', value: ProductType.Service },
+    { label: 'Venda', value: ProductType.Sale },
+    { label: 'Aluguel', value: ProductType.Rental },
+    { label: 'Serviço', value: ProductType.Service },
   ];
 
   constructor(
@@ -103,13 +103,13 @@ export class ProductFormComponent
 
   private initForm(): void {
     const commonControls = {
-      sku: ['SKU0', Validators.required],
+      sku: ['SKU00', Validators.required],
       name: ['Caçamba 0', Validators.required],
       description: ['Caçamba 0'],
       price: [200, [Validators.required, Validators.min(0)]],
-      priceFormatted: [0, [Validators.required, Validators.min(0)]],
-      unit: ['Unit', Validators.required],
-      type: ['Rental', Validators.required],
+      priceFormatted: ['', [Validators.required, Validators.min(0)]],
+      unit: [ProductUnit.Unit, Validators.required],
+      type: [ProductType.Rental, Validators.required],
       quantityInStock: [1, [Validators.required, Validators.min(0)]],
       photo: [''],
     };
@@ -129,6 +129,10 @@ export class ProductFormComponent
         priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
       };
       this.form.patchValue(patch);
+    } else {
+      this.form
+        .get('priceFormatted')
+        ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
     }
 
     this.form.get('type')?.valueChanges.subscribe((type) => {

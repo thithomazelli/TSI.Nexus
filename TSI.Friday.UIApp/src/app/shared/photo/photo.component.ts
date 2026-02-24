@@ -32,7 +32,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   data: any;
 
   @Input()
-  imageUrl?: string | null = null; // Mantém para compatibilidade, mas preview usa previewDataUrl
+  imageUrl?: string | null = null;
 
   @Input()
   placeholderIcon = true;

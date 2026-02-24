@@ -6,6 +6,10 @@
   z-index: 9999;
 }
 
+mat-datepicker {
+  display: none !important;
+}
+
 .button {
   background-color: var(--bs-tertiary-bg);
   border: var(--bs-border-width) solid var(--bs-border-color);

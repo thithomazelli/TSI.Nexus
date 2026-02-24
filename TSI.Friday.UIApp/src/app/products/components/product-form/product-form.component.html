@@ -1,6 +1,6 @@
 <div class="product-form-wrapper" [ngClass]="{ compact: compact }">
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="modal-body">
+    <div class="modal-scrollable-area">
       @if (isEdit) {
         <div class="mb-1" hidden>
           <label for="id" class="form-label">Id</label>
@@ -8,20 +8,20 @@
         </div>
       }
 
-      <div class="row g-2 mb-1">
+      <div class="row g-1 mb-1">
         <div class="col-12 col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill">
               <input
                 formControlName="name"
                 type="text"
-                placeholder="Name"
+                placeholder="Nome do Produto"
                 class="form-control"
                 id="name"
                 [class.is-invalid]="isInvalid('name')"
                 [class.is-valid]="isValid('name')"
               />
-              <label for="name">Name</label>
+              <label for="name">Nome do Produto</label>
             </div>
             <div class="input-group-text"><i class="bi bi-tag"></i></div>
           </div>
@@ -43,21 +43,20 @@
             <div class="input-group-text"><i class="bi bi bi-upc"></i></div>
           </div>
         </div>
-      </div>
 
-      <div class="input-group mb-1">
-        <div class="form-floating flex-fill">
-          <textarea
-            formControlName="description"
-            placeholder="Description"
-            class="form-control"
-            id="description"
-          ></textarea>
-          <label for="description">Description</label>
+        <div class="col-12">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <textarea
+                formControlName="description"
+                placeholder="Descrição"
+                class="form-control"
+                id="description"
+              ></textarea>
+              <label for="description">Descrição</label>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div class="row g-2 mb-1">
         <div class="col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill select-floating">
@@ -68,14 +67,14 @@
                 [class.is-invalid]="isInvalid('unit')"
                 [class.is-valid]="isValid('unit')"
               >
-                <option value="" disabled selected>None</option>
+                <option value="" disabled selected>Unidade de medida</option>
                 @for (option of unitOptions; track option) {
                   <option [value]="option.value">
                     {{ option.label }}
                   </option>
                 }
               </select>
-              <label for="unit">Unit</label>
+              <label for="unit">Unidade</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-arrows-move"></i>
@@ -92,35 +91,34 @@
                 [class.is-invalid]="isInvalid('type')"
                 [class.is-valid]="isValid('type')"
               >
-                <option value="" disabled selected>None</option>
+                <option value="" disabled selected>Tipo</option>
                 @for (option of productTypeOptions; track option) {
                   <option [value]="option.value">
                     {{ option.label }}
                   </option>
                 }
               </select>
-              <label for="type">Type</label>
+              <label for="type">Tipo</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-layers"></i>
             </div>
           </div>
         </div>
-      </div>
-      <div class="row g-2 mb-1">
+
         <div class="col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill">
               <input
                 formControlName="priceFormatted"
                 type="text"
-                placeholder="Price"
+                placeholder="Preço"
                 class="form-control"
                 [class.is-invalid]="isInvalid('priceFormatted')"
                 [class.is-valid]="isValid('priceFormatted')"
                 (blur)="onPriceBlur()"
               />
-              <label for="price">Price</label>
+              <label for="price">Preço</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-cash-coin"></i>
@@ -133,17 +131,13 @@
               <input
                 formControlName="quantityInStock"
                 type="number"
-                placeholder="Quantity"
+                placeholder="Quantidade em Estoque"
                 class="form-control"
                 id="quantityInStock"
                 [class.is-invalid]="isInvalid('quantityInStock')"
                 [class.is-valid]="isValid('quantityInStock')"
               />
-              <label for="quantityInStock">Quantity</label>
-              <!-- <span
-                  *ngIf="isInvalid('quantityInStock')" class="text-danger">
-                  Quantity is required
-                </span> -->
+              <label for="quantityInStock">Quantidade em Estoque</label>
             </div>
             <div class="input-group-text"><i class="bi bi-box-seam"></i></div>
           </div>
@@ -153,10 +147,10 @@
 
     <div class="d-flex justify-content-end mt-3">
       <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
-        Cancel
+        Cancelar
       </button>
       <button type="submit" class="btn btn-success" [disabled]="form.invalid">
-        Save
+        Salvar
       </button>
     </div>
   </form>

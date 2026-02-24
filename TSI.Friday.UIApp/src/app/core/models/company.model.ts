@@ -1,6 +1,6 @@
-import { Client } from './client.model';
+import { BusinessPartner } from './business-partner.model';
 
-export interface Company extends Client {
+export interface Company extends BusinessPartner {
   stateRegistration: string;
   businessName: string;
 }

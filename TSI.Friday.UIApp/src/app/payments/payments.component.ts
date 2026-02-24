@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import {
   ApiService,
   ApiType,
+  BusinessPartner,
   ModalService,
+  Order,
+  Transaction,
   Payment,
   WebApiResponse,
 } from '@friday/core';
@@ -21,9 +24,43 @@ import { PaymentDetailsModalComponent } from './components/payment-details-modal
   templateUrl: './payments.component.html',
   styleUrl: './payments.component.scss',
 })
-export class PaymentsComponent {
-  baseEndPoint = ApiType.Payments;
+export class PaymentComponent {
+  @Input()
+  entity: string = '';
+
+  @Input()
+  data?: BusinessPartner | Order | Transaction | null = null;
+
+  @Output()
+  refreshParent = new EventEmitter<void>();
+
+  baseEndPoint = ApiType.Payment;
+
   rowData: Payment[] = [];
+
+  typeMap: { [key: string]: string } = {
+    Incoming: 'Entrada',
+    Outgoing: 'Saída',
+  };
+
+  typeIconMap: { [key: string]: string } = {
+    Incoming: '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>',
+    Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
+  };
+
+  statusMap: { [key: string]: string } = {
+    Approved: 'Pago',
+    Pending: 'Em Aberto',
+    Delayed: 'Atrasado',
+  };
+
+  statusColorMap: { [key: string]: string } = {
+    Approved: 'success',
+    Pending: 'info',
+    Delayed: 'warning',
+    default: 'secondary',
+  };
+
   columnDefs: ColDef[] = [
     {
       field: 'id',
@@ -35,11 +72,25 @@ export class PaymentsComponent {
     },
     {
       field: 'description',
-      headerName: 'Description',
+      headerName: 'Descrição',
+      hide: true,
       sortable: true,
       filter: true,
       flex: 2,
-      maxWidth: 250,
+      maxWidth: 450,
+      cellRenderer: (params: ValueFormatterParams) => {
+        const value = params.value ?? '';
+        return `<a data-action="view" class="ag-link">${value}</a>`;
+      },
+    },
+
+    {
+      field: 'installmentNumber',
+      headerName: 'Parcela',
+      sortable: true,
+      filter: true,
+      flex: 2,
+      maxWidth: 100,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         return `<a data-action="view" class="ag-link">${value}</a>`;
@@ -53,21 +104,11 @@ export class PaymentsComponent {
       maxWidth: 120,
       resizable: true,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.type === 'Incoming' ? 'Entrada' : 'Saída';
+        return this.getTypeLabel(params.data?.type);
       },
       cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        let icon = '';
-        let text = '';
-        if (value === 'Incoming') {
-          icon = '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>';
-          text = 'Entrada';
-        } else {
-          icon =
-            '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>';
-          text = 'Saída';
-        }
-        return icon + text;
+        const type = params.value ?? '';
+        return this.getTypeIcon(type) + this.getTypeLabel(type);
       },
     },
     {
@@ -97,27 +138,6 @@ export class PaymentsComponent {
       },
     },
     {
-      field: 'condition',
-      headerName: 'Condição',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 120,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.condition === 'FullPayment'
-          ? 'À vista'
-          : 'Parcelado';
-      },
-      valueFormatter: (params: ValueFormatterParams): string => {
-        const value = params.value ?? '';
-        if (value === 'FullPayment') {
-          return 'À vista';
-        } else {
-          return 'Parcelado';
-        }
-      },
-    },
-    {
       field: 'status',
       headerName: 'Status',
       sortable: true,
@@ -125,38 +145,32 @@ export class PaymentsComponent {
       flex: 2,
       maxWidth: 100,
       filterValueGetter: (params: ValueGetterParams) => {
-        return params.data?.status === 'Approved'
-          ? 'Pago'
-          : params.data?.status === 'Pending'
-            ? 'Em Aberto'
-            : 'Atrasado';
-        ('');
+        return this.getStatusLabel(params.data?.status);
       },
       cellRenderer: (params: ICellRendererParams) => {
-        const value = params.value;
-        let color = 'secondary';
-        // Importar OrderStatus corretamente no topo do arquivo se necessário
-        let label = value;
-        if (value === 'Approved') {
-          color = 'success';
-          label = 'Pago';
-        } else if (value === 'Pending') {
-          color = 'info';
-          label = 'Em Aberto';
-        } else if (value === 'Delayed') {
-          color = 'warning';
-          label = 'Atrasado';
-        }
+        const status = params.value;
+        const color = this.getStatusColor(status);
+        const label = this.getStatusLabel(status);
         return `<span class="badge bg-${color}">${label}</span>`;
       },
     },
     {
-      field: 'clientName',
+      field: 'date',
+      headerName: 'Data',
+      sortable: true,
+      filter: true,
+      flex: 2,
+      maxWidth: 120,
+      valueFormatter: (params: ValueFormatterParams) =>
+        this.formatDateBR(params.value),
+    },
+    {
+      field: 'businessPartnerName',
       headerName: 'Cliente',
       sortable: true,
       filter: true,
       flex: 1,
-      maxWidth: 300,
+      maxWidth: 150,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? 'N/A';
         return value;
@@ -179,7 +193,7 @@ export class PaymentsComponent {
       sortable: false,
       filter: false,
       resizable: false,
-      width: 300,
+      maxWidth: 150,
       cellRenderer: () => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
@@ -202,18 +216,23 @@ export class PaymentsComponent {
   ) {}
 
   ngOnInit(): void {
-    this.getPayments();
+    this.getPayment();
   }
 
   refreshOrders(): void {
-    this.getPayments();
+    this.getPayment();
   }
 
-  deleteOrder(order: Payment): void {
+  deleteOrder(paymentInstallment: Payment): void {
     this.apiService
-      .delete<WebApiResponse<Payment>>(`${this.baseEndPoint}/remove`, order)
+      .delete<
+        WebApiResponse<Payment>
+      >(`${this.baseEndPoint}/remove`, paymentInstallment)
       .subscribe((response: WebApiResponse<Payment>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== order.id);
+        this.rowData = this.rowData.filter(
+          (p) => p.id !== paymentInstallment.id,
+        );
+        this.refreshParent.emit();
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -222,25 +241,65 @@ export class PaymentsComponent {
         );
       });
   }
-
   onOpenModal(initialState: any) {
+    const initialStateWithParent = {
+      ...initialState,
+      parentId: this.data?.id,
+      parentData: this.data,
+    };
+
     const ref = this.modalService.showTemplateModal(
       PaymentDetailsModalComponent,
-      initialState,
+      initialStateWithParent,
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
-        this.getPayments();
+        this.refreshParent.emit();
+        this.getPayment();
         ref.close();
       });
     }
   }
 
-  private getPayments(): void {
+  private getPayment(): void {
     this.apiService
-      .get<WebApiResponse<Payment[]>>(`${this.baseEndPoint}/getAll`)
+      .get<
+        WebApiResponse<Payment[]>
+      >(`${this.baseEndPoint}/getBy${this.entity}Id/${this.data?.id}`)
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.rowData = response.data ?? [];
       });
+  }
+
+  private getTypeLabel(type: string): string {
+    return this.typeMap[type] ?? type ?? '';
+  }
+
+  private getTypeIcon(type: string): string {
+    return this.typeIconMap[type] ?? '';
+  }
+
+  private getStatusLabel(status: string): string {
+    return this.statusMap[status] ?? status ?? '';
+  }
+
+  private getStatusColor(status: string): string {
+    return this.statusColorMap[status] ?? this.statusColorMap['default'];
+  }
+
+  private formatDateBR(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 }

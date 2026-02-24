@@ -36,7 +36,7 @@ export class OrderDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      this.loadOrder(Number(idParam));
+      this.loadOrder(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
@@ -74,11 +74,11 @@ export class OrderDetailsPageComponent {
 
   onOrderProductsUpdated() {
     if (this.id) {
-      this.loadOrder(Number(this.id));
+      this.loadOrder(this.id);
     }
   }
 
-  private loadOrder(id: number): void {
+  private loadOrder(id: string): void {
     this.loading = true;
     this.apiService
       .get<WebApiResponse<Order>>(`${this._baseEndPoint}/getById/${id}`)

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
@@ -93,7 +94,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetById/{productId}")]
-        public async Task<IActionResult> GetById(int? productId)
+        public async Task<IActionResult> GetById(Guid? productId)
         {
             var webApiResponse = await _productService.FindById(productId);
             return Ok(webApiResponse);

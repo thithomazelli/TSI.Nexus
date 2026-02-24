@@ -4,7 +4,7 @@ import {
   ApiType,
   ModalService,
   WebApiResponse,
-  Client,
+  BusinessPartner,
   Order,
 } from '@friday/core';
 import {
@@ -22,7 +22,7 @@ import { OrderDetailsModalComponent } from '../../../orders/components/order-det
 })
 export class ClientsOrdersListComponent {
   @Input()
-  parentData?: Client | null = null;
+  parentData?: BusinessPartner | null = null;
 
   private _baseEndPoint = ApiType.Orders;
 
@@ -94,7 +94,10 @@ export class ClientsOrdersListComponent {
         } else if (value === 'Open') {
           color = 'info';
           label = 'Em Aberto';
-        } else if (value === 'WaitingPayment' || value === 'Waiting payment') {
+        } else if (
+          value === 'WaitingTransaction' ||
+          value === 'Waiting payment'
+        ) {
           color = 'warning';
           label = 'Aguardando Pagamento';
         }
@@ -151,9 +154,18 @@ export class ClientsOrdersListComponent {
   }
 
   onOpenModal(initialState: any) {
+    const initialStateWithClient = {
+      ...initialState,
+      data: <Order>{
+        businessPartnerId: this.parentData?.id,
+        businessPartnerName: this.parentData?.name,
+        orderProducts: [],
+      },
+    };
+
     const ref = this.modalService.showTemplateModal(
       OrderDetailsModalComponent,
-      initialState,
+      initialStateWithClient,
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
@@ -167,7 +179,7 @@ export class ClientsOrdersListComponent {
     this.apiService
       .get<
         WebApiResponse<Order[]>
-      >(`${this._baseEndPoint}/getByClientId/${this.parentData?.id}`)
+      >(`${this._baseEndPoint}/getByBusinessPartnerId/${this.parentData?.id}`)
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
       });

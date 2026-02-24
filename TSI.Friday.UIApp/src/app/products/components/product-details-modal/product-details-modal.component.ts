@@ -20,7 +20,7 @@ export class ProductDetailsModalComponent {
 
   isEdit = false;
   data?: Product | null = null;
-  id: number | null = null;
+  id: string | null = null;
   private _baseEndPoint: ApiType = ApiType.Products;
 
   constructor(

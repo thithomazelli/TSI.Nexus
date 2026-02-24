@@ -46,7 +46,7 @@ export class OrdersComponent {
       },
     },
     {
-      field: 'clientName',
+      field: 'businessPartnerName',
       headerName: 'Client Name',
       sortable: true,
       filter: true,
@@ -101,7 +101,10 @@ export class OrdersComponent {
         } else if (value === 'Open') {
           color = 'info';
           label = 'Em Aberto';
-        } else if (value === 'WaitingPayment' || value === 'Waiting payment') {
+        } else if (
+          value === 'WaitingTransaction' ||
+          value === 'Waiting payment'
+        ) {
           color = 'warning';
           label = 'Aguardando Pagamento';
         }
@@ -120,7 +123,7 @@ export class OrdersComponent {
           <button class="btn btn-primary btn-sm" data-action="view">
             <i class="fas fa-eye" data-action="view"></i>
           </button>
-          <button class="btn btn-secondary btn-sm text-white" data-action="edit">
+          <button class="btn btn-info btn-sm text-white" data-action="edit">
             <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">

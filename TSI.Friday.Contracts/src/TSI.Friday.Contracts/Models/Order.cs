@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TSI.Friday.Contracts.Enums;
 
@@ -8,10 +7,6 @@ namespace TSI.Friday.Contracts.Models
 {
     public class Order : BaseModel
     {
-        private Client _client = null!;
-
-        public int Id { get; set; }
-
         public string OrderNumber { get; set; } = string.Empty;
 
         public OrderStatus Status { get; set; }
@@ -24,25 +19,18 @@ namespace TSI.Friday.Contracts.Models
 
         public decimal Discount { get; set; }
 
-        [ForeignKey("Client")]
-        public int ClientId { get; set; }
+        [ForeignKey("BusinessPartner")]
+        public Guid BusinessPartnerId { get; set; }
 
-        [Required]
-        public Client Client
-        {
-            get => _client;
-            set { _client = value ?? throw new ArgumentNullException(nameof(Client)); }
-        }
+        public BusinessPartner BusinessPartner { get; set; }
 
-        public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
+        [ForeignKey("Transaction")]
+        public Guid TransactionId { get; set; }
 
-        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
+        public Transaction Transaction { get; set; } = null!;
 
-        public Order() { }
+        public ICollection<Payment>? Payments { get; set; } = [];
 
-        public Order(Client client)
-        {
-            Client = client ?? throw new ArgumentNullException(nameof(client));
-        }
+        public ICollection<OrderProduct> OrderProducts { get; set; } = [];
     }
 }

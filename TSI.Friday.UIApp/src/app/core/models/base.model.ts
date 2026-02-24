@@ -1,6 +1,6 @@
 export interface BaseModel {
   createDate?: Date;
-  createUserId?: number | null;
+  createUserId?: string | null;
   modifyDate?: Date | null;
-  modifyUserId?: number | null;
+  modifyUserId?: string | null;
 }

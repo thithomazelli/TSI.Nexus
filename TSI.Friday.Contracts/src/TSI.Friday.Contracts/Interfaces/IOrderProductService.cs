@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
@@ -33,13 +34,13 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="orderId">The ID to be used on the search.</param>
         /// <returns>List of orderProduct according to the OrderId defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByOrderId(int? orderId);
+        Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByOrderId(Guid? orderId);
 
         /// <summary>
         /// Method responsible to get only one OrderProduct based on the ID received as parameter.
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One OrderProduct object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<OrderProductDto>> FindById(int? id);
+        Task<WebApiResponse<OrderProductDto>> FindById(Guid? id);
     }
 }

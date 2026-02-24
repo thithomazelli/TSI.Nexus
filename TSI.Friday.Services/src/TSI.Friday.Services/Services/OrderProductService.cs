@@ -16,7 +16,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<OrderProduct> _repository;
         private readonly IRepository<Order> _orderRepository;
-        private readonly IRepository<Product> _productRepository;
+        private readonly IProductService _productService;
         private readonly IMapper _mapper;
 
         #endregion Properties
@@ -30,13 +30,13 @@ namespace TSI.Friday.Services
         public OrderProductService(
             IRepository<OrderProduct> repository,
             IRepository<Order> orderRepository,
-            IRepository<Product> productRepository,
+            IProductService productService,
             IMapper mapper
         )
         {
             _repository = repository;
             _orderRepository = orderRepository;
-            _productRepository = productRepository;
+            _productService = productService;
             _mapper = mapper;
         }
 
@@ -51,11 +51,12 @@ namespace TSI.Friday.Services
 
                 await _repository.AddAsync(orderProductEntity);
 
-                // Update product stock: subtract quantity
-                await ChangeProductStockAsync(
-                    orderProductEntity.ProductId,
-                    -Convert.ToInt32(orderProductEntity.Quantity)
-                );
+                // Update product stock: batch via product service
+                var deltas = new Dictionary<Guid, int>
+                {
+                    { orderProductEntity.ProductId, -Convert.ToInt32(orderProductEntity.Quantity) },
+                };
+                await _productService.AdjustStockAsync(deltas);
 
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(orderProductEntity.OrderId);
@@ -91,7 +92,11 @@ namespace TSI.Friday.Services
 
                 if (newQuantity != 0)
                 {
-                    await ChangeProductStockAsync(orderProductDto.ProductId, newQuantity);
+                    var deltas = new Dictionary<Guid, int>
+                    {
+                        { orderProductDto.ProductId, newQuantity },
+                    };
+                    await _productService.AdjustStockAsync(deltas);
                 }
 
                 // Recalculate order price and update order
@@ -124,10 +129,11 @@ namespace TSI.Friday.Services
                 await _repository.RemoveAsync(existing);
 
                 // Add back quantity to product
-                await ChangeProductStockAsync(
-                    existing.ProductId,
-                    Convert.ToInt32(existing.Quantity)
-                );
+                var deltas = new Dictionary<Guid, int>
+                {
+                    { existing.ProductId, Convert.ToInt32(existing.Quantity) },
+                };
+                await _productService.AdjustStockAsync(deltas);
 
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(existing.OrderId);
@@ -148,7 +154,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByOrderId(int? orderId)
+        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByOrderId(Guid? orderId)
         {
             WebApiResponse<IEnumerable<OrderProductDto>> result = new();
 
@@ -175,7 +181,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<OrderProductDto>> FindById(int? id)
+        public async Task<WebApiResponse<OrderProductDto>> FindById(Guid? id)
         {
             WebApiResponse<OrderProductDto> result = new();
 
@@ -201,27 +207,27 @@ namespace TSI.Friday.Services
 
         #endregion Public methods
 
-        #region Private helpers
+        #region Private methods
 
-        private async Task ChangeProductStockAsync(int productId, int delta)
-        {
-            var product = await _productRepository.GetByIdAsync(productId);
-            product.QuantityInStock = product.QuantityInStock + delta;
-            await _productRepository.UpdateAsync(product);
-        }
-
-        private async Task RecalculateAndUpdateOrderAsync(int orderId)
+        private async Task RecalculateAndUpdateOrderAsync(Guid orderId)
         {
             var items = await _repository.QueryAsync(op => op.OrderId == orderId);
-            var sum = items.Sum(op =>
-                (op.Price * op.Quantity) - ((op.Price * op.Quantity) * op.Discount / 100m)
-            );
+            var sum =
+                items?.Sum(op =>
+                    (op.Price * op.Quantity) - ((op.Price * op.Quantity) * op.Discount / 100m)
+                ) ?? 0;
 
             var order = await _orderRepository.GetByIdAsync(orderId);
+
+            if (order == null)
+            {
+                return;
+            }
+
             order.Price = sum;
             await _orderRepository.UpdateAsync(order);
         }
 
-        #endregion Private helpers
+        #endregion Private methods
     }
 }

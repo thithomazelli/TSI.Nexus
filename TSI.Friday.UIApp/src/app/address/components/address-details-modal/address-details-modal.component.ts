@@ -22,8 +22,8 @@ export class AddressDetailsModalComponent extends FormBaseComponent {
 
   isEdit = false;
   data?: Address | null = null;
-  id: number | null = null;
-  parentId: number | null = null;
+  id: string | null = null;
+  parentId: string | null = null;
   private _baseEndPoint: ApiType = ApiType.Addresses;
 
   constructor(
@@ -43,7 +43,7 @@ export class AddressDetailsModalComponent extends FormBaseComponent {
   }
 
   save(address: Address): void {
-    address.clientId = this.parentId;
+    address.businessPartnerId = this.parentId ?? '';
 
     if (this.isEdit && this.id) {
       this.apiService

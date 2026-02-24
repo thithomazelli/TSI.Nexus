@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 
@@ -9,7 +10,6 @@ namespace TSI.Friday.WebAPI.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-
     public class ProductPhotosController : Controller
     {
         /// <summary>
@@ -82,7 +82,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetById/{productPhotoId}")]
-        public async Task<IActionResult> GetById(int? productPhotoId)
+        public async Task<IActionResult> GetById(Guid? productPhotoId)
         {
             var webApiResponse = await _productPhotoService.FindById(productPhotoId);
             return Ok(webApiResponse);
@@ -95,20 +95,20 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetDefaultByProduct/{productId}")]
-        public async Task<IActionResult> GetDefaultByProduct(int productId)
+        public async Task<IActionResult> GetDefaultByProduct(Guid productId)
         {
             var webApiResponse = await _productPhotoService.FindDefaultByProduct(productId);
             return Ok(webApiResponse);
         }
 
         /// <summary>
-        /// Get all productPhotos available on database 
+        /// Get all productPhotos available on database
         /// </summary>
         /// <param name="productId">Product id to be used in the search</param>
         /// <returns></returns>
         [HttpGet]
         [Route("GetAlllByProduct")]
-        public async Task<IActionResult> GetAlllByProduct(int productId)
+        public async Task<IActionResult> GetAlllByProduct(Guid productId)
         {
             var webApiResponse = await _productPhotoService.FindAllByProduct(productId);
             return Ok(webApiResponse);

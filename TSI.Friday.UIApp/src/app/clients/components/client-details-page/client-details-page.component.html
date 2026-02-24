@@ -16,7 +16,7 @@
             <div class="text-center">
               <app-photo
                 [data]="data"
-                [entityClass]="'Client'"
+                [entityClass]="'BusinessPartner'"
                 [imageUrl]="data?.photo"
                 (imageChange)="onImageChange($event)"
               ></app-photo>
@@ -101,7 +101,7 @@
                     <app-client-form
                       [isEdit]="isEdit"
                       [data]="data"
-                      [compact]="true"
+                      [compact]="false"
                       (save)="save($event)"
                       (cancel)="cancel()"
                     ></app-client-form>
@@ -118,10 +118,10 @@
                   ></app-client-orders-list>
                 }
                 @if (activeTab === "payments") {
-                  <app-payment-installments
-                    [entity]="'Client'"
+                  <app-payments
+                    [entity]="'BusinessPartner'"
                     [data]="data"
-                  ></app-payment-installments>
+                  ></app-payments>
                 }
               </div>
             }

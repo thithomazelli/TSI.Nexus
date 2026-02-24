@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TSI.Friday.Contracts.Enums;
 
@@ -5,13 +6,13 @@ namespace TSI.Friday.Contracts.Models.DTOs
 {
     public class OrderDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public string OrderNumber { get; set; }
 
-        public int ClientId { get; set; }
+        public Guid BusinessPartnerId { get; set; }
 
-        public string ClientName { get; set; }
+        public string BusinessPartnerName { get; set; }
 
         public OrderStatus Status { get; set; }
 
@@ -23,6 +24,10 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal TotalPrice { get; set; }
 
-        public ICollection<OrderProduct> OrderProducts { get; set; }
+        public Guid? TransactionId { get; set; }
+
+        public TransactionDto Transaction { get; set; }
+
+        public ICollection<OrderProductDto> OrderProducts { get; set; } = [];
     }
 }

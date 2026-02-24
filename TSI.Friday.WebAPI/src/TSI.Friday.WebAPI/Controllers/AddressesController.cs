@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
@@ -10,7 +11,6 @@ namespace TSI.Friday.WebAPI.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-
     public class AddressesController : Controller
     {
         /// <summary>
@@ -77,14 +77,14 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get all addresss available on database 
+        /// Get all addresss available on database
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("GetAllByClientId/{clientId}")]
-        public async Task<IActionResult> GetAllByClientId(int? clientId)
+        [Route("GetAllByBusinessPartnerId/{businessPartnerId}")]
+        public async Task<IActionResult> GetAllByBusinessPartnerId(Guid? businessPartnerId)
         {
-            var webApiResponse = await _addressService.FindByClientId(clientId);
+            var webApiResponse = await _addressService.FindByBusinessPartnerId(businessPartnerId);
             return Ok(webApiResponse);
         }
 
@@ -95,7 +95,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetById/{addressId}")]
-        public async Task<IActionResult> GetById(int? addressId)
+        public async Task<IActionResult> GetById(Guid? addressId)
         {
             var webApiResponse = await _addressService.FindById(addressId);
             return Ok(webApiResponse);

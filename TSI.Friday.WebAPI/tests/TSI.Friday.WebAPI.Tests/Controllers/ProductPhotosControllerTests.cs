@@ -25,20 +25,21 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var productPhotoMock = new ProductPhoto
             {
-                Id = 1,
-                ProductId = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                ProductId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 FileName = "Photo001.jpg",
-                IsDefault = true
+                IsDefault = true,
             };
 
             var expectedResult = new WebApiResponse<ProductPhoto>
             {
                 Data = productPhotoMock,
                 Status = ResponseStatus.Success,
-                Message = $"Imagem {productPhotoMock.FileName} cadastrada com sucesso."
+                Message = $"Imagem {productPhotoMock.FileName} cadastrada com sucesso.",
             };
 
-            _productPhotoServiceMock.Setup(_ => _.Add(It.IsAny<ProductPhoto>()))
+            _productPhotoServiceMock
+                .Setup(_ => _.Add(It.IsAny<ProductPhoto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -80,20 +81,21 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var productPhotoMock = new ProductPhoto
             {
-                Id = 1,
-                ProductId = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                ProductId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 FileName = "Photo001.jpg",
-                IsDefault = true
+                IsDefault = true,
             };
 
             var expectedResult = new WebApiResponse<ProductPhoto>
             {
                 Data = productPhotoMock,
                 Status = ResponseStatus.Success,
-                Message = $"Imagem {productPhotoMock.FileName} atualizada com sucesso."
+                Message = $"Imagem {productPhotoMock.FileName} atualizada com sucesso.",
             };
 
-            _productPhotoServiceMock.Setup(_ => _.Update(It.IsAny<ProductPhoto>()))
+            _productPhotoServiceMock
+                .Setup(_ => _.Update(It.IsAny<ProductPhoto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -135,20 +137,21 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var productPhotoMock = new ProductPhoto
             {
-                Id = 1,
-                ProductId = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                ProductId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 FileName = "Photo001.jpg",
-                IsDefault = true
+                IsDefault = true,
             };
 
             var expectedResult = new WebApiResponse<ProductPhoto>
             {
                 Data = productPhotoMock,
                 Status = ResponseStatus.Success,
-                Message = $"Imagem {productPhotoMock.FileName} removida com sucesso."
+                Message = $"Imagem {productPhotoMock.FileName} removida com sucesso.",
             };
 
-            _productPhotoServiceMock.Setup(_ => _.Remove(It.IsAny<ProductPhoto>()))
+            _productPhotoServiceMock
+                .Setup(_ => _.Remove(It.IsAny<ProductPhoto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -167,23 +170,24 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task ProductPhotosController_GetById_ShouldGetProductPhotoById_WhenMethodIsCalled()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var productPhotoMock = new ProductPhoto
             {
-                Id = 1,
-                ProductId = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                ProductId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 FileName = "Photo001.jpg",
-                IsDefault = true
+                IsDefault = true,
             };
 
             var expectedResult = new WebApiResponse<ProductPhoto>
             {
                 Data = productPhotoMock,
                 Status = ResponseStatus.Success,
-                Message = $"Imagem {productPhotoMock.FileName} encontrada com sucesso"
+                Message = $"Imagem {productPhotoMock.FileName} encontrada com sucesso",
             };
 
-            _productPhotoServiceMock.Setup(_ => _.FindById(It.IsAny<int?>()))
+            _productPhotoServiceMock
+                .Setup(_ => _.FindById(It.IsAny<Guid?>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -195,30 +199,31 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(productPhotoMock, response.Data);
 
-            _productPhotoServiceMock.Verify(_ => _.FindById(It.IsAny<int?>()), Times.Once);
+            _productPhotoServiceMock.Verify(_ => _.FindById(It.IsAny<Guid?>()), Times.Once);
         }
 
         [Fact]
         public async Task ProductPhotosController_GetDefaultByProduct_ShouldGetProductPhotoDefaultByProduct_WhenMethodIsCalled()
         {
             // Arrange
-            const int productId = 1;
+            var productId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var productPhotoMock = new ProductPhoto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 ProductId = productId,
                 FileName = "Photo001.jpg",
-                IsDefault = true
+                IsDefault = true,
             };
 
             var expectedResult = new WebApiResponse<ProductPhoto>
             {
                 Data = productPhotoMock,
                 Status = ResponseStatus.Success,
-                Message = $"Imagem {productPhotoMock.FileName} encontrada com sucesso"
+                Message = $"Imagem {productPhotoMock.FileName} encontrada com sucesso",
             };
 
-            _productPhotoServiceMock.Setup(_ => _.FindDefaultByProduct(It.IsAny<int>()))
+            _productPhotoServiceMock
+                .Setup(_ => _.FindDefaultByProduct(It.IsAny<Guid>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -230,27 +235,32 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(productPhotoMock, response.Data);
 
-            _productPhotoServiceMock.Verify(_ => _.FindDefaultByProduct(It.IsAny<int>()), Times.Once);
+            _productPhotoServiceMock.Verify(
+                _ => _.FindDefaultByProduct(It.IsAny<Guid>()),
+                Times.Once
+            );
         }
 
         [Fact]
         public async Task ProductPhotosController_GetAlllByProduct_ShouldGetAlllProductPhotosByProduct_WhenMethodIsCalled()
         {
             // Arrange
-            const int productId = 1;
+            var productId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var productPhotoMock = new List<ProductPhoto>
             {
-                new() {
-                    Id = 1,
+                new()
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     ProductId = productId,
                     FileName = "Photo001.jpg",
-                    IsDefault = true
+                    IsDefault = true,
                 },
-                new() {
-                    Id = 2,
+                new()
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     ProductId = productId,
                     FileName = "Photo002.jpg",
-                    IsDefault = false
+                    IsDefault = false,
                 },
             };
 
@@ -258,10 +268,11 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = productPhotoMock,
                 Status = ResponseStatus.Success,
-                Message = $"{productPhotoMock.Count()} registro(s) encontrado(s)."
+                Message = $"{productPhotoMock.Count()} registro(s) encontrado(s).",
             };
 
-            _productPhotoServiceMock.Setup(_ => _.FindAllByProduct(productId))
+            _productPhotoServiceMock
+                .Setup(_ => _.FindAllByProduct(productId))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -273,7 +284,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(productPhotoMock, response.Data);
 
-            _productPhotoServiceMock.Verify(_ => _.FindAllByProduct(It.IsAny<int>()), Times.Once);
+            _productPhotoServiceMock.Verify(_ => _.FindAllByProduct(It.IsAny<Guid>()), Times.Once);
         }
     }
 }

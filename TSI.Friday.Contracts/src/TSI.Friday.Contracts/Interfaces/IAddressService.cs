@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
@@ -33,13 +34,15 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One address object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<AddressDto>> FindById(int? id);
+        Task<WebApiResponse<AddressDto>> FindById(Guid? id);
 
         /// <summary>
-        /// Method responsible to get a list of Addresses based on the ClientID received as parameter.
+        /// Method responsible to get a list of Addresses based on the BusinessPartnerID received as parameter.
         /// </summary>
-        /// <param name="clientId">The ClientID to be used on the search.</param>
-        /// <returns>List of address according to the ClientID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<AddressDto>>> FindByClientId(int? clientId);
+        /// <param name="businessPartnerId">The BusinessPartnerID to be used on the search.</param>
+        /// <returns>List of address according to the BusinessPartnerID defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<AddressDto>>> FindByBusinessPartnerId(
+            Guid? businessPartnerId
+        );
     }
 }

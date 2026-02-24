@@ -1,18 +1,18 @@
 import { AddressType } from '../enums/address-type.enum';
 
 export class Address {
-  id?: number | null;
-  name?: string | null;
-  street?: string | null;
-  number?: number | null;
-  city?: string | null;
-  state?: string | null;
-  zipCode?: string | null;
-  country?: string | null;
-  comments?: string | null;
-  type?: AddressType | null;
-  clientId?: number | null;
-  isDefault?: boolean | null;
+  id?: string;
+  name?: string;
+  street?: string;
+  number?: number;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  comments?: string;
+  type?: AddressType;
+  businessPartnerId?: string;
+  isDefault?: boolean;
 
   constructor(init?: Partial<Address>) {
     Object.assign(this, init);

@@ -2,7 +2,7 @@
 
 namespace TSI.Friday.Contracts.Models
 {
-    public class Individual : Client
+    public class Individual : BusinessPartner
     {
         public string SocialSecurityCard { get; set; }
 

@@ -21,7 +21,7 @@ export class UserDetailsModalComponent extends FormBaseComponent {
 
   isEdit = false;
   data?: User | null = null;
-  id: number | null = null;
+  id: string | null = null;
   private _baseEndPoint: ApiType = ApiType.Users;
 
   constructor(

@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TSI.Friday.WebAPI", "TSI.Friday.WebAPI", "{47F6532D-D78E-4C9D-82D4-8CD1FB1613BD}"
-	ProjectSection(SolutionItems) = preProject
-		TSI.Friday.Services\src\TSI.Friday.Services\Services\JwtService.cs = TSI.Friday.Services\src\TSI.Friday.Services\Services\JwtService.cs
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSI.Friday.WebAPI", "TSI.Friday.WebAPI\src\TSI.Friday.WebAPI\TSI.Friday.WebAPI.csproj", "{FDEE635A-BFB9-45B8-8850-ACC4193783E5}"
 EndProject

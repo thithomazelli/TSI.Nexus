@@ -13,9 +13,11 @@ namespace TSI.Friday.Services
         #region Properties
 
         /// <summary>
-        /// Repository object created to access the Order registers on database using EntityFramework.
+        /// OrderService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         private readonly IRepository<Order> _repository;
+        private readonly ITransactionService _transactionService;
+        private readonly IProductService _productService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
 
@@ -29,11 +31,15 @@ namespace TSI.Friday.Services
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
         public OrderService(
             IRepository<Order> repository,
+            ITransactionService transactionService,
+            IProductService productService,
             ISequenceService sequenceService,
             IMapper mapper
         )
         {
             _repository = repository;
+            _transactionService = transactionService;
+            _productService = productService;
             _sequenceService = sequenceService;
             _mapper = mapper;
         }
@@ -45,14 +51,65 @@ namespace TSI.Friday.Services
 
             try
             {
-                var prefix = BuildPrefixFromClientName(orderDto.ClientName);
+                var prefix = BuildPrefixFromBusinessPartnerName(orderDto.BusinessPartnerName);
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
+                orderDto.Description = string.IsNullOrEmpty(orderDto.Description)
+                    ? $"Pedido de Venda -  {orderDto.OrderNumber}"
+                    : orderDto.Description;
+
+                // Save Transaction first (if provided) so we can assign TransactionId to Order before saving Order
+                var transactionResult = new WebApiResponse<TransactionDto>();
+
+                var transactionDto = orderDto.Transaction;
+                if (transactionDto != null)
+                {
+                    transactionDto.OrderNumber = orderDto.OrderNumber;
+                    transactionDto.Description =
+                        $"Transação do Pedido de Venda - {orderDto.OrderNumber}";
+                    transactionResult = await _transactionService.Add(transactionDto);
+                    orderDto.Transaction = null;
+                    orderDto.TransactionId = transactionResult.Data?.Id ?? null;
+                }
 
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);
 
-                result.Data = _mapper.Map<OrderDto>(orderEntity);
+                // Update Transaction
+                if (transactionResult?.Data != null)
+                {
+                    transactionResult.Data.OrderId = orderEntity.Id;
+                    await _transactionService.UpdateOrderId(transactionResult.Data);
+                }
+
+                // adjust stock in batch if product service available
+                if (orderEntity.OrderProducts.Any())
+                {
+                    var deltas = new Dictionary<Guid, int>();
+                    foreach (var op in orderEntity.OrderProducts)
+                    {
+                        var pid = op.ProductId;
+                        var delta = -Convert.ToInt32(op.Quantity);
+                        if (deltas.ContainsKey(pid))
+                        {
+                            deltas[pid] += delta;
+                        }
+                        else
+                        {
+                            deltas[pid] = delta;
+                        }
+                    }
+
+                    if (deltas.Count > 0)
+                    {
+                        await _productService.AdjustStockAsync(deltas);
+                    }
+                }
+
+                // prepare response DTO
+                var responseDto = _mapper.Map<OrderDto>(orderEntity);
+
+                result.Data = responseDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} cadastrado com sucesso.";
             }
@@ -73,10 +130,22 @@ namespace TSI.Friday.Services
 
             try
             {
+                // First update Order basic data (without handling Transaction) to ensure it exists
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.UpdateAsync(orderEntity);
 
+                var transactionDto = orderDto.Transaction;
+                transactionDto.OrderId = orderEntity.Id;
+
+                var updRes = await _transactionService.Update(transactionDto);
+                if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
+                {
+                    orderDto.Transaction = updRes.Data;
+                }
+
                 result.Data = _mapper.Map<OrderDto>(orderEntity);
+                result.Data.Transaction = orderDto.Transaction;
+
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} atualizado com sucesso.";
             }
@@ -97,8 +166,44 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orderEntity = _mapper.Map<Order>(orderDto);
+                var orderEntity = await _repository.GetByIdAsync(
+                    orderDto.Id,
+                    o => o.OrderProducts,
+                    p => p.Transaction
+                );
+
+                if (orderEntity == null)
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Error;
+                    result.Message = $"Pedido {orderDto.OrderNumber} não encontrado.";
+                    return result;
+                }
+
+                // compute deltas before removal
+                if (orderEntity?.OrderProducts != null)
+                {
+                    var deltas = new Dictionary<Guid, int>();
+                    foreach (var op in orderEntity.OrderProducts)
+                    {
+                        var pid = op.ProductId;
+                        var delta = Convert.ToInt32(op.Quantity);
+                        if (deltas.ContainsKey(pid))
+                            deltas[pid] += delta;
+                        else
+                            deltas[pid] = delta;
+                    }
+
+                    if (deltas.Count > 0)
+                    {
+                        await _productService.AdjustStockAsync(deltas);
+                    }
+                }
+
                 await _repository.RemoveAsync(orderEntity);
+
+                var transactionDto = _mapper.Map<TransactionDto>(orderEntity.Transaction);
+                await _transactionService.Remove(transactionDto);
 
                 result.Data = orderDto;
                 result.Status = ResponseStatus.Success;
@@ -121,7 +226,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orders = await _repository.GetAllAsync(o => o.Client);
+                var orders = await _repository.GetAllAsync(o => o.BusinessPartner);
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -137,13 +242,18 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<OrderDto>> FindById(int? id)
+        public async Task<WebApiResponse<OrderDto>> FindById(Guid? id)
         {
             WebApiResponse<OrderDto> result = new();
 
             try
             {
-                var order = await _repository.GetByIdAsync(id, o => o.Client);
+                var order = await _repository.GetByIdAsync(
+                    id,
+                    o => o.BusinessPartner,
+                    p => p.Transaction,
+                    pi => pi.Transaction.Payments
+                );
 
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;
@@ -171,7 +281,7 @@ namespace TSI.Friday.Services
             {
                 var order = await _repository.FirstOrDefaultAsync(
                     o => o.OrderNumber == orderNumber,
-                    o => o.Client
+                    o => o.BusinessPartner
                 );
 
                 result.Data = _mapper.Map<OrderDto>(order);
@@ -192,13 +302,17 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByClientId(int? clientId)
+        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByBusinessPartnerId(
+            Guid? businessPartnerId
+        )
         {
             WebApiResponse<IEnumerable<OrderDto>> result = new();
 
             try
             {
-                var orders = await _repository.QueryAsync(o => o.ClientId == clientId);
+                var orders = await _repository.QueryAsync(o =>
+                    o.BusinessPartnerId == businessPartnerId
+                );
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -207,14 +321,14 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Pedidos do Cliente {clientId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Pedidos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByProductId(int? productId)
+        public async Task<WebApiResponse<IEnumerable<OrderDto>>> FindByProductId(Guid? productId)
         {
             WebApiResponse<IEnumerable<OrderDto>> result = new();
 
@@ -241,13 +355,13 @@ namespace TSI.Friday.Services
 
         #region Private methods
 
-        private static string BuildPrefixFromClientName(string? clientName)
+        private static string BuildPrefixFromBusinessPartnerName(string? businessPartnerName)
         {
             // Remove non-letter characters and whitespace, keep only A-Z letters
             var cleaned = string.Empty;
-            if (!string.IsNullOrWhiteSpace(clientName))
+            if (!string.IsNullOrWhiteSpace(businessPartnerName))
             {
-                cleaned = Regex.Replace(clientName.Normalize(), "[^A-Za-z]", string.Empty);
+                cleaned = Regex.Replace(businessPartnerName.Normalize(), "[^A-Za-z]", string.Empty);
                 cleaned = cleaned.ToUpperInvariant();
             }
 

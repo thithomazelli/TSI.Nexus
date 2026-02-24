@@ -2,7 +2,6 @@
 using Moq;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
-using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 using TSI.Friday.WebAPI.Controllers;
@@ -26,7 +25,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var addressMock = new AddressDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Type = AddressType.Home,
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
@@ -34,17 +33,18 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 State = "SP",
                 City = "Santo André",
                 Country = "BR",
-                Comments = "Casa"
+                Comments = "Casa",
             };
 
             var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = $"Endereço {addressMock.Street} cadastrado com sucesso."
+                Message = $"Endereço {addressMock.Street} cadastrado com sucesso.",
             };
 
-            _addressServiceMock.Setup(_ => _.Add(It.IsAny<AddressDto>()))
+            _addressServiceMock
+                .Setup(_ => _.Add(It.IsAny<AddressDto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -86,7 +86,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var addressMock = new AddressDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Type = AddressType.Home,
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
@@ -94,17 +94,18 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 State = "SP",
                 City = "Santo André",
                 Country = "BR",
-                Comments = "Casa"
+                Comments = "Casa",
             };
 
             var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = $"Endereço {addressMock.Street} atualizado com sucesso."
+                Message = $"Endereço {addressMock.Street} atualizado com sucesso.",
             };
 
-            _addressServiceMock.Setup(_ => _.Update(It.IsAny<AddressDto>()))
+            _addressServiceMock
+                .Setup(_ => _.Update(It.IsAny<AddressDto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -146,7 +147,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var addressMock = new AddressDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Type = AddressType.Home,
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
@@ -154,17 +155,18 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 State = "SP",
                 City = "Santo André",
                 Country = "BR",
-                Comments = "Casa"
+                Comments = "Casa",
             };
 
             var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = $"Endereço {addressMock.Street} removido com sucesso."
+                Message = $"Endereço {addressMock.Street} removido com sucesso.",
             };
 
-            _addressServiceMock.Setup(_ => _.Remove(It.IsAny<AddressDto>()))
+            _addressServiceMock
+                .Setup(_ => _.Remove(It.IsAny<AddressDto>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -180,14 +182,15 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task AddressesController_GetAllByClientId_ShouldGetAllAddressesByClient_WhenMethodIsCalled()
+        public async Task AddressesController_GetAllByBusinessPartnerId_ShouldGetAllAddressesByBusinessPartner_WhenMethodIsCalled()
         {
             // Arrange
-            const int clientIdMock = 1;
+            var businessPartnerIdMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var addressMock = new List<AddressDto>
             {
-                new() {
-                    Id = 1,
+                new()
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     Type = AddressType.Home,
                     ZipCode = "09240110",
                     Street = "Rua Boa Vista",
@@ -196,10 +199,11 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                     City = "Santo André",
                     Country = "BR",
                     Comments = "Casa",
-                    ClientId = 1
-                },  
-                new() {
-                    Id = 2,
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                },
+                new()
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     Type = AddressType.Office,
                     ZipCode = "09240110",
                     Street = "Rua Boa Vista",
@@ -208,7 +212,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                     City = "Santo André",
                     Country = "BR",
                     Comments = "Casa",
-                    ClientId = 1
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
             };
 
@@ -216,14 +220,17 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = $"{addressMock.Count()} registro(s) encontrado(s)."
+                Message = $"{addressMock.Count()} registro(s) encontrado(s).",
             };
 
-            _addressServiceMock.Setup(_ => _.FindByClientId(It.IsAny<int>()))
+            _addressServiceMock
+                .Setup(_ => _.FindByBusinessPartnerId(It.IsAny<Guid>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _addressesController.GetAllByClientId(clientIdMock);
+            var result = await _addressesController.GetAllByBusinessPartnerId(
+                businessPartnerIdMock
+            );
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -231,17 +238,20 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(addressMock, response.Data);
 
-            _addressServiceMock.Verify(_ => _.FindByClientId(It.IsAny<int>()), Times.Once);
+            _addressServiceMock.Verify(
+                _ => _.FindByBusinessPartnerId(It.IsAny<Guid>()),
+                Times.Once
+            );
         }
 
         [Fact]
         public async Task AddressesController_GetById_ShouldGetAddressById_WhenMethodIsCalled()
         {
             // Arrange
-            const int idMock = 1;
+            var idMock = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var addressMock = new AddressDto
             {
-                Id = 1,
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Type = AddressType.Home,
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
@@ -250,17 +260,18 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 City = "Santo André",
                 Country = "BR",
                 Comments = "Casa",
-                ClientId = 1
+                BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
             };
 
             var expectedResult = new WebApiResponse<AddressDto>
             {
                 Data = addressMock,
                 Status = ResponseStatus.Success,
-                Message = $"Endereço {addressMock.Street} encontrado com sucesso"
+                Message = $"Endereço {addressMock.Street} encontrado com sucesso",
             };
 
-            _addressServiceMock.Setup(_ => _.FindById(It.IsAny<int?>()))
+            _addressServiceMock
+                .Setup(_ => _.FindById(It.IsAny<Guid?>()))
                 .ReturnsAsync(expectedResult);
 
             // Act
@@ -272,7 +283,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(addressMock, response.Data);
 
-            _addressServiceMock.Verify(_ => _.FindById(It.IsAny<int?>()), Times.Once);
+            _addressServiceMock.Verify(_ => _.FindById(It.IsAny<Guid?>()), Times.Once);
         }
     }
 }

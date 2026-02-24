@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 
-namespace TSI.Friday.Contracts.Interfaces 
+namespace TSI.Friday.Contracts.Interfaces
 {
     public interface IOrderService
     {
@@ -29,9 +30,9 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<OrderDto>> Remove(OrderDto orderDto);
 
         /// <summary>
-        /// Method responsible to get all registers available on The order data table.
+        /// Method responsible to get all registers available on The order database.
         /// </summary>
-        /// <returns>All registers found on The order data table.</returns>
+        /// <returns>All registers found on The order database.</returns>
         Task<WebApiResponse<IEnumerable<OrderDto>>> FindAll();
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One Order object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<OrderDto>> FindById(int? id);
+        Task<WebApiResponse<OrderDto>> FindById(Guid? id);
 
         /// <summary>
         /// Should find a Order that based on the OrderNumber received as parameter.
@@ -49,17 +50,19 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<OrderDto>> FindByOrderNumber(string orderNumber);
 
         /// <summary>
-        /// Method responsible to get a list of Orders based on the ClientID received as parameter.
+        /// Method responsible to get a list of Orders based on the BusinessPartnerID received as parameter.
         /// </summary>
-        /// <param name="clientId">The ID to be used on the search.</param>
-        /// <returns>List of order according to the ClientID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<OrderDto>>> FindByClientId(int? clientId);
+        /// <param name="businessPartnerId">The ID to be used on the search.</param>
+        /// <returns>List of order according to the BusinessPartnerID defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<OrderDto>>> FindByBusinessPartnerId(
+            Guid? businessPartnerId
+        );
 
         /// <summary>
         /// Method responsible to get a list of Orders based on the ProductID received as parameter.
         /// </summary>
         /// <param name="productId">The ID to be used on the search.</param>
         /// <returns>List of order according to the ProductID defined as parameter.</returns>
-        Task<WebApiResponse<IEnumerable<OrderDto>>> FindByProductId(int? productId);
+        Task<WebApiResponse<IEnumerable<OrderDto>>> FindByProductId(Guid? productId);
     }
 }

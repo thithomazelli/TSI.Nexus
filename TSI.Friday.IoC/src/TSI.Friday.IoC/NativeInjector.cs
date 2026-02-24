@@ -32,15 +32,15 @@ namespace TSI.Friday.IoC
             #region Services
 
             services.AddScoped<IAddressService, AddressService>();
-            services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IIndividualService, IndividualService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IOrderProductService, OrderProductService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IPaymentInstallmentService, PaymentInstallmentService>();
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IProductPhotoService, ProductPhotoService>();
             services.AddScoped<IProductService, ProductService>();
@@ -52,13 +52,13 @@ namespace TSI.Friday.IoC
             #region Repositories
 
             services.AddScoped<IRepository<Address>, Repository<Address>>();
-            services.AddScoped<IRepository<Client>, Repository<Client>>();
+            services.AddScoped<IRepository<BusinessPartner>, Repository<BusinessPartner>>();
             services.AddScoped<IRepository<Company>, Repository<Company>>();
             services.AddScoped<IRepository<Individual>, Repository<Individual>>();
             services.AddScoped<IRepository<Order>, Repository<Order>>();
             services.AddScoped<IRepository<OrderProduct>, Repository<OrderProduct>>();
+            services.AddScoped<IRepository<Transaction>, Repository<Transaction>>();
             services.AddScoped<IRepository<Payment>, Repository<Payment>>();
-            services.AddScoped<IRepository<PaymentInstallment>, Repository<PaymentInstallment>>();
             services.AddScoped<IRepository<Product>, Repository<Product>>();
             services.AddScoped<IRepository<ProductPhoto>, Repository<ProductPhoto>>();
             services.AddScoped<IRepository<User>, Repository<User>>();

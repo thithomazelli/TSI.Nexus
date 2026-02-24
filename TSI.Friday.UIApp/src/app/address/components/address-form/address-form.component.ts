@@ -81,7 +81,7 @@ export class AddressFormComponent
     if (changes['isEdit'] && !changes['isEdit'].firstChange) {
       if (this.isEdit) {
         this.form.get('id')?.disable();
-        this.form.get('clientId')?.disable();
+        this.form.get('businessPartnerId')?.disable();
       }
     }
     // Sempre reconfigura lógica do form ao mudar inputs
@@ -265,7 +265,7 @@ export class AddressFormComponent
       street: ['', Validators.required],
       number: [null, Validators.required],
       comments: [''],
-      clientId: [''],
+      businessPartnerId: [''],
       country: ['BR', Validators.required],
       isDefault: [false],
     };
@@ -282,129 +282,6 @@ export class AddressFormComponent
     if (this.isEdit) {
       this.form.get('id')?.disable();
     }
-  }
-
-  private initializeAutoFill(): void {
-    if (this.data) {
-      // Normaliza type para number/null
-      const patch = { ...this.data };
-      if (patch.type !== null && patch.type !== undefined) {
-        patch.type = patch.type;
-      }
-      // Aguarda estados carregarem antes de carregar cidades
-      const patchAndLoadCities = () => {
-        this.form.patchValue(patch);
-        if (patch.state) {
-          const estado = this.estados.find((e) => e.sigla === patch.state);
-          if (estado) {
-            this.http
-              .get<
-                any[]
-              >(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`)
-              .subscribe((cidades) => {
-                // Remove duplicados pelo id
-                const uniqueCidades = (cidades || []).filter(
-                  (cidade: any, index: number, self: any[]) =>
-                    cidade.id != null &&
-                    index === self.findIndex((e) => e.id === cidade.id),
-                );
-                this.cidades = uniqueCidades;
-                const normalize = (str: string) =>
-                  str
-                    .normalize('NFD')
-                    .replace(/\p{Diacritic}/gu, '')
-                    .toLowerCase();
-                let cidadeFinal = '';
-                const cityValue = patch.city ?? '';
-                // Busca cidade ignorando acentos e caixa
-                const cidadeMatch = this.cidades.find(
-                  (c) => normalize(c.nome) === normalize(cityValue),
-                );
-                if (cidadeMatch) {
-                  cidadeFinal = cidadeMatch.nome;
-                } else if (this.cidades.length > 0) {
-                  cidadeFinal = this.cidades[0].nome;
-                }
-                this.form.get('city')?.setValue(cidadeFinal);
-                this.form.get('city')?.updateValueAndValidity();
-                this.form.updateValueAndValidity();
-              });
-          }
-        }
-      };
-      if (this.estados && this.estados.length > 0) {
-        patchAndLoadCities();
-      } else {
-        // Aguarda estados serem carregados
-        const estadosSub = this.http
-          .get<
-            any[]
-          >('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome')
-          .subscribe((estados) => {
-            this.estados = estados;
-            patchAndLoadCities();
-            estadosSub.unsubscribe();
-          });
-      }
-    }
-
-    this.form.get('zipCode')?.valueChanges.subscribe((cep: string) => {
-      if (cep && cep.length >= 8) {
-        this.buscarEnderecoPorCep(cep);
-      }
-    });
-
-    this.form
-      .get('state')
-      ?.valueChanges.pipe(
-        takeUntil(this.cidadesCancel$),
-        switchMap((sigla: string) => {
-          if (!sigla) {
-            this.cidades = [];
-            this.form.get('city')?.setValue('');
-            return of([]);
-          }
-          const estado = this.estados.find((e) => e.sigla === sigla);
-          if (!estado) {
-            this.cidades = [];
-            this.form.get('city')?.setValue('');
-            return of([]);
-          }
-          return this.http.get<any[]>(
-            `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado.id}/municipios`,
-          );
-        }),
-      )
-      .subscribe((cidades) => {
-        // Remove duplicados pelo id
-        const uniqueCidades = (cidades || []).filter(
-          (cidade: any, index: number, self: any[]) =>
-            index === self.findIndex((e) => e.id === cidade.id),
-        );
-        this.cidades = uniqueCidades;
-        let cidadeFinal = '';
-        const cityControl = this.form.get('city');
-        const normalize = (str: string) =>
-          str
-            .normalize('NFD')
-            .replace(/\p{Diacritic}/gu, '')
-            .toLowerCase();
-        // Se o valor atual existe na lista, mantém
-        if (
-          cityControl?.value &&
-          this.cidades.some(
-            (c) => normalize(c.nome) === normalize(cityControl.value),
-          )
-        ) {
-          cidadeFinal = cityControl.value;
-        } else if (this.cidades.length > 0) {
-          cidadeFinal = this.cidades[0].nome;
-        }
-        cityControl?.setValue(cidadeFinal);
-        cityControl?.setValidators([Validators.required]);
-        cityControl?.updateValueAndValidity();
-        this.form.updateValueAndValidity();
-      });
   }
 
   private getEstados() {

@@ -1,3 +1,11 @@
+.app-main {
+  padding-bottom: 0;
+}
+
+.card-body {
+  min-height: 350px;
+}
+
 // Garante que o SweetAlert2 fique acima dos modais do Angular Material
 /* Ajuste global para MDC Dialog: overflow e padding igual ao ngx-bootstrap */
 .mat-mdc-dialog-surface {
@@ -7,6 +15,10 @@
 
 :root {
   --mat-autocomplete-background-color: #ffff; /* Your custom color */
+}
+
+.mat-mdc-option-active {
+  background: #e3f2fd !important;
 }
 
 .modal-divider {
@@ -134,8 +146,12 @@ mat-calendar {
   box-shadow: 0 0 0 2px #1565c0;
 }
 
-.modal-body {
-  max-height: 70vh;
+.modal-scrollable-area {
+  max-height: 80vh;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+:focus-visible {
+  outline: none;
 }

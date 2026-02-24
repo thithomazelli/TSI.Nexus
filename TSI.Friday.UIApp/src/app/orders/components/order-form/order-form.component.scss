@@ -1,46 +1,32 @@
-// Tabela minimalista de produtos do pedido
-.minimalist-table {
-  th,
-  td {
-    border: none !important;
-    background: transparent !important;
-    padding-top: 0.32rem;
-    padding-bottom: 0.32rem;
-    font-size: 0.93rem;
-    color: #6c757d;
-    font-weight: 400;
-    opacity: 0.85;
-  }
-  thead tr {
-    border-bottom: 1px solid #ececec;
-  }
-  th {
-    font-size: 0.95rem;
-    letter-spacing: 0.01em;
-    color: #adb5bd;
-    font-weight: 400;
-    opacity: 0.8;
-  }
-  tbody tr:hover {
-    background: #f8f9fa !important;
-  }
-  td {
-    border-bottom: 1px solid #f3f3f3 !important;
-  }
+.table-header-title {
+  font-weight: 700;
+  color: #343a40;
+  font-size: 0.9rem;
 }
-// Reforço para garantir fundo branco e destaque no autocomplete do cliente
-::ng-deep .mat-autocomplete-panel {
-  background: #fff !important;
-  background-color: #fff !important;
-  color: #222 !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
-  border-radius: 8px !important;
-  z-index: 3000 !important;
-  opacity: 1 !important;
+
+.table-cell-info {
+  font-weight: 400;
+  color: #343a40;
+  font-size: 0.9rem;
 }
-::ng-deep .mat-option {
-  background: #fff !important;
-  color: #222 !important;
-  z-index: 3001 !important;
+
+.table-body {
+  border-top: 0;
 }
-// Garante fundo branco e destaque no autocomplete do cliente
+
+.address-link {
+  font-size: 0.9rem;
+}
+
+/* Fonte menor para todo o formulário */
+.order-form-wrapper form {
+  font-size: 0.92rem;
+}
+
+/* Títulos das sessões */
+.order-form-wrapper h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 1.2rem;
+}

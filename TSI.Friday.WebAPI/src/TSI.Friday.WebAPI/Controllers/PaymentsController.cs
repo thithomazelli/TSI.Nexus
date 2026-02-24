@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
@@ -19,60 +20,60 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <summary>
         /// PaymentsController constructor create to initialize the "_paymentService" using Dependency Injection.
         /// </summary>
-        /// <param name="paymentService">IPaymentService object used to initialize the internal variable using Dependency Injection.</param>
-        public PaymentsController(IPaymentService paymentService)
+        /// <param name="transactionService">IPaymentService object used to initialize the internal variable using Dependency Injection.</param>
+        public PaymentsController(IPaymentService transactionService)
         {
-            _paymentService = paymentService;
+            _paymentService = transactionService;
         }
 
         /// <summary>
-        /// Add payment on database
+        /// Add transaction on database
         /// </summary>
-        /// <param name="paymentDto">Object to be added</param>
+        /// <param name="transactionDto">Object to be added</param>
         [HttpPost]
         [Route("Add")]
-        public async Task<IActionResult> Add([FromBody] PaymentDto paymentDto)
+        public async Task<IActionResult> Add([FromBody] PaymentDto transactionDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var webApiResponse = await _paymentService.Add(paymentDto);
+            var webApiResponse = await _paymentService.Add(transactionDto);
             return Ok(webApiResponse);
         }
 
         /// <summary>
-        /// Update payment available on database
+        /// Update transaction available on database
         /// </summary>
-        /// <param name="paymentDto">Object to be updated</param>
+        /// <param name="transactionDto">Object to be updated</param>
         [HttpPut]
         [Route("Update")]
-        public async Task<IActionResult> Update([FromBody] PaymentDto paymentDto)
+        public async Task<IActionResult> Update([FromBody] PaymentDto transactionDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var webApiResponse = await _paymentService.Update(paymentDto);
+            var webApiResponse = await _paymentService.Update(transactionDto);
             return Ok(webApiResponse);
         }
 
         /// <summary>
-        /// Remove payment when it is identified on database
+        /// Remove transaction when it is identified on database
         /// </summary>
-        /// <param name="paymentDto">Object to be removed</param>
+        /// <param name="transactionDto">Object to be removed</param>
         [HttpDelete]
         [Route("Remove")]
-        public async Task<IActionResult> Remove([FromBody] PaymentDto paymentDto)
+        public async Task<IActionResult> Remove([FromBody] PaymentDto transactionDto)
         {
-            var webApiResponse = await _paymentService.Remove(paymentDto);
+            var webApiResponse = await _paymentService.Remove(transactionDto);
             return Ok(webApiResponse);
         }
 
         /// <summary>
-        /// Get all payments available on database
+        /// Get all transaction payments available on database
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -84,26 +85,50 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get payment by id
+        /// Get transaction payments by id
         /// </summary>
-        /// <param name="paymentId">Payment id to be used in the search</param>
+        /// <param name="transactionId">Transaction id to be used in the search</param>
         [HttpGet]
-        [Route("GetById/{paymentId}")]
-        public async Task<IActionResult> GetById(int? paymentId)
+        [Route("GetById/{transactionId}")]
+        public async Task<IActionResult> GetById(Guid? transactionId)
         {
-            var webApiResponse = await _paymentService.FindById(paymentId);
+            var webApiResponse = await _paymentService.FindById(transactionId);
             return Ok(webApiResponse);
         }
 
         /// <summary>
-        /// Get payments by client id
+        /// Get transaction payments by transaction id
         /// </summary>
-        /// <param name="clientId">Client id to be used in the search</param>
+        /// <param name="transactionId">Transaction id to be used in the search</param>
         [HttpGet]
-        [Route("GetByClientId/{clientId}")]
-        public async Task<IActionResult> GetByClientId(int? clientId)
+        [Route("GetByTransactionId/{transactionId}")]
+        public async Task<IActionResult> GetByTransactionId(Guid? transactionId)
         {
-            var webApiResponse = await _paymentService.FindByClientId(clientId);
+            var webApiResponse = await _paymentService.FindByTransactionId(transactionId);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get transaction payments by businessPartner id
+        /// </summary>
+        /// <param name="businessPartnerId">BusinessPartner id to be used in the search</param>
+        [HttpGet]
+        [Route("GetByBusinessPartnerId/{businessPartnerId}")]
+        public async Task<IActionResult> GetByBusinessPartnerId(Guid? businessPartnerId)
+        {
+            var webApiResponse = await _paymentService.FindByBusinessPartnerId(businessPartnerId);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get transaction payments by transaction id
+        /// </summary>
+        /// <param name="OrderId">Order id to be used in the search</param>
+        [HttpGet]
+        [Route("GetByOrderId/{orderId}")]
+        public async Task<IActionResult> GetByOrderId(Guid? orderId)
+        {
+            var webApiResponse = await _paymentService.FindByOrderId(orderId);
             return Ok(webApiResponse);
         }
     }

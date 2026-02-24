@@ -35,6 +35,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { HeaderComponent } from './header/header.component';
 import { PhotoComponent } from './photo/photo.component';
 import { DateFieldComponent } from './components/date-field/date-field.component';
+import { LinkFieldComponent } from './components/link-field/link-field.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { DateFieldComponent } from './components/date-field/date-field.component
     SidebarComponent,
     HeaderComponent,
     PhotoComponent,
+    LinkFieldComponent,
   ],
   imports: [
     CommonModule,
@@ -66,6 +68,7 @@ import { DateFieldComponent } from './components/date-field/date-field.component
   ],
   exports: [
     DateFieldComponent,
+    LinkFieldComponent,
     NavbarComponent,
     SidebarComponent,
     FooterComponent,

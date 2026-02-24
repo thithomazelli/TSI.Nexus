@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
 
@@ -33,7 +34,7 @@ namespace TSI.Friday.WebAPI.Controllers
         [Route("Add")]
         public async Task<IActionResult> Add([FromBody] OrderDto orderDto)
         {
-                if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -88,7 +89,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="orderId">Order id to be used in the search</param>
         [HttpGet]
         [Route("GetById/{orderId}")]
-        public async Task<IActionResult> GetById(int? orderId)
+        public async Task<IActionResult> GetById(Guid? orderId)
         {
             var webApiResponse = await _orderService.FindById(orderId);
             return Ok(webApiResponse);
@@ -107,14 +108,14 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get orders by client id
+        /// Get orders by businessPartner id
         /// </summary>
-        /// <param name="clientId">Client id to be used in the search</param>
+        /// <param name="businessPartnerId">BusinessPartner id to be used in the search</param>
         [HttpGet]
-        [Route("GetByClientId/{clientId}")]
-        public async Task<IActionResult> GetByClientId(int? clientId)
+        [Route("GetByBusinessPartnerId/{businessPartnerId}")]
+        public async Task<IActionResult> GetByBusinessPartnerId(Guid? businessPartnerId)
         {
-            var webApiResponse = await _orderService.FindByClientId(clientId);
+            var webApiResponse = await _orderService.FindByBusinessPartnerId(businessPartnerId);
             return Ok(webApiResponse);
         }
 
@@ -124,7 +125,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="productId">Product id to be used in the search</param>
         [HttpGet]
         [Route("GetByProductId/{productId}")]
-        public async Task<IActionResult> GetByProductId(int? productId)
+        public async Task<IActionResult> GetByProductId(Guid? productId)
         {
             var webApiResponse = await _orderService.FindByProductId(productId);
             return Ok(webApiResponse);

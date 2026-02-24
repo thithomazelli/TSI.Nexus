@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
@@ -25,7 +26,7 @@ public class PhotosController : ControllerBase
     [Route("UploadPhoto")]
     public async Task<IActionResult> UploadPhoto(
         [FromForm] string entity,
-        [FromForm] string entityId,
+        [FromForm] Guid entityId,
         [FromForm] IFormFile file
     )
     {

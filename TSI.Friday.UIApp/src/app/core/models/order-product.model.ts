@@ -3,7 +3,7 @@ import { Address } from './address.model';
 import { BaseModel } from './base.model';
 
 export interface OrderProduct extends BaseModel {
-  id: number;
+  id: string;
   description?: string;
   readonly previousQuantity?: number;
   quantity?: number;
@@ -13,11 +13,11 @@ export interface OrderProduct extends BaseModel {
   startDate?: Date;
   endDate?: Date;
   status: OrderProductStatus;
-  addressId?: number;
+  addressId?: string;
   address?: Address;
-  orderId?: number;
+  orderId?: string;
   orderNumber?: string;
-  productId?: number;
+  productId?: string;
   productSku?: string;
   productName?: string;
   productType?: ProductType;

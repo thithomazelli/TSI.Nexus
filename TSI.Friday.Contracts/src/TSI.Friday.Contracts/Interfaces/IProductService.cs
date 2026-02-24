@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Utilities;
@@ -29,9 +30,9 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<Product>> Remove(Product product);
 
         /// <summary>
-        /// Method responsible to get all registers available on The product data table.
+        /// Method responsible to get all registers available on The product database.
         /// </summary>
-        /// <returns>All registers found on The product data table.</returns>
+        /// <returns>All registers found on The product database.</returns>
         Task<WebApiResponse<IEnumerable<Product>>> FindAll();
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One Product object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<Product>> FindById(int? id);
+        Task<WebApiResponse<Product>> FindById(Guid? id);
 
         /// <summary>
         /// Should find a Product that based on the Sku received as parameter.
@@ -47,5 +48,11 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="sku">The Sku to be used on the search.</param>
         /// <returns>One Product object according to the Sku defined as parameter.</returns>
         Task<WebApiResponse<Product>> FindBySku(string sku);
+
+        /// <summary>
+        /// Adjust stock for a batch of products. Key = productId, Value = delta (can be negative).
+        /// </summary>
+        /// <param name="deltas">Dictionary of productId -> delta</param>
+        Task AdjustStockAsync(IDictionary<Guid, int> deltas);
     }
 }

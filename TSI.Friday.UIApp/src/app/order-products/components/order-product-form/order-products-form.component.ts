@@ -46,7 +46,7 @@ export class OrderProductsFormComponent
   endDateField: any;
 
   @Input()
-  parentId: number | null = null;
+  parentId: string | null = null;
 
   @Input()
   parentData: any;
@@ -162,13 +162,13 @@ export class OrderProductsFormComponent
   }
 
   async initAddressInfo() {
-    if (!this._orderData?.clientId) {
+    if (!this._orderData?.businessPartnerId) {
       this.customerAddresses = [];
       return;
     }
     const response = await firstValueFrom(
       this.apiService.get<WebApiResponse<Address[]>>(
-        `${ApiType.Addresses}/getAllByClientId/${this._orderData.clientId}`,
+        `${ApiType.Addresses}/getAllByBusinessPartnerId/${this._orderData.businessPartnerId}`,
       ),
     );
     this.customerAddresses = (response.data ?? []).map(
@@ -185,8 +185,7 @@ export class OrderProductsFormComponent
     setTimeout(() => {
       const productSku = this.form.get('productSku')!.value?.trim();
       if (!productSku) {
-        this.markAsTouched('productSku');
-        this.form.get('productSku')!.setErrors({ required: true });
+        this.cleanProductSelection();
         return;
       }
       // Verifica se o sku existe na lista de produtos
@@ -219,18 +218,14 @@ export class OrderProductsFormComponent
                   this.form.get('productName')!.setValue(result.name);
                   this.form.get('productType')!.setValue(result.type);
                 } else {
-                  this.form.get('productSku')!.setValue('');
-                  this.markAsTouched('productSku');
-                  this.form.get('productSku')!.setErrors({ required: true });
+                  this.cleanProductSelection();
                 }
               });
           },
         });
         confirmRef.afterClosed().subscribe((confirmed: boolean) => {
           if (!confirmed) {
-            this.form.get('productSku')!.setValue('');
-            this.markAsTouched('productSku');
-            this.form.get('productSku')!.setErrors({ required: true });
+            this.cleanProductSelection();
           }
         });
       }
@@ -241,8 +236,7 @@ export class OrderProductsFormComponent
     setTimeout(() => {
       const productName = this.form.get('productName')!.value?.trim();
       if (!productName) {
-        this.markAsTouched('productName');
-        this.form.get('productName')!.setErrors({ required: true });
+        this.cleanProductSelection();
         return;
       }
       // Verifica se o nome existe na lista de clientes
@@ -275,18 +269,14 @@ export class OrderProductsFormComponent
                   this.form.get('productName')!.setValue(result.name);
                   this.form.get('productType')!.setValue(result.type);
                 } else {
-                  this.form.get('productName')!.setValue('');
-                  this.markAsTouched('productName');
-                  this.form.get('productName')!.setErrors({ required: true });
+                  this.cleanProductSelection();
                 }
               });
           },
         });
         confirmRef.afterClosed().subscribe((confirmed: boolean) => {
           if (!confirmed) {
-            this.form.get('productName')!.setValue('');
-            this.markAsTouched('productName');
-            this.form.get('productName')!.setErrors({ required: true });
+            this.cleanProductSelection();
           }
         });
       }
@@ -425,7 +415,7 @@ export class OrderProductsFormComponent
       isEdit: true,
       data: address,
       id: address.id,
-      parentId: address.clientId,
+      parentId: address.businessPartnerId,
     };
 
     const dialogRef = this.modalService.showTemplateModal(
@@ -453,7 +443,7 @@ export class OrderProductsFormComponent
   openAddAddressModal() {
     const initialState = {
       isEdit: false,
-      parentId: this._orderData?.clientId,
+      parentId: this._orderData?.businessPartnerId,
     };
 
     const dialogRef = this.modalService.showTemplateModal(
@@ -652,5 +642,20 @@ export class OrderProductsFormComponent
     this.form
       .get('totalPriceFormatted')
       ?.setValue(this.currencyService.formatCurrencyBRL(total));
+  }
+
+  private cleanProductSelection() {
+    this.form.get('productId')!.setValue('');
+    this.markAsTouched('productId');
+    this.form.get('productId')!.setErrors({ required: true });
+    this.form.get('productSku')!.setValue('');
+    this.markAsTouched('productSku');
+    this.form.get('productSku')!.setErrors({ required: true });
+    this.form.get('productName')!.setValue('');
+    this.markAsTouched('productName');
+    this.form.get('productName')!.setErrors({ required: true });
+    this.form.get('productType')!.setValue('');
+    this.markAsTouched('productType');
+    this.form.get('productType')!.setErrors({ required: true });
   }
 }

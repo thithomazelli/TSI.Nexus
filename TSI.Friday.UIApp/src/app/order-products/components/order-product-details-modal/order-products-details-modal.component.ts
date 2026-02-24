@@ -22,8 +22,8 @@ export class OrderProductsDetailsModalComponent extends FormBaseComponent {
 
   isEdit = false;
   data?: OrderProduct | null = null;
-  id: number | null = null;
-  parentId: number | null = null;
+  id: string | null = null;
+  parentId: string | null = null;
   parentData: any;
   private _baseEndPoint = ApiType.OrderProducts;
 

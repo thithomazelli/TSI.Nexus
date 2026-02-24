@@ -43,7 +43,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível cadastrar a Imagem {productPhoto.FileName} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível cadastrar a Imagem {productPhoto.FileName} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -65,7 +66,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível atualizar os dados da Imagem {productPhoto.FileName} na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível atualizar os dados da Imagem {productPhoto.FileName} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -87,14 +89,15 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível remover a Imagem {productPhoto.FileName} da base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível remover a Imagem {productPhoto.FileName} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<ProductPhoto>> FindById(int? id)
+        public async Task<WebApiResponse<ProductPhoto>> FindById(Guid? id)
         {
             WebApiResponse<ProductPhoto> result = new();
 
@@ -102,43 +105,51 @@ namespace TSI.Friday.Services
             {
                 result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Imagem {result.Data.FileName} encontrada com sucesso"
-                    : $"Nenhuma Imagem com o ID {id} foi encontrada";
+                result.Message =
+                    result.Data != null
+                        ? $"Imagem {result.Data.FileName} encontrada com sucesso"
+                        : $"Nenhuma Imagem com o ID {id} foi encontrada";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Imagems na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Imagems na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<ProductPhoto>> FindDefaultByProduct(int productId)
+        public async Task<WebApiResponse<ProductPhoto>> FindDefaultByProduct(Guid productId)
         {
             WebApiResponse<ProductPhoto> result = new();
 
             try
             {
-                result.Data = (await _repository.QueryAsync(_ => _.ProductId.Equals(productId) && _.IsDefault))?.FirstOrDefault();
+                result.Data = (
+                    await _repository.QueryAsync(_ => _.ProductId.Equals(productId) && _.IsDefault)
+                )?.FirstOrDefault();
                 result.Status = ResponseStatus.Success;
-                result.Message = result.Data != null
-                    ? $"Imagem {result.Data.FileName} encontrada com sucesso"
-                    : $"Não foi encontrada nenhuma imagem padrão para o produto {productId}.";
+                result.Message =
+                    result.Data != null
+                        ? $"Imagem {result.Data.FileName} encontrada com sucesso"
+                        : $"Não foi encontrada nenhuma imagem padrão para o produto {productId}.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Imagems na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Imagems na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<ProductPhoto>>> FindAllByProduct(int productId)
+        public async Task<WebApiResponse<IEnumerable<ProductPhoto>>> FindAllByProduct(
+            Guid productId
+        )
         {
             WebApiResponse<IEnumerable<ProductPhoto>> result = new();
 
@@ -151,7 +162,8 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Imagems na base de dados. Erro: {ex.Message}";
+                result.Message =
+                    $"Não foi possível acessar os registros de Imagems na base de dados. Erro: {ex.Message}";
             }
 
             return result;

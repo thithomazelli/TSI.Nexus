@@ -18,7 +18,7 @@ import {
 } from '@angular/forms';
 import {
   Address,
-  Client,
+  BusinessPartner,
   Company,
   FormBaseComponent,
   Individual,
@@ -41,7 +41,7 @@ export class ClientFormComponent
   isEdit = false;
 
   @Input()
-  data?: Individual | Company | null = <Client>{};
+  data?: Individual | Company | null = <BusinessPartner>{};
 
   @Input()
   compact = false;
@@ -88,6 +88,25 @@ export class ClientFormComponent
     }
   }
 
+  get addressFormGroup(): FormGroup {
+    return this.form.get('address') as FormGroup;
+  }
+
+  /**
+   * Retorna o endereço selecionado de forma segura para o template
+   */
+  get selectedAddress(): Address | null {
+    if (
+      this.selectedAddressIndex !== null &&
+      Array.isArray(this.data?.addresses) &&
+      this.selectedAddressIndex >= 0 &&
+      this.selectedAddressIndex < this.data.addresses.length
+    ) {
+      return this.data.addresses[this.selectedAddressIndex];
+    }
+    return null;
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -99,7 +118,7 @@ export class ClientFormComponent
       raw.birthday = null;
     }
 
-    if (!this.isEdit) {
+    if (this.compact) {
       // Se vier address preenchido, mova para addresses
       if (raw.address && Object.keys(raw.address).some((k) => raw.address[k])) {
         if (!this.data!.addresses) {
@@ -150,25 +169,6 @@ export class ClientFormComponent
     if (this.addressFormGroup.valid) {
       this.saveAddress(this.addressFormGroup.value);
     }
-  }
-
-  get addressFormGroup(): FormGroup {
-    return this.form.get('address') as FormGroup;
-  }
-
-  /**
-   * Retorna o endereço selecionado de forma segura para o template
-   */
-  get selectedAddress(): Address | null {
-    if (
-      this.selectedAddressIndex !== null &&
-      Array.isArray(this.data?.addresses) &&
-      this.selectedAddressIndex >= 0 &&
-      this.selectedAddressIndex < this.data.addresses.length
-    ) {
-      return this.data.addresses[this.selectedAddressIndex];
-    }
-    return null;
   }
 
   displayNewAddress(): void {
@@ -251,7 +251,7 @@ export class ClientFormComponent
       street: ['', Validators.required],
       number: [null, Validators.required],
       comments: [''],
-      clientId: [null],
+      businessPartnerId: [null],
       country: ['BR', Validators.required],
       isDefault: [false],
     });
@@ -267,14 +267,14 @@ export class ClientFormComponent
           ),
         ],
       ],
-      type: ['Física', [Validators.required]],
+      documentType: ['Física', [Validators.required]],
       phone: ['', []],
       mobile: ['', []],
       socialSecurityCard: ['', this.cpfValidator()],
       nationalRegistry: ['', this.cnpjValidator()],
       birthday: [null],
       photo: [''],
-      address: this.canDisplayAddressForm ? addressGroup : null,
+      address: this.compact ? addressGroup : null,
     };
 
     this.form = !this.isEdit
@@ -286,11 +286,11 @@ export class ClientFormComponent
           ...commonControls,
         });
 
-    this.form.get('type')?.valueChanges.subscribe((type) => {
-      this.updateFieldValidators(type, true);
+    this.form.get('documentType')?.valueChanges.subscribe((documentType) => {
+      this.updateFieldValidators(documentType, true);
     });
     // Inicializa validações corretas para o tipo atual
-    this.updateFieldValidators(this.form.get('type')?.value, false);
+    this.updateFieldValidators(this.form.get('documentType')?.value, false);
   }
 
   private resetAddressForm(): void {
@@ -353,7 +353,7 @@ export class ClientFormComponent
 
   private disableEditFields(): void {
     if (this.isEdit && this.form) {
-      this.form.get('type')?.disable();
+      this.form.get('documentType')?.disable();
       this.form.get('socialSecurityCard')?.disable();
       this.form.get('nationalRegistry')?.disable();
     }
@@ -371,15 +371,18 @@ export class ClientFormComponent
     }
   }
 
-  private updateFieldValidators(type: string, clearBirthday: boolean): void {
-    if (type === 'Física') {
+  private updateFieldValidators(
+    documentType: string,
+    clearBirthday: boolean,
+  ): void {
+    if (documentType === 'Física') {
       this.form
         .get('socialSecurityCard')
         ?.setValidators([Validators.required, this.cpfValidator()]);
       this.form.get('nationalRegistry')?.clearValidators();
       this.form.get('nationalRegistry')?.setValue('');
       this.form.get('birthday')?.setValidators([Validators.required]);
-    } else if (type === 'Jurídica') {
+    } else if (documentType === 'Jurídica') {
       this.form
         .get('nationalRegistry')
         ?.setValidators([Validators.required, this.cnpjValidator()]);

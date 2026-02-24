@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
 
@@ -77,7 +78,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="orderId">Order id to be used in the search</param>
         [HttpGet]
         [Route("GetByOrderId/{orderId}")]
-        public async Task<IActionResult> GetByOrderId(int? orderId)
+        public async Task<IActionResult> GetByOrderId(Guid? orderId)
         {
             var webApiResponse = await _orderProductService.FindByOrderId(orderId);
             return Ok(webApiResponse);
@@ -89,7 +90,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="orderProductId">OrderProduct id to be used in the search</param>
         [HttpGet]
         [Route("GetById/{orderProductId}")]
-        public async Task<IActionResult> GetById(int? orderProductId)
+        public async Task<IActionResult> GetById(Guid? orderProductId)
         {
             var webApiResponse = await _orderProductService.FindById(orderProductId);
             return Ok(webApiResponse);

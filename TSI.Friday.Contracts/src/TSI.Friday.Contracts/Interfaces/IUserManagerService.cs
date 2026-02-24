@@ -88,9 +88,9 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<UserDto>> Remove(User user);
 
         /// <summary>
-        /// Method responsible to get all registers available in the Users data table.
+        /// Method responsible to get all registers available in the Users database.
         /// </summary>
-        /// <returns>All registers found in the Users data table.</returns>
+        /// <returns>All registers found in the Users database.</returns>
         Task<WebApiResponse<IEnumerable<UserDto>>> FindAll();
 
         /// <summary>

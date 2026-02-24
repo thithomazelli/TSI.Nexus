@@ -16,6 +16,12 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Individual> _repository;
         private readonly IMapper _mapper;
+        private readonly IDictionary<BusinessPartnerType, string> _businessPartnerMap =
+            new Dictionary<BusinessPartnerType, string>
+            {
+                { BusinessPartnerType.Client, "Cliente" },
+                { BusinessPartnerType.Supplier, "Fornecedor" },
+            };
 
         #endregion Properties
 
@@ -32,14 +38,16 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> Add(ClientDto clientDto)
+        public async Task<WebApiResponse<BusinessPartnerDto>> Add(
+            BusinessPartnerDto businessPartnerDto
+        )
         {
-            WebApiResponse<ClientDto> result = new();
+            WebApiResponse<BusinessPartnerDto> result = new();
 
             try
             {
                 var individualDuplicatedMessage =
-                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientDto);
+                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(businessPartnerDto);
 
                 if (!string.IsNullOrEmpty(individualDuplicatedMessage))
                 {
@@ -48,32 +56,35 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
-                var clientEntity = _mapper.Map<Individual>(clientDto);
-                await _repository.AddAsync(clientEntity);
+                var businessPartnerEntity = _mapper.Map<Individual>(businessPartnerDto);
+                await _repository.AddAsync(businessPartnerEntity);
 
-                result.Data = clientDto;
+                result.Data = businessPartnerDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Cliente {clientDto.Name} cadastrado com sucesso.";
+                result.Message =
+                    $"{_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} cadastrado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível cadastrar o Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível cadastrar o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> Update(ClientDto clientDto)
+        public async Task<WebApiResponse<BusinessPartnerDto>> Update(
+            BusinessPartnerDto businessPartnerDto
+        )
         {
-            WebApiResponse<ClientDto> result = new();
+            WebApiResponse<BusinessPartnerDto> result = new();
 
             try
             {
                 var individualDuplicatedMessage =
-                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(clientDto);
+                    await CheckIfIndividualIsDuplicatedAndGetErrorMessage(businessPartnerDto);
 
                 if (!string.IsNullOrEmpty(individualDuplicatedMessage))
                 {
@@ -83,184 +94,63 @@ namespace TSI.Friday.Services
                 }
 
                 // Load tracked entity including Addresses so EF can detect changes on navigation
-                var existing = await _repository.GetByIdAsync(clientDto.Id, c => c.Addresses);
+                var existing = await _repository.GetByIdAsync(
+                    businessPartnerDto.Id,
+                    c => c.Addresses
+                );
 
                 if (existing == null)
                 {
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"Cliente com Id {clientDto.Id} não encontrado.";
+                    result.Message =
+                        $"{_businessPartnerMap[businessPartnerDto.Type]} com Id {businessPartnerDto.Id} não encontrado.";
                     return result;
                 }
 
                 // Map simple/scalar properties from DTO to tracked entity
-                _mapper.Map(clientDto, existing);
-
-                // Synchronize Addresses collection
-                var incoming = (clientDto.Addresses ?? new List<AddressDto>()).ToList();
-
-                // Update or add incoming addresses
-                foreach (var addrDto in incoming)
-                {
-                    if (addrDto.Id == 0)
-                    {
-                        // new address
-                        var newAddr = _mapper.Map<Address>(addrDto);
-                        existing.Addresses.Add(newAddr);
-                    }
-                    else
-                    {
-                        var existAddr = existing.Addresses.FirstOrDefault(a => a.Id == addrDto.Id);
-                        if (existAddr != null)
-                        {
-                            _mapper.Map(addrDto, existAddr);
-                        }
-                        else
-                        {
-                            // incoming references an address not currently loaded - map and add
-                            var addAddr = _mapper.Map<Address>(addrDto);
-                            existing.Addresses.Add(addAddr);
-                        }
-                    }
-                }
+                _mapper.Map(businessPartnerDto, existing);
 
                 await _repository.UpdateAsync(existing);
 
-                result.Data = clientDto;
+                result.Data = businessPartnerDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Cliente {clientDto.Name} atualizado com sucesso.";
+                result.Message =
+                    $"{_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível atualizar os dados do Cliente {clientDto.Name} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível atualizar os dados do {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> Remove(ClientDto clientDto)
-        {
-            WebApiResponse<ClientDto> result = new();
-
-            try
-            {
-                var clientEntity = _mapper.Map<Individual>(clientDto);
-                await _repository.RemoveAsync(clientEntity);
-
-                result.Data = clientDto;
-                result.Status = ResponseStatus.Success;
-                result.Message = $"Cliente {clientDto.Name} removido com sucesso.";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível remover o Cliente {clientDto.Name} da base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<ClientDto>>> FindAll()
-        {
-            WebApiResponse<IEnumerable<ClientDto>> result = new();
-
-            try
-            {
-                var clientEntityList = await _repository.GetAllAsync();
-                result.Data = _mapper.Map<IEnumerable<ClientDto>>(clientEntityList);
-                result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> FindById(int? id)
-        {
-            WebApiResponse<ClientDto> result = new();
-
-            try
-            {
-                var clientEntity = await _repository.GetByIdAsync(id);
-                result.Data = _mapper.Map<ClientDto>(clientEntity);
-                result.Status = ResponseStatus.Success;
-                result.Message =
-                    result.Data != null
-                        ? $"Cliente {result.Data.Name} encontrado com sucesso"
-                        : $"Nenhum Cliente com o ID {id} foi encontrado";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> FindByEmail(string email)
-        {
-            WebApiResponse<ClientDto> result = new();
-
-            try
-            {
-                var clientEntity = await _repository.FirstOrDefaultAsync(_ =>
-                    _.Email.Equals(email)
-                );
-                result.Data = _mapper.Map<ClientDto>(clientEntity);
-                result.Status = ResponseStatus.Success;
-                result.Message =
-                    result.Data != null
-                        ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                        : $"Nenhum Cliente com o E-mail {email} foi encontrado.";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<ClientDto>> FindBySocialSecurityCard(
+        public async Task<WebApiResponse<BusinessPartnerDto>> FindBySocialSecurityCard(
             string socialSecurityCard
         )
         {
-            WebApiResponse<ClientDto> result = new();
+            WebApiResponse<BusinessPartnerDto> result = new();
 
             try
             {
-                var clientEntity = await _repository.FirstOrDefaultAsync(_ =>
+                var businessPartnerEntity = await _repository.FirstOrDefaultAsync(_ =>
                     _.SocialSecurityCard.Equals(socialSecurityCard)
                 );
-                result.Data = _mapper.Map<ClientDto>(clientEntity);
+                result.Data = _mapper.Map<BusinessPartnerDto>(businessPartnerEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"Cliente {result.Data.Name} encontrado com sucesso."
-                        : $"Nenhum Cliente com o CPF {socialSecurityCard} foi encontrado";
+                        ? $"{_businessPartnerMap[businessPartnerEntity.Type]} {result.Data.Name} encontrado com sucesso."
+                        : $"Nenhum registro com o CPF {socialSecurityCard} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Clientes na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -276,27 +166,27 @@ namespace TSI.Friday.Services
         /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>The error message when Individual is duplicated. Otherwise an empty string.</returns>
         private async Task<string> CheckIfIndividualIsDuplicatedAndGetErrorMessage(
-            ClientDto individualDto
+            BusinessPartnerDto individualDto
         )
         {
             if (await IsNameDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com Nome {individualDto.Name}.";
+                return $"Já existe um BusinessPartner cadastrado com Nome {individualDto.Name}.";
             }
 
             if (await IsEmailDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com E-mail {individualDto.Email}.";
+                return $"Já existe um BusinessPartner cadastrado com E-mail {individualDto.Email}.";
             }
 
             if (await IsSocialSecurityCardDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com o CPF {individualDto.SocialSecurityCard}.";
+                return $"Já existe um BusinessPartner cadastrado com o CPF {individualDto.SocialSecurityCard}.";
             }
 
             if (await IsNationalIDCardDuplicated(individualDto))
             {
-                return $"Já existe um Cliente cadastrado com o RG {individualDto.NationalIdCard}.";
+                return $"Já existe um BusinessPartner cadastrado com o RG {individualDto.NationalIdCard}.";
             }
 
             return string.Empty;
@@ -307,7 +197,7 @@ namespace TSI.Friday.Services
         /// </summary>
         /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the Email is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsEmailDuplicated(ClientDto individualDto)
+        private async Task<bool> IsEmailDuplicated(BusinessPartnerDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
                 _.Id != individualDto.Id
@@ -321,7 +211,7 @@ namespace TSI.Friday.Services
         /// </summary>
         /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNameDuplicated(ClientDto individualDto)
+        private async Task<bool> IsNameDuplicated(BusinessPartnerDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
                 _.Id != individualDto.Id && _.Name == individualDto.Name
@@ -333,7 +223,7 @@ namespace TSI.Friday.Services
         /// </summary>
         /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the NationalIDCard is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNationalIDCardDuplicated(ClientDto individualDto)
+        private async Task<bool> IsNationalIDCardDuplicated(BusinessPartnerDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
                 _.Id != individualDto.Id
@@ -347,7 +237,7 @@ namespace TSI.Friday.Services
         /// </summary>
         /// <param name="individualDto">The Individual object that is being added or updated.</param>
         /// <returns>True when the SocialSecurityCard is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsSocialSecurityCardDuplicated(ClientDto individualDto)
+        private async Task<bool> IsSocialSecurityCardDuplicated(BusinessPartnerDto individualDto)
         {
             return await _repository.AnyAsync(_ =>
                 _.Id != individualDto.Id

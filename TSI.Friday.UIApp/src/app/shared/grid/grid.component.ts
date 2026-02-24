@@ -57,7 +57,7 @@ export class GridComponent<T> implements OnInit {
     resizable: true,
   };
 
-  private _parentId: number | null = null;
+  private _parentId: string | null = null;
   private readonly _actionsMap: {
     [key: string]: (data: any) => void;
   } = {
@@ -78,7 +78,7 @@ export class GridComponent<T> implements OnInit {
     this.activatedRoute.paramMap
       .pipe(map((params) => params.get('id')))
       .subscribe((id) => {
-        this._parentId = id ? Number(id) : null;
+        this._parentId = id;
       });
   }
 
@@ -125,10 +125,6 @@ export class GridComponent<T> implements OnInit {
   }
 
   private viewAction(data: any): void {
-    if (this.baseEndPoint === ApiType.Clients) {
-      this.baseEndPoint = data.type === 'Física' ? 'individuals' : 'companies';
-    }
-
     this.routerService.navigateByUrl(`/${this.baseEndPoint}/${data.id}`);
   }
 

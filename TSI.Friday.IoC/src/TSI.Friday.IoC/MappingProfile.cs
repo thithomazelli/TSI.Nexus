@@ -14,15 +14,15 @@ namespace TSI.Friday.IoC
             CreateMap<AddressDto, Address>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            // Client mappings
+            // BusinessPartner mappings
             // Map DTO directly to concrete types first
-            CreateMap<ClientDto, Individual>()
+            CreateMap<BusinessPartnerDto, Individual>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-            CreateMap<ClientDto, Company>()
+            CreateMap<BusinessPartnerDto, Company>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-            // Map Client -> ClientDto (reading from DB)
-            CreateMap<Client, ClientDto>()
+            // Map BusinessPartner -> BusinessPartnerDto (reading from DB)
+            CreateMap<BusinessPartner, BusinessPartnerDto>()
                 .ForMember(
                     dest => dest.SocialSecurityCard,
                     opt =>
@@ -30,6 +30,13 @@ namespace TSI.Friday.IoC
                             (src as Individual) != null
                                 ? ((Individual)src).SocialSecurityCard
                                 : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.NationalIdCard,
+                    opt =>
+                        opt.MapFrom(src =>
+                            (src as Individual) != null ? ((Individual)src).NationalIdCard : default
                         )
                 )
                 .ForMember(
@@ -47,21 +54,19 @@ namespace TSI.Friday.IoC
                         )
                 );
 
-            // Construct Client (base) from DTO by dispatching to concrete maps
-            CreateMap<ClientDto, Client>()
+            // Construct BusinessPartner (base) from DTO by dispatching to concrete maps
+            CreateMap<BusinessPartnerDto, BusinessPartner>()
                 .ConstructUsing(
                     (src, ctx) =>
                     {
-                        var type = (src?.Type ?? string.Empty).Trim().ToLowerInvariant();
+                        var type = (src?.DocumentType ?? string.Empty).Trim().ToLowerInvariant();
 
                         return type switch
                         {
                             "física" or "fisica" => ctx.Mapper.Map<Individual>(src),
                             "jurídica" or "juridica" => ctx.Mapper.Map<Company>(src),
-                            // If you prefer to default to a specific type when Type is missing, change the next line.
-                            _ => throw new InvalidOperationException(
-                                $"Unknown client type: '{src?.Type}'"
-                            ),
+                            // Default to Individual when Type is missing or unrecognized to avoid throwing during config validation
+                            _ => ctx.Mapper.Map<Individual>(src),
                         };
                     }
                 )
@@ -82,8 +87,11 @@ namespace TSI.Friday.IoC
             CreateMap<Order, OrderDto>()
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
                 .ForMember(
-                    dest => dest.ClientName,
-                    opt => opt.MapFrom(src => src.Client != null ? src.Client.Name : null)
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
                 );
             CreateMap<OrderDto, Order>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
@@ -115,6 +123,41 @@ namespace TSI.Friday.IoC
             CreateMap<OrderProductDto, OrderProduct>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
+            // Transaction mappings
+            CreateMap<Transaction, TransactionDto>()
+                .ForMember(
+                    dest => dest.OrderNumber,
+                    opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderNumber : null)
+                )
+                .ForMember(
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
+                )
+                // Transaction -> TransactionDto mapping: compute totals from Payments
+                .ForMember(
+                    dest => dest.TotalOfPayments,
+                    opt => opt.MapFrom(src => src.Payments == null ? 0 : src.Payments.Count())
+                )
+                .ForMember(
+                    dest => dest.Price,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Payments == null ? 0m : src.Payments.Sum(p => p.Price)
+                        )
+                );
+
+            CreateMap<TransactionDto, Transaction>()
+                // TransactionDto -> Transaction: ignore read-only computed members
+                .ForMember(dest => dest.Payments, opt => opt.Ignore())
+                .ForMember(
+                    dest => dest.Id,
+                    opt => opt.Condition((src, dest, srcMember) => srcMember != Guid.Empty)
+                )
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
             // Payment mappings
             CreateMap<Payment, PaymentDto>()
                 .ForMember(
@@ -122,23 +165,13 @@ namespace TSI.Friday.IoC
                     opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderNumber : null)
                 )
                 .ForMember(
-                    dest => dest.ClientName,
-                    opt => opt.MapFrom(src => src.Client != null ? src.Client.Name : null)
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
                 );
             CreateMap<PaymentDto, Payment>()
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-
-            // PaymentInstallment mappings
-            CreateMap<PaymentInstallment, PaymentInstallmentDto>()
-                .ForMember(
-                    dest => dest.OrderNumber,
-                    opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderNumber : null)
-                )
-                .ForMember(
-                    dest => dest.ClientName,
-                    opt => opt.MapFrom(src => src.Client != null ? src.Client.Name : null)
-                );
-            CreateMap<PaymentInstallmentDto, PaymentInstallment>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }

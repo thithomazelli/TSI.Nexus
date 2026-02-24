@@ -18,22 +18,12 @@ const routes: Routes = [
       import('./clients/clients.module').then((m) => m.ClientsModule),
   },
   {
-    path: 'companies',
-    canActivate: [AuthorizationGuard],
-    loadChildren: () =>
-      import('./clients/clients.module').then((m) => m.ClientsModule),
-  },
-  {
-    path: 'individuals',
-    canActivate: [AuthorizationGuard],
-    loadChildren: () =>
-      import('./clients/clients.module').then((m) => m.ClientsModule),
-  },
-  {
-    path: 'payments',
+    path: 'transactions',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
-      import('./payments/payments.module').then((m) => m.PaymentsModule),
+      import('./transactions/transactions.module').then(
+        (m) => m.TransactionsModule,
+      ),
   },
   {
     path: 'products',

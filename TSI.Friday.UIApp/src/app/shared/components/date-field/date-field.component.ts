@@ -27,6 +27,9 @@ export class DateFieldComponent implements ControlValueAccessor {
   dateInput!: ElementRef<HTMLInputElement>;
 
   @Input()
+  formControlName: string = '';
+
+  @Input()
   label: string = 'Data';
 
   @Input()

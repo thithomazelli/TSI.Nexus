@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Utilities;
@@ -33,20 +34,20 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One ProductPhoto object according to the ID defined as parameter.</returns>
-        Task<WebApiResponse<ProductPhoto>> FindById(int? id);
+        Task<WebApiResponse<ProductPhoto>> FindById(Guid? id);
 
         /// <summary>
         /// Should find the default ProductPhoto based on the ProductId received as parameter.
         /// </summary>
         /// <param name="productId">The ProductId to be used on the search.</param>
         /// <returns>Default ProductPhoto object according to the ProductId defined as parameter.</returns>
-        Task<WebApiResponse<ProductPhoto>> FindDefaultByProduct(int productId);
+        Task<WebApiResponse<ProductPhoto>> FindDefaultByProduct(Guid productId);
 
         /// <summary>
-        /// Method responsible to get all registers available on The productPhoto data table.
+        /// Method responsible to get all registers available on The productPhoto database.
         /// </summary>
         /// <param name="productPhoto">The productPhoto object to be removed.</param>
-        /// <returns>All registers found on the ProductPhoto data table.</returns>
-        Task<WebApiResponse<IEnumerable<ProductPhoto>>> FindAllByProduct(int productId);
+        /// <returns>All registers found on the ProductPhoto database.</returns>
+        Task<WebApiResponse<IEnumerable<ProductPhoto>>> FindAllByProduct(Guid productId);
     }
 }

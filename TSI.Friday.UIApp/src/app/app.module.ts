@@ -21,7 +21,6 @@ import { ToastrModule } from 'ngx-toastr';
 
 import { HomeComponent } from './home/home.component';
 import { SharedModule } from './shared/shared.module';
-import { PlayComponent } from './play/play.component';
 
 import { CurrencyFormatDirective } from './core/directives/currency-format.directive';
 
@@ -29,7 +28,7 @@ import { CurrencyFormatDirective } from './core/directives/currency-format.direc
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 @NgModule({
-  declarations: [AppComponent, HomeComponent, PlayComponent],
+  declarations: [AppComponent, HomeComponent],
   imports: [
     AppRoutingModule,
     BrowserModule,

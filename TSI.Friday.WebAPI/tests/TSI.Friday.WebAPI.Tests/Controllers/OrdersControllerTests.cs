@@ -22,8 +22,20 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             _ordersMock = new List<OrderDto>
             {
-                new OrderDto { Id =1, OrderNumber = "ORD-001", Description = "Pedido1", ClientId =1 },
-                new OrderDto { Id =2, OrderNumber = "ORD-002", Description = "Pedido2", ClientId =1 }
+                new OrderDto
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    OrderNumber = "ORD-001",
+                    Description = "Pedido1",
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                },
+                new OrderDto
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    OrderNumber = "ORD-002",
+                    Description = "Pedido2",
+                    BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                },
             };
         }
 
@@ -35,7 +47,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = _ordersMock,
                 Status = ResponseStatus.Success,
-                Message = $"{_ordersMock.Count} registro(s) encontrado(s)."
+                Message = $"{_ordersMock.Count} registro(s) encontrado(s).",
             };
 
             _orderServiceMock.Setup(s => s.FindAll()).ReturnsAsync(expected);
@@ -54,13 +66,13 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task GetById_ShouldReturnOkWithOrder_WhenServiceReturnsOrder()
         {
             // Arrange
-            const int id =1;
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
             var order = _ordersMock.First(o => o.Id == id);
             var expected = new WebApiResponse<OrderDto>
             {
                 Data = order,
                 Status = ResponseStatus.Success,
-                Message = $"Pedido {order.OrderNumber} encontrado com sucesso"
+                Message = $"Pedido {order.OrderNumber} encontrado com sucesso",
             };
 
             _orderServiceMock.Setup(s => s.FindById(id)).ReturnsAsync(expected);
@@ -79,12 +91,18 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task Add_ShouldReturnOkWithCreatedOrder_WhenModelIsValid()
         {
             // Arrange
-            var order = new OrderDto { Id =3, OrderNumber = "ORD-003", Description = "Novo Pedido", ClientId =2 };
+            var order = new OrderDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                OrderNumber = "ORD-003",
+                Description = "Novo Pedido",
+                BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+            };
             var expected = new WebApiResponse<OrderDto>
             {
                 Data = order,
                 Status = ResponseStatus.Success,
-                Message = $"Pedido {order.OrderNumber} cadastrado com sucesso."
+                Message = $"Pedido {order.OrderNumber} cadastrado com sucesso.",
             };
 
             _orderServiceMock.Setup(s => s.Add(order)).ReturnsAsync(expected);
