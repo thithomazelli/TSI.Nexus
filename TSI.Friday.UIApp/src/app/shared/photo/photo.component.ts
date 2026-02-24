@@ -1,22 +1,20 @@
+import { Subscription } from 'rxjs';
 import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  EventEmitter,
   Inject,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
   Optional,
-  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { ApiService, ApiType, ModalService } from '@friday/core';
+import { ApiService, ApiType, ModalService, PhotoService } from '@friday/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { environment } from '../../../environments/environment.development';
-import { NavbarService } from '../../core/services/navbar/navbar.service';
 
 @Component({
   selector: 'app-photo',
@@ -35,9 +33,6 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   imageUrl?: string | null = null;
 
   @Input()
-  placeholderIcon = true;
-
-  @Input()
   isModal = false;
 
   @Input()
@@ -49,12 +44,6 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   @Input()
   canDisplaySubtitle: boolean = true;
 
-  @Output()
-  imageChange = new EventEmitter<{ fileName: string }>();
-
-  pendingFile: File | null = null;
-  previewDataUrl: string | null = null;
-
   @ViewChild('fileInput')
   fileInput!: ElementRef<HTMLInputElement>;
 
@@ -65,14 +54,18 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   canvasEl!: ElementRef<HTMLCanvasElement>;
 
   cameraActive = false;
+  pendingFile: File | null = null;
+
   private mediaStream?: MediaStream;
   private lastObjectUrl?: string;
+
+  private navbarPhotoSub?: Subscription;
 
   constructor(
     private cd: ChangeDetectorRef,
     private modalService: ModalService,
     private apiService: ApiService,
-    private navbarService: NavbarService,
+    private photoService: PhotoService,
     @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     if (dialogData) {
@@ -85,39 +78,34 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnInit(): void {
-    this.previewDataUrl = this.getPhotoUrl();
-    this.navbarService.onPhotoChange().subscribe((imageUrl: string) => {
-      if (imageUrl == '') {
-        return;
-      }
-
-      this.previewDataUrl = imageUrl;
-    });
+    this.imageUrl = this.getPhotoUrl();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['imageUrl'] && this.data && this.data.photo) {
-      this.previewDataUrl = this.getPhotoUrl();
-      this.imageChange.emit({ fileName: this.data.photo });
+      this.imageUrl = this.getPhotoUrl();
     }
   }
 
   ngOnDestroy(): void {
     this.stopCamera();
     this.revokeLastObjectUrl();
+    this.navbarPhotoSub?.unsubscribe();
+    this.imageUrl = this.getNoImage();
   }
 
   getPhotoUrl(): string {
-    const apiBase = environment.appUrl; // ajuste conforme seu ambiente
+    const apiBase = environment.appUrl;
     if (this.data && this.data.photo && this.entityClass) {
       return `${apiBase}/uploads/${this.entityClass}/${this.data.photo}`;
     }
-    return 'assets/img/no_image.png';
+
+    return this.getNoImage();
   }
 
   onImgError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.src = 'assets/img/no_image.png';
+    img.src = this.getNoImage();
   }
 
   triggerFile(): void {
@@ -177,7 +165,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
     this.revokeLastObjectUrl();
     const reader = new FileReader();
     reader.onload = () => {
-      this.previewDataUrl = String(reader.result);
+      this.imageUrl = String(reader.result);
       this.pendingFile = file;
     };
     reader.readAsDataURL(file);
@@ -201,7 +189,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
     try {
       const dataUrl = canvas.toDataURL('image/png');
       this.revokeLastObjectUrl();
-      this.previewDataUrl = dataUrl;
+      this.imageUrl = dataUrl;
       canvas.toBlob((blob) => {
         if (!blob) return;
         const ext = blob.type.split('/').pop() ?? 'png';
@@ -224,65 +212,51 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
       event.preventDefault();
     }
 
-    if (
-      !this.pendingFile ||
-      !this.baseEndPoint ||
-      !this.data?.id ||
-      !this.entityClass
-    ) {
+    if (!this.baseEndPoint || !this.data?.id || !this.entityClass) {
       return;
     }
-    const ext = this.pendingFile.type.split('/').pop() ?? 'png';
+
+    const ext = this.pendingFile?.type.split('/').pop() ?? 'png';
     const fileName = `${this.data.id}.${ext}`;
-    const fd = new FormData();
-    fd.append('entity', this.entityClass); // 'clients', 'users', 'products'
-    fd.append('entityId', String(this.data.id));
-    fd.append('file', this.pendingFile, fileName);
+    const formData = new FormData();
+    formData.append('entity', this.entityClass);
+    formData.append('entityId', String(this.data.id));
+
+    if (this.pendingFile) {
+      formData.append('file', this.pendingFile, fileName);
+    }
+
     this.apiService
-      .post<any>(`${this.baseEndPoint}/uploadPhoto`, fd)
+      .post<any>(`${this.baseEndPoint}/uploadPhoto`, formData)
       .subscribe((response) => {
         // fallback para fileName local caso a API não retorne
         const fileName =
           response?.fileName ||
           (this.pendingFile ? this.pendingFile.name : undefined);
         this.data.photo = fileName;
-        this.imageChange.emit({ fileName });
-        this.previewDataUrl = this.getPhotoUrl();
-        this.imageUrl = this.previewDataUrl;
+        this.imageUrl = this.getPhotoUrl();
         this.pendingFile = null;
         this.close({ fileName });
+
         this.modalService.showSweetNotification(
           'Foto atualizada',
           'Upload realizado com sucesso!',
           'success',
         );
-        this.navbarService.emitPhotoChange(this.getPhotoUrl());
+
+        if (this.entityClass === 'User') {
+          this.photoService.updateUserPhoto(
+            response?.fileName != '' ? response.fileName : 'no_profile.png',
+          );
+        }
       });
   }
 
   removePhoto(): void {
-    this.previewDataUrl = null;
+    this.imageUrl = this.getNoImage();
     this.pendingFile = null;
-    this.imageChange.emit({ fileName: '' });
     this.revokeLastObjectUrl();
-
-    // update backend mainPhoto if context provided
-    if (this.baseEndPoint && this.data) {
-      try {
-        (this.data as any).mainPhoto = '';
-      } catch {}
-    }
-
     this.stopCamera();
-  }
-
-  private revokeLastObjectUrl(): void {
-    if (this.lastObjectUrl) {
-      try {
-        URL.revokeObjectURL(this.lastObjectUrl);
-      } catch {}
-      this.lastObjectUrl = undefined;
-    }
   }
 
   onPhotoClick(): void {
@@ -312,5 +286,20 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
       imageUrl: this.data?.photo,
       entityClass: this.entityClass,
     });
+  }
+
+  private revokeLastObjectUrl(): void {
+    if (this.lastObjectUrl) {
+      try {
+        URL.revokeObjectURL(this.lastObjectUrl);
+      } catch {}
+      this.lastObjectUrl = undefined;
+    }
+  }
+
+  private getNoImage(): string {
+    return this.entityClass == 'User'
+      ? 'assets/img/no_profile.png'
+      : 'assets/img/no_image.png';
   }
 }

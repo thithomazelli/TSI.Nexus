@@ -79,15 +79,6 @@ export class ClientDetailsPageComponent {
     this.routerService.navigateByUrl('/clients');
   }
 
-  onImageChange(event: any): void {
-    if (!event?.fileName) {
-      return;
-    }
-    this.data!.photo = event.fileName;
-    // Força atualização do ClientFormComponent
-    this.data = JSON.parse(JSON.stringify(this.data));
-  }
-
   private loadBusinessPartner(id: string): void {
     this.loading = true;
     this.apiService
