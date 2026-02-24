@@ -7,18 +7,14 @@
           class="form-signin"
           (ngSubmit)="sendEmail()"
           autocomplete="off"
-          >
+        >
           <div class="text-center mb-4">
             <h1 class="mb-3 font-weight-normal">
-              @if (mode.includes('resend-email-confirmation')) {
-                <span>
-                  Resend email confirmation
-                </span>
+              @if (mode.includes("resend-email-confirmation")) {
+                <span> Resend email confirmation </span>
               }
-              @if (mode.includes('forgot-username-or-password')) {
-                <span>
-                  Retrieve username or password
-                </span>
+              @if (mode.includes("forgot-username-or-password")) {
+                <span> Retrieve username or password </span>
               }
             </h1>
           </div>
@@ -29,48 +25,44 @@
               placeholder="Email"
               class="form-control"
               [class.is-invalid]="isInvalid('email')"
-              />
-              <label for="email">Email</label>
-              @if (inputHasError('email', 'required')) {
-                <span class="text-danger"
-                  >Email is required
-                </span>
-              }
-              @if (inputHasError('email', 'pattern')) {
-                <span class="text-danger"
-                  >Invalid email address
-                </span>
-              }
-            </div>
-            @if (errorMessages) {
-              <div class="form-floating">
-                <app-validation-messages
-                  [errorMessages]="errorMessages"
-                ></app-validation-messages>
-              </div>
+            />
+            <label for="email">Email</label>
+            @if (inputHasError("email", "required")) {
+              <span class="text-danger">Email is required </span>
             }
-            <div class="row">
-              <div class="col-6">
-                <div class="d-grid">
-                  <button class="btn btn-block btn-success" type="submit">
-                    Send
-                  </button>
-                </div>
-              </div>
-              <div class="col-6">
-                <div class="d-grid">
-                  <button
-                    class="btn btn-block btn-danger"
-                    type="button"
-                    (click)="cancel()"
-                    >
-                    Cancel
-                  </button>
-                </div>
+            @if (inputHasError("email", "pattern")) {
+              <span class="text-danger">Invalid email address </span>
+            }
+          </div>
+          @if (errorMessages) {
+            <div class="form-floating">
+              <app-validation-messages
+                [errorMessages]="errorMessages"
+              ></app-validation-messages>
+            </div>
+          }
+          <div class="row">
+            <div class="col-6">
+              <div class="d-grid">
+                <button class="btn btn-block btn-success" type="submit">
+                  Send
+                </button>
               </div>
             </div>
-          </form>
-        </main>
-      </div>
+            <div class="col-6">
+              <div class="d-grid">
+                <button
+                  class="btn btn-block btn-danger"
+                  type="button"
+                  (click)="cancel()"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </main>
     </div>
-  }
+  </div>
+}

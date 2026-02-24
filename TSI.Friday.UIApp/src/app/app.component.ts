@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
 
         if (url.startsWith('/account/register'))
           classes = ['register-page', 'bg-body-secondary'];
-        else if (url.startsWith('/account'))
+        else if (url.startsWith('/account/login'))
           classes = ['login-page', 'bg-body-secondary'];
 
         this.updateBodyClass(classes);

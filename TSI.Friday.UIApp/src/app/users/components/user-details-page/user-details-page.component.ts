@@ -20,7 +20,7 @@ export class UserDetailsPageComponent {
   data?: User | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'form' | 'image' | 'extra' = 'form';
+  activeTab: 'details' | 'image' = 'details';
 
   private _baseEndPoint: ApiType = ApiType.Users;
 

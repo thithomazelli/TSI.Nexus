@@ -12,16 +12,16 @@
                 class="form-control"
                 [class.is-invalid]="isInvalid('firstName')"
               />
-              <label for="firstName">First name</label>
+              <label for="firstName">Nome</label>
               @if (inputHasError("firstName", "required")) {
-                <span class="text-danger">First name is required </span>
+                <span class="text-danger">Nome é obrigatório</span>
               }
               @if (
                 inputHasError("firstName", "minlength") ||
                 inputHasError("firstName", "maxlength")
               ) {
                 <span class="text-danger"
-                  >First name must be at least 3, and maximum 15 characters
+                  >Nome deve ter no mínimo 3 e no máximo 15 caracteres
                 </span>
               }
             </div>
@@ -38,16 +38,16 @@
                 class="form-control"
                 [class.is-invalid]="isInvalid('lastName')"
               />
-              <label for="lastName">Last name</label>
+              <label for="lastName">Sobrenome</label>
               @if (inputHasError("lastName", "required")) {
-                <span class="text-danger">Last name is required </span>
+                <span class="text-danger">Sobrenome é obrigatório</span>
               }
               @if (
                 inputHasError("lastName", "minlength") ||
                 inputHasError("lastName", "maxlength")
               ) {
                 <span class="text-danger"
-                  >Last name must be at least 3, and maximum 30 characters
+                  >Sobrenome deve ter no mínimo 3 e no máximo 30 caracteres
                 </span>
               }
             </div>
@@ -63,7 +63,7 @@
                   {{ opt.label }}
                 </option>
               </select>
-              <label for="role">Role</label>
+              <label for="role">Perfil</label>
             </div>
             <div class="input-group-text"><i class="bi bi-key-fill"></i></div>
           </div>
@@ -82,10 +82,10 @@
               />
               <label for="email">Email</label>
               @if (inputHasError("email", "required")) {
-                <span class="text-danger">Email is required </span>
+                <span class="text-danger">Email é obrigatório</span>
               }
               @if (inputHasError("email", "pattern")) {
-                <span class="text-danger">Invalid email address </span>
+                <span class="text-danger">Endereço de email inválido </span>
               }
             </div>
             <div class="input-group-text"><i class="bi bi-envelope"></i></div>
@@ -99,7 +99,7 @@
                 type="checkbox"
                 formControlName="emailConfirmed"
               />
-              <label> Email confirmed </label>
+              <label> Email confirmado </label>
             </div>
           }
         </div>
@@ -144,13 +144,38 @@
       }
     </div>
 
-    <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
-        Cancelar
-      </button>
-      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
-        Salvar
-      </button>
+    <div
+      class="d-flex flex-column flex-md-row justify-content-between gap-2 mt-3"
+    >
+      <div class="d-flex flex-column flex-sm-row gap-2">
+        @if (isEdit && form.get("emailConfirmed")?.value === false) {
+          <button
+            class="btn btn-primary"
+            type="button"
+            (click)="resendEmailConfirmation()"
+          >
+            Reenviar e-mail de confirmação
+          </button>
+        }
+        @if (isEdit) {
+          <button
+            class="btn btn-primary"
+            type="button"
+            (click)="forgotPassword()"
+          >
+            Redefinir Senha
+          </button>
+        }
+      </div>
+
+      <div class="d-flex flex-column flex-sm-row gap-2">
+        <button type="button" class="btn btn-secondary" (click)="doCancel()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+          Salvar
+        </button>
+      </div>
     </div>
   </form>
 </div>
