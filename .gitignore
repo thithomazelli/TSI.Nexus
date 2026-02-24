@@ -52,6 +52,9 @@ Migrations/
 # Rider IDE
 .idea/
 
+# Upload images
+uploads/
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
