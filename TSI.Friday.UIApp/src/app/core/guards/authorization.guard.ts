@@ -50,10 +50,10 @@ export class AuthorizationGuard implements CanActivateChild {
         if (requiredRoles && requiredRoles.length > 0) {
           const hasRole = requiredRoles.some((r) => user.roles?.includes(r));
           if (!hasRole) {
-            this.modalService.showSweetNotification(
-              'Access denied',
-              'You do not have permission to access this area',
-              'error',
+            this.modalService.showNotification(
+              false,
+              'Acesso negado',
+              'Você não tem permissão para acessar esta área.',
             );
             this.router.navigate(['']);
             return false;

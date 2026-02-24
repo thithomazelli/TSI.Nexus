@@ -200,22 +200,29 @@
             <!--end::User Image-->
             <!--begin::Menu Body-->
             <li class="user-body">
-              <!--begin::Row-->
-              <div class="row">
-                <div class="col-4 text-center">
-                  <a href="#">Followers</a>
-                </div>
-                <div class="col-4 text-center"><a href="#">Sales</a></div>
-                <div class="col-4 text-center"><a href="#">Friends</a></div>
+              <div class="d-flex gap-2">
+                <a class="btn btn-primary btn-sm flex-fill text-center"
+                  >Seguidores</a
+                >
+                <a class="btn btn-primary btn-sm flex-fill text-center"
+                  >Vendas</a
+                >
+                <a class="btn btn-primary btn-sm flex-fill text-center"
+                  >Amigos</a
+                >
               </div>
-              <!--end::Row-->
             </li>
             <!--end::Menu Body-->
             <!--begin::Menu Footer-->
+
             <li class="user-footer">
-              <a class="btn btn-default btn-flat">Profile</a>
+              <a
+                class="btn btn-default btn-flat"
+                [routerLink]="['/users/', user.id]"
+                >Perfil</a
+              >
               <a class="btn btn-default btn-flat float-end" (click)="logout()"
-                >Sign out</a
+                >Sair</a
               >
             </li>
             <!--end::Menu Footer-->
