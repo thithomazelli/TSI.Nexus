@@ -55,6 +55,7 @@ export class ResetPasswordComponent
     this.errorMessages = [];
 
     const resetPassword = <ResetPassword>{
+      token: '123',
       email: this.email,
       newPassword: this.form.get('newPassword')?.value,
     };
