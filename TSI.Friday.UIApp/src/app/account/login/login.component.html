@@ -6,7 +6,7 @@
       </a>
     </div>
     <div class="card-body login-card-body">
-      <p class="login-box-msg">Sign in to start your session</p>
+      <p class="login-box-msg">Inicie a sua sessão</p>
 
       <form [formGroup]="form" (ngSubmit)="login()" novalidate>
         <div class="input-group mb-1">
@@ -18,10 +18,7 @@
               class="form-control"
               [class.is-invalid]="isInvalid('userName')"
             />
-            <label for="userName">Email</label>
-            @if (inputHasError("userName", "required")) {
-              <span class="text-danger">Email is required </span>
-            }
+            <label for="userName">E-mail</label>
           </div>
           <div class="input-group-text"><i class="bi bi-envelope"></i></div>
         </div>
@@ -35,13 +32,8 @@
               class="form-control"
               [class.is-invalid]="isInvalid('password')"
             />
-            <label for="password">Password</label>
-            @if (inputHasError("password", "required")) {
-              <span class="text-danger">Password is required </span>
-            }
+            <label for="password">Senha</label>
           </div>
-          <!-- <div class="input-group-text"><i class="bi bi-lock-fill"></i></div> -->
-          <!-- visibility toggle -->
           <button
             type="button"
             class="btn btn-outline-secondary"
@@ -62,12 +54,19 @@
             ></app-validation-messages>
           </div>
         }
+        @if (errorMessages) {
+          <div class="form-floating">
+            <app-validation-messages
+              [errorMessages]="errorMessages"
+            ></app-validation-messages>
+          </div>
+        }
 
         <div class="row mb-2">
           <div class="col-8 d-inline-flex align-items-center">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="remember" />
-              <label class="form-check-label"> Remember Me </label>
+              <label class="form-check-label">Lembre-se de mim</label>
             </div>
           </div>
           <div class="col-4">
@@ -77,30 +76,15 @@
                 class="btn btn-primary"
                 [disabled]="form.invalid"
               >
-                Sign In
+                Entrar
               </button>
             </div>
           </div>
         </div>
       </form>
 
-      <div class="social-auth-links text-center mb-3 d-grid gap-2">
-        <p>- OR -</p>
-        <a class="btn btn-primary"
-          ><i class="bi bi-facebook me-2"></i> Sign in using Facebook</a
-        >
-        <a class="btn btn-danger"
-          ><i class="bi bi-google me-2"></i> Sign in using Google+</a
-        >
-      </div>
-
       <p class="mb-1">
-        <a routerLink="/account/reset-password">I forgot my password</a>
-      </p>
-      <p class="mb-0">
-        <a routerLink="/account/register" class="link-primary"
-          >Register a new membership</a
-        >
+        <a routerLink="/account/reset-password">Esqueci minha senha</a>
       </p>
     </div>
   </div>
