@@ -83,49 +83,15 @@
                     </mat-option>
                   </mat-autocomplete>
                 } @else {
-                  <div style="position: relative; width: 100%">
-                    <span
-                      style="
-                        position: absolute;
-                        top: 8px;
-                        left: 13px;
-                        font-size: 0.85rem;
-                        color: #6c757d;
-                        pointer-events: none;
-                        z-index: 2;
-                      "
-                      >Cliente</span
-                    >
-                    <a
-                      [routerLink]="[
-                        '/clients',
-                        form.get('businessPartnerId')?.value,
-                      ]"
-                      class="form-control disabled-link"
-                      style="
-                        pointer-events: auto;
-                        cursor: pointer;
-                        text-decoration: none;
-                        background-color: #e9ecef;
-                        color: #0d6efd;
-                        border: 1px solid #ced4da;
-                        border-top-left-radius: 0.375rem;
-                        border-bottom-left-radius: 0.375rem;
-                        border-top-right-radius: 0;
-                        border-bottom-right-radius: 0;
-                        min-height: 58px;
-                        display: flex;
-                        align-items: center;
-                        padding-left: 12px;
-                        padding-top: 23.5px;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                      "
-                    >
-                      {{ form.get("businessPartnerName")?.value || "Cliente" }}
-                    </a>
-                  </div>
+                  <app-link-field
+                    [placeHolder]="'Cliente'"
+                    [text]="form.get('businessPartnerName')?.value || 'Cliente'"
+                    [routerLink]="[
+                      '/clients',
+                      form.get('businessPartnerId')?.value,
+                    ]"
+                  >
+                  </app-link-field>
                 }
               </div>
               <div class="input-group-text"><i class="bi bi-person"></i></div>
@@ -159,46 +125,12 @@
                     </mat-option>
                   </mat-autocomplete>
                 } @else {
-                  <div style="position: relative; width: 100%">
-                    <span
-                      style="
-                        position: absolute;
-                        top: 8px;
-                        left: 13px;
-                        font-size: 0.85rem;
-                        color: #6c757d;
-                        pointer-events: none;
-                        z-index: 2;
-                      "
-                      >Número do Pedido</span
-                    >
-                    <a
-                      [routerLink]="['/orders', form.get('orderId')?.value]"
-                      class="form-control disabled-link"
-                      style="
-                        pointer-events: auto;
-                        cursor: pointer;
-                        text-decoration: none;
-                        background-color: #e9ecef;
-                        color: #0d6efd;
-                        border: 1px solid #ced4da;
-                        border-top-left-radius: 0.375rem;
-                        border-bottom-left-radius: 0.375rem;
-                        border-top-right-radius: 0;
-                        border-bottom-right-radius: 0;
-                        min-height: 58px;
-                        display: flex;
-                        align-items: center;
-                        padding-left: 12px;
-                        padding-top: 23.5px;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                      "
-                    >
-                      {{ form.get("orderNumber")?.value || "Pedido" }}
-                    </a>
-                  </div>
+                  <app-link-field
+                    [placeHolder]="'Número do Pedido'"
+                    [text]="form.get('orderNumber')?.value || 'Pedido'"
+                    [routerLink]="['/orders', form.get('orderId')?.value]"
+                  >
+                  </app-link-field>
                 }
               </div>
               <div class="input-group-text"><i class="bi bi-hash"></i></div>

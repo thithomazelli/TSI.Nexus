@@ -23,27 +23,39 @@
           <div class="col-12" [ngClass]="compact ? 'col-md-7' : 'col-md-8'">
             <div class="input-group">
               <div class="form-floating">
-                <input
-                  type="text"
-                  formControlName="businessPartnerName"
-                  class="form-control"
-                  [matAutocomplete]="auto"
-                  #firstInput
-                  [class.is-invalid]="isInvalid('businessPartnerName')"
-                  placeholder="Cliente"
-                  (blur)="onClientBlur()"
-                />
-                <label for="businessPartnerName">Cliente</label>
-                <mat-autocomplete #auto="matAutocomplete">
-                  <mat-option
-                    *ngFor="
-                      let businessPartner of filteredBusinessPartners$ | async
-                    "
-                    [value]="businessPartner.name"
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="businessPartnerName"
+                    class="form-control"
+                    [matAutocomplete]="auto"
+                    #firstInput
+                    [class.is-invalid]="isInvalid('businessPartnerName')"
+                    placeholder="Cliente"
+                    (blur)="onClientBlur()"
+                  />
+                  <label for="businessPartnerName">Cliente</label>
+                  <mat-autocomplete #auto="matAutocomplete">
+                    <mat-option
+                      *ngFor="
+                        let businessPartner of filteredBusinessPartners$ | async
+                      "
+                      [value]="businessPartner.name"
+                    >
+                      {{ businessPartner.name }}
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'Cliente'"
+                    [text]="form.get('businessPartnerName')?.value || 'Cliente'"
+                    [routerLink]="[
+                      '/clients',
+                      form.get('businessPartnerId')?.value,
+                    ]"
                   >
-                    {{ businessPartner.name }}
-                  </mat-option>
-                </mat-autocomplete>
+                  </app-link-field>
+                }
               </div>
               <div class="input-group-text"><i class="bi bi-building"></i></div>
             </div>

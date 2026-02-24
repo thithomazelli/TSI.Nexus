@@ -1,4 +1,6 @@
 import { Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
+import { ModalService } from '@friday/core';
 
 @Component({
   selector: 'app-link-field',
@@ -15,4 +17,14 @@ export class LinkFieldComponent {
 
   @Input()
   routerLink: string[] = [];
+
+  constructor(
+    private router: Router,
+    private modalService: ModalService,
+  ) {}
+
+  onClick() {
+    this.router.navigate(this.routerLink);
+    this.modalService.hideModal();
+  }
 }
