@@ -319,7 +319,8 @@ namespace TSI.Friday.Services
 
             try
             {
-                var decodedTokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var decodedTokenBytes = WebEncoders.Base64UrlDecode(token);
                 var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
 
                 var result = await _userManager.ResetPasswordAsync(

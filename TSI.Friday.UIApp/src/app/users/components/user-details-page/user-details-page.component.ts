@@ -4,6 +4,7 @@ import {
   ApiService,
   ApiType,
   NotificationService,
+  PhotoService,
   User,
   WebApiResponse,
 } from '@friday/core';
@@ -19,7 +20,7 @@ export class UserDetailsPageComponent {
   data?: User | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'form' | 'image' | 'extra' = 'form';
+  activeTab: 'details' | 'image' = 'details';
 
   private _baseEndPoint: ApiType = ApiType.Users;
 
@@ -28,6 +29,7 @@ export class UserDetailsPageComponent {
     private apiService: ApiService,
     private routerService: Router,
     private notificationService: NotificationService,
+    private photoService: PhotoService,
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +43,12 @@ export class UserDetailsPageComponent {
       this.isEdit = false;
       this.data = null;
     }
+
+    this.photoService.photo$.subscribe((fileName: string) => {
+      if (fileName) {
+        this.data!.photo = fileName;
+      }
+    });
   }
 
   save(User: User): void {
@@ -66,20 +74,6 @@ export class UserDetailsPageComponent {
 
   cancel(): void {
     this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
-  }
-
-  onImageChange(fileOrNull: File | null): void {
-    // fileOrNull is selected/captured image. you can upload it to server here.
-    if (!fileOrNull) {
-      // remove on server if needed
-      return;
-    }
-
-    const fd = new FormData();
-    fd.append('file', fileOrNull);
-    if (this.id) fd.append('UserId', String(this.id));
-    // example upload endpoint - adapt as needed
-    this.apiService.post(`${this._baseEndPoint}/uploadImage`, fd).subscribe();
   }
 
   private loadUser(id: string): void {

@@ -54,6 +54,13 @@
             ></app-validation-messages>
           </div>
         }
+        @if (errorMessages) {
+          <div class="form-floating">
+            <app-validation-messages
+              [errorMessages]="errorMessages"
+            ></app-validation-messages>
+          </div>
+        }
 
         <div class="row mb-2">
           <div class="col-8 d-inline-flex align-items-center">
@@ -75,16 +82,6 @@
           </div>
         </div>
       </form>
-
-      <!-- <div class="social-auth-links text-center mb-3 d-grid gap-2">
-        <p>- OR -</p>
-        <a class="btn btn-primary"
-          ><i class="bi bi-facebook me-2"></i> Sign in using Facebook</a
-        >
-        <a class="btn btn-danger"
-          ><i class="bi bi-google me-2"></i> Sign in using Google+</a
-        >
-      </div> -->
 
       <p class="mb-1">
         <a routerLink="/account/reset-password">Esqueci minha senha</a>

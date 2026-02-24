@@ -30,13 +30,7 @@ public class PhotosController : ControllerBase
         [FromForm] IFormFile file
     )
     {
-        if (file == null || file.Length == 0)
-        {
-            return BadRequest("No file uploaded.");
-        }
-
         var fileName = await _photoService.UploadImageAsync(entity, entityId, file);
-
         return Ok(new { message = "Photo uploaded", fileName });
     }
 }

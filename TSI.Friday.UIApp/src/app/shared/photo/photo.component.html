@@ -28,39 +28,24 @@
           class="photo-video rounded-circle profile-user-img img-fluid img-circle"
         ></video>
         @if (!isModal) {
-          <div class="photo-hover-overlay" aria-hidden="true">
+          <div class="photo-hover-overlay">
             <span>clique para alterar</span>
           </div>
         }
       </div>
     } @else {
-      @if (previewDataUrl) {
-        <div class="photo-wrapper position-relative">
-          <img
-            class="profile-user-img img-fluid img-circle"
-            [src]="previewDataUrl"
-            alt="photo preview"
-          />
-          @if (!isModal) {
-            <div class="photo-hover-overlay" aria-hidden="true">
-              <span>clique para alterar</span>
-            </div>
-          }
-        </div>
-      } @else if (imageUrl) {
-        <div class="photo-wrapper position-relative">
-          <img
-            class="profile-user-img img-fluid img-circle"
-            [src]="imageUrl"
-            alt="photo preview"
-          />
-          @if (!isModal) {
-            <div class="photo-hover-overlay" aria-hidden="true">
-              <span>clique para alterar</span>
-            </div>
-          }
-        </div>
-      }
+      <div class="photo-wrapper position-relative">
+        <img
+          class="profile-user-img img-fluid img-circle"
+          [src]="imageUrl"
+          (error)="onImgError($event)"
+        />
+        @if (!isModal) {
+          <div class="photo-hover-overlay">
+            <span>clique para alterar</span>
+          </div>
+        }
+      </div>
     }
   </div>
 
@@ -84,29 +69,31 @@
           class="d-none"
           (change)="onFileSelected($event)"
         />
-        <button
-          type="button"
-          class="btn btn-outline-primary btn-sm"
-          (click)="triggerFile()"
-        >
-          Upload
-        </button>
         @if (!cameraActive) {
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm"
+            (click)="triggerFile()"
+          >
+            Upload
+          </button>
+
           <button
             type="button"
             class="btn btn-outline-secondary btn-sm"
             (click)="startCamera()"
           >
-            Open Camera
+            Abrir Câmera
           </button>
         }
+
         @if (cameraActive) {
           <button
             type="button"
             class="btn btn-outline-success btn-sm"
             (click)="capturePhoto()"
           >
-            Take Photo
+            Tirar Foto
           </button>
         }
         @if (cameraActive) {
@@ -115,23 +102,26 @@
             class="btn btn-outline-danger btn-sm"
             (click)="stopCamera()"
           >
-            Stop Camera
+            Fechar Câmera
           </button>
         }
-        <button
-          type="button"
-          class="btn btn-outline-danger btn-sm"
-          (click)="removePhoto()"
-        >
-          Remove
-        </button>
-        <button
-          type="button"
-          class="btn btn-success btn-sm"
-          (click)="savePhoto()"
-        >
-          Save
-        </button>
+
+        @if (!cameraActive) {
+          <button
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            (click)="removePhoto()"
+          >
+            Remover
+          </button>
+          <button
+            type="button"
+            class="btn btn-success btn-sm"
+            (click)="savePhoto()"
+          >
+            Salvar
+          </button>
+        }
       </div>
     }
 

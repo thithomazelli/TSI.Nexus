@@ -7,9 +7,8 @@ import {
   Renderer2,
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AccountService, User } from '@friday/core';
+import { AccountService, PhotoService, User } from '@friday/core';
 import { environment } from '../../../environments/environment.development';
-import { NavbarService } from '../../core/services/navbar/navbar.service';
 
 @Component({
   selector: 'app-navbar',
@@ -19,7 +18,7 @@ import { NavbarService } from '../../core/services/navbar/navbar.service';
 })
 export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isFullscreen = false;
-  imageUrl: string = './assets/img/user2-160x160.jpg';
+  imageUrl: string = '';
   data: User | null = null;
 
   private mobileBreakpoint = 992;
@@ -32,7 +31,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private renderer: Renderer2,
     private accountService: AccountService,
-    private navbarService: NavbarService,
+    private photoService: PhotoService,
   ) {}
 
   get user$(): Observable<User | null> {
@@ -55,18 +54,20 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.navbarService.onPhotoChange().subscribe((imageUrl: string) => {
-      if (imageUrl == '') {
-        return;
+    this.photoService.photo$.subscribe((fileName: string) => {
+      if (fileName) {
+        const apiBase = environment.appUrl; // ajuste conforme seu ambiente
+        this.imageUrl = `${apiBase}/uploads/User/${fileName}`;
+        this.data!.photo = fileName;
       }
-      this.imageUrl = imageUrl;
     });
 
     this.user$.subscribe((user) => {
-      const apiBase = environment.appUrl; // ajuste conforme seu ambiente
-      if (user && user.photo) {
+      this.data = user;
+
+      if (user?.photo) {
+        const apiBase = environment.appUrl; // ajuste conforme seu ambiente
         this.imageUrl = `${apiBase}/uploads/User/${user.photo}`;
-        this.data = user;
         return;
       }
 
@@ -92,6 +93,11 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       this.resizeUnlisten = null;
     }
     this.removeOverlay(true);
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/img/no_profile.png';
   }
 
   toggleSidebar(): void {

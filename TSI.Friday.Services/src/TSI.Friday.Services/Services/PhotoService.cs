@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Internal;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 
@@ -40,7 +41,7 @@ namespace TSI.Friday.Services.Services
         public async Task<string> UploadImageAsync(
             string entityFolder,
             Guid entityId,
-            IFormFile file
+            IFormFile? file
         )
         {
             try
@@ -50,8 +51,8 @@ namespace TSI.Friday.Services.Services
                 var uploadsRoot = Path.Combine(workspaceRoot, "uploads");
                 Directory.CreateDirectory(uploadsRoot);
 
-                var ext = Path.GetExtension(file.FileName);
-                var fileName = $"{Guid.NewGuid()}{ext}";
+                var ext = Path.GetExtension(file?.FileName);
+                var fileName = ext != null ? $"{Guid.NewGuid()}{ext}" : string.Empty;
                 var dirPath = Path.Combine(uploadsRoot, entityFolder);
                 Directory.CreateDirectory(dirPath);
                 var filePath = Path.Combine(dirPath, fileName);
@@ -67,45 +68,60 @@ namespace TSI.Friday.Services.Services
                         var businessPartner = await _businessPartnerRepository.GetByIdAsync(
                             entityId
                         );
-                        previousFileName = businessPartner?.Photo;
-                        applyEntityUpdate = async () =>
+                        previousFileName = businessPartner?.Photo ?? string.Empty;
+                        RemovePhotoWhenFileIsEmpty(
+                            file,
+                            uploadsRoot,
+                            entityFolder,
+                            previousFileName
+                        );
+                        if (businessPartner != null)
                         {
-                            if (businessPartner != null)
-                            {
-                                businessPartner.Photo = fileName;
-                                await _businessPartnerRepository.UpdateAsync(businessPartner);
-                            }
-                        };
+                            businessPartner.Photo = fileName;
+                            await _businessPartnerRepository.UpdateAsync(businessPartner);
+                        }
                         break;
                     }
                     case "User":
                     {
                         var user = await _userRepository.GetByIdAsync(entityId.ToString());
-                        previousFileName = user?.Photo;
-                        applyEntityUpdate = async () =>
+                        previousFileName = user?.Photo ?? string.Empty;
+                        RemovePhotoWhenFileIsEmpty(
+                            file,
+                            uploadsRoot,
+                            entityFolder,
+                            previousFileName
+                        );
+                        if (user != null)
                         {
-                            if (user != null)
-                            {
-                                user.Photo = fileName;
-                                await _userRepository.UpdateAsync(user);
-                            }
-                        };
+                            user.Photo = fileName;
+                            await _userRepository.UpdateAsync(user);
+                        }
                         break;
                     }
                     case "Product":
                     {
                         var product = await _productRepository.GetByIdAsync(entityId);
-                        previousFileName = product?.Photo;
-                        applyEntityUpdate = async () =>
+                        previousFileName = product?.Photo ?? string.Empty;
+                        RemovePhotoWhenFileIsEmpty(
+                            file,
+                            uploadsRoot,
+                            entityFolder,
+                            previousFileName
+                        );
+                        if (product != null)
                         {
-                            if (product != null)
-                            {
-                                product.Photo = fileName;
-                                await _productRepository.UpdateAsync(product);
-                            }
-                        };
+                            product.Photo = fileName;
+                            await _productRepository.UpdateAsync(product);
+                        }
                         break;
                     }
+                }
+
+                // Earlier exit when file was removed
+                if (file == null)
+                {
+                    return string.Empty;
                 }
 
                 // Save the file
@@ -130,18 +146,7 @@ namespace TSI.Friday.Services.Services
                     )
                 )
                 {
-                    var previousPath = Path.Combine(uploadsRoot, entityFolder, previousFileName);
-                    if (File.Exists(previousPath))
-                    {
-                        try
-                        {
-                            File.Delete(previousPath);
-                        }
-                        catch
-                        {
-                            // ignore deletion errors to avoid breaking the upload process
-                        }
-                    }
+                    RemovePhotoWhenFileIsEmpty(file, uploadsRoot, entityFolder, previousFileName);
                 }
 
                 return fileName;
@@ -156,6 +161,30 @@ namespace TSI.Friday.Services.Services
         #endregion Public methods
 
         #region Private methods
+
+        private static void RemovePhotoWhenFileIsEmpty(
+            IFormFile? file,
+            string uploadsRoot,
+            string entityFolder,
+            string previousFileName
+        )
+        {
+            if (file == null)
+            {
+                var previousPath = Path.Combine(uploadsRoot, entityFolder, previousFileName);
+                if (File.Exists(previousPath))
+                {
+                    try
+                    {
+                        File.Delete(previousPath);
+                    }
+                    catch
+                    {
+                        // ignore deletion errors to avoid breaking the upload process
+                    }
+                }
+            }
+        }
 
         #endregion Private methos
     }

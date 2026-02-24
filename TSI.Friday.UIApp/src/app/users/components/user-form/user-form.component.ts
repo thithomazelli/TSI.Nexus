@@ -8,7 +8,13 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { FormBaseComponent, User } from '@friday/core';
+import { Router } from '@angular/router';
+import {
+  AccountService,
+  FormBaseComponent,
+  ModalService,
+  User,
+} from '@friday/core';
 
 @Component({
   selector: 'app-user-form',
@@ -44,7 +50,12 @@ export class UserFormComponent
     { label: 'User', value: 'User' },
   ];
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(
+    private formBuilder: FormBuilder,
+    private router: Router,
+    private accountService: AccountService,
+    private modalService: ModalService,
+  ) {
     super();
   }
 
@@ -74,6 +85,25 @@ export class UserFormComponent
 
   doCancel(): void {
     this.cancel.emit();
+  }
+
+  resendEmailConfirmation(): void {
+    this.accountService
+      .resendEmailConfirmation(this.form.get('email')?.value)
+      .subscribe({
+        next: (response: any) => {
+          this.modalService.hideModal();
+          this.modalService.showNotification(
+            true,
+            response.value.title,
+            response.value.message,
+          );
+        },
+      });
+  }
+
+  forgotPassword(): void {
+    this.router.navigate(['/account/reset-password']);
   }
 
   private initForm(): void {

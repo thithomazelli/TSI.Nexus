@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Edit Users' : 'Add Users'"
+  [title]="isEdit ? 'Editar Usuários' : 'Adicionar Usuários'"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
     { label: 'Usuários', link: '/users' },
-    { label: isEdit ? 'Edit Users' : 'Add Users', link: '' },
+    { label: isEdit ? 'Editar Usuários' : 'Adicionar Usuários', link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -53,10 +53,10 @@
               <li class="nav-item">
                 <a
                   class="nav-link active"
-                  [class.active]="activeTab === 'form'"
-                  (click)="activeTab = 'form'"
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
                   data-toggle="tab"
-                  >Form</a
+                  >Detalhes</a
                 >
               </li>
               <li class="nav-item">
@@ -65,16 +65,7 @@
                   [class.active]="activeTab === 'image'"
                   (click)="activeTab = 'image'"
                   data-toggle="tab"
-                  >Image</a
-                >
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link"
-                  [class.active]="activeTab === 'extra'"
-                  (click)="activeTab = 'extra'"
-                  data-toggle="tab"
-                  >Other</a
+                  >Imagem</a
                 >
               </li>
             </ul>
@@ -85,7 +76,7 @@
 
             @if (!loading) {
               <div>
-                @if (activeTab === "form") {
+                @if (activeTab === "details") {
                   <div>
                     <!-- data-form component: pass compact=true for page -->
                     <app-user-form
@@ -104,11 +95,6 @@
                       [imageUrl]="data?.photo"
                       [entityClass]="'User'"
                     ></app-photo>
-                  </div>
-                }
-                @if (activeTab === "extra") {
-                  <div>
-                    <p>Other sections go here (prices, history, notes...)</p>
                   </div>
                 }
               </div>
