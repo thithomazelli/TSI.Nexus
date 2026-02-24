@@ -148,14 +148,6 @@
       class="d-flex flex-column flex-md-row justify-content-between gap-2 mt-3"
     >
       <div class="d-flex flex-column flex-sm-row gap-2">
-        <!-- @if (isEdit && form.get("emailConfirmed")?.value === false) {
-          <app-confirm-email>
-            <button class="btn btn-primary" type="button">
-              Reenviar e-mail de confirmação
-            </button>
-          </app-confirm-email>
-        } -->
-
         @if (isEdit && form.get("emailConfirmed")?.value === false) {
           <button
             class="btn btn-primary"
