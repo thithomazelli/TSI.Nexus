@@ -19,6 +19,7 @@ import { LogoutComponent } from './logout/logout.component';
     LogoutComponent,
   ],
   imports: [CommonModule, AccountRoutingModule, SharedModule],
+  exports: [ResetPasswordComponent],
   providers: [],
 })
 export class AccountModule {}

@@ -1,6 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Inject,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   AccountService,
   FormBaseComponent,
@@ -8,6 +17,8 @@ import {
   ResetPassword,
   User,
 } from '@friday/core';
+import { UserDetailsModalComponent } from '../../users/components/user-details-modal/user-details-modal.component';
+import { UserDetailsPageComponent } from '../../users/components/user-details-page/user-details-page.component';
 
 @Component({
   selector: 'app-reset-password',
@@ -17,28 +28,46 @@ import {
 })
 export class ResetPasswordComponent
   extends FormBaseComponent
-  implements OnInit
+  implements OnInit, OnChanges
 {
-  email: string | undefined = 'leonardothomazellif@gmail.com';
+  @Input()
+  data?: User;
+
+  @Output() saved = new EventEmitter<any>();
+
   passwordVisible = false;
 
   constructor(
     private accountService: AccountService,
     private modalService: ModalService,
     private formBuilder: FormBuilder,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
+    public dialogRef: MatDialogRef<
+      UserDetailsModalComponent | UserDetailsPageComponent
+    >,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     super();
+    if (dialogData) {
+      this.data = dialogData.data;
+    }
   }
 
   ngOnInit(): void {
     this.initializeForm();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (
+      (changes['data'] && !changes['data'].firstChange) ||
+      (changes['isEdit'] && !changes['isEdit'].firstChange)
+    ) {
+      this.initializeForm();
+    }
+  }
+
   initializeForm(): void {
     this.form = this.formBuilder.group({
-      email: [{ value: this.email, disabled: true }],
+      email: [{ value: this.data?.email, disabled: true }],
       newPassword: [
         '',
         [
@@ -56,17 +85,14 @@ export class ResetPasswordComponent
 
     const resetPassword = <ResetPassword>{
       token: '123',
-      email: this.email,
+      email: this.data?.email,
       newPassword: this.form.get('newPassword')?.value,
     };
 
     this.accountService.resetPassword(resetPassword).subscribe({
       next: (response: any) => {
-        this.modalService.showNotification(
-          true,
-          response.value.title,
-          response.value.message,
-        );
+        this.saved.emit(response);
+        this.dialogRef.close(response);
       },
       error: (response: any) => {
         if (response.error.errors) {
@@ -80,5 +106,9 @@ export class ResetPasswordComponent
 
   togglePasswordVisibility(): void {
     this.passwordVisible = !this.passwordVisible;
+  }
+
+  close(): void {
+    this.modalService.hideModal(this.dialogRef);
   }
 }

@@ -8,13 +8,13 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
   AccountService,
   FormBaseComponent,
   ModalService,
   User,
 } from '@friday/core';
+import { ResetPasswordComponent } from '../../../account/reset-password/reset-password.component';
 
 @Component({
   selector: 'app-user-form',
@@ -52,7 +52,6 @@ export class UserFormComponent
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router,
     private accountService: AccountService,
     private modalService: ModalService,
   ) {
@@ -103,7 +102,24 @@ export class UserFormComponent
   }
 
   forgotPassword(): void {
-    this.router.navigate(['/account/reset-password']);
+    const initialState = {
+      data: this.data,
+    };
+    const ref = this.modalService.showTemplateModal(
+      ResetPasswordComponent,
+      initialState,
+    );
+
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe((response: any) => {
+        this.modalService.showNotification(
+          true,
+          response.value.title,
+          response.value.message,
+        );
+        ref.close();
+      });
+    }
   }
 
   private initForm(): void {
@@ -148,7 +164,6 @@ export class UserFormComponent
 
     this.form.get('emailConfirmed')?.disable();
 
-    // aplicar data se já existir (não resetar o form)
     if (this.data) {
       this.form.patchValue(this.data);
     }

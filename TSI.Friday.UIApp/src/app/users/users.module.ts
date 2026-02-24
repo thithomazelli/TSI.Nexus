@@ -8,6 +8,8 @@ import { UserDetailsPageComponent } from './components/user-details-page/user-de
 
 import { UsersRoutingModule } from './users-routing.module';
 import { SharedModule } from '../shared/shared.module';
+import { ResetPasswordComponent } from '../account/reset-password/reset-password.component';
+import { AccountModule } from '../account/account.module';
 
 @NgModule({
   declarations: [
@@ -16,6 +18,7 @@ import { SharedModule } from '../shared/shared.module';
     UserDetailsModalComponent,
     UserDetailsPageComponent,
   ],
-  imports: [CommonModule, UsersRoutingModule, SharedModule],
+  imports: [CommonModule, UsersRoutingModule, SharedModule, AccountModule],
+  exports: [UserFormComponent],
 })
 export class UsersModule {}
