@@ -11,7 +11,7 @@ export * from './company.model';
 export * from './individual.model';
 export * from './order.model';
 export * from './order-product.model';
+export * from './transaction.model';
 export * from './payment.model';
-export * from './payment-installment.model';
 export * from './product.model';
 export * from './product-photo.model';

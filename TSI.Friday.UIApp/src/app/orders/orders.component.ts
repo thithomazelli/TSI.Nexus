@@ -101,7 +101,10 @@ export class OrdersComponent {
         } else if (value === 'Open') {
           color = 'info';
           label = 'Em Aberto';
-        } else if (value === 'WaitingPayment' || value === 'Waiting payment') {
+        } else if (
+          value === 'WaitingTransaction' ||
+          value === 'Waiting payment'
+        ) {
           color = 'warning';
           label = 'Aguardando Pagamento';
         }

@@ -25,9 +25,9 @@ namespace TSI.Friday.IoC.Tests
             services.Any(sd => sd.ServiceType == typeof(IJwtService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IOrderProductService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IOrderService)).Should().BeTrue();
-            services.Any(sd => sd.ServiceType == typeof(IPaymentService)).Should().BeTrue();
+            services.Any(sd => sd.ServiceType == typeof(ITransactionService)).Should().BeTrue();
             services
-                .Any(sd => sd.ServiceType == typeof(IPaymentInstallmentService))
+                .Any(sd => sd.ServiceType == typeof(IPaymentService))
                 .Should()
                 .BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IPhotoService)).Should().BeTrue();
@@ -59,9 +59,12 @@ namespace TSI.Friday.IoC.Tests
                 .Any(sd => sd.ServiceType == typeof(IRepository<OrderProduct>))
                 .Should()
                 .BeTrue();
-            services.Any(sd => sd.ServiceType == typeof(IRepository<Payment>)).Should().BeTrue();
             services
-                .Any(sd => sd.ServiceType == typeof(IRepository<PaymentInstallment>))
+                .Any(sd => sd.ServiceType == typeof(IRepository<Transaction>))
+                .Should()
+                .BeTrue();
+            services
+                .Any(sd => sd.ServiceType == typeof(IRepository<Payment>))
                 .Should()
                 .BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IRepository<Product>)).Should().BeTrue();

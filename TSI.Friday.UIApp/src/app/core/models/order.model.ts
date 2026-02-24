@@ -1,7 +1,7 @@
 import { OrderStatus } from '../enums/order-status.enum';
 import { BaseModel } from './base.model';
 import { OrderProduct } from './order-product.model';
-import { Payment } from './payment.model';
+import { Transaction } from './transaction.model';
 
 export interface Order extends BaseModel {
   id?: string;
@@ -13,6 +13,6 @@ export interface Order extends BaseModel {
   discount?: number;
   price?: number;
   totalPrice?: number;
-  payment?: Payment;
+  transaction?: Transaction;
   orderProducts?: OrderProduct[];
 }

@@ -7,10 +7,10 @@ import { OrderDetailsPageComponent } from './components/order-details-page/order
 import { OrdersRoutingModule } from './orders-routing.module';
 import { NgxMaskDirective } from 'ngx-mask';
 import { ProductsModule } from '../products/products.module';
-import { PaymentInstallmentsModule } from '../payment-installments/payment-installments.module';
+import { PaymentsModule } from '../payments/payments.module';
 import { OrdersSharedModule } from './components/orders-shared.module';
 import { ClientsSharedModule } from '../clients/clients-shared.module';
-import { PaymentsSharedModule } from '../payments/payments-shared.module';
+import { TransactionsSharedModule } from '../transactions/transactions-shared.module';
 import { OrderProductsModule } from '../order-products/order-products.module';
 
 @NgModule({
@@ -22,8 +22,8 @@ import { OrderProductsModule } from '../order-products/order-products.module';
     NgxMaskDirective,
     ClientsSharedModule,
     ProductsModule,
-    PaymentsSharedModule,
-    PaymentInstallmentsModule,
+    TransactionsSharedModule,
+    PaymentsModule,
     OrderProductsModule,
   ],
   exports: [],

@@ -20,39 +20,31 @@ export class ConfirmEmailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.accountService.user$.pipe(take(1)).subscribe({
-      next: (user: User | null) => {
-        if (user) {
-          this.router.navigate(['/']);
-        } else {
-          this.activatedRoute.queryParamMap.subscribe({
-            next: (params: any) => {
-              const confirmEmail = <ConfirmEmail>{
-                token: params.get('token'),
-                email: params.get('email'),
-              };
+    this.activatedRoute.queryParamMap.subscribe({
+      next: (params: any) => {
+        const confirmEmail = <ConfirmEmail>{
+          token: params.get('token'),
+          email: params.get('email'),
+        };
 
-              this.accountService.confirmEmail(confirmEmail).subscribe({
-                next: (response: any) => {
-                  this.modalService.showSweetNotification(
-                    response.value.title,
-                    response.value.message,
-                    'success',
-                  );
-                },
-                error: (response: any) => {
-                  this.success = false;
+        this.accountService.confirmEmail(confirmEmail).subscribe({
+          next: (response: any) => {
+            this.modalService.showSweetNotification(
+              response.value.title,
+              response.value.message,
+              'success',
+            );
+          },
+          error: (response: any) => {
+            this.success = false;
 
-                  this.modalService.showSweetNotification(
-                    'Failed',
-                    response.error,
-                    'error',
-                  );
-                },
-              });
-            },
-          });
-        }
+            this.modalService.showSweetNotification(
+              'Failed',
+              response.error,
+              'error',
+            );
+          },
+        });
       },
     });
   }

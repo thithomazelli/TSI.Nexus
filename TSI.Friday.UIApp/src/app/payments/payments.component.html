@@ -1,14 +1,7 @@
-<app-header
-  title="Pagamentos"
-  [navigationMenus]="[
-    { label: 'Home', link: '/home' },
-    { label: 'Financeiro', link: '' },
-  ]"
-></app-header>
-
 <div class="app-content">
   <app-grid
     [className]="'Pagamentos'"
+    [compactView]="true"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"

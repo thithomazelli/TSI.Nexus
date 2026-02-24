@@ -11,138 +11,141 @@ using TSI.Friday.IoC;
 
 namespace TSI.Friday.Services.Tests.Services
 {
-    public class PaymentInstallmentServiceTests
+    public class PaymentServiceTests
     {
-        private readonly PaymentInstallmentService _paymentInstallmentService;
-        private readonly Mock<IRepository<PaymentInstallment>> _repository;
-        private readonly IList<PaymentInstallment> _paymentInstallmentsMock;
+        private readonly PaymentService _paymentService;
+        private readonly Mock<IRepository<Payment>> _repository;
+        private readonly IList<Payment> _paymentsMock;
         private readonly IMapper _mapper;
 
-        public PaymentInstallmentServiceTests()
+        public PaymentServiceTests()
         {
-            _repository = new Mock<IRepository<PaymentInstallment>>();
+            _repository = new Mock<IRepository<Payment>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
-            _paymentInstallmentService = new PaymentInstallmentService(_repository.Object, _mapper);
+            _paymentService = new PaymentService(
+                _repository.Object,
+                _mapper
+            );
 
-            _paymentInstallmentsMock = new List<PaymentInstallment>
+            _paymentsMock = new List<Payment>
             {
-                new PaymentInstallment
+                new Payment
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Description = "Pagamento 1",
-                    PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    Description = "Transação 1",
+                    TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
-                new PaymentInstallment
+                new Payment
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Description = "Pagamento 2",
-                    PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+                    Description = "Transação 2",
+                    TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                 },
             };
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_Add_ShouldAddPaymentInstallmentSuccessfully_WhenMethodIsCalledWithAValidObject()
+        public async Task PaymentService_Add_ShouldAddPaymentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentInstallmentDto = new PaymentInstallmentDto
+            var paymentDto = new PaymentDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                Description = "Pagamento 3",
-                PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                Description = "Transação 3",
+                TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
             };
             _repository
-                .Setup(r => r.AddAsync(It.IsAny<PaymentInstallment>()))
+                .Setup(r => r.AddAsync(It.IsAny<Payment>()))
                 .Returns(Task.CompletedTask);
 
-            var expected = new WebApiResponse<PaymentInstallmentDto>
+            var expected = new WebApiResponse<PaymentDto>
             {
-                Data = paymentInstallmentDto,
+                Data = paymentDto,
                 Status = ResponseStatus.Success,
                 Message =
-                    $"Parcela do pagamento {paymentInstallmentDto.Description} cadastrada com sucesso.",
+                    $"Parcela do pagamento {paymentDto.Description} cadastrada com sucesso.",
             };
 
             // Act
-            var result = await _paymentInstallmentService.Add(paymentInstallmentDto);
+            var result = await _paymentService.Add(paymentDto);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.AddAsync(It.IsAny<PaymentInstallment>()), Times.Once);
+            _repository.Verify(r => r.AddAsync(It.IsAny<Payment>()), Times.Once);
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_Update_ShouldUpdatePaymentInstallmentSuccessfully_WhenMethodIsCalledWithAValidObject()
+        public async Task PaymentService_Update_ShouldUpdatePaymentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentInstallmentDto = _mapper.Map<PaymentInstallmentDto>(
-                _paymentInstallmentsMock.First()
+            var paymentDto = _mapper.Map<PaymentDto>(
+                _paymentsMock.First()
             );
             _repository
-                .Setup(r => r.UpdateAsync(It.IsAny<PaymentInstallment>()))
+                .Setup(r => r.UpdateAsync(It.IsAny<Payment>()))
                 .Returns(Task.CompletedTask);
 
-            var expected = new WebApiResponse<PaymentInstallmentDto>
+            var expected = new WebApiResponse<PaymentDto>
             {
-                Data = paymentInstallmentDto,
+                Data = paymentDto,
                 Status = ResponseStatus.Success,
                 Message =
-                    $"Parcela do pagamento {paymentInstallmentDto.Description} atualizada com sucesso.",
+                    $"Parcela do pagamento {paymentDto.Description} atualizada com sucesso.",
             };
 
             // Act
-            var result = await _paymentInstallmentService.Update(paymentInstallmentDto);
+            var result = await _paymentService.Update(paymentDto);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.UpdateAsync(It.IsAny<PaymentInstallment>()), Times.Once);
+            _repository.Verify(r => r.UpdateAsync(It.IsAny<Payment>()), Times.Once);
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_Remove_ShouldRemovePaymentInstallmentSuccessfully_WhenMethodIsCalledWithAValidObject()
+        public async Task PaymentService_Remove_ShouldRemovePaymentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentInstallmentDto = _mapper.Map<PaymentInstallmentDto>(
-                _paymentInstallmentsMock.First()
+            var paymentDto = _mapper.Map<PaymentDto>(
+                _paymentsMock.First()
             );
             _repository
-                .Setup(r => r.RemoveAsync(It.IsAny<PaymentInstallment>()))
+                .Setup(r => r.RemoveAsync(It.IsAny<Payment>()))
                 .Returns(Task.CompletedTask);
 
-            var expected = new WebApiResponse<PaymentInstallmentDto>
+            var expected = new WebApiResponse<PaymentDto>
             {
-                Data = paymentInstallmentDto,
+                Data = paymentDto,
                 Status = ResponseStatus.Success,
                 Message =
-                    $"Parcela do pagamento {paymentInstallmentDto.Description} removida com sucesso.",
+                    $"Parcela do pagamento {paymentDto.Description} removida com sucesso.",
             };
 
             // Act
-            var result = await _paymentInstallmentService.Remove(paymentInstallmentDto);
+            var result = await _paymentService.Remove(paymentDto);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.RemoveAsync(It.IsAny<PaymentInstallment>()), Times.Once);
+            _repository.Verify(r => r.RemoveAsync(It.IsAny<Payment>()), Times.Once);
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_FindById_ShouldReturnPaymentInstallment_WhenIdIsValid()
+        public async Task PaymentService_FindById_ShouldReturnPayment_WhenIdIsValid()
         {
             // Arrange
             var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            var payment = _paymentInstallmentsMock.First(p => p.Id == id);
-            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(payment);
+            var transaction = _paymentsMock.First(p => p.Id == id);
+            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(transaction);
 
-            var expected = new WebApiResponse<PaymentInstallmentDto>
+            var expected = new WebApiResponse<PaymentDto>
             {
-                Data = _mapper.Map<PaymentInstallmentDto>(payment),
+                Data = _mapper.Map<PaymentDto>(transaction),
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {payment.Description} encontrada com sucesso",
+                Message = $"Parcela do pagamento {transaction.Description} encontrada com sucesso",
             };
 
             // Act
-            var result = await _paymentInstallmentService.FindById(id);
+            var result = await _paymentService.FindById(id);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
@@ -150,91 +153,125 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_FindByPaymentId_ShouldReturnPaymentInstallments_WhenPaymentIdIsValid()
+        public async Task PaymentService_FindByTransactionId_ShouldReturnPayments_WhenTransactionIdIsValid()
         {
             // Arrange
-            var paymentId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            ;
-            var payments = _paymentInstallmentsMock.Where(p => p.PaymentId == paymentId).ToList();
+            var transactionId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var transactions = _paymentsMock
+                .Where(p => p.TransactionId == transactionId)
+                .ToList();
             _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
-                .ReturnsAsync(payments);
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    )
+                )
+                .ReturnsAsync(transactions);
 
-            var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
+            var expected = new WebApiResponse<IEnumerable<PaymentDto>>
             {
-                Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments),
+                Data = _mapper.Map<IEnumerable<PaymentDto>>(transactions),
                 Status = ResponseStatus.Success,
-                Message = $"{payments.Count} registro(s) encontrado(s).",
+                Message = $"{transactions.Count} registro(s) encontrado(s).",
             };
 
             // Act
-            var result = await _paymentInstallmentService.FindByPaymentId(paymentId);
+            var result = await _paymentService.FindByTransactionId(transactionId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    ),
                 Times.Once
             );
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_FindByBusinessPartnerId_ShouldReturnPaymentInstallments_WhenBusinessPartnerIdIsValid()
+        public async Task PaymentService_FindByBusinessPartnerId_ShouldReturnPayments_WhenBusinessPartnerIdIsValid()
         {
             // Arrange
             var businessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             ;
-            var payments = _paymentInstallmentsMock
+            var transactions = _paymentsMock
                 .Where(p => p.BusinessPartnerId == businessPartnerId)
                 .ToList();
             _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
-                .ReturnsAsync(payments);
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    )
+                )
+                .ReturnsAsync(transactions);
 
-            var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
+            var expected = new WebApiResponse<IEnumerable<PaymentDto>>
             {
-                Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments),
+                Data = _mapper.Map<IEnumerable<PaymentDto>>(transactions),
                 Status = ResponseStatus.Success,
-                Message = $"{payments.Count} registro(s) encontrado(s).",
+                Message = $"{transactions.Count} registro(s) encontrado(s).",
             };
 
             // Act
-            var result = await _paymentInstallmentService.FindByBusinessPartnerId(
+            var result = await _paymentService.FindByBusinessPartnerId(
                 businessPartnerId
             );
 
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    ),
                 Times.Once
             );
         }
 
         [Fact]
-        public async Task PaymentInstallmentService_FindByOrderId_ShouldReturnPaymentInstallments_WhenOrderIdIsValid()
+        public async Task PaymentService_FindByOrderId_ShouldReturnPayments_WhenOrderIdIsValid()
         {
             // Arrange
             var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            var payments = _paymentInstallmentsMock.Where(p => p.OrderId == orderId).ToList();
+            var transactions = _paymentsMock.Where(p => p.OrderId == orderId).ToList();
             _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()))
-                .ReturnsAsync(payments);
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    )
+                )
+                .ReturnsAsync(transactions);
 
-            var expected = new WebApiResponse<IEnumerable<PaymentInstallmentDto>>
+            var expected = new WebApiResponse<IEnumerable<PaymentDto>>
             {
-                Data = _mapper.Map<IEnumerable<PaymentInstallmentDto>>(payments),
+                Data = _mapper.Map<IEnumerable<PaymentDto>>(transactions),
                 Status = ResponseStatus.Success,
-                Message = $"{payments.Count} registro(s) encontrado(s).",
+                Message = $"{transactions.Count} registro(s) encontrado(s).",
             };
 
             // Act
-            var result = await _paymentInstallmentService.FindByOrderId(orderId);
+            var result = await _paymentService.FindByOrderId(orderId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r => r.QueryAsync(It.IsAny<Expression<Func<PaymentInstallment, bool>>>()),
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order
+                    ),
                 Times.Once
             );
         }

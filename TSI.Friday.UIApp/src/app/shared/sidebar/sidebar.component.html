@@ -65,6 +65,18 @@
 
         <li class="nav-item">
           <a
+            routerLink="/suppliers"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-buildings"></i>
+            <p>Fornecedores (Em construção)</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
             routerLink="/orders"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -91,13 +103,24 @@
           <li class="nav-header">Financeiro</li>
           <li class="nav-item">
             <a
+              routerLink="/transactions"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-cash-stack"></i>
+              <p>Transações</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
               routerLink="/payments"
               routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: true }"
               class="nav-link"
             >
               <i class="nav-icon bi bi-cash-stack"></i>
-              <p>Pagamentos</p>
+              <p>Pagamentos (Em construção)</p>
             </a>
           </li>
           <li class="nav-header">Admin</li>

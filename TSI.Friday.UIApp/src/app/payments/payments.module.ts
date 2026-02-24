@@ -1,23 +1,17 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NgxMaskDirective } from 'ngx-mask';
-import { PaymentsRoutingModule } from './payment-routing.module';
-import { PaymentDetailsPageComponent } from './components/payment-details-page/payment-details-page.component';
-import { PaymentsComponent } from './payments.component';
-import { PaymentInstallmentsModule } from '../payment-installments/payment-installments.module';
-import { PaymentsSharedModule } from './payments-shared.module';
-import { ClientsSharedModule } from '../clients/clients-shared.module';
+import { SharedModule } from '../shared/shared.module';
+import { PaymentComponent } from './payments.component';
+import { PaymentFormComponent } from './components/payment-form/payment-form.component';
+import { PaymentDetailsModalComponent } from './components/payment-details-modal/payment-details-modal.component';
 
 @NgModule({
-  declarations: [PaymentsComponent, PaymentDetailsPageComponent],
-  imports: [
-    PaymentsSharedModule,
-    PaymentsRoutingModule,
-    CommonModule,
-    NgxMaskDirective,
-    ClientsSharedModule,
-    PaymentInstallmentsModule,
+  declarations: [
+    PaymentComponent,
+    PaymentFormComponent,
+    PaymentDetailsModalComponent,
   ],
-  exports: [],
+  imports: [CommonModule, SharedModule],
+  exports: [PaymentComponent],
 })
 export class PaymentsModule {}

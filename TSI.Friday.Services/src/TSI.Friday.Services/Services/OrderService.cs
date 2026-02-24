@@ -13,10 +13,10 @@ namespace TSI.Friday.Services
         #region Properties
 
         /// <summary>
-        /// Repository object created to access the Order registers on database using EntityFramework.
+        /// OrderService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         private readonly IRepository<Order> _repository;
-        private readonly IPaymentService _paymentService;
+        private readonly ITransactionService _transactionService;
         private readonly IProductService _productService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
@@ -31,14 +31,14 @@ namespace TSI.Friday.Services
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
         public OrderService(
             IRepository<Order> repository,
-            IPaymentService paymentService,
+            ITransactionService transactionService,
             IProductService productService,
             ISequenceService sequenceService,
             IMapper mapper
         )
         {
             _repository = repository;
-            _paymentService = paymentService;
+            _transactionService = transactionService;
             _productService = productService;
             _sequenceService = sequenceService;
             _mapper = mapper;
@@ -54,17 +54,33 @@ namespace TSI.Friday.Services
                 var prefix = BuildPrefixFromBusinessPartnerName(orderDto.BusinessPartnerName);
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
+                orderDto.Description = string.IsNullOrEmpty(orderDto.Description)
+                    ? $"Pedido de Venda -  {orderDto.OrderNumber}"
+                    : orderDto.Description;
 
-                var paymentDto = orderDto.Payment;
+                // Save Transaction first (if provided) so we can assign TransactionId to Order before saving Order
+                var transactionResult = new WebApiResponse<TransactionDto>();
 
-                if (paymentDto != null)
+                var transactionDto = orderDto.Transaction;
+                if (transactionDto != null)
                 {
-                    var paymentResult = await _paymentService.Add(paymentDto);
-                    orderDto.Payment = null;
+                    transactionDto.OrderNumber = orderDto.OrderNumber;
+                    transactionDto.Description =
+                        $"Transação do Pedido de Venda - {orderDto.OrderNumber}";
+                    transactionResult = await _transactionService.Add(transactionDto);
+                    orderDto.Transaction = null;
+                    orderDto.TransactionId = transactionResult.Data?.Id ?? null;
                 }
 
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);
+
+                // Update Transaction
+                if (transactionResult?.Data != null)
+                {
+                    transactionResult.Data.OrderId = orderEntity.Id;
+                    await _transactionService.UpdateOrderId(transactionResult.Data);
+                }
 
                 // adjust stock in batch if product service available
                 if (orderEntity.OrderProducts.Any())
@@ -114,21 +130,21 @@ namespace TSI.Friday.Services
 
             try
             {
-                // First update Order basic data (without handling Payment) to ensure it exists
+                // First update Order basic data (without handling Transaction) to ensure it exists
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.UpdateAsync(orderEntity);
 
-                var paymentDto = orderDto.Payment;
-                paymentDto.OrderId = orderEntity.Id;
+                var transactionDto = orderDto.Transaction;
+                transactionDto.OrderId = orderEntity.Id;
 
-                var updRes = await _paymentService.Update(paymentDto);
+                var updRes = await _transactionService.Update(transactionDto);
                 if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
                 {
-                    orderDto.Payment = updRes.Data;
+                    orderDto.Transaction = updRes.Data;
                 }
 
                 result.Data = _mapper.Map<OrderDto>(orderEntity);
-                result.Data.Payment = orderDto.Payment;
+                result.Data.Transaction = orderDto.Transaction;
 
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} atualizado com sucesso.";
@@ -150,7 +166,11 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orderEntity = await _repository.GetByIdAsync(orderDto.Id, o => o.OrderProducts);
+                var orderEntity = await _repository.GetByIdAsync(
+                    orderDto.Id,
+                    o => o.OrderProducts,
+                    p => p.Transaction
+                );
 
                 if (orderEntity == null)
                 {
@@ -181,6 +201,9 @@ namespace TSI.Friday.Services
                 }
 
                 await _repository.RemoveAsync(orderEntity);
+
+                var transactionDto = _mapper.Map<TransactionDto>(orderEntity.Transaction);
+                await _transactionService.Remove(transactionDto);
 
                 result.Data = orderDto;
                 result.Status = ResponseStatus.Success;
@@ -225,7 +248,12 @@ namespace TSI.Friday.Services
 
             try
             {
-                var order = await _repository.GetByIdAsync(id, o => o.BusinessPartner);
+                var order = await _repository.GetByIdAsync(
+                    id,
+                    o => o.BusinessPartner,
+                    p => p.Transaction,
+                    pi => pi.Transaction.Payments
+                );
 
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;

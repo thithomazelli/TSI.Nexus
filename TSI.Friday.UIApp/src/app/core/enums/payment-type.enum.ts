@@ -1,4 +1,4 @@
-export enum PaymentType {
+export enum TransactionType {
   Incoming = 'Incoming',
   Outgoing = 'Outgoing',
 }
