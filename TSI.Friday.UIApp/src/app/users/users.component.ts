@@ -45,14 +45,16 @@ export class UsersComponent {
         const apiBase = environment.appUrl;
         const imageUrl = params.value
           ? `${apiBase}/uploads/user/${params.value}`
-          : 'assets/img/no_profile.png';
+          : '';
         const userId = params.data?.id;
+        // Fallback: se a imagem não carregar, exibe ícone FontAwesome user
         return `<div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
           <a 
             class="ag-link"
             data-action="view"
-            routerLink="/${this.baseEndPoint}/${params.data.id}">
-            <img src="${imageUrl}" alt="User Photo" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+            routerLink="/${this.baseEndPoint}/${userId}">
+            ${imageUrl ? `<img src='${imageUrl}' alt='User Photo' style='width: 35px; height: 35px; border-radius: 50%; object-fit: cover;' onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block';">` : ''}
+            <span style="display:${imageUrl ? 'none' : 'inline-block'};width:35px;height:35px;line-height:35px;text-align:center;font-size:22px;color:#adb5bd;background:#f1f3f4;border-radius:50%;"><i class='fas fa-user'></i></span>
           </a>
         </div>`;
       },
@@ -177,6 +179,11 @@ export class UsersComponent {
         ref.close();
       });
     }
+  }
+
+  onImgError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = 'assets/img/no_profile.png';
   }
 
   private getUsers(): void {

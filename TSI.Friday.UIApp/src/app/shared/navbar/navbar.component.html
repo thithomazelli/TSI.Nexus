@@ -180,7 +180,7 @@
             <img
               [src]="imageUrl"
               class="user-image rounded-circle shadow small-user-image"
-              alt="User Image"
+              (error)="onImgError($event)"
             />
             <span class="d-none d-md-inline">{{
               `${user.firstName} ${user.lastName}` | titlecase
@@ -190,9 +190,10 @@
             <!--begin::User Image-->
             <li class="user-header text-bg-primary">
               <app-photo
+                *ngIf="data"
                 [entityClass]="'User'"
                 [data]="data"
-                [imageUrl]="imageUrl"
+                [imageUrl]="data.photo"
                 [canDisplaySubtitle]="false"
               >
               </app-photo>
