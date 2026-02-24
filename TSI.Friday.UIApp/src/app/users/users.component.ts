@@ -13,6 +13,7 @@ import {
 } from 'ag-grid-community';
 import { UserDetailsModalComponent } from './components/user-details-modal/user-details-modal.component';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-users',
@@ -36,7 +37,7 @@ export class UsersComponent {
     },
     {
       field: 'photo',
-      headerName: '',
+      headerName: 'Foto',
       sortable: true,
       filter: false,
       width: 70,
@@ -58,7 +59,7 @@ export class UsersComponent {
       },
     },
     {
-      headerName: 'Full Name',
+      headerName: 'Nome Completo',
       colId: 'fullName',
       sortable: true,
       filter: true,
@@ -79,7 +80,7 @@ export class UsersComponent {
     },
     {
       field: 'userName',
-      headerName: 'User Name',
+      headerName: 'Nome de Usuário',
       sortable: true,
       filter: true,
       width: 300,
@@ -100,20 +101,20 @@ export class UsersComponent {
     },
     {
       field: 'emailConfirmed',
-      headerName: 'Email Confirmed',
+      headerName: 'Email Confirmado',
       sortable: true,
       filter: true,
       maxWidth: 200,
     },
     {
       field: 'role',
-      headerName: 'Role',
+      headerName: 'Perfil',
       sortable: true,
       filter: true,
       resizable: true,
     },
     {
-      headerName: '',
+      headerName: 'Ações',
       sortable: false,
       filter: false,
       maxWidth: 400,
@@ -122,16 +123,13 @@ export class UsersComponent {
       cellRenderer: (params: ICellRendererParams) => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-folder"></i>
-            View
+            <i class="fas fa-folder" data-action="view"></i>
           </button>
           <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit"></i>
-            Edit
+            <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash"></i>
-            Delete
+            <i class="fas fa-trash" data-action="delete"></i>
           </button>
         `;
       },

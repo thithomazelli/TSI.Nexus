@@ -16,7 +16,7 @@ export class ConfirmEmailComponent implements OnInit {
     private accountService: AccountService,
     private modalService: ModalService,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
@@ -37,7 +37,7 @@ export class ConfirmEmailComponent implements OnInit {
                   this.modalService.showSweetNotification(
                     response.value.title,
                     response.value.message,
-                    'success'
+                    'success',
                   );
                 },
                 error: (response: any) => {
@@ -46,7 +46,7 @@ export class ConfirmEmailComponent implements OnInit {
                   this.modalService.showSweetNotification(
                     'Failed',
                     response.error,
-                    'error'
+                    'error',
                   );
                 },
               });
