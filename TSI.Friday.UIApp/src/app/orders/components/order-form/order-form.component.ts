@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -19,10 +20,10 @@ import {
   ModalService,
   CurrencyService,
   OrderProduct,
-  PaymentType,
-  PaymentStatus,
-  PaymentCondition,
+  TransactionType,
+  TransactionCondition,
   PaymentMethod,
+  PaymentStatus,
 } from '@friday/core';
 import { MatDialogRef } from '@angular/material/dialog';
 
@@ -38,7 +39,7 @@ import { OrderProductsDetailsModalComponent } from '../../../order-products/comp
 })
 export class OrderFormComponent
   extends FormBaseComponent
-  implements OnInit, OnChanges
+  implements OnInit, OnChanges, OnDestroy
 {
   @Output()
   save = new EventEmitter<Order>();
@@ -69,7 +70,7 @@ export class OrderFormComponent
   orderStatusOptions = [
     { value: OrderStatus.Open, label: 'Em Aberto' },
     { value: OrderStatus.Closed, label: 'Fechado' },
-    { value: OrderStatus.WaitingPayment, label: 'Aguardando Pagamento' },
+    { value: OrderStatus.WaitingTransaction, label: 'Aguardando Pagamento' },
   ];
 
   constructor(
@@ -95,8 +96,13 @@ export class OrderFormComponent
     }
   }
 
-  get paymentFormGroup(): FormGroup {
-    return this.form.get('payment') as FormGroup;
+  ngOnDestroy(): void {
+    this.businessPartners$ = new Observable<BusinessPartner[]>();
+    this.filteredBusinessPartners$ = new Observable<BusinessPartner[]>();
+  }
+
+  get transactionFormGroup(): FormGroup {
+    return this.form.get('transaction') as FormGroup;
   }
 
   async onClientBlur(): Promise<void> {
@@ -157,17 +163,17 @@ export class OrderFormComponent
       return;
     }
 
-    // Garante que paymentGroup tenha os campos de cliente atualizados
+    // Garante que transactionGroup tenha os campos de cliente atualizados
     const formValue = this.form.getRawValue();
-    if (formValue.payment) {
-      formValue.payment.businessPartnerId = formValue.businessPartnerId;
-      formValue.payment.businessPartnerName = formValue.businessPartnerName;
+    if (formValue.transaction) {
+      formValue.transaction.businessPartnerId = formValue.businessPartnerId;
+      formValue.transaction.businessPartnerName = formValue.businessPartnerName;
     }
 
     Object.assign(this.data!, formValue);
 
-    if (this.data?.payment?.id == null) {
-      delete this.data!.payment!.id;
+    if (this.data?.transaction?.id == null) {
+      delete this.data!.transaction!.id;
     }
 
     this.save.emit(this.data!);
@@ -226,20 +232,20 @@ export class OrderFormComponent
   }
 
   private initForm(): void {
-    const paymentGroup = this.formBuilder.group({
+    const transactionGroup = this.formBuilder.group({
       id: [null],
-      type: [PaymentType.Incoming],
+      type: [TransactionType.Incoming],
       date: [new Date(), Validators.required],
       method: [PaymentMethod.Cash, Validators.required],
       status: [PaymentStatus.Pending, Validators.required],
       category: ['Recebimentos'],
       condition: [
         {
-          value: PaymentCondition.FullPayment,
+          value: TransactionCondition.FullPayment,
           disabled: this.isEdit ? true : false,
         },
       ],
-      totalOfInstallments: [
+      totalOfPayments: [
         {
           value: 1,
           disabled: this.isEdit ? true : false,
@@ -264,7 +270,7 @@ export class OrderFormComponent
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
       totalPriceFormatted: [{ value: 0, disabled: true }],
-      payment: paymentGroup,
+      transaction: transactionGroup,
     });
 
     if (this.isEdit) {
@@ -296,12 +302,12 @@ export class OrderFormComponent
         totalPriceFormatted: this.currencyService.formatCurrencyBRL(
           this.data.totalPrice,
         ),
-        payment: {
-          ...this.data.payment,
-          totalOfInstallments: this.data.payment?.installments?.length || 1,
+        transaction: {
+          ...this.data.transaction,
+          totalOfPayments: this.data.transaction?.totalOfPayments || 1,
           pricePerInstallmentFormatted: this.currencyService.formatCurrencyBRL(
             (this.data.totalPrice ?? 0) /
-              (this.data.payment?.totalOfInstallments || 1),
+              (this.data.transaction?.totalOfPayments || 1),
           ),
         },
       };
@@ -320,7 +326,7 @@ export class OrderFormComponent
   }
 
   private setupAutoComplete(): void {
-    this.businessPartners$ = this.businessPartnerService.getClients();
+    this.businessPartners$ = this.businessPartnerService.getClients(true);
     this.filteredBusinessPartners$ = this.form
       .get('businessPartnerName')!
       .valueChanges.pipe(
@@ -374,12 +380,12 @@ export class OrderFormComponent
       .get('totalPriceFormatted')
       ?.setValue(this.currencyService.formatCurrencyBRL(total));
 
-    const paymentGroup = this.paymentFormGroup;
-    const installments = paymentGroup?.get('totalOfInstallments')?.value || 1;
-    const pricePerInstallment = total / (installments > 0 ? installments : 1);
+    const transactionGroup = this.transactionFormGroup;
+    const transactions = transactionGroup?.get('totalOfPayments')?.value || 1;
+    const pricePerInstallment = total / (transactions > 0 ? transactions : 1);
 
-    paymentGroup.get('price')?.setValue(total);
-    paymentGroup
+    transactionGroup.get('price')?.setValue(total);
+    transactionGroup
       .get('pricePerInstallmentFormatted')
       ?.setValue(this.currencyService.formatCurrencyBRL(pricePerInstallment));
   }

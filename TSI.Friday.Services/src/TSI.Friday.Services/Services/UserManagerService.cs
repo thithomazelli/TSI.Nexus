@@ -564,7 +564,7 @@ namespace TSI.Friday.Services
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             var url =
-                $"{_config["JWT:BusinessPartnerUrl"]}/{_config["Email:ConfirmationEmailPath"]}?token={token}&email={user.Email}";
+                $"{_config["JWT:ClientUrl"]}/{_config["Email:ConfirmationEmailPath"]}?token={token}&email={user.Email}";
 
             var body =
                 $"<p>Hello {user.FirstName} {user.LastName}</p>"
@@ -583,7 +583,7 @@ namespace TSI.Friday.Services
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             token = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             var url =
-                $"{_config["JWT:BusinessPartnerUrl"]}/{_config["Email:ResetPasswordPath"]}?token={token}&email={user.Email}";
+                $"{_config["JWT:ClientUrl"]}/{_config["Email:ResetPasswordPath"]}?token={token}&email={user.Email}";
 
             var body =
                 $"<p>Hello {user.FirstName} {user.LastName}</p>"

@@ -24,12 +24,12 @@ namespace TSI.Friday.Contracts.Models
 
         public BusinessPartner BusinessPartner { get; set; }
 
-        [ForeignKey("Payment")]
-        public Guid PaymentId { get; set; }
+        [ForeignKey("Transaction")]
+        public Guid TransactionId { get; set; }
 
-        public Payment Payment { get; set; } = null!;
+        public Transaction Transaction { get; set; } = null!;
 
-        public ICollection<PaymentInstallment>? PaymentInstallments { get; set; } = [];
+        public ICollection<Payment>? Payments { get; set; } = [];
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = [];
     }

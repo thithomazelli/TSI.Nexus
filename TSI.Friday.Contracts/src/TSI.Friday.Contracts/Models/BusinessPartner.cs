@@ -29,6 +29,6 @@ namespace TSI.Friday.Contracts.Models
 
         public ICollection<Order> Orders { get; set; }
 
-        public ICollection<Payment> Payments { get; set; }
+        public ICollection<Transaction> Transactions { get; set; }
     }
 }

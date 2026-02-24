@@ -30,9 +30,9 @@ namespace TSI.Friday.Data
 
         public DbSet<OrderProduct> OrderProduct { get; set; }
 
-        public DbSet<Payment> Payment { get; set; }
+        public DbSet<Transaction> Transaction { get; set; }
 
-        public DbSet<PaymentInstallment> PaymentInstallment { get; set; }
+        public DbSet<Payment> Payment { get; set; }
 
         public DbSet<Product> Product { get; set; }
 
@@ -90,22 +90,25 @@ namespace TSI.Friday.Data
 
             AddIndexByCreateDateForDataTables(modelBuilder);
 
-            modelBuilder.Entity<Order>()
-                .HasOne(o => o.Payment)
+            modelBuilder
+                .Entity<Order>()
+                .HasOne(o => o.Transaction)
                 .WithOne(p => p.Order)
-                .HasForeignKey<Order>(o => o.PaymentId)
+                .HasForeignKey<Order>(o => o.TransactionId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Payment>()
-                .HasMany(p => p.Installments)
-                .WithOne(i => i.Payment)
-                .HasForeignKey(i => i.PaymentId)
+            modelBuilder
+                .Entity<Transaction>()
+                .HasMany(p => p.Payments)
+                .WithOne(i => i.Transaction)
+                .HasForeignKey(i => i.TransactionId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PaymentInstallment>()
+            modelBuilder
+                .Entity<Payment>()
                 .HasOne(pi => pi.Order)
-                .WithMany(o => o.PaymentInstallments)
+                .WithMany(o => o.Payments)
                 .HasForeignKey(pi => pi.OrderId)
                 .OnDelete(DeleteBehavior.SetNull);
 

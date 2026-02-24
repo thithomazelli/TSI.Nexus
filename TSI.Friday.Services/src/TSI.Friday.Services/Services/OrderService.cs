@@ -16,7 +16,7 @@ namespace TSI.Friday.Services
         /// OrderService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         private readonly IRepository<Order> _repository;
-        private readonly IPaymentService _paymentService;
+        private readonly ITransactionService _transactionService;
         private readonly IProductService _productService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
@@ -31,14 +31,14 @@ namespace TSI.Friday.Services
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
         public OrderService(
             IRepository<Order> repository,
-            IPaymentService paymentService,
+            ITransactionService transactionService,
             IProductService productService,
             ISequenceService sequenceService,
             IMapper mapper
         )
         {
             _repository = repository;
-            _paymentService = paymentService;
+            _transactionService = transactionService;
             _productService = productService;
             _sequenceService = sequenceService;
             _mapper = mapper;
@@ -54,36 +54,32 @@ namespace TSI.Friday.Services
                 var prefix = BuildPrefixFromBusinessPartnerName(orderDto.BusinessPartnerName);
                 var next = await _sequenceService.GetNextValue("OrderNumberSeq");
                 orderDto.OrderNumber = $"{prefix}-{next:D5}";
-                orderDto.Description ??= $"Pedido de Venda -  {orderDto.OrderNumber}";
+                orderDto.Description = string.IsNullOrEmpty(orderDto.Description)
+                    ? $"Pedido de Venda -  {orderDto.OrderNumber}"
+                    : orderDto.Description;
 
-                // Save Payment first (if provided) so we can assign PaymentId to Order before saving Order
-                var paymentResult = new WebApiResponse<PaymentDto>();
+                // Save Transaction first (if provided) so we can assign TransactionId to Order before saving Order
+                var transactionResult = new WebApiResponse<TransactionDto>();
 
-                var paymentDto = orderDto.Payment;
-                if (paymentDto != null)
+                var transactionDto = orderDto.Transaction;
+                if (transactionDto != null)
                 {
-                    paymentDto.OrderNumber = orderDto.OrderNumber;
-                    paymentDto.Description =
-                        $"Pagamento do Pedido de Venda - {orderDto.OrderNumber}";
-                    paymentResult = await _paymentService.Add(paymentDto);
-                    orderDto.Payment = null;
-                    orderDto.PaymentId = paymentResult.Data?.Id ?? null;
+                    transactionDto.OrderNumber = orderDto.OrderNumber;
+                    transactionDto.Description =
+                        $"Transação do Pedido de Venda - {orderDto.OrderNumber}";
+                    transactionResult = await _transactionService.Add(transactionDto);
+                    orderDto.Transaction = null;
+                    orderDto.TransactionId = transactionResult.Data?.Id ?? null;
                 }
 
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);
 
-                // Update Payment
-                if (paymentResult?.Data != null)
+                // Update Transaction
+                if (transactionResult?.Data != null)
                 {
-                    paymentResult.Data.OrderId = orderEntity.Id;
-
-                    foreach (var payment in paymentResult.Data.Installments)
-                    {
-                        payment.OrderId = orderEntity.Id;
-                    }
-
-                    await _paymentService.Update(paymentResult.Data);
+                    transactionResult.Data.OrderId = orderEntity.Id;
+                    await _transactionService.UpdateOrderId(transactionResult.Data);
                 }
 
                 // adjust stock in batch if product service available
@@ -134,21 +130,21 @@ namespace TSI.Friday.Services
 
             try
             {
-                // First update Order basic data (without handling Payment) to ensure it exists
+                // First update Order basic data (without handling Transaction) to ensure it exists
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.UpdateAsync(orderEntity);
 
-                var paymentDto = orderDto.Payment;
-                paymentDto.OrderId = orderEntity.Id;
+                var transactionDto = orderDto.Transaction;
+                transactionDto.OrderId = orderEntity.Id;
 
-                var updRes = await _paymentService.Update(paymentDto);
+                var updRes = await _transactionService.Update(transactionDto);
                 if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
                 {
-                    orderDto.Payment = updRes.Data;
+                    orderDto.Transaction = updRes.Data;
                 }
 
                 result.Data = _mapper.Map<OrderDto>(orderEntity);
-                result.Data.Payment = orderDto.Payment;
+                result.Data.Transaction = orderDto.Transaction;
 
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pedido {orderDto.OrderNumber} atualizado com sucesso.";
@@ -173,7 +169,7 @@ namespace TSI.Friday.Services
                 var orderEntity = await _repository.GetByIdAsync(
                     orderDto.Id,
                     o => o.OrderProducts,
-                    p => p.Payment
+                    p => p.Transaction
                 );
 
                 if (orderEntity == null)
@@ -206,8 +202,8 @@ namespace TSI.Friday.Services
 
                 await _repository.RemoveAsync(orderEntity);
 
-                var paymentDto = _mapper.Map<PaymentDto>(orderEntity.Payment);
-                await _paymentService.Remove(paymentDto);
+                var transactionDto = _mapper.Map<TransactionDto>(orderEntity.Transaction);
+                await _transactionService.Remove(transactionDto);
 
                 result.Data = orderDto;
                 result.Status = ResponseStatus.Success;
@@ -255,8 +251,8 @@ namespace TSI.Friday.Services
                 var order = await _repository.GetByIdAsync(
                     id,
                     o => o.BusinessPartner,
-                    p => p.Payment,
-                    pi => pi.Payment.Installments
+                    p => p.Transaction,
+                    pi => pi.Transaction.Payments
                 );
 
                 result.Data = _mapper.Map<OrderDto>(order);

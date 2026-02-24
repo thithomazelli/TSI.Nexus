@@ -14,7 +14,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly OrderService _orderService;
         private readonly Mock<IRepository<Order>> _repository;
-        private readonly Mock<IPaymentService> _paymentService;
+        private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<IProductService> _productService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly IList<OrderDto> _orderListMock;
@@ -24,13 +24,13 @@ namespace TSI.Friday.Services.Tests.Services
         {
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _repository = new Mock<IRepository<Order>>();
-            _paymentService = new Mock<IPaymentService>();
+            _transactionService = new Mock<ITransactionService>();
             _productService = new Mock<IProductService>();
             _sequenceService = new Mock<ISequenceService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
                 _repository.Object,
-                _paymentService.Object,
+                _transactionService.Object,
                 _productService.Object,
                 _sequenceService.Object,
                 _mapper
@@ -45,7 +45,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Pedido Teste1",
                     BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     BusinessPartnerName = "ORD",
-                    PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                    TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
                 },
                 new OrderDto
                 {
@@ -54,7 +54,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Pedido Teste2",
                     BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     BusinessPartnerName = "THG",
-                    PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                    TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
                 },
             };
         }
@@ -69,19 +69,19 @@ namespace TSI.Friday.Services.Tests.Services
                 OrderNumber = "ORD-00001",
                 Description = "Novo Pedido",
                 BusinessPartnerName = "ORD",
-                Payment = new PaymentDto(),
+                Transaction = new TransactionDto(),
             };
 
-            var paymentDto = new PaymentDto
+            var transactionDto = new TransactionDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 OrderId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
             };
 
             _repository.Setup(r => r.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
-            _paymentService
-                .Setup(_ => _.Add(It.IsAny<PaymentDto>()))
-                .ReturnsAsync(new WebApiResponse<PaymentDto> { Data = paymentDto });
+            _transactionService
+                .Setup(_ => _.Add(It.IsAny<TransactionDto>()))
+                .ReturnsAsync(new WebApiResponse<TransactionDto> { Data = transactionDto });
             _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
 
             var expected = new WebApiResponse<OrderDto>
@@ -91,7 +91,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                     OrderNumber = "ORD-00001",
                     Description = "Novo Pedido",
-                    PaymentId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
                 Status = ResponseStatus.Success,
                 Message = $"Pedido {orderDto.OrderNumber} cadastrado com sucesso.",
@@ -113,7 +113,9 @@ namespace TSI.Friday.Services.Tests.Services
             var orderEntity = _mapper.Map<Order>(_orderListMock.First());
 
             _repository
-                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), o => o.OrderProducts, p => p.Payment))
+                .Setup(r =>
+                    r.GetByIdAsync(It.IsAny<Guid>(), o => o.OrderProducts, p => p.Transaction)
+                )
                 .ReturnsAsync(orderEntity);
             _repository.Setup(r => r.RemoveAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
 
@@ -146,8 +148,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Payment,
-                        pi => pi.Payment.Installments
+                        p => p.Transaction,
+                        pi => pi.Transaction.Payments
                     )
                 )
                 .ReturnsAsync(orderEntity);
@@ -169,8 +171,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Payment,
-                        pi => pi.Payment.Installments
+                        p => p.Transaction,
+                        pi => pi.Transaction.Payments
                     ),
                 Times.Once
             );
@@ -186,8 +188,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Payment,
-                        pi => pi.Payment.Installments
+                        p => p.Transaction,
+                        pi => pi.Transaction.Payments
                     )
                 )
                 .ReturnsAsync((Order)null);
@@ -209,8 +211,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Payment,
-                        pi => pi.Payment.Installments
+                        p => p.Transaction,
+                        pi => pi.Transaction.Payments
                     ),
                 Times.Once
             );

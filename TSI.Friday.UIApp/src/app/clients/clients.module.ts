@@ -6,11 +6,11 @@ import { ClientDetailsPageComponent } from './components/client-details-page/cli
 
 import { ClientsRoutingModule } from './clients-routing.module';
 import { ClientsSharedModule } from './clients-shared.module';
-import { NgxMaskDirective } from 'ngx-mask';
 import { AddressModule } from '../address/address.module';
 import { ClientsOrdersListComponent } from './components/client-orders-list/clients-orders-list.component';
-import { PaymentInstallmentsModule } from '../payment-installments/payment-installments.module';
+
 import { OrdersSharedModule } from '../orders/components/orders-shared.module';
+import { PaymentsModule } from '../payments/payments.module';
 
 @NgModule({
   declarations: [
@@ -23,7 +23,7 @@ import { OrdersSharedModule } from '../orders/components/orders-shared.module';
     OrdersSharedModule,
     ClientsRoutingModule,
     AddressModule,
-    PaymentInstallmentsModule,
+    PaymentsModule,
     CommonModule,
   ],
   exports: [],

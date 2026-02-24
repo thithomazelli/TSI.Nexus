@@ -151,3 +151,7 @@ mat-calendar {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+:focus-visible {
+  outline: none;
+}

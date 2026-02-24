@@ -87,10 +87,7 @@
               ></app-order-products>
             </div>
             <div *ngIf="activeTab === 'payments'">
-              <app-payment-installments
-                [entity]="'Order'"
-                [data]="data"
-              ></app-payment-installments>
+              <app-payments [entity]="'Order'" [data]="data"></app-payments>
             </div>
           </div>
         </div>
