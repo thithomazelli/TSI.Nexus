@@ -20,16 +20,19 @@ import { PaymentDetailsModalComponent } from './components/payment-details-modal
 
 @Component({
   selector: 'app-payments',
-  standalone: false,
   templateUrl: './payments.component.html',
   styleUrl: './payments.component.scss',
+  standalone: false,
 })
-export class PaymentComponent {
+export class PaymentsComponent {
   @Input()
   entity: string = '';
 
   @Input()
   data?: BusinessPartner | Order | Transaction | null = null;
+
+  @Input()
+  compact: boolean = false;
 
   @Output()
   refreshParent = new EventEmitter<void>();
@@ -57,158 +60,11 @@ export class PaymentComponent {
   statusColorMap: { [key: string]: string } = {
     Approved: 'success',
     Pending: 'info',
-    Delayed: 'warning',
+    Delayed: 'danger',
     default: 'secondary',
   };
 
-  columnDefs: ColDef[] = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      sortable: true,
-      filter: true,
-      hide: true,
-      minWidth: 150,
-    },
-    {
-      field: 'description',
-      headerName: 'Descrição',
-      hide: true,
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 450,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-
-    {
-      field: 'installmentNumber',
-      headerName: 'Parcela',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 100,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-    {
-      field: 'type',
-      headerName: 'Tipo',
-      sortable: true,
-      filter: true,
-      maxWidth: 120,
-      resizable: true,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return this.getTypeLabel(params.data?.type);
-      },
-      cellRenderer: (params: ValueFormatterParams) => {
-        const type = params.value ?? '';
-        return this.getTypeIcon(type) + this.getTypeLabel(type);
-      },
-    },
-    {
-      field: 'price',
-      headerName: 'Valor',
-      sortable: true,
-      filter: true,
-      maxWidth: 120,
-      cellClass: (params: ValueFormatterParams) => {
-        const type = params.data?.type;
-        if (type === 'Incoming') {
-          return 'text-success'; // verde escuro
-        } else if (type === 'Outgoing') {
-          return 'text-danger'; // vermelho
-        }
-        return '';
-      },
-      valueFormatter: (params: ValueFormatterParams): string => {
-        const v = params.value;
-        if (v == null || v === '') return '';
-        const n = Number(v);
-        if (Number.isNaN(n)) return String(v);
-        return n.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-      },
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 100,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return this.getStatusLabel(params.data?.status);
-      },
-      cellRenderer: (params: ICellRendererParams) => {
-        const status = params.value;
-        const color = this.getStatusColor(status);
-        const label = this.getStatusLabel(status);
-        return `<span class="badge bg-${color}">${label}</span>`;
-      },
-    },
-    {
-      field: 'date',
-      headerName: 'Data',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 120,
-      valueFormatter: (params: ValueFormatterParams) =>
-        this.formatDateBR(params.value),
-    },
-    {
-      field: 'businessPartnerName',
-      headerName: 'Cliente',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      maxWidth: 150,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? 'N/A';
-        return value;
-      },
-    },
-    {
-      field: 'orderNumber',
-      headerName: 'Pedido',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      maxWidth: 150,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? 'N/A';
-        return value;
-      },
-    },
-    {
-      headerName: '',
-      sortable: false,
-      filter: false,
-      resizable: false,
-      maxWidth: 150,
-      cellRenderer: () => {
-        return `
-          <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-eye" data-action="view"></i>
-          </button>
-          <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit" data-action="edit"></i>
-          </button>
-          <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash" data-action="delete"></i>
-          </button>
-        `;
-      },
-    },
-  ];
+  columnDefs: ColDef[] = [];
 
   constructor(
     private apiService: ApiService,
@@ -216,6 +72,7 @@ export class PaymentComponent {
   ) {}
 
   ngOnInit(): void {
+    this.initializeColumnDefs();
     this.getPayment();
   }
 
@@ -261,11 +118,162 @@ export class PaymentComponent {
     }
   }
 
+  private initializeColumnDefs(): void {
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        sortable: true,
+        filter: true,
+        hide: true,
+        minWidth: 150,
+      },
+      {
+        field: 'description',
+        headerName: 'Descrição',
+        hide: this.compact,
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 450,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="edit" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'installmentNumber',
+        headerName: 'Parcela',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 100,
+        hide: !this.compact,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="edit" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'type',
+        headerName: 'Tipo',
+        sortable: true,
+        filter: true,
+        maxWidth: 120,
+        resizable: true,
+        filterValueGetter: (params: ValueGetterParams) => {
+          return this.getTypeLabel(params.data?.type);
+        },
+        cellRenderer: (params: ValueFormatterParams) => {
+          const type = params.value ?? '';
+          return this.getTypeIcon(type) + this.getTypeLabel(type);
+        },
+      },
+      {
+        field: 'price',
+        headerName: 'Valor',
+        sortable: true,
+        filter: true,
+        maxWidth: 120,
+        cellClass: (params: ValueFormatterParams) => {
+          const type = params.data?.type;
+          if (type === 'Incoming') {
+            return 'text-success'; // verde escuro
+          } else if (type === 'Outgoing') {
+            return 'text-danger'; // vermelho
+          }
+          return '';
+        },
+        valueFormatter: (params: ValueFormatterParams): string => {
+          const v = params.value;
+          if (v == null || v === '') return '';
+          const n = Number(v);
+          if (Number.isNaN(n)) return String(v);
+          return n.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          });
+        },
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 100,
+        filterValueGetter: (params: ValueGetterParams) => {
+          return this.getStatusLabel(params.data?.status);
+        },
+        cellRenderer: (params: ICellRendererParams) => {
+          const status = params.value;
+          const color = this.getStatusColor(status);
+          const label = this.getStatusLabel(status);
+          return `<span class="badge bg-${color}">${label}</span>`;
+        },
+      },
+      {
+        field: 'date',
+        headerName: 'Data',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 120,
+        valueFormatter: (params: ValueFormatterParams) =>
+          this.formatDateBR(params.value),
+      },
+      {
+        field: 'businessPartnerName',
+        headerName: 'Cliente',
+        sortable: true,
+        filter: true,
+        flex: 1,
+        maxWidth: 150,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? 'N/A';
+          return value;
+        },
+      },
+      {
+        field: 'orderNumber',
+        headerName: 'Pedido',
+        sortable: true,
+        filter: true,
+        flex: 1,
+        maxWidth: 150,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? 'N/A';
+          return value;
+        },
+      },
+      {
+        headerName: '',
+        sortable: false,
+        filter: false,
+        resizable: false,
+        maxWidth: 150,
+        cellRenderer: () => {
+          return `
+            <button class="btn btn-info btn-sm" data-action="edit">
+              <i class="fas fa-edit" data-action="edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" data-action="delete">
+              <i class="fas fa-trash" data-action="delete"></i>
+            </button>
+          `;
+        },
+      },
+    ];
+  }
+
   private getPayment(): void {
+    const endpoint =
+      this.entity != ''
+        ? `${this.baseEndPoint}/getBy${this.entity}Id/${this.data?.id}`
+        : `${this.baseEndPoint}/getAll`;
+
     this.apiService
-      .get<
-        WebApiResponse<Payment[]>
-      >(`${this.baseEndPoint}/getBy${this.entity}Id/${this.data?.id}`)
+      .get<WebApiResponse<Payment[]>>(endpoint)
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.rowData = response.data ?? [];
       });
@@ -300,6 +308,7 @@ export class PaymentComponent {
     const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
+
     return `${day}/${month}/${year}`;
   }
 }

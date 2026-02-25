@@ -89,7 +89,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um BusinessPartner cadastrado com Nome {companyDto.Name}.",
+                Message = $"Já existe um Cliente cadastrado com Nome {companyDto.Name}.",
             };
 
             _repository
@@ -124,7 +124,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um BusinessPartner cadastrado com E-mail {companyDto.Email}.",
+                Message = $"Já existe um Cliente cadastrado com E-mail {companyDto.Email}.",
             };
 
             _repository
@@ -162,7 +162,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com o CNPJ {companyDto.NationalRegistry}.",
+                    $"Já existe um Cliente cadastrado com o CNPJ {companyDto.NationalRegistry}.",
             };
 
             _repository
@@ -269,7 +269,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um BusinessPartner cadastrado com Nome {companyDto.Name}.",
+                Message = $"Já existe um Cliente cadastrado com Nome {companyDto.Name}.",
             };
 
             _repository
@@ -304,7 +304,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message = $"Já existe um BusinessPartner cadastrado com E-mail {companyDto.Email}.",
+                Message = $"Já existe um Cliente cadastrado com E-mail {companyDto.Email}.",
             };
 
             _repository
@@ -342,7 +342,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com o CNPJ {companyDto.NationalRegistry}.",
+                    $"Já existe um Cliente cadastrado com o CNPJ {companyDto.NationalRegistry}.",
             };
 
             _repository

@@ -1,7 +1,16 @@
+<app-header
+  *ngIf="!compact"
+  title="Pagamentos"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Pagamentos', link: '' },
+  ]"
+></app-header>
+
 <div class="app-content">
   <app-grid
     [className]="'Pagamentos'"
-    [compactView]="true"
+    [compactView]="compact"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"

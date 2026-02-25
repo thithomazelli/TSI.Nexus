@@ -13,7 +13,7 @@ import {
   ValueFormatterParams,
 } from 'ag-grid-community';
 import { BusinessPartnerDetailsModalComponent } from './components/business-partner-details-modal/business-partner-details-modal.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-business-partners',

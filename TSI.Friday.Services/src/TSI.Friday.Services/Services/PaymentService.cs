@@ -96,7 +96,11 @@ namespace TSI.Friday.Services
 
             try
             {
-                var transactions = await _repository.GetAllAsync(o => o.Transaction);
+                var transactions = await _repository.GetAllAsync(
+                    t => t.Transaction,
+                    c => c.BusinessPartner,
+                    o => o.Order
+                );
                 result.Data = _mapper.Map<IEnumerable<PaymentDto>>(transactions);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";

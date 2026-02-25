@@ -7,6 +7,11 @@ import { NotFoundComponent } from './shared/components/errors/not-found/not-foun
 
 const routes: Routes = [
   {
+    path: '',
+    canActivate: [AuthorizationGuard],
+    component: HomeComponent,
+  },
+  {
     path: 'account',
     loadChildren: () =>
       import('./account/account.module').then((m) => m.AccountModule),
@@ -18,6 +23,34 @@ const routes: Routes = [
       import('./business-partner/business-partner.module').then(
         (m) => m.BusinessPartnerModule,
       ),
+  },
+  {
+    path: 'home',
+    canActivate: [AuthorizationGuard],
+    component: HomeComponent,
+  },
+  {
+    path: 'not-found',
+    canActivate: [AuthorizationGuard],
+    component: NotFoundComponent,
+  },
+  {
+    path: 'orders',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./orders/orders.module').then((m) => m.OrdersModule),
+  },
+  {
+    path: 'payments',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./payments/payments.module').then((m) => m.PaymentsModule),
+  },
+  {
+    path: 'products',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./products/products.module').then((m) => m.ProductsModule),
   },
   {
     path: 'suppliers',
@@ -36,39 +69,10 @@ const routes: Routes = [
       ),
   },
   {
-    path: 'products',
-    canActivate: [AuthorizationGuard],
-    loadChildren: () =>
-      import('./products/products.module').then((m) => m.ProductsModule),
-  },
-  {
-    path: 'orders',
-    canActivate: [AuthorizationGuard],
-    loadChildren: () =>
-      import('./orders/orders.module').then((m) => m.OrdersModule),
-  },
-  {
     path: 'users',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./users/users.module').then((m) => m.UsersModule),
-  },
-
-  {
-    path: '',
-    canActivate: [AuthorizationGuard],
-    component: HomeComponent,
-  },
-  {
-    path: 'home',
-    canActivate: [AuthorizationGuard],
-    component: HomeComponent,
-  },
-
-  {
-    path: 'not-found',
-    canActivate: [AuthorizationGuard],
-    component: NotFoundComponent,
   },
   {
     path: '**',

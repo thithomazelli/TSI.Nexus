@@ -114,10 +114,10 @@ export class OrderProductsComponent {
       cellRenderer: () => {
         return `
           <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit"></i> Editar
+            <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash"></i> Excluir
+            <i class="fas fa-trash" data-action="delete"></i>
           </button>
         `;
       },

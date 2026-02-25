@@ -118,6 +118,7 @@
                 }
                 @if (activeTab === "payments") {
                   <app-payments
+                    [compact]="true"
                     [entity]="'BusinessPartner'"
                     [data]="data"
                   ></app-payments>

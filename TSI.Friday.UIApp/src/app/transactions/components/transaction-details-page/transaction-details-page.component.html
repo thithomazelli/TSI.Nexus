@@ -82,6 +82,7 @@
                 }
                 @if (activeTab === "payments") {
                   <app-payments
+                    [compact]="true"
                     [entity]="'Transaction'"
                     [data]="data"
                     (refreshParent)="onTransactionUpdated()"

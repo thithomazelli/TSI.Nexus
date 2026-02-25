@@ -84,9 +84,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository
                 .Setup(_ => _.GetByIdAsync(It.IsAny<Guid>(), p => p.Payments))
                 .ReturnsAsync(transactionEntity);
-            _repository
-                .Setup(_ => _.UpdateAsync(It.IsAny<Transaction>()))
-                .Returns(Task.CompletedTask);
+            _repository.Setup(_ => _.UpdateAsync(It.IsAny<Transaction>()));
 
             var expected = new WebApiResponse<TransactionDto>
             {

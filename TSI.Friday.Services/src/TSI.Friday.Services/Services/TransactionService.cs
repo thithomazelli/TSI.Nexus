@@ -88,7 +88,10 @@ namespace TSI.Friday.Services
 
                 await _repository.UpdateAsync(transactionEntity);
 
-                result.Data = _mapper.Map<TransactionDto>(transactionEntity);
+                // Map scalar fields (do not replace collection instance)
+                _mapper.Map(transactionDto, transactionEntity);
+
+                result.Data = transactionDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Transação {transactionDto.Description} atualizado com sucesso.";
             }

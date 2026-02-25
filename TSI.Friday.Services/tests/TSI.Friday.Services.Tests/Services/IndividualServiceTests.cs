@@ -133,8 +133,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message =
-                    $"Já existe um BusinessPartner cadastrado com Nome {businessPartnerMock.Name}.",
+                Message = $"Já existe um Cliente cadastrado com Nome {businessPartnerMock.Name}.",
             };
 
             _repository
@@ -170,7 +169,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com E-mail {businessPartnerMock.Email}.",
+                    $"Já existe um Cliente cadastrado com E-mail {businessPartnerMock.Email}.",
             };
 
             _repository
@@ -208,7 +207,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
+                    $"Já existe um Cliente cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
             };
 
             _repository
@@ -248,7 +247,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
+                    $"Já existe um Cliente cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
             };
 
             _repository
@@ -356,8 +355,7 @@ namespace TSI.Friday.Services.Tests.Services
             var expectedResult = new WebApiResponse<BusinessPartnerDto>
             {
                 Status = ResponseStatus.Error,
-                Message =
-                    $"Já existe um BusinessPartner cadastrado com Nome {businessPartnerMock.Name}.",
+                Message = $"Já existe um Cliente cadastrado com Nome {businessPartnerMock.Name}.",
             };
 
             _repository
@@ -393,7 +391,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com E-mail {businessPartnerMock.Email}.",
+                    $"Já existe um Cliente cadastrado com E-mail {businessPartnerMock.Email}.",
             };
 
             _repository
@@ -431,7 +429,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
+                    $"Já existe um Cliente cadastrado com o CPF {businessPartnerMock.SocialSecurityCard}.",
             };
 
             _repository
@@ -471,7 +469,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Status = ResponseStatus.Error,
                 Message =
-                    $"Já existe um BusinessPartner cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
+                    $"Já existe um Cliente cadastrado com o RG {businessPartnerMock.NationalIdCard}.",
             };
 
             _repository
