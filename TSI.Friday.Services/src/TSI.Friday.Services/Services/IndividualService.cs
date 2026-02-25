@@ -171,25 +171,39 @@ namespace TSI.Friday.Services
         {
             if (await IsNameDuplicated(individualDto))
             {
-                return $"Já existe um BusinessPartner cadastrado com Nome {individualDto.Name}.";
+                return $"Já existe um {_businessPartnerMap[individualDto.Type]} cadastrado com Nome {individualDto.Name}.";
             }
 
             if (await IsEmailDuplicated(individualDto))
             {
-                return $"Já existe um BusinessPartner cadastrado com E-mail {individualDto.Email}.";
+                return $"Já existe um {_businessPartnerMap[individualDto.Type]} cadastrado com E-mail {individualDto.Email}.";
             }
 
             if (await IsSocialSecurityCardDuplicated(individualDto))
             {
-                return $"Já existe um BusinessPartner cadastrado com o CPF {individualDto.SocialSecurityCard}.";
+                return $"Já existe um {_businessPartnerMap[individualDto.Type]} cadastrado com o CPF {individualDto.SocialSecurityCard}.";
             }
 
             if (await IsNationalIDCardDuplicated(individualDto))
             {
-                return $"Já existe um BusinessPartner cadastrado com o RG {individualDto.NationalIdCard}.";
+                return $"Já existe um {_businessPartnerMap[individualDto.Type]} cadastrado com o RG {individualDto.NationalIdCard}.";
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Should verify if the Individual name is already being used by another register on the database.
+        /// </summary>
+        /// <param name="individualDto">The Individual object that is being added or updated.</param>
+        /// <returns>True when the Name is duplicated; Otherwise false.</returns>
+        private async Task<bool> IsNameDuplicated(BusinessPartnerDto individualDto)
+        {
+            return await _repository.AnyAsync(_ =>
+                _.Id != individualDto.Id
+                && _.Name == individualDto.Name
+                && _.Type == individualDto.Type
+            );
         }
 
         /// <summary>
@@ -203,32 +217,7 @@ namespace TSI.Friday.Services
                 _.Id != individualDto.Id
                 && !string.IsNullOrEmpty(_.Email)
                 && _.Email == individualDto.Email
-            );
-        }
-
-        /// <summary>
-        /// Should verify if the Individual name is already being used by another register on the database.
-        /// </summary>
-        /// <param name="individualDto">The Individual object that is being added or updated.</param>
-        /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNameDuplicated(BusinessPartnerDto individualDto)
-        {
-            return await _repository.AnyAsync(_ =>
-                _.Id != individualDto.Id && _.Name == individualDto.Name
-            );
-        }
-
-        /// <summary>
-        /// Should verify if the Individual NationalIDCard is already being used by another register on the database.
-        /// </summary>
-        /// <param name="individualDto">The Individual object that is being added or updated.</param>
-        /// <returns>True when the NationalIDCard is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNationalIDCardDuplicated(BusinessPartnerDto individualDto)
-        {
-            return await _repository.AnyAsync(_ =>
-                _.Id != individualDto.Id
-                && !string.IsNullOrEmpty(_.NationalIdCard)
-                && _.NationalIdCard == individualDto.NationalIdCard
+                && _.Type == individualDto.Type
             );
         }
 
@@ -243,6 +232,22 @@ namespace TSI.Friday.Services
                 _.Id != individualDto.Id
                 && !string.IsNullOrEmpty(_.SocialSecurityCard)
                 && _.SocialSecurityCard == individualDto.SocialSecurityCard
+                && _.Type == individualDto.Type
+            );
+        }
+
+        /// <summary>
+        /// Should verify if the Individual NationalIDCard is already being used by another register on the database.
+        /// </summary>
+        /// <param name="individualDto">The Individual object that is being added or updated.</param>
+        /// <returns>True when the NationalIDCard is duplicated; Otherwise false.</returns>
+        private async Task<bool> IsNationalIDCardDuplicated(BusinessPartnerDto individualDto)
+        {
+            return await _repository.AnyAsync(_ =>
+                _.Id != individualDto.Id
+                && !string.IsNullOrEmpty(_.NationalIdCard)
+                && _.NationalIdCard == individualDto.NationalIdCard
+                && _.Type == individualDto.Type
             );
         }
 

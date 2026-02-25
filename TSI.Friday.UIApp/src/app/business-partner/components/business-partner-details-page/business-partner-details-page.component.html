@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Clientes' : 'Adicionar Clientes'"
+  [title]="isEdit ? 'Editar ' + title : 'Adicionar ' + title"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Clientes', link: '/clients' },
-    { label: isEdit ? 'Editar Clientes' : 'Adicionar Clientes', link: '' },
+    { label: title, link: '/' + baseEndPoint },
+    { label: isEdit ? 'Editar ' + title : 'Adicionar ' + title, link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -97,13 +97,13 @@
                 @if (activeTab === "details") {
                   <div>
                     <!-- data-form component: pass compact=true for page -->
-                    <app-client-form
+                    <app-business-partner-form
                       [isEdit]="isEdit"
                       [data]="data"
                       [compact]="false"
                       (save)="save($event)"
                       (cancel)="cancel()"
-                    ></app-client-form>
+                    ></app-business-partner-form>
                   </div>
                 }
                 @if (activeTab === "address") {

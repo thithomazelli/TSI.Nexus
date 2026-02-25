@@ -1,17 +1,17 @@
 <app-header
-  title="Clientes"
+  [title]="title"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Clientes', link: '' },
+    { label: title, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
-    [className]="'Clientes'"
+    [className]="title"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [baseEndPoint]="'clients'"
+    [baseEndPoint]="baseEndPoint"
     [refresh]="refreshBusinessPartners.bind(this)"
     [delete]="deleteBusinessPartner.bind(this)"
     (openModal)="onOpenModal($event)"

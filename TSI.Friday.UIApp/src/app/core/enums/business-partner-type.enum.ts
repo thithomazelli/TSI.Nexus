@@ -1,4 +1,4 @@
 export enum BusinessPartnerType {
-  Client = 'Cliente',
-  Supplier = 'Fornecedor',
+  Client = 'Client',
+  Supplier = 'Supplier',
 }

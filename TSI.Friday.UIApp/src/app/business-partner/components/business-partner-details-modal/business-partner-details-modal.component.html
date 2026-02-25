@@ -6,12 +6,13 @@
 </div>
 
 <div class="modal-body">
-  <app-client-form
+  <app-business-partner-form
     [isEdit]="isEdit"
+    [isModal]="true"
     [data]="data"
     (save)="save($event)"
     (cancel)="close()"
     [compact]="true"
     [errors]="errorMessages"
-  ></app-client-form>
+  ></app-business-partner-form>
 </div>

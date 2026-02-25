@@ -173,20 +173,32 @@ namespace TSI.Friday.Services
         {
             if (await IsNameDuplicated(companyDto))
             {
-                return $"Já existe um BusinessPartner cadastrado com Nome {companyDto.Name}.";
+                return $"Já existe um {_businessPartnerMap[companyDto.Type]} cadastrado com Nome {companyDto.Name}.";
             }
 
             if (await IsEmailDuplicated(companyDto))
             {
-                return $"Já existe um BusinessPartner cadastrado com E-mail {companyDto.Email}.";
+                return $"Já existe um {_businessPartnerMap[companyDto.Type]} cadastrado com E-mail {companyDto.Email}.";
             }
 
             if (await IsNationalRegistryDuplicated(companyDto))
             {
-                return $"Já existe um BusinessPartner cadastrado com o CNPJ {companyDto.NationalRegistry}.";
+                return $"Já existe um {_businessPartnerMap[companyDto.Type]} cadastrado com o CNPJ {companyDto.NationalRegistry}.";
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Should verify if the Company name is already being used by another register on the database.
+        /// </summary>
+        /// <param name="companyDto">The Company object that is being added or updated.</param>
+        /// <returns>True when the Name is duplicated; Otherwise false.</returns>
+        private async Task<bool> IsNameDuplicated(BusinessPartnerDto companyDto)
+        {
+            return await _repository.AnyAsync(_ =>
+                _.Id != companyDto.Id && _.Name == companyDto.Name && _.Type == companyDto.Type
+            );
         }
 
         /// <summary>
@@ -200,18 +212,7 @@ namespace TSI.Friday.Services
                 _.Id != companyDto.Id
                 && !string.IsNullOrEmpty(_.Email)
                 && _.Email == companyDto.Email
-            );
-        }
-
-        /// <summary>
-        /// Should verify if the Company name is already being used by another register on the database.
-        /// </summary>
-        /// <param name="companyDto">The Company object that is being added or updated.</param>
-        /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNameDuplicated(BusinessPartnerDto companyDto)
-        {
-            return await _repository.AnyAsync(_ =>
-                _.Id != companyDto.Id && _.Name == companyDto.Name
+                && _.Type == companyDto.Type
             );
         }
 
@@ -226,6 +227,7 @@ namespace TSI.Friday.Services
                 _.Id != companyDto.Id
                 && !string.IsNullOrEmpty(_.NationalRegistry)
                 && _.NationalRegistry == companyDto.NationalRegistry
+                && _.Type == companyDto.Type
             );
         }
 

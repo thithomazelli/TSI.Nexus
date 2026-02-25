@@ -9,7 +9,8 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { ProductsModule } from '../products/products.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { OrdersSharedModule } from './components/orders-shared.module';
-import { ClientsSharedModule } from '../clients/clients-shared.module';
+import { BusinessPartnerSharedModule } from '../business-partner/business-partner-shared.module';
+
 import { TransactionsSharedModule } from '../transactions/transactions-shared.module';
 import { OrderProductsModule } from '../order-products/order-products.module';
 
@@ -20,7 +21,7 @@ import { OrderProductsModule } from '../order-products/order-products.module';
     OrdersRoutingModule,
     CommonModule,
     NgxMaskDirective,
-    ClientsSharedModule,
+    BusinessPartnerSharedModule,
     ProductsModule,
     TransactionsSharedModule,
     PaymentsModule,

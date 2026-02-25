@@ -1,8 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
-import { ClientsComponent } from './clients.component';
-import { ClientDetailsPageComponent } from './components/client-details-page/client-details-page.component';
+import { BusinessPartnerDetailsPageComponent } from './components/business-partner-details-page/business-partner-details-page.component';
+import { BusinessPartnersComponent } from './business-partners.component';
 
 const routes: Routes = [
   {
@@ -11,15 +10,15 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: ClientsComponent,
+        component: BusinessPartnersComponent,
       },
       {
         path: 'new',
-        component: ClientDetailsPageComponent,
+        component: BusinessPartnerDetailsPageComponent,
       },
       {
         path: ':id',
-        component: ClientDetailsPageComponent,
+        component: BusinessPartnerDetailsPageComponent,
         runGuardsAndResolvers: 'always',
       },
     ],
@@ -30,4 +29,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class ClientsRoutingModule {}
+export class BusinessPartnerRoutingModule {}

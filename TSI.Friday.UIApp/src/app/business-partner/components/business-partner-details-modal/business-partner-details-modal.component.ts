@@ -12,12 +12,12 @@ import {
 } from '@friday/core';
 
 @Component({
-  selector: 'app-client-details-modal',
+  selector: 'app-business-partner-details-modal',
+  templateUrl: './business-partner-details-modal.component.html',
+  styleUrl: './business-partner-details-modal.component.scss',
   standalone: false,
-  templateUrl: './client-details-modal.component.html',
-  styleUrl: './client-details-modal.component.scss',
 })
-export class ClientDetailsModalComponent extends FormBaseComponent {
+export class BusinessPartnerDetailsModalComponent extends FormBaseComponent {
   @Output()
   saved = new EventEmitter<void>();
 
@@ -30,7 +30,7 @@ export class ClientDetailsModalComponent extends FormBaseComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
-    public dialogRef: MatDialogRef<ClientDetailsModalComponent>,
+    public dialogRef: MatDialogRef<BusinessPartnerDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     super();

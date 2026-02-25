@@ -3,6 +3,7 @@ import {
   ApiService,
   ApiType,
   BusinessPartner,
+  BusinessPartnerType,
   ModalService,
   WebApiResponse,
 } from '@friday/core';
@@ -11,16 +12,19 @@ import {
   ICellRendererParams,
   ValueFormatterParams,
 } from 'ag-grid-community';
-import { ClientDetailsModalComponent } from './components/client-details-modal/client-details-modal.component';
+import { BusinessPartnerDetailsModalComponent } from './components/business-partner-details-modal/business-partner-details-modal.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
-  selector: 'app-clients',
+  selector: 'app-business-partners',
+  templateUrl: './business-partners.component.html',
+  styleUrl: './business-partners.component.scss',
   standalone: false,
-  templateUrl: './clients.component.html',
-  styleUrl: './clients.component.scss',
 })
-export class ClientsComponent {
+export class BusinessPartnersComponent {
   private _baseEndPoint = ApiType.BusinessPartners;
+  title: string = '';
+  baseEndPoint: string = '';
 
   rowData: BusinessPartner[] = [];
   columnDefs: ColDef[] = [
@@ -131,10 +135,26 @@ export class ClientsComponent {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
+    private routerService: Router,
   ) {}
 
   ngOnInit(): void {
+    this.initialize();
     this.getBusinessPartners();
+  }
+
+  private initialize(): void {
+    const url = this.routerService.url;
+    if (url.includes('clients')) {
+      this.baseEndPoint = 'clients';
+      this.title = 'Clientes';
+    } else if (url.includes('suppliers')) {
+      this.baseEndPoint = 'suppliers';
+      this.title = 'Fornecedores';
+    } else {
+      this.baseEndPoint = '';
+      this.title = '';
+    }
   }
 
   refreshBusinessPartners(): void {
@@ -157,9 +177,20 @@ export class ClientsComponent {
   }
 
   onOpenModal(initialState: any) {
+    const initialStateWithData = {
+      ...initialState,
+      data: {
+        ...initialState.data,
+        type:
+          this.baseEndPoint === 'clients'
+            ? BusinessPartnerType.Client
+            : BusinessPartnerType.Supplier,
+      },
+    };
+
     const ref = this.modalService.showTemplateModal(
-      ClientDetailsModalComponent,
-      initialState,
+      BusinessPartnerDetailsModalComponent,
+      initialStateWithData,
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
@@ -170,10 +201,13 @@ export class ClientsComponent {
   }
 
   private getBusinessPartners(): void {
+    const endpoint =
+      this.baseEndPoint === 'clients' ? 'getAllClients' : 'getAllSuppliers';
+
     this.apiService
       .get<
         WebApiResponse<BusinessPartner[]>
-      >(`${this._baseEndPoint}/getAllClients`)
+      >(`${this._baseEndPoint}/${endpoint}`)
       .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
       });

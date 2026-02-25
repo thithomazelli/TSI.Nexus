@@ -19,19 +19,19 @@ import {
 import {
   Address,
   BusinessPartner,
+  BusinessPartnerType,
   Company,
   FormBaseComponent,
   Individual,
 } from '@friday/core';
-// import { Client } from 'CAMINHO_DO_CLIENT_MODEL'; // Ajuste o import conforme seu projeto
 
 @Component({
-  selector: 'app-client-form',
+  selector: 'app-business-partner-form',
+  templateUrl: './business-partner-form.component.html',
+  styleUrl: './business-partner-form.component.scss',
   standalone: false,
-  templateUrl: './client-form.component.html',
-  styleUrl: './client-form.component.scss',
 })
-export class ClientFormComponent
+export class BusinessPartnerFormComponent
   extends FormBaseComponent
   implements OnInit, OnChanges
 {
@@ -39,6 +39,9 @@ export class ClientFormComponent
 
   @Input()
   isEdit = false;
+
+  @Input()
+  isModal = false;
 
   @Input()
   data?: Individual | Company | null = <BusinessPartner>{};
@@ -118,9 +121,9 @@ export class ClientFormComponent
       raw.birthday = null;
     }
 
-    if (this.compact) {
+    if (this.compact && raw.address && raw.address.zipcode != null) {
       // Se vier address preenchido, mova para addresses
-      if (raw.address && Object.keys(raw.address).some((k) => raw.address[k])) {
+      if (Object.keys(raw.address).some((k) => raw.address[k])) {
         if (!this.data!.addresses) {
           this.data!.addresses = [];
         }
@@ -155,6 +158,8 @@ export class ClientFormComponent
           delete addr.id;
         }
       });
+    } else {
+      Object.assign(this.data!, raw);
     }
 
     this.save.emit(this.data);
@@ -241,18 +246,20 @@ export class ClientFormComponent
   }
 
   private initForm(): void {
+    const isAddressRequired = this.data?.type == BusinessPartnerType.Client;
+
     const addressGroup = this.formBuilder.group({
       id: [null],
-      name: ['', Validators.required],
-      type: [null, Validators.required],
-      zipCode: ['', Validators.required],
-      state: ['', Validators.required],
-      city: ['', Validators.required],
-      street: ['', Validators.required],
-      number: [null, Validators.required],
+      name: ['', isAddressRequired ? Validators.required : null],
+      type: [null, isAddressRequired ? Validators.required : null],
+      zipCode: ['', isAddressRequired ? Validators.required : null],
+      state: ['', isAddressRequired ? Validators.required : null],
+      city: ['', isAddressRequired ? Validators.required : null],
+      street: ['', isAddressRequired ? Validators.required : null],
+      number: [null, isAddressRequired ? Validators.required : null],
       comments: [''],
       businessPartnerId: [null],
-      country: ['BR', Validators.required],
+      country: ['BR', isAddressRequired ? Validators.required : null],
       isDefault: [false],
     });
 
@@ -267,6 +274,7 @@ export class ClientFormComponent
           ),
         ],
       ],
+      type: [this.data?.type, Validators.required],
       documentType: ['Física', [Validators.required]],
       phone: ['', []],
       mobile: ['', []],

@@ -6,7 +6,7 @@ import { TransactionDetailsPageComponent } from './components/transaction-detail
 import { TransactionsComponent } from './transactions.component';
 
 import { TransactionsSharedModule } from './transactions-shared.module';
-import { ClientsSharedModule } from '../clients/clients-shared.module';
+import { BusinessPartnerSharedModule } from '../business-partner/business-partner-shared.module';
 import { PaymentsModule } from '../payments/payments.module';
 
 @NgModule({
@@ -16,7 +16,7 @@ import { PaymentsModule } from '../payments/payments.module';
     TransactionsRoutingModule,
     CommonModule,
     NgxMaskDirective,
-    ClientsSharedModule,
+    BusinessPartnerSharedModule,
     PaymentsModule,
   ],
   exports: [],

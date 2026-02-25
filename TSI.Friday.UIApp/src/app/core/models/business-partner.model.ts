@@ -1,3 +1,4 @@
+import { BusinessPartnerType } from '../enums';
 import { Address } from './address.model';
 import { BaseModel } from './base.model';
 
@@ -9,7 +10,7 @@ export interface BusinessPartner extends BaseModel {
   mobile: string;
   photo: string;
   documentType: string;
-  type: string;
+  type: BusinessPartnerType;
   socialSecurityCard?: string | null;
   nationalRegistry: string;
   birthday: Date;

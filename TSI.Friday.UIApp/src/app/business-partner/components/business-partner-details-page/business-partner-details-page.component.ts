@@ -11,17 +11,19 @@ import {
 } from '@friday/core';
 
 @Component({
-  selector: 'app-client-details-page',
+  selector: 'app-business-partner-details-page',
+  templateUrl: './business-partner-details-page.component.html',
+  styleUrl: './business-partner-details-page.component.scss',
   standalone: false,
-  templateUrl: './client-details-page.component.html',
-  styleUrl: './client-details-page.component.scss',
 })
-export class ClientDetailsPageComponent {
+export class BusinessPartnerDetailsPageComponent {
   isEdit = false;
   data?: Company | Individual | null = null;
   id: string | null = null;
   loading = false;
   activeTab: 'details' | 'address' | 'orders' | 'payments' = 'details';
+  title: string = '';
+  baseEndPoint: string = '';
 
   private _baseEndPoint: ApiType = ApiType.BusinessPartners;
 
@@ -33,6 +35,7 @@ export class ClientDetailsPageComponent {
   ) {}
 
   ngOnInit(): void {
+    this.initialize();
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {
@@ -42,6 +45,20 @@ export class ClientDetailsPageComponent {
     } else {
       this.isEdit = false;
       this.data = null;
+    }
+  }
+
+  private initialize(): void {
+    const url = this.routerService.url;
+    if (url.includes('clients')) {
+      this.baseEndPoint = 'clients';
+      this.title = 'Cliente';
+    } else if (url.includes('suppliers')) {
+      this.baseEndPoint = 'suppliers';
+      this.title = 'Fornecedor';
+    } else {
+      this.baseEndPoint = '';
+      this.title = '';
     }
   }
 

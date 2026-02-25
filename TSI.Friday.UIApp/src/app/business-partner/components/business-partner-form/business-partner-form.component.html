@@ -3,7 +3,9 @@
     <div class="modal-scrollable-area">
       <!-- Sessão 1: Dados do Cliente -->
       <section style="font-size: 0.95em">
-        <h5 class="mt-3 mb-2" style="font-size: 1.1em">Dados do Cliente</h5>
+        <h5 *ngIf="isModal" class="mt-3 mb-2" style="font-size: 1.1em">
+          Dados do {{ data?.type === "Client" ? "Cliente" : "Fornecedor" }}
+        </h5>
         <div class="row g-1 mb-1">
           <div class="input-group">
             <div class="form-floating">

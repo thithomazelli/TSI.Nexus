@@ -28,7 +28,8 @@ import {
 import { MatDialogRef } from '@angular/material/dialog';
 
 import { Observable, startWith, map } from 'rxjs';
-import { ClientDetailsModalComponent } from '../../../clients/components/client-details-modal/client-details-modal.component';
+
+import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 import { OrderProductsDetailsModalComponent } from '../../../order-products/components/order-product-details-modal/order-products-details-modal.component';
 
 @Component({
@@ -128,11 +129,14 @@ export class OrderFormComponent
           confirmDelete: async () => {
             // Abrir modal de adicionar cliente
             const clientFormRef: MatDialogRef<any> =
-              this.modalService.showTemplateModal(ClientDetailsModalComponent, {
-                data: { name: businessPartnerName },
-                width: '600px',
-                disableClose: true,
-              });
+              this.modalService.showTemplateModal(
+                BusinessPartnerDetailsModalComponent,
+                {
+                  data: { name: businessPartnerName },
+                  width: '600px',
+                  disableClose: true,
+                },
+              );
             clientFormRef
               .afterClosed()
               .subscribe((result: BusinessPartner | undefined) => {

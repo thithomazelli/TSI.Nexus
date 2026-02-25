@@ -15,7 +15,17 @@ const routes: Routes = [
     path: 'clients',
     canActivate: [AuthorizationGuard],
     loadChildren: () =>
-      import('./clients/clients.module').then((m) => m.ClientsModule),
+      import('./business-partner/business-partner.module').then(
+        (m) => m.BusinessPartnerModule,
+      ),
+  },
+  {
+    path: 'suppliers',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./business-partner/business-partner.module').then(
+        (m) => m.BusinessPartnerModule,
+      ),
   },
   {
     path: 'transactions',
