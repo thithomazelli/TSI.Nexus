@@ -8,35 +8,44 @@
           <div class="col-6">
             <div class="input-group position-relative">
               <div class="form-floating flex-grow-1">
-                <input
-                  type="text"
-                  formControlName="productSku"
-                  class="form-control"
-                  [matAutocomplete]="skuAuto"
-                  [class.is-invalid]="isInvalid('productSku')"
-                  placeholder="SKU"
-                  (blur)="onProductSkuBlur()"
-                />
-                <label for="productSku">SKU</label>
-                <mat-autocomplete
-                  #skuAuto="matAutocomplete"
-                  (optionSelected)="selectProduct($event.option.value)"
-                >
-                  <mat-option
-                    *ngFor="let product of filteredProductsSku$ | async"
-                    [value]="product"
-                    [disabled]="product.disabled || product.alreadyUsed"
-                    [ngClass]="{ 'text-muted': product.disabled }"
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="productSku"
+                    class="form-control"
+                    [matAutocomplete]="skuAuto"
+                    [class.is-invalid]="isInvalid('productSku')"
+                    placeholder="SKU"
+                    (blur)="onProductSkuBlur()"
+                  />
+                  <label for="productSku">SKU</label>
+                  <mat-autocomplete
+                    #skuAuto="matAutocomplete"
+                    (optionSelected)="selectProduct($event.option.value)"
                   >
-                    {{ product.sku }}
-                    <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
-                      >(já utilizado)</span
+                    <mat-option
+                      *ngFor="let product of filteredProductsSku$ | async"
+                      [value]="product"
+                      [disabled]="product.disabled || product.alreadyUsed"
+                      [ngClass]="{ 'text-muted': product.disabled }"
                     >
-                    <span *ngIf="product.disabled" class="ms-1 text-muted"
-                      >(sem estoque)</span
-                    >
-                  </mat-option>
-                </mat-autocomplete>
+                      {{ product.sku }}
+                      <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                        >(já utilizado)</span
+                      >
+                      <span *ngIf="product.disabled" class="ms-1 text-muted"
+                        >(sem estoque)</span
+                      >
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'SKU'"
+                    [text]="form.get('productSku')?.value || 'SKU'"
+                    [routerLink]="['/products', form.get('productId')?.value]"
+                  >
+                  </app-link-field>
+                }
               </div>
               <div class="input-group-text"><i class="bi bi-upc"></i></div>
             </div>
@@ -44,37 +53,46 @@
           <div class="col-6">
             <div class="input-group position-relative">
               <div class="form-floating flex-grow-1">
-                <input
-                  type="text"
-                  formControlName="productName"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('productName')"
-                  placeholder="Nome do Produto"
-                  [matAutocomplete]="nameAuto"
-                  (blur)="onProductNameBlur()"
-                />
-                <label for="productName">Nome do Produto</label>
-                <mat-autocomplete
-                  #nameAuto="matAutocomplete"
-                  (optionSelected)="selectProduct($event.option.value)"
-                >
-                  <mat-option
-                    *ngFor="let product of filteredProductsName$ | async"
-                    [value]="product"
-                    [disabled]="product.disabled || product.alreadyUsed"
-                    [ngClass]="{
-                      'text-muted': product.disabled || product.alreadyUsed,
-                    }"
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="productName"
+                    class="form-control"
+                    [class.is-invalid]="isInvalid('productName')"
+                    placeholder="Nome do Produto"
+                    [matAutocomplete]="nameAuto"
+                    (blur)="onProductNameBlur()"
+                  />
+                  <label for="productName">Nome do Produto</label>
+                  <mat-autocomplete
+                    #nameAuto="matAutocomplete"
+                    (optionSelected)="selectProduct($event.option.value)"
                   >
-                    {{ product.name }}
-                    <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
-                      >(já utilizado)</span
+                    <mat-option
+                      *ngFor="let product of filteredProductsName$ | async"
+                      [value]="product"
+                      [disabled]="product.disabled || product.alreadyUsed"
+                      [ngClass]="{
+                        'text-muted': product.disabled || product.alreadyUsed,
+                      }"
                     >
-                    <span *ngIf="product.disabled" class="ms-2 text-muted"
-                      >(sem estoque)</span
-                    >
-                  </mat-option>
-                </mat-autocomplete>
+                      {{ product.name }}
+                      <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                        >(já utilizado)</span
+                      >
+                      <span *ngIf="product.disabled" class="ms-2 text-muted"
+                        >(sem estoque)</span
+                      >
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'Nome do Produto'"
+                    [text]="form.get('productName')?.value || 'Nome do Produto'"
+                    [routerLink]="['/products', form.get('productId')?.value]"
+                  >
+                  </app-link-field>
+                }
               </div>
               <div class="input-group-text"><i class="bi bi-tag"></i></div>
             </div>
