@@ -3,9 +3,9 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-confirmation',
-  standalone: false,
   templateUrl: './confirmation.component.html',
   styleUrl: './confirmation.component.scss',
+  standalone: false,
 })
 export class ConfirmationComponent<T> {
   title: string;
@@ -17,7 +17,7 @@ export class ConfirmationComponent<T> {
 
   constructor(
     public dialogRef: MatDialogRef<ConfirmationComponent<T>>,
-    @Inject(MAT_DIALOG_DATA) public dialogData: any
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
     this.title = dialogData.title || 'Confirmação';
     this.message =

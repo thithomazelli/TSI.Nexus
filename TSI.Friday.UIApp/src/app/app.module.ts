@@ -13,6 +13,7 @@ import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
 import { JwtInterceptor } from './core';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 
@@ -33,6 +34,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     AppRoutingModule,
     BrowserModule,
     BrowserAnimationsModule,
+    FormsModule,
     CurrencyFormatDirective,
     SharedModule,
     NgxMaskDirective,

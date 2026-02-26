@@ -131,5 +131,17 @@ namespace TSI.Friday.WebAPI.Controllers
             var webApiResponse = await _paymentService.FindByOrderId(orderId);
             return Ok(webApiResponse);
         }
+
+        /// <summary>
+        /// Get transaction payments by transaction id
+        /// </summary>
+        /// <param name="OrderId">Order id to be used in the search</param>
+        [HttpGet]
+        [Route("GetPaymentsHistory")]
+        public async Task<IActionResult> GetPaymentsHistory([FromQuery] DateTime? start = null, [FromQuery] DateTime? end = null)
+        {
+            var webApiResponse = await _paymentService.GetPaymentsHistory(start, end);
+            return Ok(webApiResponse);
+        }
     }
 }

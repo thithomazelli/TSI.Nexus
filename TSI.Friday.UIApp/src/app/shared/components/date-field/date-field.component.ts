@@ -10,9 +10,9 @@ import { ModalService } from '@friday/core';
 
 @Component({
   selector: 'app-date-field',
-  standalone: false,
   templateUrl: 'date-field.component.html',
   styleUrls: ['date-field.component.scss'],
+  standalone: false,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using System.Linq;
+using System.Text.Json.Nodes;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
@@ -308,6 +310,78 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Transaçãos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<JsonObject>> GetTransactionsGroupByCategory(TransactionType? type = null, DateTime? start = null, DateTime? end = null)
+        {
+            var result = new WebApiResponse<JsonObject>();
+            try
+            {
+                // Load transactions with payments
+                var transactions = await _repository.GetAllAsync(p => p.Payments);
+
+                // Determine period: default last12 months
+                DateTime now = DateTime.UtcNow.Date;
+                DateTime firstOfCurrentMonth = new DateTime(now.Year, now.Month,1);
+
+                var months = Enumerable.Range(0,12).Select(i => firstOfCurrentMonth.AddMonths(i -11)).ToList();
+                DateTime periodStart = months.First();
+                DateTime periodEnd = firstOfCurrentMonth.AddMonths(1);
+
+                if (start.HasValue && end.HasValue)
+                {
+                    var s = start.Value.ToUniversalTime();
+                    var e = end.Value.ToUniversalTime();
+                    periodStart = new DateTime(s.Year, s.Month,1);
+                    var endMonthFirst = new DateTime(e.Year, e.Month,1);
+                    periodEnd = endMonthFirst.AddMonths(1);
+                }
+
+                // Filter transactions by type (if provided), then flatten payments and filter by period
+                var filteredTransactions = transactions.AsEnumerable();
+                if (type.HasValue)
+                {
+                    filteredTransactions = filteredTransactions.Where(t => t.Type == type.Value);
+                }
+
+                var filteredPayments = filteredTransactions
+                    .SelectMany(t => (t.Payments ?? new List<Payment>())
+                    .Select(p => new
+                    {
+                        Category = string.IsNullOrWhiteSpace(t.Category) ? "" : t.Category,
+                        Price = p.Price,
+                        Date = p.Date.ToUniversalTime()
+                    }))
+                    .Where(p => p.Date >= periodStart && p.Date < periodEnd)
+                    .ToList();
+
+                // Group by category and sum prices
+                var grouped = filteredPayments
+                    .GroupBy(p => p.Category)
+                    .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Price) })
+                    .OrderByDescending(x => x.Total)
+                    .ToList();
+
+                // Build json object with category => totalPrice
+                var response = new JsonObject();
+                foreach (var g in grouped)
+                {
+                    // use empty string when category is null
+                    response[g.Category ?? string.Empty] = JsonValue.Create(g.Total);
+                }
+
+                result.Data = response;
+                result.Status = ResponseStatus.Success;
+                result.Message = "Transações agrupadas por categoria geradas com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message = $"Não foi possível acessar os registros de Transações na base de dados. Erro: {ex.Message}";
             }
 
             return result;

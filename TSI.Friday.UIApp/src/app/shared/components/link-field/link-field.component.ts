@@ -4,9 +4,9 @@ import { ModalService } from '@friday/core';
 
 @Component({
   selector: 'app-link-field',
-  standalone: false,
   templateUrl: './link-field.component.html',
   styleUrl: './link-field.component.scss',
+  standalone: false,
 })
 export class LinkFieldComponent {
   @Input()

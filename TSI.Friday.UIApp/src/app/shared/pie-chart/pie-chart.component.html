@@ -1,0 +1,24 @@
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title fw-bold" [ngClass]="titleLayout">{{ title }}</h3>
+    <i [class]="iconLayout"></i>
+    <div class="card-tools">
+      <button type="button" class="btn btn-tool" (click)="toggleCollapse()">
+        <i *ngIf="isCardCollapsed" class="bi bi-plus-lg"></i>
+        <i *ngIf="!isCardCollapsed" class="bi bi-dash-lg"></i>
+      </button>
+    </div>
+  </div>
+  <apx-chart
+    *ngIf="chartOptions"
+    class="card-body-chart"
+    [@cardCollapse]="isCardCollapsed ? 'closed' : 'open'"
+    [series]="chartOptions.series"
+    [chart]="chartOptions.chart"
+    [labels]="chartOptions.labels"
+    [fill]="chartOptions.fill"
+    [dataLabels]="chartOptions.dataLabels"
+    [responsive]="chartOptions.responsive"
+    [tooltip]="chartOptions?.tooltip"
+  ></apx-chart>
+</div>

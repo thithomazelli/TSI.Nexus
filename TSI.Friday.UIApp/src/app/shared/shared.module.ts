@@ -6,6 +6,8 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { NgApexchartsModule } from 'ng-apexcharts';
+
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 import { MY_DATE_FORMATS } from '../core/br-date-format';
@@ -36,6 +38,9 @@ import { HeaderComponent } from './header/header.component';
 import { PhotoComponent } from './photo/photo.component';
 import { DateFieldComponent } from './components/date-field/date-field.component';
 import { LinkFieldComponent } from './components/link-field/link-field.component';
+import { AreaChartComponent } from './area-chart/area-chart.component';
+import { PieChartComponent } from './pie-chart/pie-chart.component';
+import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-trending.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +56,9 @@ import { LinkFieldComponent } from './components/link-field/link-field.component
     HeaderComponent,
     PhotoComponent,
     LinkFieldComponent,
+    PieChartComponent,
+    AreaChartComponent,
+    AreaChartTrendingComponent,
   ],
   imports: [
     CommonModule,
@@ -65,12 +73,16 @@ import { LinkFieldComponent } from './components/link-field/link-field.component
     MatDatepickerModule,
     MatNativeDateModule,
     MatMomentDateModule,
+    NgApexchartsModule,
   ],
   exports: [
     DateFieldComponent,
     LinkFieldComponent,
     NavbarComponent,
     SidebarComponent,
+    PieChartComponent,
+    AreaChartComponent,
+    AreaChartTrendingComponent,
     FooterComponent,
     RouterModule,
     MatDialogModule,
@@ -86,6 +98,7 @@ import { LinkFieldComponent } from './components/link-field/link-field.component
     MatOptionModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    NgApexchartsModule,
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },

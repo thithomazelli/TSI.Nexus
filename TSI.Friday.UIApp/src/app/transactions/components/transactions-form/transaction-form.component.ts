@@ -427,7 +427,7 @@ export class TransactionFormComponent
           this.isInstallment =
             paymentCondition === TransactionCondition.InInstallments;
           if (paymentCondition !== TransactionCondition.InInstallments) {
-            const price = this.form.get('priceFormatted');
+            const price = this.form.get('priceFormatted')?.value;
             this.form.get('totalOfPayments')?.setValue(1);
             this.form.get('pricePerInstallment')?.setValue(price);
           }

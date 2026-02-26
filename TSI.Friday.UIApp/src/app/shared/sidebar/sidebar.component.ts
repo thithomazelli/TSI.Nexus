@@ -11,9 +11,9 @@ import { AccountService } from '../../core/services/account/account.service';
 
 @Component({
   selector: 'app-sidebar',
-  standalone: false,
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
+  standalone: false,
 })
 export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private listeners: (() => void)[] = [];
@@ -26,7 +26,7 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
-    private accountService: AccountService
+    private accountService: AccountService,
   ) {}
 
   ngOnInit(): void {
@@ -139,11 +139,11 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
           const unlisten = this.renderer.listen(
             submenu,
             'transitionend',
-            onEnd
+            onEnd,
           );
           const fallbackId = window.setTimeout(
             () => finish(),
-            TRANSITION_DURATION
+            TRANSITION_DURATION,
           );
 
           const cleanup = () => {
@@ -169,7 +169,7 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
             this.renderer.setStyle(
               submenu,
               'height',
-              `${submenu.scrollHeight}px`
+              `${submenu.scrollHeight}px`,
             );
             this.renderer.setStyle(submenu, 'opacity', '1');
             this.renderer.setStyle(submenu, 'transform', 'translateY(0)');
@@ -203,11 +203,11 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
           const unlisten = this.renderer.listen(
             submenu,
             'transitionend',
-            onEnd
+            onEnd,
           );
           const fallbackId = window.setTimeout(
             () => finishOpen(),
-            TRANSITION_DURATION
+            TRANSITION_DURATION,
           );
 
           const cleanup = () => {

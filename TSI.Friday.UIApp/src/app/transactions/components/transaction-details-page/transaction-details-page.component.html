@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Pagamento' : 'Adicionar Pagamento'"
+  [title]="isEdit ? 'Editar Transação' : 'Adicionar Transação'"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
-    { label: 'Pagamentos', link: '/payments' },
-    { label: isEdit ? 'Editar Pagamento' : 'Adicionar Pagamento', link: '' },
+    { label: 'Transações', link: '/transactions' },
+    { label: isEdit ? 'Editar Transação' : 'Adicionar Transação', link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -14,7 +14,7 @@
         <div class="card card-secondary card-outline">
           <div class="card-body box-profile">
             <div class="text-center">
-              <!-- Pode adicionar um ícone ou resumo do pagamento aqui -->
+              <!-- Pode adicionar um ícone ou resumo da transação aqui -->
               <div class="box-profile">
                 <div class="text-center">
                   <i class="bi bi-cash-coin" style="font-size: 4rem"></i>
