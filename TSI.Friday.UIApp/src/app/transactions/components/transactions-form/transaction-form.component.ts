@@ -248,6 +248,11 @@ export class TransactionFormComponent
       if (found) {
         this.form.get('orderId')!.setValue(found.id);
         this.form.get('orderNumber')!.setValue(found.orderNumber);
+        // Preenche BusinessPartnerId e BusinessPartnerName
+        this.form.get('businessPartnerId')!.setValue(found.businessPartnerId);
+        this.form
+          .get('businessPartnerName')!
+          .setValue(found.businessPartnerName);
       } else {
         this.modalService.showNotification(
           false,
@@ -372,6 +377,45 @@ export class TransactionFormComponent
           );
         }),
       );
+
+    // Limpa orderId/orderNumber e filtra pedidos ao trocar cliente
+    this.form.get('businessPartnerName')!.valueChanges.subscribe(() => {
+      this.form.get('orderId')!.setValue(null);
+      this.form.get('orderNumber')!.setValue('');
+      // Atualiza autocomplete de pedidos para filtrar pelo cliente
+      const businessPartnerId = this.form.get('businessPartnerId')!.value;
+      if (businessPartnerId) {
+        this.orders$ = this.orderService
+          .getOrders(true)
+          .pipe(
+            map((orders: Order[]) =>
+              orders.filter(
+                (order: Order) => order.businessPartnerId === businessPartnerId,
+              ),
+            ),
+          ) as any;
+      } else {
+        this.orders$ = this.orderService.getOrders(true);
+      }
+      // Atualiza filtro
+      this.filteredOrders$ = this.form.get('orderNumber')!.valueChanges.pipe(
+        startWith(''),
+        map((value: string | Order) => {
+          let filterValue = '';
+          if (typeof value === 'string') {
+            filterValue = value.toLowerCase();
+          } else if (value && typeof value === 'object') {
+            filterValue = value.orderNumber?.toLowerCase() || '';
+          }
+          if (!filterValue) {
+            return [];
+          }
+          return (this.orders$ as any).source.value.filter((order: Order) =>
+            (order.orderNumber || '').toLowerCase().includes(filterValue),
+          );
+        }),
+      );
+    });
   }
 
   private orderNumberAutoComplete() {
@@ -429,13 +473,21 @@ export class TransactionFormComponent
           if (paymentCondition !== TransactionCondition.InInstallments) {
             const price = this.form.get('priceFormatted')?.value;
             this.form.get('totalOfPayments')?.setValue(1);
+            this.form.get('totalOfPayments')?.disable();
             this.form.get('pricePerInstallment')?.setValue(price);
+          } else {
+            this.form.get('totalOfPayments')?.enable();
           }
         },
       );
       // Inicializa o valor ao criar o form
       this.isInstallment =
         conditionCtrl.value === TransactionCondition.InInstallments;
+      if (!this.isInstallment) {
+        this.form.get('totalOfPayments')?.disable();
+      } else {
+        this.form.get('totalOfPayments')?.enable();
+      }
     }
   }
 
