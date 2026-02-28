@@ -13,10 +13,12 @@ export interface OrderProduct extends BaseModel {
   startDate?: Date;
   endDate?: Date;
   status: OrderProductStatus;
-  addressId?: string;
-  address?: Address;
   orderId?: string;
   orderNumber?: string;
+  businessPartnerId?: string;
+  businessPartnerName?: string;
+  addressId?: string;
+  address?: Address;
   productId?: string;
   productSku?: string;
   productName?: string;

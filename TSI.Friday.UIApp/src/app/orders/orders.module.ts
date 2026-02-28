@@ -13,6 +13,7 @@ import { BusinessPartnerSharedModule } from '../business-partner/business-partne
 
 import { TransactionsSharedModule } from '../transactions/transactions-shared.module';
 import { OrderProductsModule } from '../order-products/order-products.module';
+import { OrderProductsSharedModule } from '../order-products/order-products-shared.module';
 
 @NgModule({
   declarations: [OrdersComponent, OrderDetailsPageComponent],
@@ -25,7 +26,7 @@ import { OrderProductsModule } from '../order-products/order-products.module';
     ProductsModule,
     TransactionsSharedModule,
     PaymentsModule,
-    OrderProductsModule,
+    OrderProductsSharedModule,
   ],
   exports: [],
 })

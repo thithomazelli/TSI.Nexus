@@ -76,9 +76,15 @@ export class ModalService {
       icon,
       showCancelButton: true,
       confirmButtonText,
-      confirmButtonColor: '#3085d6',
+      confirmButtonColor: '#198754', // Bootstrap success color
       cancelButtonText,
-      cancelButtonColor: '#d33',
+      cancelButtonColor: '#6c757d', // Bootstrap secondary color
+      reverseButtons: true,
+      showCloseButton: true,
+      customClass: {
+        confirmButton: 'swal-btn',
+        cancelButton: 'swal-btn',
+      },
     });
   }
 

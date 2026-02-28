@@ -37,7 +37,7 @@ export class TransactionsComponent {
   };
 
   conditionMap: { [key: string]: string } = {
-    FullTransaction: 'À vista',
+    FullPayment: 'À vista',
     InInstallments: 'Parcelado',
   };
 

@@ -171,12 +171,17 @@ export class TransactionFormComponent
 
   async onClientBlur(): Promise<void> {
     setTimeout(() => {
-      const businessPartnerName = this.form
-        .get('businessPartnerName')!
-        .value?.trim();
+      const businessPartnerValue = this.form.get('businessPartnerName')!.value;
+      const businessPartnerName =
+        typeof businessPartnerValue === 'string'
+          ? businessPartnerValue.trim()
+          : '';
       if (!businessPartnerName) {
         this.markAsTouched('businessPartnerName');
         this.form.get('businessPartnerName')!.setErrors({ required: true });
+        // Limpa orderId/orderNumber apenas se o valor for string (edição manual)
+        this.form.get('orderId')!.setValue(null);
+        this.form.get('orderNumber')!.setValue('');
         return;
       }
       // Verifica se o nome existe na lista de clientes
@@ -186,6 +191,7 @@ export class TransactionFormComponent
       if (found) {
         this.form.get('businessPartnerId')!.setValue(found.id);
         this.form.get('businessPartnerName')!.setValue(found.name);
+        // Não limpa orderId/orderNumber ao selecionar via autocomplete
       } else {
         const confirmRef = this.modalService.showConfirmation({
           title: 'Cliente não encontrado',
@@ -219,6 +225,9 @@ export class TransactionFormComponent
                     .get('businessPartnerName')!
                     .setErrors({ required: true });
                   this.form.get('businessPartnerId')!.setValue(null);
+                  // Limpa orderId/orderNumber ao cancelar cadastro manual
+                  this.form.get('orderId')!.setValue(null);
+                  this.form.get('orderNumber')!.setValue('');
                 }
               });
           },
@@ -229,6 +238,9 @@ export class TransactionFormComponent
             this.markAsTouched('businessPartnerName');
             this.form.get('businessPartnerName')!.setErrors({ required: true });
             this.form.get('businessPartnerId')!.setValue(null);
+            // Limpa orderId/orderNumber ao cancelar manualmente
+            this.form.get('orderId')!.setValue(null);
+            this.form.get('orderNumber')!.setValue('');
           }
         });
       }
@@ -260,6 +272,7 @@ export class TransactionFormComponent
           `O pedido "${orderNumber}" não existe. Por favor, selecione um pedido válido ou cadastre-o antes de associar a este pagamento.`,
         );
         this.form.get('orderId')!.setValue(null);
+        this.form.get('orderNumber')!.setValue(null);
       }
     }, 200);
   }
@@ -377,45 +390,6 @@ export class TransactionFormComponent
           );
         }),
       );
-
-    // Limpa orderId/orderNumber e filtra pedidos ao trocar cliente
-    this.form.get('businessPartnerName')!.valueChanges.subscribe(() => {
-      this.form.get('orderId')!.setValue(null);
-      this.form.get('orderNumber')!.setValue('');
-      // Atualiza autocomplete de pedidos para filtrar pelo cliente
-      const businessPartnerId = this.form.get('businessPartnerId')!.value;
-      if (businessPartnerId) {
-        this.orders$ = this.orderService
-          .getOrders(true)
-          .pipe(
-            map((orders: Order[]) =>
-              orders.filter(
-                (order: Order) => order.businessPartnerId === businessPartnerId,
-              ),
-            ),
-          ) as any;
-      } else {
-        this.orders$ = this.orderService.getOrders(true);
-      }
-      // Atualiza filtro
-      this.filteredOrders$ = this.form.get('orderNumber')!.valueChanges.pipe(
-        startWith(''),
-        map((value: string | Order) => {
-          let filterValue = '';
-          if (typeof value === 'string') {
-            filterValue = value.toLowerCase();
-          } else if (value && typeof value === 'object') {
-            filterValue = value.orderNumber?.toLowerCase() || '';
-          }
-          if (!filterValue) {
-            return [];
-          }
-          return (this.orders$ as any).source.value.filter((order: Order) =>
-            (order.orderNumber || '').toLowerCase().includes(filterValue),
-          );
-        }),
-      );
-    });
   }
 
   private orderNumberAutoComplete() {

@@ -4,16 +4,11 @@ import { OrderDetailsModalComponent } from './order-details-modal/order-details-
 import { OrderFormComponent } from './order-form/order-form.component';
 import { TransactionsSharedModule } from '../../transactions/transactions-shared.module';
 import { SharedModule } from '../../shared/shared.module';
-import { OrderProductsModule } from '../../order-products/order-products.module';
+import { OrderProductsSharedModule } from '../../order-products/order-products-shared.module';
 
 @NgModule({
   declarations: [OrderDetailsModalComponent, OrderFormComponent],
-  imports: [
-    CommonModule,
-    SharedModule,
-    OrderProductsModule,
-    TransactionsSharedModule,
-  ],
+  imports: [CommonModule, SharedModule, TransactionsSharedModule],
   exports: [OrderDetailsModalComponent, OrderFormComponent, SharedModule],
 })
 export class OrdersSharedModule {}

@@ -13,10 +13,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   filterStart: Date | null = null;
   filterEnd: Date | null = null;
 
-  applyFilter() {
-    // Apenas força atualização dos gráficos, pois os inputs já são passados
-    // Pode adicionar lógica extra se necessário
-  }
   private charts: any[] = [];
   private resizeUnlisten: (() => void) | null = null;
   private tipEl: HTMLElement | null = null;
@@ -61,6 +57,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       } catch {}
       this.tipEl = null;
     }
+  }
+
+  applyFilter() {
+    // Apenas força atualização dos gráficos, pois os inputs já são passados
+    // Pode adicionar lógica extra se necessário
   }
 
   // helper to listen for resize and attempt a safe redraw/update of charts

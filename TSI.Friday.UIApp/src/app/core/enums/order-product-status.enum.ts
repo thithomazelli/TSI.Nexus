@@ -1,4 +1,5 @@
 export enum OrderProductStatus {
-  Delivered = 'Delivered',
+  InProgress = 'InProgress',
+  Delayed = 'Delayed',
   Returned = 'Returned',
 }

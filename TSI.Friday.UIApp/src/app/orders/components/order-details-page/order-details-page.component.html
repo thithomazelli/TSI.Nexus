@@ -82,6 +82,8 @@
 
             <div *ngIf="activeTab === 'products'">
               <app-order-products
+                [compact]="true"
+                [isFullList]="false"
                 [parentOrderId]="data?.id"
                 (orderProductsUpdated)="onOrderProductsUpdated()"
               ></app-order-products>
@@ -89,6 +91,7 @@
             <div *ngIf="activeTab === 'payments'">
               <app-payments
                 [compact]="true"
+                [canAdd]="true"
                 [entity]="'Order'"
                 [data]="data"
               ></app-payments>

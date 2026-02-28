@@ -15,7 +15,6 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly OrderService _orderService;
         private readonly Mock<IRepository<Order>> _repository;
         private readonly Mock<ITransactionService> _transactionService;
-        private readonly Mock<IProductService> _productService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly IList<OrderDto> _orderListMock;
         private readonly IMapper _mapper;
@@ -25,13 +24,11 @@ namespace TSI.Friday.Services.Tests.Services
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _repository = new Mock<IRepository<Order>>();
             _transactionService = new Mock<ITransactionService>();
-            _productService = new Mock<IProductService>();
             _sequenceService = new Mock<ISequenceService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
                 _repository.Object,
                 _transactionService.Object,
-                _productService.Object,
                 _sequenceService.Object,
                 _mapper
             );

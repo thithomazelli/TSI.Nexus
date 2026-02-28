@@ -28,3 +28,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.a-link:hover {
+  color: #f55252;
+}
+
+.disabled {
+  color: #6c757d;
+  cursor: default;
+}

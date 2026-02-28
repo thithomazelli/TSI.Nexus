@@ -83,7 +83,8 @@ export class OrderProductsFormComponent
   ];
 
   orderProductStatusOptions = [
-    { label: 'Entregue', value: OrderProductStatus.Delivered },
+    { label: 'Vigente', value: OrderProductStatus.InProgress },
+    { label: 'Atrasado', value: OrderProductStatus.Delayed },
     { label: 'Devolvido', value: OrderProductStatus.Returned },
   ];
 
@@ -480,7 +481,7 @@ export class OrderProductsFormComponent
       totalPriceFormatted: [{ value: 0, disabled: true }],
       startDate: [today],
       endDate: [fiveDaysLater],
-      status: [OrderProductStatus.Delivered, Validators.required],
+      status: [OrderProductStatus.InProgress, Validators.required],
       addressId: [null, Validators.required],
     });
 

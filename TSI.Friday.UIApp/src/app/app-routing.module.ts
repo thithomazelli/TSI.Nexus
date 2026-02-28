@@ -41,6 +41,14 @@ const routes: Routes = [
       import('./orders/orders.module').then((m) => m.OrdersModule),
   },
   {
+    path: 'order-products',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./order-products/order-products.module').then(
+        (m) => m.OrderProductsModule,
+      ),
+  },
+  {
     path: 'payments',
     canActivate: [AuthorizationGuard],
     loadChildren: () =>

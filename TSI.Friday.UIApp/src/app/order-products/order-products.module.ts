@@ -1,18 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { SharedModule } from '../shared/shared.module';
 import { AddressModule } from '../address/address.module';
-import { OrderProductsComponent } from './order-products.component';
-import { OrderProductsDetailsModalComponent } from './components/order-product-details-modal/order-products-details-modal.component';
-import { OrderProductsFormComponent } from './components/order-product-form/order-products-form.component';
+import { OrderProductsRoutingModule } from './order-products-routing.module';
+import { SharedModule } from '../shared/shared.module';
+import { OrderProductsSharedModule } from './order-products-shared.module';
 
 @NgModule({
-  declarations: [
-    OrderProductsComponent,
-    OrderProductsDetailsModalComponent,
-    OrderProductsFormComponent,
+  declarations: [],
+  imports: [
+    OrderProductsSharedModule,
+    OrderProductsRoutingModule,
+    CommonModule,
+    AddressModule,
+    SharedModule,
   ],
-  imports: [CommonModule, SharedModule, AddressModule],
-  exports: [OrderProductsComponent, OrderProductsFormComponent],
+  exports: [],
 })
 export class OrderProductsModule {}

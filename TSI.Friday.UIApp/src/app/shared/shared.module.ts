@@ -29,7 +29,7 @@ import { ValidationMessagesComponent } from './components/errors/validation-mess
 import { FooterComponent } from './footer/footer.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { RouterModule } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NotificationComponent } from './components/modals/notification/notification.component';
 import { GridComponent } from './grid/grid.component';
 import { ConfirmationComponent } from './components/modals/confirmation/confirmation.component';
@@ -99,6 +99,7 @@ import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-tre
     MatDatepickerModule,
     MatNativeDateModule,
     NgApexchartsModule,
+    FormsModule,
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },

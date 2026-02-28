@@ -1,4 +1,8 @@
 <span class="place-holder">{{ placeHolder }}</span>
-<a (click)="onClick()" class="form-control disabled-link a-link">
+<a
+  (click)="onClick()"
+  class="form-control disabled-link a-link disabled"
+  [class.disabled]="linkUrl.length === 0"
+>
   {{ text }}
 </a>

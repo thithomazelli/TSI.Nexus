@@ -1,7 +1,7 @@
 import { AG_GRID_LOCALE_BR } from '@ag-grid-community/locale';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiType, ModalService } from '@friday/core';
+import { ModalService } from '@friday/core';
 import {
   CellClickedEvent,
   ColDef,
@@ -31,6 +31,9 @@ export class GridComponent<T> implements OnInit {
 
   @Input()
   columnDefs: ColDef[] = [];
+
+  @Input()
+  canAdd: boolean = true;
 
   @Input()
   refresh!: () => void;

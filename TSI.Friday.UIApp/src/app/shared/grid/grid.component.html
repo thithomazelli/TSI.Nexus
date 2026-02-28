@@ -1,6 +1,10 @@
 <div class="d-flex justify-content-between mb-3">
   <div>
-    <button class="btn btn-success me-2" (click)="openAddModal()">
+    <button
+      *ngIf="canAdd"
+      class="btn btn-success me-2"
+      (click)="openAddModal()"
+    >
       <i class="bi bi-plus-lg"></i>
       Adicionar {{ className }}
     </button>
@@ -19,7 +23,6 @@
   </div>
 </div>
 
-<!-- Responsive grid wrapper: use calc(95vh - 220px) on desktop but adapt via CSS media queries -->
 <div class="grid-host" [ngClass]="{ 'compact-view': compactView }">
   <ag-grid-angular
     class="ag-theme-alpine grid-full"

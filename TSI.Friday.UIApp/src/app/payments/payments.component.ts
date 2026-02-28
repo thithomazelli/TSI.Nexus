@@ -34,6 +34,9 @@ export class PaymentsComponent {
   @Input()
   compact: boolean = false;
 
+  @Input()
+  canAdd: boolean = false;
+
   @Output()
   refreshParent = new EventEmitter<void>();
 
@@ -143,7 +146,7 @@ export class PaymentsComponent {
       },
       {
         field: 'installmentNumber',
-        headerName: 'Parcela',
+        headerName: '#',
         sortable: true,
         filter: true,
         flex: 2,
@@ -229,6 +232,7 @@ export class PaymentsComponent {
         filter: true,
         flex: 1,
         maxWidth: 150,
+        hide: this.entity === 'BusinessPartner',
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? 'N/A';
           return value;
@@ -241,6 +245,7 @@ export class PaymentsComponent {
         filter: true,
         flex: 1,
         maxWidth: 150,
+        hide: this.entity === 'Order',
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? 'N/A';
           return value;

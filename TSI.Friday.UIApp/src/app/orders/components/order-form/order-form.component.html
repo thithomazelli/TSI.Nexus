@@ -49,7 +49,7 @@
                   <app-link-field
                     [placeHolder]="'Cliente'"
                     [text]="form.get('businessPartnerName')?.value || 'Cliente'"
-                    [routerLink]="[
+                    [linkUrl]="[
                       '/clients',
                       form.get('businessPartnerId')?.value,
                     ]"

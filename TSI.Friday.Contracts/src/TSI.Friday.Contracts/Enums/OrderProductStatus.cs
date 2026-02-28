@@ -2,7 +2,8 @@
 {
     public enum OrderProductStatus
     {
-        Delivered,
+        InProgress,
+        Delayed,
         Returned,
     }
 }

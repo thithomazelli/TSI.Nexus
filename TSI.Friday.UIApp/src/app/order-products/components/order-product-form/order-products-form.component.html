@@ -30,19 +30,20 @@
                       [ngClass]="{ 'text-muted': product.disabled }"
                     >
                       {{ product.sku }}
-                      <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
-                        >(já utilizado)</span
-                      >
-                      <span *ngIf="product.disabled" class="ms-1 text-muted"
-                        >(sem estoque)</span
-                      >
+                      <span class="ms-2 text-muted">
+                        @if (product.alreadyUsed) {
+                          (já utilizado)
+                        } @else if (product.disabled) {
+                          indisponível
+                        }
+                      </span>
                     </mat-option>
                   </mat-autocomplete>
                 } @else {
                   <app-link-field
                     [placeHolder]="'SKU'"
                     [text]="form.get('productSku')?.value || 'SKU'"
-                    [routerLink]="['/products', form.get('productId')?.value]"
+                    [linkUrl]="['/products', form.get('productId')?.value]"
                   >
                   </app-link-field>
                 }
@@ -89,7 +90,7 @@
                   <app-link-field
                     [placeHolder]="'Nome do Produto'"
                     [text]="form.get('productName')?.value || 'Nome do Produto'"
-                    [routerLink]="['/products', form.get('productId')?.value]"
+                    [linkUrl]="['/products', form.get('productId')?.value]"
                   >
                   </app-link-field>
                 }

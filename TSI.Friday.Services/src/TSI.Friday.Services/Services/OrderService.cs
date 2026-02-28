@@ -17,7 +17,6 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Order> _repository;
         private readonly ITransactionService _transactionService;
-        private readonly IProductService _productService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
 
@@ -32,14 +31,12 @@ namespace TSI.Friday.Services
         public OrderService(
             IRepository<Order> repository,
             ITransactionService transactionService,
-            IProductService productService,
             ISequenceService sequenceService,
             IMapper mapper
         )
         {
             _repository = repository;
             _transactionService = transactionService;
-            _productService = productService;
             _sequenceService = sequenceService;
             _mapper = mapper;
         }
@@ -80,30 +77,6 @@ namespace TSI.Friday.Services
                 {
                     transactionResult.Data.OrderId = orderEntity.Id;
                     await _transactionService.UpdateOrderId(transactionResult.Data);
-                }
-
-                // adjust stock in batch if product service available
-                if (orderEntity.OrderProducts.Any())
-                {
-                    var deltas = new Dictionary<Guid, int>();
-                    foreach (var op in orderEntity.OrderProducts)
-                    {
-                        var pid = op.ProductId;
-                        var delta = -Convert.ToInt32(op.Quantity);
-                        if (deltas.ContainsKey(pid))
-                        {
-                            deltas[pid] += delta;
-                        }
-                        else
-                        {
-                            deltas[pid] = delta;
-                        }
-                    }
-
-                    if (deltas.Count > 0)
-                    {
-                        await _productService.AdjustStockAsync(deltas);
-                    }
                 }
 
                 // prepare response DTO
@@ -178,26 +151,6 @@ namespace TSI.Friday.Services
                     result.Status = ResponseStatus.Error;
                     result.Message = $"Pedido {orderDto.OrderNumber} não encontrado.";
                     return result;
-                }
-
-                // compute deltas before removal
-                if (orderEntity?.OrderProducts != null)
-                {
-                    var deltas = new Dictionary<Guid, int>();
-                    foreach (var op in orderEntity.OrderProducts)
-                    {
-                        var pid = op.ProductId;
-                        var delta = Convert.ToInt32(op.Quantity);
-                        if (deltas.ContainsKey(pid))
-                            deltas[pid] += delta;
-                        else
-                            deltas[pid] = delta;
-                    }
-
-                    if (deltas.Count > 0)
-                    {
-                        await _productService.AdjustStockAsync(deltas);
-                    }
                 }
 
                 await _repository.RemoveAsync(orderEntity);

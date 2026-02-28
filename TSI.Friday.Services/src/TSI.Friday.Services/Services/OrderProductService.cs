@@ -16,7 +16,6 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<OrderProduct> _repository;
         private readonly IRepository<Order> _orderRepository;
-        private readonly IProductService _productService;
         private readonly IMapper _mapper;
 
         #endregion Properties
@@ -30,13 +29,11 @@ namespace TSI.Friday.Services
         public OrderProductService(
             IRepository<OrderProduct> repository,
             IRepository<Order> orderRepository,
-            IProductService productService,
             IMapper mapper
         )
         {
             _repository = repository;
             _orderRepository = orderRepository;
-            _productService = productService;
             _mapper = mapper;
         }
 
@@ -50,13 +47,6 @@ namespace TSI.Friday.Services
                 var orderProductEntity = _mapper.Map<OrderProduct>(orderProductDto);
 
                 await _repository.AddAsync(orderProductEntity);
-
-                // Update product stock: batch via product service
-                var deltas = new Dictionary<Guid, int>
-                {
-                    { orderProductEntity.ProductId, -Convert.ToInt32(orderProductEntity.Quantity) },
-                };
-                await _productService.AdjustStockAsync(deltas);
 
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(orderProductEntity.OrderId);
@@ -85,19 +75,6 @@ namespace TSI.Friday.Services
             {
                 var entity = _mapper.Map<OrderProduct>(orderProductDto);
                 await _repository.UpdateAsync(entity);
-
-                var newQuantity = Convert.ToInt32(
-                    orderProductDto.PreviousQuantity - orderProductDto.Quantity
-                );
-
-                if (newQuantity != 0)
-                {
-                    var deltas = new Dictionary<Guid, int>
-                    {
-                        { orderProductDto.ProductId, newQuantity },
-                    };
-                    await _productService.AdjustStockAsync(deltas);
-                }
 
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(orderProductDto.OrderId);
@@ -128,13 +105,6 @@ namespace TSI.Friday.Services
 
                 await _repository.RemoveAsync(existing);
 
-                // Add back quantity to product
-                var deltas = new Dictionary<Guid, int>
-                {
-                    { existing.ProductId, Convert.ToInt32(existing.Quantity) },
-                };
-                await _productService.AdjustStockAsync(deltas);
-
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(existing.OrderId);
 
@@ -148,6 +118,34 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o Item do Pedido {orderProductDto?.Description} da base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindAll()
+        {
+            WebApiResponse<IEnumerable<OrderProductDto>> result = new();
+
+            try
+            {
+                var orders = await _repository.GetAllAsync(
+                    op => op.Order,
+                    op => op.Order.BusinessPartner,
+                    op => op.Product,
+                    op => op.Address
+                );
+
+                result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(orders);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de itens do pedido. Erro: {ex.Message}";
             }
 
             return result;

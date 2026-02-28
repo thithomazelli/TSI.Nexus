@@ -86,10 +86,11 @@
                   <app-link-field
                     [placeHolder]="'Cliente'"
                     [text]="form.get('businessPartnerName')?.value || 'Cliente'"
-                    [routerLink]="[
-                      '/clients',
-                      form.get('businessPartnerId')?.value,
-                    ]"
+                    [linkUrl]="
+                      form.get('businessPartnerId')?.value != null
+                        ? [`/clients/${form.get('businessPartnerId')?.value}`]
+                        : []
+                    "
                   >
                   </app-link-field>
                 }
@@ -127,8 +128,12 @@
                 } @else {
                   <app-link-field
                     [placeHolder]="'Número do Pedido'"
-                    [text]="form.get('orderNumber')?.value || 'Pedido'"
-                    [routerLink]="['/orders', form.get('orderId')?.value]"
+                    [text]="form.get('orderNumber')?.value || 'N/A'"
+                    [linkUrl]="
+                      form.get('orderId')?.value != null
+                        ? ['/orders', form.get('orderId')?.value]
+                        : []
+                    "
                   >
                   </app-link-field>
                 }

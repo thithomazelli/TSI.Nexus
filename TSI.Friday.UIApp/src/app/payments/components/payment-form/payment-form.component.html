@@ -1,8 +1,45 @@
 <div class="payment-form-wrapper">
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="modal-scrollable-area">
-      <!-- First line: Type and Method -->
       <div class="row g-1 mb-1">
+        <ng-container *ngIf="isEdit">
+          <div class="col-12 col-md-4">
+            <div class="input-group">
+              <div class="form-floating">
+                <app-link-field
+                  [placeHolder]="'Número do Pedido'"
+                  [text]="form.get('orderNumber')?.value || 'N/A'"
+                  [linkUrl]="
+                    form.get('orderNumber')?.value
+                      ? ['/orders', form.get('orderId')?.value]
+                      : []
+                  "
+                >
+                </app-link-field>
+              </div>
+              <div class="input-group-text"><i class="bi bi-hash"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-8">
+            <div class="input-group">
+              <div class="form-floating">
+                <app-link-field
+                  [placeHolder]="'Cliente'"
+                  [text]="form.get('businessPartnerName')?.value || 'N/A'"
+                  [linkUrl]="
+                    form.get('businessPartnerName')?.value
+                      ? ['/clients', form.get('businessPartnerId')?.value]
+                      : []
+                  "
+                >
+                </app-link-field>
+              </div>
+              <div class="input-group-text"><i class="bi bi-building"></i></div>
+            </div>
+          </div>
+        </ng-container>
+
         <div class="col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill select-floating">

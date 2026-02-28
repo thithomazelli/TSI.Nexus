@@ -3,6 +3,7 @@ using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Data.Interceptors;
 using TSI.Friday.Repository;
+using TSI.Friday.Repository.Overdue;
 using TSI.Friday.Services;
 using TSI.Friday.Services.Services;
 
@@ -26,10 +27,16 @@ namespace TSI.Friday.IoC
 
             services.AddSingleton<ICurrentUserService, CurrentUserService>();
             services.AddSingleton<AuditingSaveChangesInterceptor>();
+            services.AddSingleton<StockAdjustingSaveChangesInterceptor>();
 
             #endregion Singleton Services
 
             #region Services
+            // register repository and service for overdue
+            services.AddScoped<IOverdueRepository, OverdueRepository>();
+            services.AddScoped<IOverdueService, OverdueService>();
+            // register hosted service
+            services.AddHostedService<OverdueStatusBackgroundService>();
 
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();

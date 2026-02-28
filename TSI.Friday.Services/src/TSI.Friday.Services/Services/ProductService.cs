@@ -188,33 +188,6 @@ namespace TSI.Friday.Services
             return result;
         }
 
-        /// <summary>
-        /// Adjusts the stock for a batch of products.
-        /// </summary>
-        /// <param name="deltas">A dictionary where the key is the product ID and the value is the stock change amount.</param>
-        public async Task AdjustStockAsync(IDictionary<Guid, int> deltas)
-        {
-            if (deltas == null || deltas.Count == 0)
-            {
-                return;
-            }
-
-            // Get products by ids
-            var ids = deltas.Keys.ToList();
-            var products =
-                await _repository.QueryAsync(p => ids.Contains(p.Id)) ?? new List<Product>();
-
-            foreach (var prod in products)
-            {
-                if (deltas.TryGetValue(prod.Id, out var delta))
-                {
-                    prod.QuantityInStock += delta;
-                }
-            }
-
-            await _repository.UpdateRangeAsync(products);
-        }
-
         #endregion Public methods
 
         #region Private methods

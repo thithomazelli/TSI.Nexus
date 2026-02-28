@@ -29,11 +29,15 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public Guid OrderId { get; set; }
 
+        public string OrderNumber { get; set; }
+
+        public Guid BusinessPartnerId { get; set; }
+
+        public string BusinessPartnerName { get; set; }
+
         public Guid AddressId { get; set; }
 
-        public Address Address { get; set; }
-
-        public string OrderNumber { get; set; }
+        public AddressDto Address { get; set; }
 
         public Guid ProductId { get; set; }
 

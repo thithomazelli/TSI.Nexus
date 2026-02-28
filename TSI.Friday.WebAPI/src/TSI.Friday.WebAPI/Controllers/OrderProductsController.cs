@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
+using TSI.Friday.Services;
 
 namespace TSI.Friday.WebAPI.Controllers
 {
@@ -69,6 +70,17 @@ namespace TSI.Friday.WebAPI.Controllers
         public async Task<IActionResult> Remove([FromBody] OrderProductDto orderProductDto)
         {
             var webApiResponse = await _orderProductService.Remove(orderProductDto);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get all orders available on database
+        /// </summary>
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var webApiResponse = await _orderProductService.FindAll();
             return Ok(webApiResponse);
         }
 

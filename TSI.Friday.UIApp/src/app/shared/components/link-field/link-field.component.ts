@@ -16,7 +16,7 @@ export class LinkFieldComponent {
   text: string = '';
 
   @Input()
-  routerLink: string[] = [];
+  linkUrl: string[] = [];
 
   constructor(
     private router: Router,
@@ -24,7 +24,11 @@ export class LinkFieldComponent {
   ) {}
 
   onClick() {
-    this.router.navigate(this.routerLink);
+    if (!this.linkUrl || this.linkUrl.length <= 0) {
+      return;
+    }
+
+    this.router.navigate(this.linkUrl);
     this.modalService.hideModal();
   }
 }

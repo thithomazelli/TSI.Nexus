@@ -118,6 +118,22 @@ namespace TSI.Friday.IoC
                             src.Product != null ? src.Product.Type : ProductType.Sale
                         )
                 )
+                .ForMember(
+                    dest => dest.BusinessPartnerId,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Order != null ? src.Order.BusinessPartnerId : Guid.Empty
+                        )
+                )
+                .ForMember(
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Order != null && src.Order.BusinessPartner != null
+                                ? src.Order.BusinessPartner.Name
+                                : null
+                        )
+                )
                 .ForMember(dest => dest.PreviousQuantity, opt => opt.MapFrom(src => src.Quantity));
 
             CreateMap<OrderProductDto, OrderProduct>()

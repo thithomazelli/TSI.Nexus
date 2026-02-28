@@ -4,6 +4,7 @@ import {
   ApiType,
   ModalService,
   Order,
+  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -123,7 +124,7 @@ export class OrdersComponent {
           <button class="btn btn-primary btn-sm" data-action="view">
             <i class="fas fa-eye" data-action="view"></i>
           </button>
-          <button class="btn btn-info btn-sm text-white" data-action="edit">
+          <button class="btn btn-info btn-sm" data-action="edit">
             <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
@@ -151,12 +152,15 @@ export class OrdersComponent {
     this.apiService
       .delete<WebApiResponse<Order>>(`${this.baseEndPoint}/remove`, order)
       .subscribe((response: WebApiResponse<Order>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== order.id);
+        if (response.status === ResponseStatus.Success) {
+          this.rowData = this.rowData.filter((p) => p.id !== order.id);
+        }
+
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Ordem excluída',
+          '',
           response.message,
-          'success',
+          response.status,
         );
       });
   }

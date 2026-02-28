@@ -1,12 +1,75 @@
+<app-header
+  *ngIf="!compact"
+  title="Relatório de Produtos do Pedido"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Relatório de Produtos do Pedido', link: '' },
+  ]"
+></app-header>
+
+<div class="row mb-3 align-items-center">
+  <div class="col-auto">
+    <button
+      class="btn btn-outline-secondary"
+      (click)="showFilters = !showFilters"
+    >
+      <i class="bi bi-funnel"></i> Filtros
+    </button>
+  </div>
+  <div class="col" *ngIf="showFilters">
+    <div class="row mb-3 align-items-center">
+      <div class="col-auto">
+        <app-date-field
+          label="Data de retorno"
+          [(ngModel)]="filterReturnDate"
+        ></app-date-field>
+      </div>
+      <div class="col-auto d-flex align-items-center gap-2">
+        <label class="form-check-label">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="filterStatus.Vigente"
+          />
+          Vigente
+        </label>
+        <label class="form-check-label">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="filterStatus.Atrasado"
+          />
+          Atrasado
+        </label>
+        <label class="form-check-label">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="filterStatus.Devolvido"
+          />
+          Devolvido
+        </label>
+        <button class="btn btn-primary ms-2" (click)="applyFilters()">
+          Filtrar
+        </button>
+        <button class="btn btn-outline-secondary ms-1" (click)="clearFilters()">
+          Limpar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="app-content">
   <app-grid
     [className]="'Produtos do Pedido'"
-    [compactView]="true"
-    [rowData]="rowData"
+    [compactView]="compact"
+    [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
     [refresh]="refreshOrderProducts.bind(this)"
     [delete]="deleteOrderProduct.bind(this)"
+    [update]="updateOrderProductStatus.bind(this)"
     (openModal)="onOpenModal($event)"
   ></app-grid>
 </div>

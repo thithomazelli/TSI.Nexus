@@ -30,6 +30,12 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<OrderProductDto>> Remove(OrderProductDto orderProductDto);
 
         /// <summary>
+        /// Method responsible to get all registers available in the order products database.
+        /// </summary>
+        /// <returns>All registers found in the order products database.</returns>
+        Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindAll();
+
+        /// <summary>
         /// Method responsible to get a list of OrderProducts based on the OrderId received as parameter.
         /// </summary>
         /// <param name="orderId">The ID to be used on the search.</param>
