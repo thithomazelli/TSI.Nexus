@@ -203,6 +203,40 @@ namespace TSI.Friday.Services
             return result;
         }
 
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindDelayed()
+        {
+            WebApiResponse<IEnumerable<OrderProductDto>> result = new();
+
+            try
+            {
+                var todayUtc = DateTime.UtcNow.Date; // compare only date
+
+                var items = await _repository.QueryAsync(
+                    op => op.Status == OrderProductStatus.Delayed
+                    || (op.Status != OrderProductStatus.Returned
+                    && op.EndDate != default(DateTime)
+                    && op.EndDate.ToUniversalTime().Date < todayUtc),
+                    op => op.Order,
+                    op => op.Order.BusinessPartner,
+                    op => op.Product,
+                    op => op.Address
+                );
+
+                result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de Itens do Pedido. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
         #endregion Public methods
 
         #region Private methods

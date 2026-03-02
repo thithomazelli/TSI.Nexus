@@ -50,7 +50,7 @@ export class TransactionsComponent {
   statusColorMap: { [key: string]: string } = {
     Approved: 'success',
     Pending: 'info',
-    Delayed: 'warning',
+    Delayed: 'danger',
     default: 'secondary',
   };
 
@@ -204,6 +204,12 @@ export class TransactionsComponent {
     },
   ];
 
+  filteredRowData: Transaction[] = [];
+  filterStartDate: string | null = null;
+  filterEndDate: string | null = null;
+  filterStatus = { Approved: false, Pending: false, Delayed: false };
+  filterType = { Incoming: false, Outgoing: false };
+
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
@@ -247,11 +253,64 @@ export class TransactionsComponent {
     }
   }
 
+  applyFilters(): void {
+    let filtered = [...this.rowData];
+    // Filter by date range (start and end)
+    if (this.filterStartDate || this.filterEndDate) {
+      filtered = filtered.filter((item) => {
+        if (!item.date) return false;
+        const itemDate = new Date(item.date).toISOString().slice(0, 10);
+        let isValid = true;
+        if (this.filterStartDate) {
+          const startDate = new Date(this.filterStartDate)
+            .toISOString()
+            .slice(0, 10);
+          isValid = isValid && itemDate >= startDate;
+        }
+        if (this.filterEndDate) {
+          const endDate = new Date(this.filterEndDate)
+            .toISOString()
+            .slice(0, 10);
+          isValid = isValid && itemDate <= endDate;
+        }
+        return isValid;
+      });
+    }
+    // Filter by status
+    const selectedStatuses = Object.entries(this.filterStatus)
+      .filter(([_, checked]) => checked)
+      .map(([label]) => label);
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((item) =>
+        selectedStatuses.includes(item.status ?? ''),
+      );
+    }
+    // Filter by type
+    const selectedTypes = Object.entries(this.filterType)
+      .filter(([_, checked]) => checked)
+      .map(([label]) => label);
+    if (selectedTypes.length > 0) {
+      filtered = filtered.filter((item) =>
+        selectedTypes.includes(item.type ?? ''),
+      );
+    }
+    this.filteredRowData = filtered;
+  }
+
+  clearFilters(): void {
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+    this.filterStatus = { Approved: false, Pending: false, Delayed: false };
+    this.filterType = { Incoming: false, Outgoing: false };
+    this.filteredRowData = [...this.rowData];
+  }
+
   private getTransactions(): void {
     this.apiService
       .get<WebApiResponse<Transaction[]>>(`${this.baseEndPoint}/getAll`)
       .subscribe((response: WebApiResponse<Transaction[]>) => {
         this.rowData = response.data ?? [];
+        this.filteredRowData = [...this.rowData];
       });
   }
 

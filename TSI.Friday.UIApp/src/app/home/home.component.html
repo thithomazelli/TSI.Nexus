@@ -139,8 +139,9 @@
     <div class="row mb-3 align-items-center">
       <div class="col-auto">
         <button
-          class="btn btn-outline-secondary"
-          (click)="showFilters = !showFilters"
+          class="btn btn-outline-primary"
+          [ngClass]="showFilters ? 'active' : ''"
+          (click)="toggleFilters()"
         >
           <i class="bi bi-funnel"></i> Filtros
         </button>
@@ -148,15 +149,15 @@
       <div class="col" *ngIf="showFilters">
         <div class="d-flex gap-2">
           <app-date-field
-            [(ngModel)]="filterStart"
+            [(ngModel)]="filterStartDate"
             label="Data início"
           ></app-date-field>
           <app-date-field
-            [(ngModel)]="filterEnd"
+            [(ngModel)]="filterEndDate"
             label="Data fim"
           ></app-date-field>
-          <button class="btn btn-primary" (click)="applyFilter()">
-            Aplicar
+          <button class="btn btn-secondary ms-1" (click)="clearFilters()">
+            Limpar
           </button>
         </div>
       </div>
@@ -164,21 +165,21 @@
     <div class="row g-2">
       <div class="col-12">
         <app-area-chart-trending
-          [startDate]="filterStart"
-          [endDate]="filterEnd"
+          [startDate]="filterStartDate"
+          [endDate]="filterEndDate"
         ></app-area-chart-trending>
       </div>
       <div class="col-6" hidden>
         <app-area-chart
-          [startDate]="filterStart"
-          [endDate]="filterEnd"
+          [startDate]="filterStartDate"
+          [endDate]="filterEndDate"
         ></app-area-chart>
       </div>
       <div class="col-md-6">
         <app-pie-chart
           [title]="'Controle de Gastos'"
-          [startDate]="filterStart"
-          [endDate]="filterEnd"
+          [startDate]="filterStartDate"
+          [endDate]="filterEndDate"
         ></app-pie-chart>
       </div>
       <div class="col-md-6">
@@ -187,8 +188,8 @@
           [titleLayout]="'text-danger'"
           [iconLayout]="'bi bi-arrow-down-circle-fill text-danger ms-2'"
           [transactionType]="TransactionType.Outgoing"
-          [startDate]="filterStart"
-          [endDate]="filterEnd"
+          [startDate]="filterStartDate"
+          [endDate]="filterEndDate"
         ></app-pie-chart>
       </div>
     </div>

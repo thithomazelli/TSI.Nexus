@@ -247,36 +247,6 @@ export class TransactionFormComponent
     }, 200);
   }
 
-  async onOrderBlur(): Promise<void> {
-    setTimeout(() => {
-      const orderNumber = this.form.get('orderNumber')!.value?.trim();
-      if (!orderNumber) {
-        this.markAsTouched('orderNumber');
-        this.form.get('orderNumber')!.setErrors({ required: true });
-        return;
-      }
-      const orders = (this.orders$ as any).source.value as Order[];
-      const found = orders.find((o) => o.orderNumber === orderNumber);
-      if (found) {
-        this.form.get('orderId')!.setValue(found.id);
-        this.form.get('orderNumber')!.setValue(found.orderNumber);
-        // Preenche BusinessPartnerId e BusinessPartnerName
-        this.form.get('businessPartnerId')!.setValue(found.businessPartnerId);
-        this.form
-          .get('businessPartnerName')!
-          .setValue(found.businessPartnerName);
-      } else {
-        this.modalService.showNotification(
-          false,
-          'Pedido não encontrado',
-          `O pedido "${orderNumber}" não existe. Por favor, selecione um pedido válido ou cadastre-o antes de associar a este pagamento.`,
-        );
-        this.form.get('orderId')!.setValue(null);
-        this.form.get('orderNumber')!.setValue(null);
-      }
-    }, 200);
-  }
-
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -307,7 +277,7 @@ export class TransactionFormComponent
       businessPartnerId: [null],
       businessPartnerName: [''],
       orderId: [null],
-      orderNumber: [''],
+      orderNumber: [{ value: '', disabled: true }],
     };
     this.form = !this.isEdit
       ? this.formBuilder.group(commonControls)
@@ -319,7 +289,6 @@ export class TransactionFormComponent
     // Bloqueia campos quando isEdit for true
     if (this.isEdit && this.form) {
       this.form.get('businessPartnerName')?.disable();
-      this.form.get('orderNumber')?.disable();
       this.form.get('totalOfPayments')?.disable();
       this.form.get('type')?.disable();
     }
@@ -365,7 +334,6 @@ export class TransactionFormComponent
     }
 
     this.businessPartnerNameAutoComplete();
-    this.orderNumberAutoComplete();
   }
 
   private businessPartnerNameAutoComplete() {
@@ -390,27 +358,6 @@ export class TransactionFormComponent
           );
         }),
       );
-  }
-
-  private orderNumberAutoComplete() {
-    this.orders$ = this.orderService.getOrders(true);
-    this.filteredOrders$ = this.form.get('orderNumber')!.valueChanges.pipe(
-      startWith(''),
-      map((value: string | Order) => {
-        let filterValue = '';
-        if (typeof value === 'string') {
-          filterValue = value.toLowerCase();
-        } else if (value && typeof value === 'object') {
-          filterValue = value.orderNumber?.toLowerCase() || '';
-        }
-        if (!filterValue) {
-          return [];
-        }
-        return (this.orders$ as any).source.value.filter((order: Order) =>
-          (order.orderNumber || '').toLowerCase().includes(filterValue),
-        );
-      }),
-    );
   }
 
   private onTypeChanges(): void {

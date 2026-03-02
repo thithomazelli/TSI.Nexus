@@ -1,10 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TSI.Friday.Contracts.Enums;
-using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Interfaces;
 
 namespace TSI.Friday.Services.BackgroundServices
 {
@@ -68,62 +66,20 @@ namespace TSI.Friday.Services.BackgroundServices
         private async Task ProcessOnceAsync(CancellationToken cancellationToken)
         {
             using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<DbContext>();
+            var service = scope.ServiceProvider.GetRequiredService<IOverdueService>();
 
-            var nowUtc = DateTime.UtcNow;
-
-            // Update OrderProducts: InProgress -> Delayed when EndDate < now
             try
             {
-                var opQuery = context
-                    .Set<OrderProduct>()
-                    .Where(op =>
-                        op.Status == OrderProductStatus.InProgress
-                        && op.EndDate != default(DateTime)
-                        && op.EndDate < nowUtc
-                    );
-
-                var updatedOps = await opQuery.ExecuteUpdateAsync(
-                    s =>
-                        s.SetProperty(op => op.Status, op => OrderProductStatus.Delayed)
-                            .SetProperty(op => op.ModifyDate, op => DateTime.UtcNow)
-                            .SetProperty(op => op.ModifyUserId, op => "system"),
-                    cancellationToken
+                var result = await service.RunOverdueUpdateAsync();
+                _logger.LogInformation(
+                    "Overdue update executed. OrderProducts: {Ops}, Payments: {Payments}",
+                    result.OrderProductsUpdated,
+                    result.PaymentsUpdated
                 );
-
-                if (updatedOps > 0)
-                {
-                    _logger.LogInformation("Marked {Count} OrderProduct(s) as Delayed", updatedOps);
-                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update overdue OrderProducts");
-            }
-
-            // Update Payments: Pending -> Delayed when Date < now
-            try
-            {
-                var pQuery = context
-                    .Set<Payment>()
-                    .Where(p => p.Status == PaymentStatus.Pending && p.Date < nowUtc);
-
-                var updatedPayments = await pQuery.ExecuteUpdateAsync(
-                    s =>
-                        s.SetProperty(p => p.Status, p => PaymentStatus.Delayed)
-                            .SetProperty(p => p.ModifyDate, p => DateTime.UtcNow)
-                            .SetProperty(p => p.ModifyUserId, p => "system"),
-                    cancellationToken
-                );
-
-                if (updatedPayments > 0)
-                {
-                    _logger.LogInformation("Marked {Count} Payment(s) as Delayed", updatedPayments);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to update overdue Payments");
+                _logger.LogError(ex, "Failed to execute overdue update via IOverdueService");
             }
         }
 

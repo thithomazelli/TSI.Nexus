@@ -41,6 +41,7 @@ import { LinkFieldComponent } from './components/link-field/link-field.component
 import { AreaChartComponent } from './area-chart/area-chart.component';
 import { PieChartComponent } from './pie-chart/pie-chart.component';
 import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-trending.component';
+import { AlertBannerComponentComponent } from './alert-banner-component/alert-banner-component.component';
 
 @NgModule({
   declarations: [
@@ -59,6 +60,7 @@ import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-tre
     PieChartComponent,
     AreaChartComponent,
     AreaChartTrendingComponent,
+    AlertBannerComponentComponent,
   ],
   imports: [
     CommonModule,
@@ -83,6 +85,7 @@ import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-tre
     PieChartComponent,
     AreaChartComponent,
     AreaChartTrendingComponent,
+    AlertBannerComponentComponent,
     FooterComponent,
     RouterModule,
     MatDialogModule,

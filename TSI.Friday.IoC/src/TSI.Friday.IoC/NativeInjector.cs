@@ -53,6 +53,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IUserManagerService, UserManagerService>();
             services.AddScoped<ISequenceService, SequenceService>();
+            services.AddScoped<IDashboardService, DashboardService>();
 
             #endregion Services
 

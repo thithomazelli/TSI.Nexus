@@ -34,20 +34,15 @@ export class OrderProductsComponent {
   @Output()
   orderProductsUpdated = new EventEmitter<string>();
 
-  showFilters = false;
   baseEndPoint = ApiType.OrderProducts;
+
   rowData: OrderProduct[] = [];
   columnDefs: ColDef[] = [];
 
-  // Filtros customizados
-  filterReturnDate: string | null = null;
-  filterStatus = { Vigente: false, Atrasado: false, Devolvido: false };
   filteredRowData: OrderProduct[] = [];
-  private statusMap: Record<string, string> = {
-    Vigente: 'InProgress',
-    Atrasado: 'Delayed',
-    Devolvido: 'Returned',
-  };
+  filterStartDate: string | null = null;
+  filterEndDate: string | null = null;
+  filterStatus = { InProgress: false, Delayed: false, Returned: false };
 
   constructor(
     private apiService: ApiService,
@@ -57,17 +52,6 @@ export class OrderProductsComponent {
   ngOnInit(): void {
     this.getOrderProducts();
     this.initializeGrid();
-    this.filteredRowData = [...this.rowData];
-  }
-
-  applyFilters(): void {
-    this.filterOrderProducts();
-  }
-
-  clearFilters(): void {
-    this.filterReturnDate = null;
-    this.filterStatus = { Vigente: false, Atrasado: false, Devolvido: false };
-    this.filteredRowData = [...this.rowData];
   }
 
   refreshOrderProducts(): void {
@@ -129,6 +113,48 @@ export class OrderProductsComponent {
     }
   }
 
+  applyFilters(): void {
+    let filtered = [...this.rowData];
+    // Filter by date range (start and end)
+    if (this.filterStartDate || this.filterEndDate) {
+      filtered = filtered.filter((item) => {
+        if (!item.endDate) return false;
+        const itemDate = new Date(item.endDate).toISOString().slice(0, 10);
+        let isValid = true;
+        if (this.filterStartDate) {
+          const startDate = new Date(this.filterStartDate)
+            .toISOString()
+            .slice(0, 10);
+          isValid = isValid && itemDate >= startDate;
+        }
+        if (this.filterEndDate) {
+          const endDate = new Date(this.filterEndDate)
+            .toISOString()
+            .slice(0, 10);
+          isValid = isValid && itemDate <= endDate;
+        }
+        return isValid;
+      });
+    }
+    // Filter by status (compare directly with status value in EN)
+    const selectedStatuses = Object.entries(this.filterStatus)
+      .filter(([_, checked]) => checked)
+      .map(([label]) => label);
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((item) =>
+        selectedStatuses.includes(item.status),
+      );
+    }
+    this.filteredRowData = filtered;
+  }
+
+  clearFilters(): void {
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+    this.filterStatus = { InProgress: false, Delayed: false, Returned: false };
+    this.filteredRowData = [...this.rowData];
+  }
+
   private getOrderProducts(): void {
     if (!this.parentOrderId && !this.isFullList) {
       return;
@@ -147,6 +173,7 @@ export class OrderProductsComponent {
               (b?.endDate ? new Date(b.endDate).getTime() : 0) -
               (a?.endDate ? new Date(a.endDate).getTime() : 0),
           ) ?? [];
+        // Atualiza também os dados filtrados ao buscar novos dados
         this.filteredRowData = [...this.rowData];
       });
   }
@@ -334,31 +361,5 @@ export class OrderProductsComponent {
     const year = d.getFullYear();
 
     return `${day}/${month}/${year}`;
-  }
-
-  // Métodos de filtro
-  private filterOrderProducts(): void {
-    let filtered = [...this.rowData];
-    // Filtro por data de retorno
-    if (this.filterReturnDate) {
-      filtered = filtered.filter((item) => {
-        if (!item.endDate) return false;
-        const itemDate = new Date(item.endDate).toISOString().slice(0, 10);
-        const filterDate = new Date(this.filterReturnDate as string)
-          .toISOString()
-          .slice(0, 10);
-        return itemDate === filterDate;
-      });
-    }
-    // Filtro por status
-    const selectedStatus = Object.entries(this.filterStatus)
-      .filter(([_, checked]) => checked)
-      .map(([label]) => this.statusMap[label]);
-    if (selectedStatus.length > 0) {
-      filtered = filtered.filter((item) =>
-        selectedStatus.includes(item.status),
-      );
-    }
-    this.filteredRowData = filtered;
   }
 }

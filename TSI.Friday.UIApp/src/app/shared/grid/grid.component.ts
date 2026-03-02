@@ -1,3 +1,4 @@
+import { TemplateRef } from '@angular/core';
 import { AG_GRID_LOCALE_BR } from '@ag-grid-community/locale';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +18,9 @@ import { map } from 'rxjs';
   standalone: false,
 })
 export class GridComponent<T> implements OnInit {
+  @Input()
+  filtersTemplate?: TemplateRef<any>;
+
   @Input()
   baseEndPoint: string = '';
 
@@ -50,6 +54,8 @@ export class GridComponent<T> implements OnInit {
   gridApi!: GridApi;
   quickFilter = '';
   localeText = AG_GRID_LOCALE_BR;
+
+  showFilters = false;
 
   noRowsOverlayTemplate =
     '<span class="text-muted p-3">Nenhum item encontrado</span>';
@@ -90,6 +96,10 @@ export class GridComponent<T> implements OnInit {
     this.updateNoRowsOverlay();
   }
 
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
   onFilterTextBoxChanged(event: Event): void {
     this.quickFilter = (event.target as HTMLInputElement).value || '';
   }
@@ -116,6 +126,32 @@ export class GridComponent<T> implements OnInit {
     };
     this.openModal.emit(initialState);
   }
+
+  // // Métodos de filtro
+  // private filterOrderProducts(): void {
+  //   let filtered = [...this.rowData];
+  //   // Filtro por data de retorno
+  //   if (this.filterReturnDate) {
+  //     filtered = filtered.filter((item) => {
+  //       if (!item.endDate) return false;
+  //       const itemDate = new Date(item.endDate).toISOString().slice(0, 10);
+  //       const filterDate = new Date(this.filterReturnDate as string)
+  //         .toISOString()
+  //         .slice(0, 10);
+  //       return itemDate === filterDate;
+  //     });
+  //   }
+  //   // Filtro por status
+  //   const selectedStatus = Object.entries(this.filterStatus)
+  //     .filter(([_, checked]) => checked)
+  //     .map(([label]) => this.statusMap[label]);
+  //   if (selectedStatus.length > 0) {
+  //     filtered = filtered.filter((item) =>
+  //       selectedStatus.includes(item.status),
+  //     );
+  //   }
+  //   this.filteredRowData = filtered;
+  // }
 
   private editAction(data: any): void {
     const initialState = {

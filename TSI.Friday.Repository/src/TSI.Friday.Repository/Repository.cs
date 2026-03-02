@@ -194,6 +194,18 @@ namespace TSI.Friday.Repository
             return await query.OrderBy(e => EF.Property<DateTime>(e, "CreateDate")).ToListAsync();
         }
 
+        /// <inheritdoc />
+        public async Task<decimal> SumAsync(Expression<Func<T, bool>> filter, Expression<Func<T, decimal>> selector)
+        {
+            return await _myDbContext.Set<T>().Where(filter).SumAsync(selector);
+        }
+
+        /// <inheritdoc />
+        public async Task<int> CountAsync(Expression<Func<T, bool>> filter)
+        {
+            return await _myDbContext.Set<T>().CountAsync(filter);
+        }
+
         #endregion Public methods
 
         #region Private methods

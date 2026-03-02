@@ -109,5 +109,20 @@ namespace TSI.Friday.Contracts.Interfaces
             Expression<Func<T, bool>> filter,
             params Expression<Func<T, object>>[] includes
         );
+
+        /// <summary>
+        /// This function will be receive an expression as parameter and should be returns the sum of the values.
+        /// </summary>
+        /// <param name="filter">The filter expression to be used on the search.</param>
+        /// <param name="selector">The selector expression to specify the property to be summed.</param>
+        /// <returns>Returns the sum of the values.</returns>
+        Task<decimal> SumAsync(Expression<Func<T, bool>> filter, Expression<Func<T, decimal>> selector);
+
+        /// <summary>
+        /// This function will be receive an expression as parameter and should be returns the count of the items.
+        /// </summary>
+        /// <param name="filter">The filter expression to be used on the search.</param>
+        /// <returns>Returns the count of the items.</returns>
+        Task<int> CountAsync(Expression<Func<T, bool>> filter);
     }
 }

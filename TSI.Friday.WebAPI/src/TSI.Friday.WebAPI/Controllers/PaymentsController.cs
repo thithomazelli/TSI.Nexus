@@ -143,5 +143,16 @@ namespace TSI.Friday.WebAPI.Controllers
             var webApiResponse = await _paymentService.GetPaymentsHistory(start, end);
             return Ok(webApiResponse);
         }
+
+        /// <summary>
+        /// Get delayed/overdue payments for notifications
+        /// </summary>
+        [HttpGet]
+        [Route("GetDelayed")]
+        public async Task<IActionResult> GetDelayed()
+        {
+            var webApiResponse = await _paymentService.FindDelayed();
+            return Ok(webApiResponse);
+        }
     }
 }

@@ -88,6 +88,21 @@ export class OrderProductsFormComponent
     { label: 'Devolvido', value: OrderProductStatus.Returned },
   ];
 
+  orderProductInfo = [
+    {
+      InProgress: 'Vigente',
+      data: { icon: 'info', message: 'Pedido em andamento.' },
+    },
+    {
+      Delayed: 'Atrasado',
+      data: { icon: 'exclamation', message: 'Pedido em atrasado.' },
+    },
+    {
+      Returned: 'Devolvido',
+      data: { icon: 'check', message: 'Produto devolvido.' },
+    },
+  ];
+
   private _orderData: Order | null = null;
 
   constructor(

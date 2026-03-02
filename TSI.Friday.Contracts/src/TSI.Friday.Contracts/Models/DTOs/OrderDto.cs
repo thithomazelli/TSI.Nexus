@@ -16,6 +16,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public OrderStatus Status { get; set; }
 
+        public DateTime CreateDate { get; set; }
+
         public string Description { get; set; }
 
         public decimal Discount { get; set; }

@@ -10,8 +10,8 @@ import { TransactionType } from '../core/enums/payment-type.enum';
 export class HomeComponent implements AfterViewInit, OnDestroy {
   TransactionType = TransactionType;
   showFilters = false;
-  filterStart: Date | null = null;
-  filterEnd: Date | null = null;
+  filterStartDate: Date | null = null;
+  filterEndDate: Date | null = null;
 
   private charts: any[] = [];
   private resizeUnlisten: (() => void) | null = null;
@@ -59,9 +59,13 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  applyFilter() {
-    // Apenas força atualização dos gráficos, pois os inputs já são passados
-    // Pode adicionar lógica extra se necessário
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+  clearFilters(): void {
+    this.filterStartDate = null;
+    this.filterEndDate = null;
   }
 
   // helper to listen for resize and attempt a safe redraw/update of charts

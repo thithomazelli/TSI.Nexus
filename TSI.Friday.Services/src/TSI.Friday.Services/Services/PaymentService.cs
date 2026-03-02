@@ -396,6 +396,36 @@ namespace TSI.Friday.Services
             return result;
         }
 
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindDelayed()
+        {
+            WebApiResponse<IEnumerable<PaymentDto>> result = new();
+
+            try
+            {
+                var todayUtc = DateTime.UtcNow.Date;
+
+                var items = await _repository.QueryAsync(
+                    p => p.Status == PaymentStatus.Delayed
+                    || (p.Status != PaymentStatus.Approved && p.Date.ToUniversalTime().Date < todayUtc),
+                    c => c.BusinessPartner,
+                    o => o.Order
+                );
+
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(items).OrderBy(_ => _.Date);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de Parcelas de Transação. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
         #endregion Public methods
 
         #region Private methods

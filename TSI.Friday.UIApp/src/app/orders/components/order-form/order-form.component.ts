@@ -71,7 +71,7 @@ export class OrderFormComponent
   orderStatusOptions = [
     { value: OrderStatus.Open, label: 'Em Aberto' },
     { value: OrderStatus.Closed, label: 'Fechado' },
-    { value: OrderStatus.WaitingTransaction, label: 'Aguardando Pagamento' },
+    { value: OrderStatus.WaitingPayment, label: 'Aguardando Pagamento' },
   ];
 
   constructor(

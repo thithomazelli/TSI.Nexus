@@ -33,7 +33,8 @@
   color: #f55252;
 }
 
-.disabled {
+.disabled,
+.disabled:hover {
   color: #6c757d;
   cursor: default;
 }

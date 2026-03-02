@@ -73,5 +73,11 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="end">Optional end date (inclusive).</param>
         /// <returns></returns>
         Task<WebApiResponse<JsonObject>> GetPaymentsHistory(DateTime? start = null, DateTime? end = null);
+
+        /// <summary>
+        /// Method responsible to get Payments considered delayed/overdue for notifications.
+        /// Rules: status == Delayed OR (status != Approved && Date < today) — compare dates using only day/month/year (UTC).
+        /// </summary>
+        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindDelayed();
     }
 }

@@ -7,59 +7,6 @@
   ]"
 ></app-header>
 
-<div class="row mb-3 align-items-center">
-  <div class="col-auto">
-    <button
-      class="btn btn-outline-secondary"
-      (click)="showFilters = !showFilters"
-    >
-      <i class="bi bi-funnel"></i> Filtros
-    </button>
-  </div>
-  <div class="col" *ngIf="showFilters">
-    <div class="row mb-3 align-items-center">
-      <div class="col-auto">
-        <app-date-field
-          label="Data de retorno"
-          [(ngModel)]="filterReturnDate"
-        ></app-date-field>
-      </div>
-      <div class="col-auto d-flex align-items-center gap-2">
-        <label class="form-check-label">
-          <input
-            type="checkbox"
-            class="form-check-input"
-            [(ngModel)]="filterStatus.Vigente"
-          />
-          Vigente
-        </label>
-        <label class="form-check-label">
-          <input
-            type="checkbox"
-            class="form-check-input"
-            [(ngModel)]="filterStatus.Atrasado"
-          />
-          Atrasado
-        </label>
-        <label class="form-check-label">
-          <input
-            type="checkbox"
-            class="form-check-input"
-            [(ngModel)]="filterStatus.Devolvido"
-          />
-          Devolvido
-        </label>
-        <button class="btn btn-primary ms-2" (click)="applyFilters()">
-          Filtrar
-        </button>
-        <button class="btn btn-outline-secondary ms-1" (click)="clearFilters()">
-          Limpar
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="app-content">
   <app-grid
     [className]="'Produtos do Pedido'"
@@ -71,5 +18,62 @@
     [delete]="deleteOrderProduct.bind(this)"
     [update]="updateOrderProductStatus.bind(this)"
     (openModal)="onOpenModal($event)"
+    [filtersTemplate]="filtersTpl"
   ></app-grid>
+
+  <ng-template #filtersTpl>
+    <div class="row g-2 mb-2">
+      <div class="col-auto">
+        <app-date-field
+          [(ngModel)]="filterStartDate"
+          (ngModelChange)="applyFilters()"
+          label="Início"
+        ></app-date-field>
+      </div>
+      <div class="col-auto">
+        <app-date-field
+          [(ngModel)]="filterEndDate"
+          (ngModelChange)="applyFilters()"
+          label="Fim"
+        ></app-date-field>
+      </div>
+      <div class="col-auto d-flex align-items-center gap-2">
+        <div class="filter-group-box me-3 position-relative">
+          <span class="filter-group-label">Status</span>
+          <div class="d-flex align-items-center pt-2">
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.InProgress"
+                (change)="applyFilters()"
+              />
+              Vigente
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Delayed"
+                (change)="applyFilters()"
+              />
+              Atrasado
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Returned"
+                (change)="applyFilters()"
+              />
+              Devolvido
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-secondary ms-1" (click)="clearFilters()">
+          Limpar
+        </button>
+      </div>
+    </div>
+  </ng-template>
 </div>

@@ -11,12 +11,92 @@
   <app-grid
     [className]="'Pagamentos'"
     [compactView]="compact"
-    [rowData]="rowData"
+    [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
     [canAdd]="canAdd"
     [refresh]="refreshOrders.bind(this)"
     [delete]="deleteOrder.bind(this)"
     (openModal)="onOpenModal($event)"
+    [filtersTemplate]="filtersTpl"
   ></app-grid>
+
+  <ng-template #filtersTpl>
+    <div class="row g-2 mb-2">
+      <div class="col-auto">
+        <app-date-field
+          [(ngModel)]="filterStartDate"
+          (ngModelChange)="applyFilters()"
+          label="Início"
+        ></app-date-field>
+      </div>
+      <div class="col-auto">
+        <app-date-field
+          [(ngModel)]="filterEndDate"
+          (ngModelChange)="applyFilters()"
+          label="Fim"
+        ></app-date-field>
+      </div>
+      <div class="col-auto d-flex align-items-center gap-2">
+        <div class="filter-group-box me-3 position-relative">
+          <span class="filter-group-label">Status</span>
+          <div class="d-flex align-items-center pt-2">
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Approved"
+                (change)="applyFilters()"
+              />
+              Pago
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Pending"
+                (change)="applyFilters()"
+              />
+              Em Aberto
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Delayed"
+                (change)="applyFilters()"
+              />
+              Atrasado
+            </label>
+          </div>
+        </div>
+        <div class="filter-group-box me-3 position-relative">
+          <span class="filter-group-label">Tipo</span>
+          <div class="d-flex align-items-center pt-2">
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterType.Incoming"
+                (change)="applyFilters()"
+              />
+              Entrada
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterType.Outgoing"
+                (change)="applyFilters()"
+              />
+              Saída
+            </label>
+          </div>
+        </div>
+        <button class="btn btn-secondary ms-1" (click)="clearFilters()">
+          Limpar
+        </button>
+      </div>
+    </div>
+  </ng-template>
 </div>

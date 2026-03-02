@@ -4,6 +4,7 @@ import {
   ApiType,
   ModalService,
   Order,
+  OrderStatus,
   ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
@@ -85,6 +86,16 @@ export class OrdersComponent {
       },
     },
     {
+      field: 'createDate',
+      headerName: 'Data',
+      sortable: true,
+      filter: true,
+      flex: 2,
+      minWidth: 160,
+      valueFormatter: (params: ValueFormatterParams) =>
+        this.formatDateBR(params.value),
+    },
+    {
       field: 'status',
       headerName: 'Status',
       sortable: true,
@@ -102,10 +113,7 @@ export class OrdersComponent {
         } else if (value === 'Open') {
           color = 'info';
           label = 'Em Aberto';
-        } else if (
-          value === 'WaitingTransaction' ||
-          value === 'Waiting payment'
-        ) {
+        } else if (value === 'WaitingPayment' || value === 'Waiting payment') {
           color = 'warning';
           label = 'Aguardando Pagamento';
         }
@@ -134,6 +142,15 @@ export class OrdersComponent {
       },
     },
   ];
+
+  filteredRowData: Order[] = [];
+  filterStartDate: string | null = null;
+  filterEndDate: string | null = null;
+  filterStatus = {
+    Open: false,
+    WaitingPayment: false,
+    Closed: false,
+  };
 
   constructor(
     private apiService: ApiService,
@@ -178,11 +195,75 @@ export class OrdersComponent {
     }
   }
 
+  applyFilters(): void {
+    let filtered = [...this.rowData];
+    // Filter by date range (start and end) using createDate
+    if (this.filterStartDate || this.filterEndDate) {
+      filtered = filtered.filter((item) => {
+        if (!item.createDate) return false;
+        const itemDate = new Date(item.createDate).toISOString().slice(0, 10);
+        let isValid = true;
+        if (this.filterStartDate) {
+          const startDate = new Date(this.filterStartDate)
+            .toISOString()
+            .slice(0, 10);
+          isValid = isValid && itemDate >= startDate;
+        }
+        if (this.filterEndDate) {
+          const endDate = new Date(this.filterEndDate)
+            .toISOString()
+            .slice(0, 10);
+          isValid = isValid && itemDate <= endDate;
+        }
+        return isValid;
+      });
+    }
+    // Filter by status (compare directly with status value in EN)
+    const selectedStatuses = Object.entries(this.filterStatus)
+      .filter(([_, checked]) => checked)
+      .map(([label]) => label);
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter((item) =>
+        selectedStatuses.includes(item.status ?? ''),
+      );
+    }
+    this.filteredRowData = filtered;
+  }
+
+  clearFilters(): void {
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+    this.filterStatus = {
+      Open: false,
+      WaitingPayment: false,
+      Closed: false,
+    };
+    this.filteredRowData = [...this.rowData];
+  }
+
   private getOrders(): void {
     this.apiService
       .get<WebApiResponse<Order[]>>(`${this.baseEndPoint}/getAll`)
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
+        this.filteredRowData = [...this.rowData];
       });
+  }
+
+  private formatDateBR(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+
+    return `${day}/${month}/${year}`;
   }
 }

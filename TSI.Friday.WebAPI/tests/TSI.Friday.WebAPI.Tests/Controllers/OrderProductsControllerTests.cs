@@ -118,5 +118,28 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             response.Should().BeEquivalentTo(expected);
             _serviceMock.Verify(s => s.Add(item), Times.Once);
         }
+
+        [Fact]
+        public async Task GetDelayed_ShouldReturnOkWithData_WhenServiceReturnsItems()
+        {
+            // Arrange
+            var expected = new WebApiResponse<IEnumerable<OrderProductDto>>
+            {
+                Data = _itemsMock,
+                Status = ResponseStatus.Success,
+                Message = $"{_itemsMock.Count} registro(s) encontrado(s).",
+            };
+
+            _serviceMock.Setup(s => s.FindDelayed()).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetDelayed();
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<OrderProductDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.FindDelayed(), Times.Once);
+        }
     }
 }

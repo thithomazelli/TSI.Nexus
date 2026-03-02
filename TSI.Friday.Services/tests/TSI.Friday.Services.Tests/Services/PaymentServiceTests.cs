@@ -1,4 +1,6 @@
-ï»¿using System.Linq.Expressions;
+using System;
+using System.Linq;
+using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
 using Moq;
@@ -8,6 +10,7 @@ using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 using TSI.Friday.IoC;
+using TSI.Friday.Repository;
 
 namespace TSI.Friday.Services.Tests.Services
 {
@@ -23,23 +26,20 @@ namespace TSI.Friday.Services.Tests.Services
             _repository = new Mock<IRepository<Payment>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
-            _paymentService = new PaymentService(
-                _repository.Object,
-                _mapper
-            );
+            _paymentService = new PaymentService(_repository.Object, _mapper);
 
             _paymentsMock = new List<Payment>
             {
                 new Payment
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Description = "TransaÃ§Ã£o 1",
+                    Description = "Transação1",
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
                 new Payment
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Description = "TransaÃ§Ã£o 2",
+                    Description = "Transação2",
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                 },
             };
@@ -52,19 +52,16 @@ namespace TSI.Friday.Services.Tests.Services
             var paymentDto = new PaymentDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                Description = "TransaÃ§Ã£o 3",
+                Description = "Transação3",
                 TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
             };
-            _repository
-                .Setup(r => r.AddAsync(It.IsAny<Payment>()))
-                .Returns(Task.CompletedTask);
+            _repository.Setup(r => r.AddAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<PaymentDto>
             {
                 Data = paymentDto,
                 Status = ResponseStatus.Success,
-                Message =
-                    $"Parcela do pagamento {paymentDto.Description} cadastrada com sucesso.",
+                Message = $"Parcela do pagamento {paymentDto.Description} cadastrada com sucesso.",
             };
 
             // Act
@@ -79,19 +76,14 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentService_Update_ShouldUpdatePaymentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentDto = _mapper.Map<PaymentDto>(
-                _paymentsMock.First()
-            );
-            _repository
-                .Setup(r => r.UpdateAsync(It.IsAny<Payment>()))
-                .Returns(Task.CompletedTask);
+            var paymentDto = _mapper.Map<PaymentDto>(_paymentsMock.First());
+            _repository.Setup(r => r.UpdateAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<PaymentDto>
             {
                 Data = paymentDto,
                 Status = ResponseStatus.Success,
-                Message =
-                    $"Parcela do pagamento {paymentDto.Description} atualizada com sucesso.",
+                Message = $"Parcela do pagamento {paymentDto.Description} atualizada com sucesso.",
             };
 
             // Act
@@ -106,19 +98,14 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task PaymentService_Remove_ShouldRemovePaymentSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var paymentDto = _mapper.Map<PaymentDto>(
-                _paymentsMock.First()
-            );
-            _repository
-                .Setup(r => r.RemoveAsync(It.IsAny<Payment>()))
-                .Returns(Task.CompletedTask);
+            var paymentDto = _mapper.Map<PaymentDto>(_paymentsMock.First());
+            _repository.Setup(r => r.RemoveAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<PaymentDto>
             {
                 Data = paymentDto,
                 Status = ResponseStatus.Success,
-                Message =
-                    $"Parcela do pagamento {paymentDto.Description} removida com sucesso.",
+                Message = $"Parcela do pagamento {paymentDto.Description} removida com sucesso.",
             };
 
             // Act
@@ -157,9 +144,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var transactionId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            var transactions = _paymentsMock
-                .Where(p => p.TransactionId == transactionId)
-                .ToList();
+            var transactions = _paymentsMock.Where(p => p.TransactionId == transactionId).ToList();
             _repository
                 .Setup(r =>
                     r.QueryAsync(
@@ -198,7 +183,6 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var businessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            ;
             var transactions = _paymentsMock
                 .Where(p => p.BusinessPartnerId == businessPartnerId)
                 .ToList();
@@ -220,9 +204,7 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             // Act
-            var result = await _paymentService.FindByBusinessPartnerId(
-                businessPartnerId
-            );
+            var result = await _paymentService.FindByBusinessPartnerId(businessPartnerId);
 
             // Assert
             expected.Should().BeEquivalentTo(result);
@@ -271,6 +253,65 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Expression<Func<Payment, bool>>>(),
                         c => c.BusinessPartner,
                         o => o.Order
+                    ),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task PaymentService_FindDelayed_ShouldReturnDelayedAndPastItems()
+        {
+            // Arrange
+            var today = DateTime.UtcNow.Date;
+            var expectedItems = new List<Payment>
+            {
+                new Payment
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000011"),
+                    Description = "Payment A",
+                    Date = DateTime.UtcNow.Date.AddDays(-1),
+                    Status = PaymentStatus.Pending,
+                },
+                new Payment
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000012"),
+                    Description = "Payment B",
+                    Date = DateTime.UtcNow.Date.AddDays(-5),
+                    Status = PaymentStatus.Delayed,
+                },
+                new Payment
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000013"),
+                    Description = "Payment C",
+                    Date = DateTime.UtcNow.Date.AddDays(1),
+                    Status = PaymentStatus.Approved,
+                },
+            };
+
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        It.IsAny<Expression<Func<Payment, object>>>(),
+                        It.IsAny<Expression<Func<Payment, object>>>()
+                    )
+                )
+                .ReturnsAsync(expectedItems);
+
+            var expected = _mapper.Map<IEnumerable<PaymentDto>>(expectedItems).OrderBy(p => p.Date);
+
+            // Act
+            var result = await _paymentService.FindDelayed();
+
+            // Assert
+            result.Status.Should().Be(ResponseStatus.Success);
+            result.Data.Should().BeEquivalentTo(expected);
+            _repository.Verify(
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        It.IsAny<Expression<Func<Payment, object>>>(),
+                        It.IsAny<Expression<Func<Payment, object>>>()
                     ),
                 Times.Once
             );

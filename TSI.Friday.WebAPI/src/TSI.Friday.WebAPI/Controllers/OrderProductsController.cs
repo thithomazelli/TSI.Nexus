@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
-using TSI.Friday.Services;
 
 namespace TSI.Friday.WebAPI.Controllers
 {
@@ -105,6 +104,17 @@ namespace TSI.Friday.WebAPI.Controllers
         public async Task<IActionResult> GetById(Guid? orderProductId)
         {
             var webApiResponse = await _orderProductService.FindById(orderProductId);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get delayed/overdue order products for notifications
+        /// </summary>
+        [HttpGet]
+        [Route("GetDelayed")]
+        public async Task<IActionResult> GetDelayed()
+        {
+            var webApiResponse = await _orderProductService.FindDelayed();
             return Ok(webApiResponse);
         }
     }

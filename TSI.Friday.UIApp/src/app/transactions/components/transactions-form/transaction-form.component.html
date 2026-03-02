@@ -1,4 +1,10 @@
 <div class="payment-form-wrapper">
+  @if (isEdit) {
+    <app-alert-banner-component
+      [status]="data?.status"
+      [entity]="'Transação'"
+    ></app-alert-banner-component>
+  }
   <form [formGroup]="form" (ngSubmit)="submit()">
     <!-- First line: Type and Method -->
     <div class="modal-scrollable-area">
@@ -101,42 +107,16 @@
           <div class="col-6">
             <div class="input-group">
               <div class="form-floating flex-fill">
-                @if (!isEdit) {
-                  <input
-                    formControlName="orderNumber"
-                    type="text"
-                    placeholder="Número do Pedido"
-                    class="form-control"
-                    id="orderNumber"
-                    [matAutocomplete]="orderAuto"
-                    (blur)="onOrderBlur()"
-                  />
-                  <label for="orderNumber">Número do Pedido</label>
-                  <mat-autocomplete
-                    #orderAuto="matAutocomplete"
-                    (optionSelected)="
-                      form.get('orderId')?.setValue($event.option.value.id)
-                    "
-                  >
-                    <mat-option
-                      *ngFor="let order of filteredOrders$ | async"
-                      [value]="order.orderNumber"
-                    >
-                      {{ order.orderNumber }}
-                    </mat-option>
-                  </mat-autocomplete>
-                } @else {
-                  <app-link-field
-                    [placeHolder]="'Número do Pedido'"
-                    [text]="form.get('orderNumber')?.value || 'N/A'"
-                    [linkUrl]="
-                      form.get('orderId')?.value != null
-                        ? ['/orders', form.get('orderId')?.value]
-                        : []
-                    "
-                  >
-                  </app-link-field>
-                }
+                <app-link-field
+                  [placeHolder]="'Número do Pedido'"
+                  [text]="form.get('orderNumber')?.value || 'N/A'"
+                  [linkUrl]="
+                    form.get('orderId')?.value != null
+                      ? ['/orders', form.get('orderId')?.value]
+                      : []
+                  "
+                >
+                </app-link-field>
               </div>
               <div class="input-group-text"><i class="bi bi-hash"></i></div>
             </div>

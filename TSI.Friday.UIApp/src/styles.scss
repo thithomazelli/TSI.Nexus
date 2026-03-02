@@ -1,3 +1,24 @@
+/* Estilo para área agrupada de filtros (tipo fieldset/tab visual) */
+.filter-group-box {
+  border: 1px solid #ced4da;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem 0.5rem 1rem;
+  background: #f8f9fa;
+  min-width: 220px;
+  margin-top: 0.25rem;
+}
+.filter-group-label {
+  position: absolute;
+  top: -0.9em;
+  left: 1.2em;
+  background: #f8f9fa;
+  padding: 0 0.5em;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #495057;
+  border-radius: 0.25em;
+  z-index: 1;
+}
 .app-main {
   padding-bottom: 0;
 }

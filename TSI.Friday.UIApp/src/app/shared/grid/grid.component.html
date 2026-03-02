@@ -6,11 +6,19 @@
       (click)="openAddModal()"
     >
       <i class="bi bi-plus-lg"></i>
-      Adicionar {{ className }}
+      Adicionar
     </button>
-    <button class="btn btn-secondary" (click)="refresh()">
+    <button class="btn btn-secondary me-2" (click)="refresh()">
       <i class="bi bi-arrow-clockwise"></i>
       Atualizar
+    </button>
+    <button
+      *ngIf="filtersTemplate"
+      class="btn btn-outline-primary"
+      [ngClass]="showFilters ? 'active' : ''"
+      (click)="toggleFilters()"
+    >
+      <i class="bi bi-funnel"></i> Filtros
     </button>
   </div>
   <div style="width: 300px">
@@ -21,6 +29,9 @@
       (input)="onFilterTextBoxChanged($event)"
     />
   </div>
+</div>
+<div *ngIf="showFilters && filtersTemplate">
+  <ng-container *ngTemplateOutlet="filtersTemplate"></ng-container>
 </div>
 
 <div class="grid-host" [ngClass]="{ 'compact-view': compactView }">
