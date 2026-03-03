@@ -9,4 +9,3 @@ export * from './order-product/order-product.service';
 export * from './payment/payment.service';
 export * from './photo/photo.service';
 export * from './product/product.service';
-export * from './transaction/transaction.service';
