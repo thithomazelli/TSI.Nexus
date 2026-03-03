@@ -4,7 +4,9 @@ import {
   ApiService,
   ApiType,
   NotificationService,
+  PaymentStatus,
   Transaction,
+  TransactionType,
   WebApiResponse,
 } from '@friday/core';
 
@@ -20,6 +22,17 @@ export class TransactionDetailsPageComponent {
   id: string | null = null;
   loading = false;
   activeTab: 'details' | 'payments' = 'details';
+
+  transactionTypeOptions = [
+    { label: 'Entrada', value: TransactionType.Incoming },
+    { label: 'Saída', value: TransactionType.Outgoing },
+  ];
+
+  transactionStatusOptions = [
+    { label: 'Aprovado', value: PaymentStatus.Approved },
+    { label: 'Atrasado', value: PaymentStatus.Delayed },
+    { label: 'Pendente', value: PaymentStatus.Pending },
+  ];
 
   private _baseEndPoint: ApiType = ApiType.Transactions;
 

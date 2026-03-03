@@ -5,6 +5,7 @@ import {
   ApiType,
   NotificationService,
   Product,
+  ProductType,
   WebApiResponse,
 } from '@friday/core';
 
@@ -19,7 +20,13 @@ export class ProductDetailsPageComponent {
   data?: Product | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'form' | 'image' | 'history' = 'form';
+  activeTab: 'details' | 'image' | 'history' = 'details';
+
+  productTypeOptions = [
+    { label: 'Aluguel', value: ProductType.Rental },
+    { label: 'Venda', value: ProductType.Sale },
+    { label: 'Serviço', value: ProductType.Service },
+  ];
 
   private _baseEndPoint: ApiType = ApiType.Products;
 
