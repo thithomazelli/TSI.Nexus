@@ -124,5 +124,12 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="filter">The filter expression to be used on the search.</param>
         /// <returns>Returns the count of the items.</returns>
         Task<int> CountAsync(Expression<Func<T, bool>> filter);
+
+        /// <summary>
+        /// Execute a bulk update on entities matching the filter. The updateAction will be applied to each entity.
+        /// Implementations may translate this to a single UPDATE statement when possible, otherwise they may load
+        /// the entities, apply the action and save changes. Returns the number of rows affected.
+        /// </summary>
+        Task<int> ExecuteUpdateAsync(Expression<Func<T, bool>> filter, Action<T> updateAction);
     }
 }

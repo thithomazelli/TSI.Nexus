@@ -26,7 +26,7 @@
             </div>
           </div>
 
-          <div class="col-12" [ngClass]="compact ? 'col-md-7' : 'col-md-8'">
+          <div class="col-12" [ngClass]="isEdit ? 'col-md-8' : 'col-md-12'">
             <div class="input-group">
               <div class="form-floating">
                 @if (!isEdit) {
@@ -86,7 +86,7 @@
             </div>
           </div>
 
-          <div class="col-6" [ngClass]="compact ? 'col-md-5' : 'col-md-3'">
+          <div class="col-12" [ngClass]="compact ? 'col-md-9' : 'col-md-3'">
             <div class="input-group">
               <div class="form-floating flex-fill">
                 <select
@@ -110,26 +110,7 @@
             </div>
           </div>
 
-          <div class="col-6" [ngClass]="compact ? 'col-md-4' : 'col-md-3'">
-            <div class="input-group">
-              <div class="form-floating">
-                <input
-                  formControlName="priceFormatted"
-                  type="text"
-                  placeholder="Preço"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('priceFormatted')"
-                  [class.is-valid]="isValid('priceFormatted')"
-                />
-                <label for="price">Preço</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-6" [ngClass]="compact ? 'col-md-4' : 'col-md-3'">
+          <div class="col-6" [ngClass]="compact ? 'col-md-3' : 'col-md-3'">
             <div class="input-group">
               <div class="form-floating flex-fill">
                 <input
@@ -148,7 +129,26 @@
             </div>
           </div>
 
-          <div class="col-6" [ngClass]="compact ? 'col-md-4' : 'col-md-3'">
+          <div class="col-6" [ngClass]="compact ? 'col-md-6' : 'col-md-3'">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="priceFormatted"
+                  type="text"
+                  placeholder="Preço"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('priceFormatted')"
+                  [class.is-valid]="isValid('priceFormatted')"
+                />
+                <label for="price">Preço</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6" [ngClass]="compact ? 'col-md-6' : 'col-md-3'">
             <div class="input-group">
               <div class="form-floating">
                 <input

@@ -5,10 +5,7 @@
   <div class="confirmation-modal-title">{{ title }}</div>
   <div class="confirmation-modal-message">{{ message }}</div>
   <div class="modal-footer">
-    <button
-      class="btn btn-success"
-      (click)="confirmDelete(); dialogRef.close()"
-    >
+    <button class="btn btn-success" (click)="dialogRef.close(true)">
       {{ confirmButtonText }}
     </button>
     <button class="btn btn-secondary" (click)="dialogRef.close()">

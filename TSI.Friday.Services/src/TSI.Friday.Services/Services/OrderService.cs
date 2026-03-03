@@ -16,6 +16,7 @@ namespace TSI.Friday.Services
         /// OrderService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         private readonly IRepository<Order> _repository;
+        private readonly IRepository<OrderProduct> _orderProductRepository;
         private readonly ITransactionService _transactionService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
@@ -30,12 +31,14 @@ namespace TSI.Friday.Services
         /// <param name="repository">IRepository<Order> object used to initialize the internal variable using Dependency Injection.</param>
         public OrderService(
             IRepository<Order> repository,
+            IRepository<OrderProduct> orderProductRepository,
             ITransactionService transactionService,
             ISequenceService sequenceService,
             IMapper mapper
         )
         {
             _repository = repository;
+            _orderProductRepository = orderProductRepository;
             _transactionService = transactionService;
             _sequenceService = sequenceService;
             _mapper = mapper;
@@ -114,6 +117,18 @@ namespace TSI.Friday.Services
                 if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
                 {
                     orderDto.Transaction = updRes.Data;
+                }
+
+                // If UI requested marking all order products as returned, perform bulk update via repository
+                if (orderDto.MarkAllProductsAsReturned)
+                {
+                    // Use ExecuteUpdateAsync to update all non-returned order products for this order in a single operation when possible
+                    await _orderProductRepository.ExecuteUpdateAsync(
+                        op =>
+                            op.OrderId == orderEntity.Id
+                            && op.Status != OrderProductStatus.Returned,
+                        op => op.Status = OrderProductStatus.Returned
+                    );
                 }
 
                 result.Data = _mapper.Map<OrderDto>(orderEntity);
@@ -204,6 +219,7 @@ namespace TSI.Friday.Services
                 var order = await _repository.GetByIdAsync(
                     id,
                     o => o.BusinessPartner,
+                    op => op.OrderProducts,
                     p => p.Transaction,
                     pi => pi.Transaction.Payments
                 );

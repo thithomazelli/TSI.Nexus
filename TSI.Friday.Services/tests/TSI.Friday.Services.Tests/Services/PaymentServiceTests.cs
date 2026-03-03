@@ -263,6 +263,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var today = DateTime.UtcNow.Date;
+            var tomorrowUtc = today.AddDays(1);
             var expectedItems = new List<Payment>
             {
                 new Payment
@@ -288,6 +289,10 @@ namespace TSI.Friday.Services.Tests.Services
                 },
             };
 
+            var expectedQueryItems = expectedItems.Where(p =>
+                p.Status == PaymentStatus.Delayed || (p.Status != PaymentStatus.Approved && p.Date != default(DateTime) && p.Date < tomorrowUtc)
+            ).ToList();
+
             _repository
                 .Setup(r =>
                     r.QueryAsync(
@@ -296,9 +301,9 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Expression<Func<Payment, object>>>()
                     )
                 )
-                .ReturnsAsync(expectedItems);
+                .ReturnsAsync(expectedQueryItems);
 
-            var expected = _mapper.Map<IEnumerable<PaymentDto>>(expectedItems).OrderBy(p => p.Date);
+            var expected = _mapper.Map<IEnumerable<PaymentDto>>(expectedQueryItems).OrderBy(p => p.Date);
 
             // Act
             var result = await _paymentService.FindDelayed();

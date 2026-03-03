@@ -16,6 +16,7 @@ using TSI.Friday.Contracts.Models;
 using TSI.Friday.Data;
 using TSI.Friday.Data.Interceptors;
 using TSI.Friday.IoC;
+using TSI.Friday.Services.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,9 @@ builder.Services.AddHttpContextAccessor();
 // Register Services from Native Injector
 NativeInjector.RegisterServices(builder.Services);
 
+// Register background service from Services project
+builder.Services.AddHostedService<OverdueStatusBackgroundService>();
+
 // Add DbContext with interceptor
 builder.Services.AddDbContextPool<MyDBContextEF>(
     (sp, options) =>
@@ -45,8 +49,12 @@ builder.Services.AddDbContextPool<MyDBContextEF>(
         var mySqlConnectionStr = builder.Configuration.GetConnectionString("DefaultConnection");
         options.UseMySQL(mySqlConnectionStr);
         options.AddInterceptors(sp.GetRequiredService<AuditingSaveChangesInterceptor>());
+        options.AddInterceptors(sp.GetRequiredService<StockAdjustingSaveChangesInterceptor>());
     }
 );
+
+// set default overdue interval if not present
+builder.Configuration["OverdueCheckIntervalSeconds"] ??= "60";
 
 // Configure Indentity core
 builder
@@ -128,7 +136,7 @@ catch
 }
 
 // Serve uploaded files from a dedicated folder to avoid frontend watcher triggers
-var uploadsPath = Path.GetFullPath(Path.Combine("C:\\Users\\leona\\Documents\\Projects\\TSI\\TSI.Friday", "uploads"));
+var uploadsPath = Path.GetFullPath(Path.Combine("D:\\Development\\TSI.Friday", "uploads"));
 Directory.CreateDirectory(uploadsPath);
 var uploadsProvider = new PhysicalFileProvider(uploadsPath);
 app.UseStaticFiles(

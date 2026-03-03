@@ -34,11 +34,6 @@
                   </ul>
                 </div>
               </div>
-              <!-- <img
-              class="profile-user-img img-fluid img-circle"
-              src="assets/img/user4-128x128.jpg"
-              alt="User profile picture"
-              /> -->
             </div>
           </div>
           <!-- /.card-body -->
@@ -59,22 +54,23 @@
                   >Form</a
                 >
               </li>
-              <li class="nav-item">
+              <!-- TODO: temporaly disabled -->
+              <li class="nav-item" hidden>
                 <a
                   class="nav-link"
                   [class.active]="activeTab === 'image'"
                   (click)="activeTab = 'image'"
                   data-toggle="tab"
-                  >Image</a
+                  >Fotos</a
                 >
               </li>
               <li class="nav-item">
                 <a
                   class="nav-link"
-                  [class.active]="activeTab === 'extra'"
-                  (click)="activeTab = 'extra'"
+                  [class.active]="activeTab === 'history'"
+                  (click)="activeTab = 'history'"
                   data-toggle="tab"
-                  >Other</a
+                  >Histórico</a
                 >
               </li>
             </ul>
@@ -106,9 +102,13 @@
                     ></app-photo>
                   </div>
                 }
-                @if (activeTab === "extra") {
+                @if (activeTab === "history") {
                   <div>
-                    <p>Other sections go here (prices, history, notes...)</p>
+                    <app-order-products
+                      [compact]="true"
+                      [parentId]="data?.id"
+                      [isFromProductsView]="true"
+                    ></app-order-products>
                   </div>
                 }
               </div>

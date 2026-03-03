@@ -5,7 +5,7 @@ namespace TSI.Friday.Repository.Overdue
 {
  public interface IOverdueRepository
  {
- Task<int> MarkOverdueOrderProductsAsync(DateTime nowUtc, string systemUserId);
- Task<int> MarkOverduePaymentsAsync(DateTime nowUtc, string systemUserId);
+ Task<int> MarkOverdueOrderProductsAsync(string systemUserId);
+ Task<int> MarkOverduePaymentsAsync(string systemUserId);
  }
 }

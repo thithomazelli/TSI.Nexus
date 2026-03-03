@@ -20,9 +20,8 @@ namespace TSI.Friday.Services.Services
 
         public async Task<OverdueResult> RunOverdueUpdateAsync()
         {
-            var nowUtc = DateTime.UtcNow;
-            var ops = await _repo.MarkOverdueOrderProductsAsync(nowUtc, _systemUserId);
-            var payments = await _repo.MarkOverduePaymentsAsync(nowUtc, _systemUserId);
+            var ops = await _repo.MarkOverdueOrderProductsAsync(_systemUserId);
+            var payments = await _repo.MarkOverduePaymentsAsync(_systemUserId);
 
             return new OverdueResult { OrderProductsUpdated = ops, PaymentsUpdated = payments };
         }

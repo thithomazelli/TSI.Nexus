@@ -33,7 +33,7 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task DashboardService_GetHomeSummaryAsync_ShouldReturnExpectedCards()
+        public async Task DashboardService_GetInfoCardsAsync_ShouldReturnExpectedCards()
         {
             // Arrange
             var today = DateTime.UtcNow.Date;
@@ -114,10 +114,15 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(delayedItems.Count);
 
             // Act
-            var cards = (await _service.GetHomeSummaryAsync()).ToList();
+            var response = await _service.GetInfoCardsAsync();
 
             // Assert
-            cards.Should().NotBeNull();
+            response.Should().NotBeNull();
+            response.Status.Should().Be(ResponseStatus.Success);
+            response.Data.Should().NotBeNull();
+            var cards = response.Data.ToList();
+            cards.Should().HaveCount(4);
+
             // Orders sum
             var ordersCard = cards.FirstOrDefault(c => c.Title.Contains("Orders"));
             ordersCard.Should().NotBeNull();

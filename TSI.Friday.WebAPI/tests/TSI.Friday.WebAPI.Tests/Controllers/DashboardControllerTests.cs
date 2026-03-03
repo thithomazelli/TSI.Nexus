@@ -27,7 +27,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 new DashboardCardDto { Title = "Orders (30d)", Value = "R$150,00" },
                 new DashboardCardDto { Title = "Recebidos (%)", Value = "56%" },
             };
-            _dashboardServiceMock.Setup(s => s.GetHomeSummaryAsync()).ReturnsAsync(cards);
+            _dashboardServiceMock.Setup(s => s.GetInfoCardsAsync()).ReturnsAsync(cards);
 
             // Act
             var result = await _controller.HomeSummary();
@@ -36,7 +36,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var ok = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsAssignableFrom<IEnumerable<DashboardCardDto>>(ok.Value);
             response.Should().BeEquivalentTo(cards);
-            _dashboardServiceMock.Verify(s => s.GetHomeSummaryAsync(), Times.Once);
+            _dashboardServiceMock.Verify(s => s.GetInfoCardsAsync(), Times.Once);
         }
     }
 }

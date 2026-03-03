@@ -13,11 +13,11 @@
                 #firstInput
                 formControlName="name"
                 type="text"
-                placeholder="Name"
+                placeholder="Nome"
                 class="form-control"
                 [class.is-invalid]="isInvalid('name')"
               />
-              <label for="name">Name</label>
+              <label for="name">Nome</label>
             </div>
             <div class="input-group-text"><i class="bi bi-person"></i></div>
           </div>
@@ -102,6 +102,23 @@
             <div class="input-group">
               <div class="form-floating flex-grow-1">
                 <input
+                  formControlName="mobile"
+                  type="text"
+                  placeholder="Celular"
+                  class="form-control"
+                  mask="(00) 0 0000-0000"
+                  [class.is-invalid]="isInvalid('mobile')"
+                />
+                <label for="mobile">Celular</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-phone"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
                   formControlName="phone"
                   type="text"
                   placeholder="Telefone"
@@ -114,23 +131,6 @@
               <div class="input-group-text">
                 <i class="bi bi-telephone"></i>
               </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <input
-                  formControlName="mobile"
-                  type="text"
-                  placeholder="Celular"
-                  class="form-control"
-                  mask="(00) 0 0000-0000"
-                  [class.is-invalid]="isInvalid('mobile')"
-                />
-                <label for="mobile">Celular</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-phone"></i></div>
             </div>
           </div>
         </div>

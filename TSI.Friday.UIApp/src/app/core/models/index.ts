@@ -8,6 +8,7 @@ export * from './address.model';
 export * from './base.model';
 export * from './business-partner.model';
 export * from './company.model';
+export * from './dashboard-card.model';
 export * from './individual.model';
 export * from './order.model';
 export * from './order-product.model';

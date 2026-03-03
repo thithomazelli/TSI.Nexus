@@ -1,0 +1,19 @@
+// Alinhar filtro e inputs para a direita
+.row.mb-3.justify-content-end,
+.home-filters-animated .row.justify-content-end {
+  justify-content: flex-end !important;
+}
+
+.home-filters-animated .d-flex.justify-content-end {
+  justify-content: flex-end !important;
+}
+// Container animado para filtro
+.home-filters-animated {
+  overflow: hidden;
+}
+
+// Campos de data compactos
+.date-field-compact {
+  min-width: 160px;
+  max-width: 200px;
+}

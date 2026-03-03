@@ -6,3 +6,9 @@
   margin-top: 1.2rem;
 }
 
+a.disabled {
+  color: #adb5bd !important; // Bootstrap gray-500
+  cursor: default !important;
+  pointer-events: none;
+  text-decoration: none;
+}

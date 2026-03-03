@@ -5,13 +5,7 @@ import { PaymentsComponent } from './payments.component';
 const routes: Routes = [
   {
     path: '',
-    runGuardsAndResolvers: 'always',
-    children: [
-      {
-        path: '',
-        component: PaymentsComponent,
-      },
-    ],
+    component: PaymentsComponent,
   },
 ];
 

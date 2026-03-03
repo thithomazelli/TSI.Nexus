@@ -35,6 +35,9 @@ export class DateFieldComponent implements ControlValueAccessor {
   @Input()
   placeholder: string = 'DD/MM/AAAA';
 
+  @Input()
+  isDisabled: boolean = false;
+
   value: string = '';
 
   onChange = (_: any) => {};

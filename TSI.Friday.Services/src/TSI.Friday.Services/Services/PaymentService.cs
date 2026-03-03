@@ -63,58 +63,68 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<PaymentDto>> Add(PaymentDto transactionDto)
+        public async Task<WebApiResponse<PaymentDto>> Add(PaymentDto paymentDto)
         {
             WebApiResponse<PaymentDto> result = new();
 
             try
             {
-                var transactionEntity = _mapper.Map<Payment>(transactionDto);
-                await _repository.AddAsync(transactionEntity);
+                var paymentEntity = _mapper.Map<Payment>(paymentDto);
+                await _repository.AddAsync(paymentEntity);
 
-                result.Data = transactionDto;
+                result.Data = paymentDto;
                 result.Status = ResponseStatus.Success;
                 result.Message =
-                    $"Parcela do pagamento {transactionDto.Description} cadastrada com sucesso.";
+                    $"Parcela do pagamento {paymentDto.Description} cadastrada com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível cadastrar a Parcela do pagamento {transactionDto?.Description} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível cadastrar a Parcela do pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<PaymentDto>> Update(PaymentDto transactionDto)
+        public async Task<WebApiResponse<PaymentDto>> Update(PaymentDto paymentDto)
         {
             WebApiResponse<PaymentDto> result = new();
 
             try
             {
-                if (
-                    transactionDto.Status == PaymentStatus.Pending
-                    && transactionDto.Date.ToUniversalTime().Date < DateTime.UtcNow.Date
-                )
+                // Normalize payment date to UTC date (compare only day/month/year)
+                var paymentDateUtc = paymentDto.Date;
+                if (paymentDto.Date.Kind != DateTimeKind.Utc)
                 {
-                    transactionDto.Status = PaymentStatus.Delayed;
+                    // Convert local/unspecified kinds to UTC to have a consistent date comparison
+                    paymentDateUtc = paymentDto.Date.ToUniversalTime();
                 }
 
-                var transactionEntity = _mapper.Map<Payment>(transactionDto);
-                await _repository.UpdateAsync(transactionEntity);
+                var todayUtcDate = DateTime.UtcNow.Date;
 
-                result.Data = transactionDto;
+                if (
+                    paymentDto.Status == PaymentStatus.Pending
+                    && paymentDateUtc.Date < todayUtcDate
+                )
+                {
+                    paymentDto.Status = PaymentStatus.Delayed;
+                }
+
+                var paymentEntity = _mapper.Map<Payment>(paymentDto);
+                await _repository.UpdateAsync(paymentEntity);
+
+                result.Data = paymentDto;
                 result.Status = ResponseStatus.Success;
                 result.Message =
-                    $"Parcela do pagamento {transactionDto.Description} atualizada com sucesso.";
+                    $"Parcela do pagamento {paymentDto.Description} atualizada com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível atualizar os dados da Parcela do pagamento {transactionDto?.Description} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível atualizar os dados da Parcela do pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -127,12 +137,12 @@ namespace TSI.Friday.Services
 
             try
             {
-                var transactions = await _repository.GetAllAsync(
+                var payments = await _repository.GetAllAsync(
                     t => t.Transaction,
                     c => c.BusinessPartner,
                     o => o.Order
                 );
-                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(transactions);
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
             }
@@ -147,25 +157,25 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<PaymentDto>> Remove(PaymentDto transactionDto)
+        public async Task<WebApiResponse<PaymentDto>> Remove(PaymentDto paymentDto)
         {
             WebApiResponse<PaymentDto> result = new();
 
             try
             {
-                var transactionEntity = _mapper.Map<Payment>(transactionDto);
-                await _repository.RemoveAsync(transactionEntity);
+                var paymentEntity = _mapper.Map<Payment>(paymentDto);
+                await _repository.RemoveAsync(paymentEntity);
 
-                result.Data = transactionDto;
+                result.Data = paymentDto;
                 result.Status = ResponseStatus.Success;
                 result.Message =
-                    $"Parcela do pagamento {transactionDto.Description} removida com sucesso.";
+                    $"Parcela do pagamento {paymentDto.Description} removida com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível remover a Parcela do pagamento {transactionDto?.Description} da base de dados. Erro: {ex.Message}";
+                    $"Não foi possível remover a Parcela do pagamento {paymentDto?.Description} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -178,8 +188,8 @@ namespace TSI.Friday.Services
 
             try
             {
-                var transaction = await _repository.GetByIdAsync(id);
-                result.Data = _mapper.Map<PaymentDto>(transaction);
+                var payment = await _repository.GetByIdAsync(id);
+                result.Data = _mapper.Map<PaymentDto>(payment);
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
@@ -205,14 +215,12 @@ namespace TSI.Friday.Services
 
             try
             {
-                var transactions = await _repository.QueryAsync(
+                var payments = await _repository.QueryAsync(
                     p => p.TransactionId == transactionId,
                     c => c.BusinessPartner,
                     o => o.Order
                 );
-                result.Data = _mapper
-                    .Map<IEnumerable<PaymentDto>>(transactions)
-                    .OrderBy(_ => _.Date);
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }
@@ -235,14 +243,12 @@ namespace TSI.Friday.Services
 
             try
             {
-                var transactions = await _repository.QueryAsync(
+                var payments = await _repository.QueryAsync(
                     p => p.BusinessPartnerId == businessPartnerId,
                     c => c.BusinessPartner,
                     o => o.Order
                 );
-                result.Data = _mapper
-                    .Map<IEnumerable<PaymentDto>>(transactions)
-                    .OrderBy(_ => _.Date);
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }
@@ -263,14 +269,12 @@ namespace TSI.Friday.Services
 
             try
             {
-                var transactions = await _repository.QueryAsync(
+                var payments = await _repository.QueryAsync(
                     p => p.OrderId == orderId,
                     c => c.BusinessPartner,
                     o => o.Order
                 );
-                result.Data = _mapper
-                    .Map<IEnumerable<PaymentDto>>(transactions)
-                    .OrderBy(_ => _.Date);
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
             }
@@ -294,7 +298,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var transactions = await _repository.GetAllAsync();
+                var payments = await _repository.GetAllAsync();
 
                 // Determine period: if start/end provided use them (normalize to month start/end), otherwise last12 months
                 DateTime now = DateTime.UtcNow.Date;
@@ -330,7 +334,7 @@ namespace TSI.Friday.Services
                 }
 
                 // filtra apenas o período relevante e normaliza datas para o primeiro dia do mês
-                var filtered = transactions
+                var filtered = payments
                     .Where(t =>
                     {
                         var dt = t.Date.ToUniversalTime();
@@ -404,23 +408,30 @@ namespace TSI.Friday.Services
             try
             {
                 var todayUtc = DateTime.UtcNow.Date;
+                var tomorrowUtc = todayUtc.AddDays(1);
 
-                var items = await _repository.QueryAsync(
-                    p => p.Status == PaymentStatus.Delayed
-                    || (p.Status != PaymentStatus.Approved && p.Date.ToUniversalTime().Date < todayUtc),
-                    c => c.BusinessPartner,
-                    o => o.Order
+                var payments = await _repository.QueryAsync(
+                    t =>
+                        t.Status == PaymentStatus.Delayed
+                        || (
+                            t.Status != PaymentStatus.Approved
+                            && t.Date != default(DateTime)
+                            && t.Date < tomorrowUtc
+                        ),
+                    t => t.Transaction,
+                    t => t.BusinessPartner,
+                    t => t.Order
                 );
 
-                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(items).OrderBy(_ => _.Date);
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Parcelas de Transação. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de Parcelas de Transação na base de dados. Erro: {ex.Message}";
             }
 
             return result;

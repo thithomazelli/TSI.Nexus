@@ -15,4 +15,6 @@ export interface Order extends BaseModel {
   totalPrice?: number;
   transaction?: Transaction;
   orderProducts?: OrderProduct[];
+  hasOpenedProducts?: boolean;
+  markAllProductsAsReturned?: boolean;
 }

@@ -1,0 +1,33 @@
+// Truncar texto com reticências para não invadir a data
+
+.truncate-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.notification-text-col {
+  max-width: 180px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.notification-date-col {
+  min-width: 60px;
+  max-width: 80px;
+  flex: 0 0 80px;
+  margin-left: 0;
+  text-align: right;
+}
+.dropdown-item {
+  min-width: 260px;
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+.dropdown-item {
+  min-width: 260px;
+}

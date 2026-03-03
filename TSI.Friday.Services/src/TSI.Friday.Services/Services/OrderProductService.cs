@@ -179,6 +179,37 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByProductId(
+            Guid? productId
+        )
+        {
+            WebApiResponse<IEnumerable<OrderProductDto>> result = new();
+
+            try
+            {
+                var items = await _repository.QueryAsync(
+                    op => op.ProductId == productId,
+                    op => op.Order,
+                    op => op.Order.BusinessPartner,
+                    op => op.Product,
+                    op => op.Address
+                );
+
+                result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os Itens do Pedido para o Produto {productId}. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
         public async Task<WebApiResponse<OrderProductDto>> FindById(Guid? id)
         {
             WebApiResponse<OrderProductDto> result = new();
@@ -211,12 +242,17 @@ namespace TSI.Friday.Services
             try
             {
                 var todayUtc = DateTime.UtcNow.Date; // compare only date
+                var tomorrowUtc = todayUtc.AddDays(1);
 
                 var items = await _repository.QueryAsync(
-                    op => op.Status == OrderProductStatus.Delayed
-                    || (op.Status != OrderProductStatus.Returned
-                    && op.EndDate != default(DateTime)
-                    && op.EndDate.ToUniversalTime().Date < todayUtc),
+                    op =>
+                        op.Status == OrderProductStatus.Delayed
+                        || (
+                            op.Status != OrderProductStatus.Returned
+                            && op.EndDate != default(DateTime)
+                            // include past and today: EndDate < tomorrowUtc
+                            && op.EndDate < tomorrowUtc
+                        ),
                     op => op.Order,
                     op => op.Order.BusinessPartner,
                     op => op.Product,

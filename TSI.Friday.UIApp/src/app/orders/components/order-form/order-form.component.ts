@@ -74,6 +74,8 @@ export class OrderFormComponent
     { value: OrderStatus.WaitingPayment, label: 'Aguardando Pagamento' },
   ];
 
+  private statusSubscription?: any;
+
   constructor(
     private formBuilder: FormBuilder,
     private businessPartnerService: BusinessPartnerService,
@@ -89,17 +91,22 @@ export class OrderFormComponent
     this.patchFormWithData();
     this.setupAutoComplete();
     this.totalPriceChange();
+    this.setupStatusWatcher();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.data && this.form) {
       this.patchFormWithData();
+      this.setupStatusWatcher();
     }
   }
 
   ngOnDestroy(): void {
     this.businessPartners$ = new Observable<BusinessPartner[]>();
     this.filteredBusinessPartners$ = new Observable<BusinessPartner[]>();
+    if (this.statusSubscription) {
+      this.statusSubscription.unsubscribe();
+    }
   }
 
   get transactionFormGroup(): FormGroup {
@@ -116,7 +123,7 @@ export class OrderFormComponent
         this.cleanClientSelection();
         return;
       }
-      // Verifica se o nome existe na lista de clientes
+      // Check if the name exists in the client list
       const clients = (this.businessPartners$ as any).source
         .value as BusinessPartner[];
       const found = clients.find((c) => c.name === businessPartnerName);
@@ -126,8 +133,10 @@ export class OrderFormComponent
           message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
           cancelButtonText: 'Cancelar',
           confirmButtonText: 'Sim',
-          confirmDelete: async () => {
-            // Abrir modal de adicionar cliente
+        });
+        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            // Open modal to add client
             const clientFormRef: MatDialogRef<any> =
               this.modalService.showTemplateModal(
                 BusinessPartnerDetailsModalComponent,
@@ -150,10 +159,7 @@ export class OrderFormComponent
                   this.cleanClientSelection();
                 }
               });
-          },
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (!confirmed) {
+          } else {
             this.cleanClientSelection();
           }
         });
@@ -167,7 +173,7 @@ export class OrderFormComponent
       return;
     }
 
-    // Garante que transactionGroup tenha os campos de cliente atualizados
+    // Ensure transactionGroup has the updated client fields
     const formValue = this.form.getRawValue();
     if (formValue.transaction) {
       formValue.transaction.businessPartnerId = formValue.businessPartnerId;
@@ -178,6 +184,12 @@ export class OrderFormComponent
 
     if (this.data?.transaction?.id == null) {
       delete this.data!.transaction!.id;
+    }
+
+    // Ensure markAllOrderProductsAsReturned is sent
+    if (formValue.markAllOrderProductsAsReturned !== undefined) {
+      this.data!.markAllProductsAsReturned =
+        formValue.markAllOrderProductsAsReturned;
     }
 
     this.save.emit(this.data!);
@@ -210,7 +222,7 @@ export class OrderFormComponent
       this.modalService.showNotification(
         false,
         '',
-        'Por favor, selecione um cliente antes de adicionar produtos.',
+        'Please select a client before adding products.',
       );
       return;
     }
@@ -228,7 +240,7 @@ export class OrderFormComponent
         this.modalService.showNotification(
           true,
           '',
-          'Produto adicionado com sucesso',
+          'Product added successfully',
         );
         ref.close();
       });
@@ -299,7 +311,7 @@ export class OrderFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      // Garante que price e totalPrice nunca sejam undefined ou null
+      // Ensure price and totalPrice are never undefined or null
       const patch = {
         ...this.data,
         priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
@@ -392,5 +404,46 @@ export class OrderFormComponent
     transactionGroup
       .get('pricePerInstallmentFormatted')
       ?.setValue(this.currencyService.formatCurrencyBRL(pricePerInstallment));
+  }
+
+  private setupStatusWatcher(): void {
+    if (!this.isEdit || !this.form || !this.data?.hasOpenedProducts) {
+      return;
+    }
+    // Remove previous subscription if any
+    if (this.statusSubscription) {
+      this.statusSubscription.unsubscribe();
+    }
+    // Add the field to the form if it does not exist
+    if (!this.form.contains('markAllOrderProductsAsReturned')) {
+      this.form.addControl(
+        'markAllOrderProductsAsReturned',
+        this.formBuilder.control(false),
+      );
+    }
+    this.statusSubscription = this.form
+      .get('status')
+      ?.valueChanges.subscribe(async (newStatus: OrderStatus) => {
+        if (newStatus === OrderStatus.Closed) {
+          const confirmed = await this.modalService
+            .showConfirmation({
+              title: 'Fechar pedido',
+              message: 'Deseja marcar todos os produtos como retornados?',
+              confirmButtonText: 'Sim',
+              cancelButtonText: 'Não',
+            })
+            .afterClosed()
+            .toPromise();
+          this.form
+            .get('markAllOrderProductsAsReturned')
+            ?.setValue(!!confirmed);
+          if (this.data) {
+            this.data.markAllProductsAsReturned = !!confirmed;
+          }
+        } else {
+          this.form.get('markAllOrderProductsAsReturned')?.setValue(false);
+          if (this.data) this.data.markAllProductsAsReturned = false;
+        }
+      });
   }
 }

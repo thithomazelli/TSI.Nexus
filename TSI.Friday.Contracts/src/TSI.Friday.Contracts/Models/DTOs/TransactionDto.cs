@@ -32,5 +32,9 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public Guid? BusinessPartnerId { get; set; }
 
         public string BusinessPartnerName { get; set; }
+
+        public bool HasOpenedPayments { get; set; }
+
+        public bool MarkAllPaymentsAsApproved { get; set; }
     }
 }

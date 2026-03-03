@@ -40,7 +40,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetByOrderId_ShouldReturnOkWithItems_WhenServiceReturnsItems()
+        public async Task OrderProductsController_GetByOrderId_ShouldReturnOkWithItems_WhenServiceReturnsItems()
         {
             // Arrange
             var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -65,7 +65,32 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetById_ShouldReturnOkWithItem_WhenServiceReturnsItem()
+        public async Task OrderProductsController_GetByProductId_ShouldReturnOkWithItems_WhenServiceReturnsItems()
+        {
+            // Arrange
+            var productId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var items = _itemsMock.Where(i => i.ProductId == productId).ToList();
+            var expected = new WebApiResponse<IEnumerable<OrderProductDto>>
+            {
+                Data = items,
+                Status = ResponseStatus.Success,
+                Message = $"{items.Count} registro(s) encontrado(s).",
+            };
+
+            _serviceMock.Setup(s => s.FindByProductId(productId)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByProductId(productId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<OrderProductDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.FindByProductId(productId), Times.Once);
+        }
+
+        [Fact]
+        public async Task OrderProductsController_GetById_ShouldReturnOkWithItem_WhenServiceReturnsItem()
         {
             // Arrange
             var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -90,7 +115,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task Add_ShouldReturnOkWithCreatedItem_WhenModelIsValid()
+        public async Task OrderProductsController_Add_ShouldReturnOkWithCreatedItem_WhenModelIsValid()
         {
             // Arrange
             var item = new OrderProductDto
@@ -120,7 +145,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetDelayed_ShouldReturnOkWithData_WhenServiceReturnsItems()
+        public async Task OrderProductsController_GetDelayed_ShouldReturnOkWithData_WhenServiceReturnsItems()
         {
             // Arrange
             var expected = new WebApiResponse<IEnumerable<OrderProductDto>>

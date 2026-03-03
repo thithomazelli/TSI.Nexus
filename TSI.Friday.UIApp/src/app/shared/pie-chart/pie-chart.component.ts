@@ -1,11 +1,5 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import {
-  trigger,
-  state,
-  style,
-  animate,
-  transition,
-} from '@angular/animations';
+import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import {
   ApiService,
   ApiType,
@@ -18,26 +12,7 @@ import {
   templateUrl: './pie-chart.component.html',
   styleUrl: './pie-chart.component.scss',
   standalone: false,
-  animations: [
-    trigger('cardCollapse', [
-      state(
-        'open',
-        style({
-          height: '*',
-          opacity: 1,
-        }),
-      ),
-      state(
-        'closed',
-        style({
-          height: '0px',
-          opacity: 0,
-        }),
-      ),
-      transition('open => closed', [animate('250ms ease-in')]),
-      transition('closed => open', [animate('300ms ease-out')]),
-    ]),
-  ],
+  animations: [cardCollapseAnimation],
 })
 export class PieChartComponent implements OnInit, OnChanges {
   @Input()

@@ -18,6 +18,7 @@ namespace TSI.Friday.Services
         /// Repository object created to access the Transaction registers on database using EntityFramework.
         /// </summary>
         private readonly IRepository<Transaction> _repository;
+        private readonly IRepository<Payment> _paymentRepository;
         private readonly IMapper _mapper;
 
         #endregion Properties
@@ -28,9 +29,10 @@ namespace TSI.Friday.Services
         /// TransactionService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Transaction> object used to initialize the internal variable using Dependency Injection.</param>
-        public TransactionService(IRepository<Transaction> repository, IMapper mapper)
+        public TransactionService(IRepository<Transaction> repository, IRepository<Payment> paymentRepository, IMapper mapper)
         {
             _repository = repository;
+            _paymentRepository = paymentRepository;
             _mapper = mapper;
         }
 
@@ -83,9 +85,13 @@ namespace TSI.Friday.Services
                 _mapper.Map(transactionDto, transactionEntity);
 
                 // Update payments statuses if requested (except already approved)
-                foreach (var payment in transactionEntity.Payments)
+                if (transactionDto.MarkAllPaymentsAsApproved)
                 {
-                    payment.OrderId = transactionDto.OrderId;
+                    // Bulk update payments for this transaction to Approved (skip already approved)
+                    await _paymentRepository.ExecuteUpdateAsync(
+                        p => p.TransactionId == transactionEntity.Id && p.Status != PaymentStatus.Approved,
+                        p => p.Status = PaymentStatus.Approved
+                    );
                 }
 
                 await _repository.UpdateAsync(transactionEntity);

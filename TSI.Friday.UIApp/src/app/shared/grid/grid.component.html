@@ -1,17 +1,28 @@
-<div class="d-flex justify-content-between mb-3">
-  <div>
-    <button
-      *ngIf="canAdd"
-      class="btn btn-success me-2"
-      (click)="openAddModal()"
-    >
-      <i class="bi bi-plus-lg"></i>
-      Adicionar
-    </button>
-    <button class="btn btn-secondary me-2" (click)="refresh()">
-      <i class="bi bi-arrow-clockwise"></i>
-      Atualizar
-    </button>
+<div class="grid-toolbar d-flex justify-content-between mb-3 flex-wrap">
+  <div class="grid-toolbar-search flex-grow-1 me-2 grid-search-width">
+    <div class="input-group">
+      <div class="form-floating">
+        <input
+          type="text"
+          class="form-control"
+          id="gridSearchInput"
+          placeholder="Buscar {{ className | lowercase }}..."
+          (input)="onFilterTextBoxChanged($event)"
+        />
+        <label for="gridSearchInput"
+          >Buscar {{ className | lowercase }}...</label
+        >
+        <span
+          class="position-absolute top-50 end-0 translate-middle-y me-3 text-secondary grid-search-icon"
+        >
+        </span>
+      </div>
+      <div class="input-group-text"><i class="bi bi-search"></i></div>
+    </div>
+  </div>
+  <div
+    class="grid-toolbar-actions d-flex flex-row flex-wrap gap-2 mt-2 mt-md-0"
+  >
     <button
       *ngIf="filtersTemplate"
       class="btn btn-outline-primary"
@@ -20,18 +31,20 @@
     >
       <i class="bi bi-funnel"></i> Filtros
     </button>
-  </div>
-  <div style="width: 300px">
-    <input
-      type="text"
-      class="form-control"
-      placeholder="Buscar {{ className | lowercase }}..."
-      (input)="onFilterTextBoxChanged($event)"
-    />
+    <button class="btn btn-secondary" (click)="refresh()">
+      <i class="bi bi-arrow-clockwise"></i>
+      Atualizar
+    </button>
+    <button *ngIf="canAdd" class="btn btn-success" (click)="openAddModal()">
+      <i class="bi bi-plus-lg"></i>
+      Adicionar
+    </button>
   </div>
 </div>
-<div *ngIf="showFilters && filtersTemplate">
-  <ng-container *ngTemplateOutlet="filtersTemplate"></ng-container>
+<div [@cardCollapse]="showFilters ? 'open' : 'closed'">
+  <ng-container *ngIf="filtersTemplate">
+    <ng-container *ngTemplateOutlet="filtersTemplate"></ng-container>
+  </ng-container>
 </div>
 
 <div class="grid-host" [ngClass]="{ 'compact-view': compactView }">

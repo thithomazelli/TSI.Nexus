@@ -189,6 +189,47 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
+        public async Task OrderProductService_FindByProductId_ShouldReturnItems_WhenProductIdIsValid()
+        {
+            // Arrange
+            var productId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var items = _itemsMock.Where(i => i.ProductId == productId).ToList();
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                    )
+                )
+                .ReturnsAsync(items);
+
+            var expected = new WebApiResponse<IEnumerable<OrderProductDto>>
+            {
+                Data = _mapper.Map<IEnumerable<OrderProductDto>>(items),
+                Status = ResponseStatus.Success,
+                Message = $"{items.Count} registro(s) encontrado(s).",
+            };
+
+            // Act
+            var result = await _orderProductService.FindByProductId(productId);
+
+            // Assert
+            expected.Should().BeEquivalentTo(result);
+            _repository.Verify(
+                r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                    ),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task OrderProductService_FindById_ShouldReturnItem_WhenIdIsValid()
         {
             // Arrange
@@ -216,13 +257,15 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var today = DateTime.UtcNow.Date;
+            var tomorrowUtc = today.AddDays(1);
             var expectedItems = _itemsMock
                 .Where(i =>
                     i.Status == OrderProductStatus.Delayed
                     || (
                         i.Status != OrderProductStatus.Returned
                         && i.EndDate != default(DateTime)
-                        && i.EndDate.ToUniversalTime().Date < today
+                        // include past and today: EndDate < tomorrowUtc
+                        && i.EndDate < tomorrowUtc
                     )
                 )
                 .ToList();

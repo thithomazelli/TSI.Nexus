@@ -24,6 +24,7 @@ import { HomeComponent } from './home/home.component';
 import { SharedModule } from './shared/shared.module';
 
 import { CurrencyFormatDirective } from './core/directives/currency-format.directive';
+import { NavbarModule } from './navbar/navbar.module';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -37,6 +38,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     FormsModule,
     CurrencyFormatDirective,
     SharedModule,
+    NavbarModule,
     NgxMaskDirective,
     ToastrModule.forRoot({
       positionClass: 'toast-top-right',

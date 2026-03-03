@@ -1,22 +1,37 @@
+// Grid search input width utility
+.grid-search-width {
+  max-width: 300px;
+  min-width: 180px;
+}
+
+// Grid search icon utility
+.grid-search-icon {
+  pointer-events: none;
+}
+
+// Animation container for filter area
+.grid-filters-animated {
+  overflow: hidden;
+}
 .grid-host.compact-view {
-  height: calc(95vh - 300px);
+  height: calc(95vh - 310px);
 }
 
 @media (max-width: 1200px) {
   .grid-host.compact-view {
-    height: calc(90vh - 300px);
+    height: calc(90vh - 310px);
   }
 }
 
 @media (max-width: 768px) {
   .grid-host.compact-view {
-    height: calc(89vh - 240px);
+    height: calc(89vh - 250px);
   }
 }
 
 @media (max-width: 576px) {
   .grid-host.compact-view {
-    height: calc(80vh - 200px);
+    height: calc(80vh - 210px);
   }
 }
 /* Grid host: use viewport-based height on large screens and media queries for smaller ones */

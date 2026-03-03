@@ -151,6 +151,7 @@ export class OrdersComponent {
     WaitingPayment: false,
     Closed: false,
   };
+  showFiltersOnInit = false;
 
   constructor(
     private apiService: ApiService,
@@ -158,11 +159,12 @@ export class OrdersComponent {
   ) {}
 
   ngOnInit(): void {
-    this.getOrders();
+    this.setFiltersFromQueryParams();
+    this.getOrders(() => this.applyFilters());
   }
 
   refreshOrders(): void {
-    this.getOrders();
+    this.getOrders(() => this.applyFilters());
   }
 
   deleteOrder(order: Order): void {
@@ -170,7 +172,9 @@ export class OrdersComponent {
       .delete<WebApiResponse<Order>>(`${this.baseEndPoint}/remove`, order)
       .subscribe((response: WebApiResponse<Order>) => {
         if (response.status === ResponseStatus.Success) {
-          this.rowData = this.rowData.filter((p) => p.id !== order.id);
+          this.filteredRowData = this.filteredRowData.filter(
+            (p) => p.id !== order.id,
+          );
         }
 
         this.modalService.hideModal();
@@ -189,7 +193,7 @@ export class OrdersComponent {
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
-        this.getOrders();
+        this.getOrders(() => this.applyFilters());
         ref.close();
       });
     }
@@ -241,12 +245,12 @@ export class OrdersComponent {
     this.filteredRowData = [...this.rowData];
   }
 
-  private getOrders(): void {
+  private getOrders(callback?: () => void): void {
     this.apiService
       .get<WebApiResponse<Order[]>>(`${this.baseEndPoint}/getAll`)
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
-        this.filteredRowData = [...this.rowData];
+        if (callback) callback();
       });
   }
 
@@ -265,5 +269,41 @@ export class OrdersComponent {
     const year = d.getFullYear();
 
     return `${day}/${month}/${year}`;
+  }
+
+  private setFiltersFromQueryParams(): void {
+    // Reads filters from URL (query params)
+    const params =
+      window && window.location && window.location.search
+        ? Object.fromEntries(new URLSearchParams(window.location.search))
+        : {};
+
+    // Initializes filters
+    this.filterStatus = { Open: false, WaitingPayment: false, Closed: false };
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+
+    // Status filters
+    if (params['status']) {
+      const statuses = String(params['status']).split(',');
+      statuses.forEach((s: string) => {
+        if (Object.prototype.hasOwnProperty.call(this.filterStatus, s)) {
+          (this.filterStatus as Record<string, boolean>)[s] = true;
+        }
+      });
+    }
+    // Date filters
+    if (params['startDate']) this.filterStartDate = params['startDate'];
+    if (params['endDate']) this.filterEndDate = params['endDate'];
+
+    // Set showFiltersOnInit only on initialization
+    this.showFiltersOnInit = this.hasInitialFilters();
+  }
+
+  private hasInitialFilters(): boolean {
+    // Checks if any filter is active
+    if (this.filterStartDate || this.filterEndDate) return true;
+    if (Object.values(this.filterStatus).some((v) => v)) return true;
+    return false;
   }
 }

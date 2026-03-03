@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AccountService, PhotoService, User } from '@friday/core';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../environments/environment.development';
 
 @Component({
   selector: 'app-navbar',

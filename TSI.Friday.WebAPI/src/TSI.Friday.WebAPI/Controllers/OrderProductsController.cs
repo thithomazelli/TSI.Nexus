@@ -96,6 +96,18 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
+        /// Get order products by product id
+        /// </summary>
+        /// <param name="productId">Product id to be used in the search</param>
+        [HttpGet]
+        [Route("GetByProductId/{productId}")]
+        public async Task<IActionResult> GetByProductId(Guid? productId)
+        {
+            var webApiResponse = await _orderProductService.FindByProductId(productId);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
         /// Get order product by id
         /// </summary>
         /// <param name="orderProductId">OrderProduct id to be used in the search</param>

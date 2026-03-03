@@ -12,6 +12,7 @@
       (blur)="onBlur()"
       (keydown)="onDateKeyDown($event)"
       (input)="onDateInput($event)"
+      [disabled]="isDisabled"
     />
     <label [for]="formControlName">{{ label }}</label>
   </div>

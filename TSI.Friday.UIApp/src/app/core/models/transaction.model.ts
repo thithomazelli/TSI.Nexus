@@ -2,7 +2,6 @@ import { TransactionCondition, PaymentMethod } from '../enums';
 import { PaymentStatus } from '../enums/payment-status.enum';
 import { TransactionType } from '../enums/payment-type.enum';
 import { BaseModel } from './base.model';
-import { Payment } from './payment.model';
 
 export interface Transaction extends BaseModel {
   id?: string;
@@ -20,4 +19,6 @@ export interface Transaction extends BaseModel {
   orderNumber?: string;
   businessPartnerId?: string;
   businessPartnerName?: string;
+  hasOpenedPayments?: boolean;
+  markAllPaymentsAsReturned?: boolean;
 }

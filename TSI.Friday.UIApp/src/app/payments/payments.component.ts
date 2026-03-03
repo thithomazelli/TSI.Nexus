@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
   ApiService,
@@ -9,6 +10,8 @@ import {
   Transaction,
   Payment,
   WebApiResponse,
+  PaymentStatus,
+  PaymentService,
 } from '@friday/core';
 import {
   ColDef,
@@ -74,19 +77,46 @@ export class PaymentsComponent {
   filterEndDate: string | null = null;
   filterStatus = { Approved: false, Pending: false, Delayed: false };
   filterType = { Incoming: false, Outgoing: false };
+  showFiltersOnInit = false;
 
   constructor(
     private apiService: ApiService,
+    private paymentService: PaymentService,
     private modalService: ModalService,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
-    this.getPayment();
+    this.route.queryParams.subscribe((params) => {
+      this.setFiltersFromQueryParams(params);
+      this.showFiltersOnInit = this.hasInitialFilters();
+      this.getPayment(() => this.applyFilters());
+    });
   }
 
   refreshOrders(): void {
-    this.getPayment();
+    this.getPayment(() => this.applyFilters());
+  }
+
+  updatePaymentStatus(payment: Payment): void {
+    if (!payment || payment.status === 'Approved') {
+      return;
+    }
+
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Tem certeza que deseja marcar este item como pago?',
+      )
+      .then((result: any) => {
+        if (!result.isConfirmed) {
+          this.applyFilters();
+          return;
+        }
+
+        this.markAsApproved(payment);
+      });
   }
 
   deleteOrder(paymentInstallment: Payment): void {
@@ -122,7 +152,7 @@ export class PaymentsComponent {
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
         this.refreshParent.emit();
-        this.getPayment();
+        this.getPayment(() => this.applyFilters());
         ref.close();
       });
     }
@@ -189,6 +219,19 @@ export class PaymentsComponent {
         filter: true,
         hide: true,
         minWidth: 150,
+      },
+      {
+        field: 'status',
+        headerName: 'Pago?',
+        sortable: true,
+        filter: true,
+        maxWidth: 100,
+        cellRenderer: (params: any) => {
+          const isApproved = params.value === PaymentStatus.Approved;
+          return `<input type="checkbox" ${
+            isApproved ? 'checked disabled' : ''
+          } data-action="update" />`;
+        },
       },
       {
         field: 'description',
@@ -330,7 +373,7 @@ export class PaymentsComponent {
     ];
   }
 
-  private getPayment(): void {
+  private getPayment(callback?: () => void): void {
     const endpoint =
       this.entity != ''
         ? `${this.baseEndPoint}/getBy${this.entity}Id/${this.data?.id}`
@@ -340,7 +383,7 @@ export class PaymentsComponent {
       .get<WebApiResponse<Payment[]>>(endpoint)
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.rowData = response.data ?? [];
-        this.filteredRowData = [...this.rowData];
+        if (callback) callback();
       });
   }
 
@@ -358,6 +401,77 @@ export class PaymentsComponent {
 
   private getStatusColor(status: string): string {
     return this.statusColorMap[status] ?? this.statusColorMap['default'];
+  }
+
+  private setFiltersFromQueryParams(params: any): void {
+    // Always initialize all filters
+    this.filterStatus = { Approved: false, Pending: false, Delayed: false };
+    this.filterType = { Incoming: false, Outgoing: false };
+
+    // Status filters
+    if (params['status']) {
+      const statuses = Array.isArray(params['status'])
+        ? params['status']
+        : String(params['status']).split(',');
+      statuses.forEach((s: string) => {
+        if (Object.prototype.hasOwnProperty.call(this.filterStatus, s)) {
+          (this.filterStatus as Record<string, boolean>)[s] = true;
+        }
+      });
+    }
+
+    // Type filters
+    if (params['type']) {
+      const types = Array.isArray(params['type'])
+        ? params['type']
+        : String(params['type']).split(',');
+      types.forEach((t: string) => {
+        if (Object.prototype.hasOwnProperty.call(this.filterType, t)) {
+          (this.filterType as Record<string, boolean>)[t] = true;
+        }
+      });
+    }
+
+    // Date filters
+    this.filterStartDate = params['startDate'] || null;
+    this.filterEndDate = params['endDate'] || null;
+  }
+
+  private hasInitialFilters(): boolean {
+    // Checks if any filter is active
+    if (this.filterStartDate || this.filterEndDate) {
+      return true;
+    }
+    if (Object.values(this.filterStatus).some((v) => v)) {
+      return true;
+    }
+    if (Object.values(this.filterType).some((v) => v)) {
+      return true;
+    }
+    return false;
+  }
+
+  private markAsApproved(payment: Payment): void {
+    if (!payment) {
+      return;
+    }
+
+    const updatedPayment = { ...payment, status: 'Approved' };
+    this.apiService
+      .put<
+        WebApiResponse<Payment>
+      >(`${this.baseEndPoint}/update`, updatedPayment)
+      .subscribe((response: WebApiResponse<Payment>) => {
+        this.getPayment(() => this.applyFilters());
+        this.refreshParent.emit();
+        this.paymentService.markPaymentAsChanged();
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          '',
+          response.message,
+          response.status,
+        );
+      });
   }
 
   private formatDateBR(date: string | Date): string {

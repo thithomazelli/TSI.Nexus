@@ -31,5 +31,9 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public TransactionDto Transaction { get; set; }
 
         public ICollection<OrderProductDto> OrderProducts { get; set; } = [];
+
+        public bool HasOpenedProducts { get; set; }
+
+        public bool MarkAllProductsAsReturned { get; set; }
     }
 }

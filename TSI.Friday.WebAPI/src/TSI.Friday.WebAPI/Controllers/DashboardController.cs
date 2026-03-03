@@ -18,10 +18,10 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("HomeSummary")]
-        public async Task<IActionResult> HomeSummary()
+        [Route("GetInfoCards")]
+        public async Task<IActionResult> GetInfoCards()
         {
-            var result = await _dashboardService.GetHomeSummaryAsync();
+            var result = await _dashboardService.GetInfoCardsAsync();
             return Ok(result);
         }
     }

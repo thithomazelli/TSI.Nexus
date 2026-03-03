@@ -1,9 +1,10 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging;
-using TSI.Friday.Contracts.Interfaces;
-using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Enums;
+using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Models.DTOs;
+using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Services
 {
@@ -27,30 +28,54 @@ namespace TSI.Friday.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<DashboardCardDto>> GetHomeSummaryAsync()
+        public async Task<WebApiResponse<IEnumerable<DashboardCardDto>>> GetInfoCardsAsync()
         {
+            var result = new WebApiResponse<IEnumerable<DashboardCardDto>>();
             var cards = new List<DashboardCardDto>();
             try
             {
-                var now = DateTime.UtcNow.Date;
-                var from = now.AddDays(-30);
+                var nowUtc = DateTime.UtcNow;
+                var from = nowUtc.Date; // midnight UTC30 days ago
 
                 //1. Sum of Orders created in last30 days (DB aggregation)
-                var ordersSum = await _orderRepo.SumAsync(o => o.CreateDate.ToUniversalTime().Date >= from, o => o.TotalPrice);
+                var ordersSum = await _orderRepo.SumAsync(
+                    o => o.CreateDate >= from,
+                    o => o.TotalPrice
+                );
                 cards.Add(
                     new DashboardCardDto
                     {
-                        Title = "Orders (30d)",
+                        Title = "Novos Pedidos",
                         Value = ordersSum.ToString("C", CultureInfo.GetCultureInfo("pt-BR")),
                     }
                 );
 
                 //2/3 payments approved vs total and pending/delayed vs total (DB aggregations)
-                var totalPayments = await _paymentRepo.SumAsync(p => p.Date.ToUniversalTime().Date >= from, p => p.Price);
-                var approvedSum = await _paymentRepo.SumAsync(p => p.Date.ToUniversalTime().Date >= from && p.Status == PaymentStatus.Approved, p => p.Price);
-                var pendingDelayedSum = await _paymentRepo.SumAsync(p => p.Date.ToUniversalTime().Date >= from && (p.Status == PaymentStatus.Pending || p.Status == PaymentStatus.Delayed), p => p.Price);
-                var approvedPct = totalPayments ==0 ?0 : (decimal)100 * approvedSum / totalPayments;
-                var pendingPct = totalPayments ==0 ?0 : (decimal)100 * pendingDelayedSum / totalPayments;
+                // Only consider payments that belong to Incoming transactions for these percentages
+                var totalIncomingPayments = await _paymentRepo.SumAsync(
+                    p => p.Date >= from && p.Transaction != null && p.Transaction.Type == TransactionType.Incoming,
+                    p => p.Price
+                );
+                var approvedIncomingSum = await _paymentRepo.SumAsync(
+                    p =>
+                        p.Date >= from
+                        && p.Transaction != null
+                        && p.Transaction.Type == TransactionType.Incoming
+                        && p.Status == PaymentStatus.Approved,
+                    p => p.Price
+                );
+                var pendingDelayedIncomingSum = await _paymentRepo.SumAsync(
+                    p =>
+                        p.Date >= from
+                        && p.Transaction != null
+                        && p.Transaction.Type == TransactionType.Incoming
+                        && (p.Status == PaymentStatus.Pending || p.Status == PaymentStatus.Delayed),
+                    p => p.Price
+                );
+                var approvedPct =
+                    totalIncomingPayments == 0 ? 0 : (decimal)100 * approvedIncomingSum / totalIncomingPayments;
+                var pendingPct =
+                    totalIncomingPayments == 0 ? 0 : (decimal)100 * pendingDelayedIncomingSum / totalIncomingPayments;
                 cards.Add(
                     new DashboardCardDto
                     {
@@ -67,20 +92,29 @@ namespace TSI.Friday.Services
                 );
 
                 //4. Total order items with status = Delayed (DB count)
-                var delayedCount = await _orderProductRepo.CountAsync(op => op.Status == OrderProductStatus.Delayed);
+                var delayedCount = await _orderProductRepo.CountAsync(op =>
+                    op.Status == OrderProductStatus.Delayed
+                );
                 cards.Add(
                     new DashboardCardDto
                     {
-                        Title = "Itens Atrasados",
+                        Title = "Devoluções em Atraso",
                         Value = delayedCount.ToString(),
                     }
                 );
+
+                result.Data = cards;
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{cards.Count} info card(s) gerados.";
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to build dashboard summary");
+                result.Status = ResponseStatus.Error;
+                result.Message = "Não foi possível gerar os info cards.";
             }
-            return cards;
+
+            return result;
         }
     }
 }

@@ -91,6 +91,7 @@ export class PaymentFormComponent
   ngOnInit(): void {
     this.initForm();
     this.patchFormWithData();
+    this.disableEditFields();
 
     // Subscription para price
     this.form.get('price')?.valueChanges.subscribe((price: number) => {
@@ -188,6 +189,12 @@ export class PaymentFormComponent
       this.form
         .get('priceFormatted')
         ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
+    }
+  }
+
+  private disableEditFields(): void {
+    if (this.data?.status === PaymentStatus.Approved) {
+      this.form.disable();
     }
   }
 }

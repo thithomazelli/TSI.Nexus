@@ -1,9 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   Address,
   ApiService,
   ApiType,
   ModalService,
+  OrderProductService,
   OrderProductStatus,
   WebApiResponse,
 } from '@friday/core';
@@ -26,36 +28,47 @@ export class OrderProductsComponent {
   compact: boolean = false;
 
   @Input()
+  parentId?: string | null = null;
+
+  @Input()
   isFullList: boolean = true;
 
   @Input()
-  parentOrderId?: string | null = null;
+  isFromProductsView: boolean = false;
 
   @Output()
   orderProductsUpdated = new EventEmitter<string>();
 
   baseEndPoint = ApiType.OrderProducts;
 
-  rowData: OrderProduct[] = [];
   columnDefs: ColDef[] = [];
-
+  rowData: OrderProduct[] = [];
   filteredRowData: OrderProduct[] = [];
+
   filterStartDate: string | null = null;
   filterEndDate: string | null = null;
   filterStatus = { InProgress: false, Delayed: false, Returned: false };
+  showFiltersOnInit = false;
 
   constructor(
     private apiService: ApiService,
+    private orderProductService: OrderProductService,
     private modalService: ModalService,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
-    this.getOrderProducts();
+    this.route.queryParams.subscribe((params) => {
+      this.setFiltersFromQueryParams(params);
+      // Set showFiltersOnInit only on initialization
+      this.showFiltersOnInit = this.hasInitialFilters();
+      this.getOrderProducts(() => this.applyFilters());
+    });
     this.initializeGrid();
   }
 
   refreshOrderProducts(): void {
-    this.getOrderProducts();
+    this.getOrderProducts(() => this.applyFilters());
   }
 
   updateOrderProductStatus(orderProduct: OrderProduct): void {
@@ -70,6 +83,7 @@ export class OrderProductsComponent {
       )
       .then((result: any) => {
         if (!result.isConfirmed) {
+          this.applyFilters();
           return;
         }
 
@@ -83,8 +97,10 @@ export class OrderProductsComponent {
         WebApiResponse<OrderProduct>
       >(`${this.baseEndPoint}/remove`, orderProduct)
       .subscribe((response: WebApiResponse<OrderProduct>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== orderProduct.id);
-        this.orderProductsUpdated.emit(this.parentOrderId ?? '');
+        this.filteredRowData = this.filteredRowData.filter(
+          (p) => p.id !== orderProduct.id,
+        );
+        this.orderProductsUpdated.emit(this.parentId ?? '');
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -97,7 +113,7 @@ export class OrderProductsComponent {
   onOpenModal(initialState: any) {
     const initialStateWithParent = {
       ...initialState,
-      parentId: this.parentOrderId,
+      parentId: initialState.data?.orderId || this.parentId,
     };
 
     const ref = this.modalService.showTemplateModal(
@@ -106,8 +122,8 @@ export class OrderProductsComponent {
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
-        this.getOrderProducts();
-        this.orderProductsUpdated.emit(this.parentOrderId ?? '');
+        this.getOrderProducts(() => this.applyFilters());
+        this.orderProductsUpdated.emit(this.parentId ?? '');
         ref.close();
       });
     }
@@ -155,14 +171,17 @@ export class OrderProductsComponent {
     this.filteredRowData = [...this.rowData];
   }
 
-  private getOrderProducts(): void {
-    if (!this.parentOrderId && !this.isFullList) {
+  private getOrderProducts(callback?: () => void): void {
+    if (!this.parentId && !this.isFullList) {
+      if (callback) callback();
       return;
     }
 
-    const endPointUrl = this.isFullList
-      ? `${this.baseEndPoint}/getAll`
-      : `${this.baseEndPoint}/getByOrderId/${this.parentOrderId}`;
+    const endPointUrl = this.isFromProductsView
+      ? `${this.baseEndPoint}/getByProductId/${this.parentId}`
+      : this.isFullList
+        ? `${this.baseEndPoint}/getAll`
+        : `${this.baseEndPoint}/getByOrderId/${this.parentId}`;
 
     this.apiService
       .get<WebApiResponse<OrderProduct[]>>(endPointUrl)
@@ -173,8 +192,10 @@ export class OrderProductsComponent {
               (b?.endDate ? new Date(b.endDate).getTime() : 0) -
               (a?.endDate ? new Date(a.endDate).getTime() : 0),
           ) ?? [];
-        // Atualiza também os dados filtrados ao buscar novos dados
-        this.filteredRowData = [...this.rowData];
+
+        if (callback) {
+          callback();
+        }
       });
   }
 
@@ -205,6 +226,7 @@ export class OrderProductsComponent {
         headerName: 'SKU',
         sortable: true,
         filter: true,
+        hide: this.isFromProductsView,
         maxWidth: 100,
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? '';
@@ -216,6 +238,7 @@ export class OrderProductsComponent {
         headerName: 'Produto',
         sortable: true,
         filter: true,
+        hide: this.isFromProductsView,
         minWidth: 180,
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? '';
@@ -315,9 +338,15 @@ export class OrderProductsComponent {
           <button class="btn btn-info btn-sm" data-action="edit">
             <i class="fas fa-edit" data-action="edit"></i>
           </button>
+          ${
+            !this.isFromProductsView
+              ? `
           <button class="btn btn-danger btn-sm" data-action="delete">
             <i class="fas fa-trash" data-action="delete"></i>
           </button>
+          `
+              : ''
+          }
         `;
         },
       },
@@ -335,8 +364,9 @@ export class OrderProductsComponent {
         WebApiResponse<OrderProduct>
       >(`${this.baseEndPoint}/update`, updatedOrderProduct)
       .subscribe((response: WebApiResponse<OrderProduct>) => {
-        this.getOrderProducts();
-        this.orderProductsUpdated.emit(this.parentOrderId ?? '');
+        this.getOrderProducts(() => this.applyFilters());
+        this.orderProductsUpdated.emit(this.parentId ?? '');
+        this.orderProductService.markOrderProductAsChanged();
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -361,5 +391,39 @@ export class OrderProductsComponent {
     const year = d.getFullYear();
 
     return `${day}/${month}/${year}`;
+  }
+
+  private setFiltersFromQueryParams(params: any): void {
+    // Always initialize all filters
+    this.filterStatus = { InProgress: false, Delayed: false, Returned: false };
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+
+    // Status filters
+    if (params['status']) {
+      const statuses = Array.isArray(params['status'])
+        ? params['status']
+        : String(params['status']).split(',');
+      statuses.forEach((s: string) => {
+        if (Object.prototype.hasOwnProperty.call(this.filterStatus, s)) {
+          (this.filterStatus as Record<string, boolean>)[s] = true;
+        }
+      });
+    }
+
+    // Date filters
+    this.filterStartDate = params['startDate'] || null;
+    this.filterEndDate = params['endDate'] || null;
+  }
+
+  private hasInitialFilters(): boolean {
+    // Checks if any filter is active
+    if (this.filterStartDate || this.filterEndDate) {
+      return true;
+    }
+    if (Object.values(this.filterStatus).some((v) => v)) {
+      return true;
+    }
+    return false;
   }
 }

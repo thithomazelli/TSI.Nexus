@@ -43,6 +43,13 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByOrderId(Guid? orderId);
 
         /// <summary>
+        /// Method responsible to get a list of OrderProducts based on the ProductId received as parameter.
+        /// </summary>
+        /// <param name="productId">The product ID to be used on the search.</param>
+        /// <returns>List of orderProduct according to the ProductId defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindByProductId(Guid? productId);
+
+        /// <summary>
         /// Method responsible to get only one OrderProduct based on the ID received as parameter.
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>

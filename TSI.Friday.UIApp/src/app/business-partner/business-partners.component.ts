@@ -40,6 +40,7 @@ export class BusinessPartnersComponent {
       headerName: 'Nome',
       sortable: true,
       filter: true,
+      minWidth: 250,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         return `<a data-action="view" class="ag-link">${value}</a>`;
@@ -51,12 +52,14 @@ export class BusinessPartnersComponent {
       sortable: true,
       filter: true,
       flex: 1,
+      minWidth: 85,
     },
     {
       headerName: 'CPF / CNPJ',
       sortable: true,
       filter: true,
       flex: 1,
+      minWidth: 160,
       cellRenderer: (params: ValueFormatterParams) => {
         const documentType = params.data?.documentType;
         let value =
@@ -81,6 +84,7 @@ export class BusinessPartnersComponent {
       sortable: true,
       filter: true,
       flex: 1,
+      minWidth: 250,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
         return `<a data-action="view" class="ag-link">${value}</a>`;
@@ -101,21 +105,38 @@ export class BusinessPartnersComponent {
       filter: true,
       flex: 2,
       hide: true,
+      cellRenderer: (params: ValueFormatterParams) => {
+        const value = params.value ?? '';
+        const digits = value.replace(/\D/g, '');
+        if (digits.length === 10) {
+          return digits.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        }
+        return value;
+      },
     },
     {
       field: 'mobile',
       headerName: 'Celular',
       sortable: true,
       filter: true,
-      maxWidth: 120,
+      minWidth: 60,
+      cellRenderer: (params: ValueFormatterParams) => {
+        const value = params.value ?? '';
+        const digits = value.replace(/\D/g, '');
+        if (digits.length === 11) {
+          return digits.replace(
+            /(\d{2})(\d{1})(\d{4})(\d{4})/,
+            '($1) $2 $3-$4',
+          );
+        }
+        return value;
+      },
     },
     {
       headerName: 'Ações',
       sortable: false,
       filter: false,
-      maxWidth: 400,
       resizable: true,
-      width: 280,
       cellRenderer: (params: ICellRendererParams) => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">

@@ -1,0 +1,9 @@
+// Corrige corte do título 'Status' mantendo alinhamento central
+.filter-group-label {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: initial;
+  max-width: 100%;
+  vertical-align: middle;
+}

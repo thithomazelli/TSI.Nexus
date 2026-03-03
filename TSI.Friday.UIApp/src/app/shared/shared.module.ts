@@ -27,7 +27,6 @@ import { AgGridModule } from 'ag-grid-angular';
 import { NotFoundComponent } from './components/errors/not-found/not-found.component';
 import { ValidationMessagesComponent } from './components/errors/validation-messages/validation-messages.component';
 import { FooterComponent } from './footer/footer.component';
-import { NavbarComponent } from './navbar/navbar.component';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NotificationComponent } from './components/modals/notification/notification.component';
@@ -42,6 +41,7 @@ import { AreaChartComponent } from './area-chart/area-chart.component';
 import { PieChartComponent } from './pie-chart/pie-chart.component';
 import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-trending.component';
 import { AlertBannerComponentComponent } from './alert-banner-component/alert-banner-component.component';
+import { InfoCardsComponent } from './info-cards/info-cards.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +49,6 @@ import { AlertBannerComponentComponent } from './alert-banner-component/alert-ba
     NotFoundComponent,
     ValidationMessagesComponent,
     FooterComponent,
-    NavbarComponent,
     NotificationComponent,
     GridComponent,
     ConfirmationComponent,
@@ -61,6 +60,7 @@ import { AlertBannerComponentComponent } from './alert-banner-component/alert-ba
     AreaChartComponent,
     AreaChartTrendingComponent,
     AlertBannerComponentComponent,
+    InfoCardsComponent,
   ],
   imports: [
     CommonModule,
@@ -80,12 +80,13 @@ import { AlertBannerComponentComponent } from './alert-banner-component/alert-ba
   exports: [
     DateFieldComponent,
     LinkFieldComponent,
-    NavbarComponent,
     SidebarComponent,
     PieChartComponent,
     AreaChartComponent,
     AreaChartTrendingComponent,
     AlertBannerComponentComponent,
+    InfoCardsComponent,
+    NotificationComponent,
     FooterComponent,
     RouterModule,
     MatDialogModule,

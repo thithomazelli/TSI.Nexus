@@ -19,18 +19,20 @@
     [update]="updateOrderProductStatus.bind(this)"
     (openModal)="onOpenModal($event)"
     [filtersTemplate]="filtersTpl"
+    [canAdd]="!isFullList"
+    [showFilters]="showFiltersOnInit"
   ></app-grid>
 
   <ng-template #filtersTpl>
     <div class="row g-2 mb-2">
-      <div class="col-auto">
+      <div class="date-filter-area">
         <app-date-field
           [(ngModel)]="filterStartDate"
           (ngModelChange)="applyFilters()"
           label="Início"
         ></app-date-field>
       </div>
-      <div class="col-auto">
+      <div class="date-filter-area">
         <app-date-field
           [(ngModel)]="filterEndDate"
           (ngModelChange)="applyFilters()"
@@ -38,7 +40,7 @@
         ></app-date-field>
       </div>
       <div class="col-auto d-flex align-items-center gap-2">
-        <div class="filter-group-box me-3 position-relative">
+        <div class="filter-group-box position-relative">
           <span class="filter-group-label">Status</span>
           <div class="d-flex align-items-center pt-2">
             <label class="form-check-label ms-2">
@@ -70,7 +72,7 @@
             </label>
           </div>
         </div>
-        <button class="btn btn-secondary ms-1" (click)="clearFilters()">
+        <button class="btn btn-secondary" (click)="clearFilters()">
           Limpar
         </button>
       </div>

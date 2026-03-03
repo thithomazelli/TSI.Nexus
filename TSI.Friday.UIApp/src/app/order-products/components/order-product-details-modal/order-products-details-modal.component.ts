@@ -2,13 +2,14 @@ import { Component, Inject, Output, EventEmitter } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   ApiService,
+  ApiType,
   FormBaseComponent,
   ModalService,
-  WebApiResponse,
   NotificationService,
-  ApiType,
+  OrderProduct,
+  OrderProductService,
+  WebApiResponse,
 } from '@friday/core';
-import { OrderProduct } from '@friday/core';
 
 @Component({
   selector: 'app-order-product-details-modal',
@@ -29,6 +30,7 @@ export class OrderProductsDetailsModalComponent extends FormBaseComponent {
 
   constructor(
     private apiService: ApiService,
+    private orderProductService: OrderProductService,
     private modalService: ModalService,
     private notificationService: NotificationService,
     public dialogRef: MatDialogRef<OrderProductsDetailsModalComponent>,
@@ -59,6 +61,7 @@ export class OrderProductsDetailsModalComponent extends FormBaseComponent {
         >(`${this._baseEndPoint}/update`, orderProduct)
         .subscribe((response: WebApiResponse<OrderProduct>) => {
           this.saved.emit();
+          this.orderProductService.markOrderProductAsChanged();
           this.modalService.hideModal(this.dialogRef);
           this.notificationService.showMessage(
             response.status,

@@ -14,14 +14,17 @@ namespace TSI.Friday.Repository.Overdue
             _context = context;
         }
 
-        public async Task<int> MarkOverdueOrderProductsAsync(DateTime nowUtc, string systemUserId)
+        public async Task<int> MarkOverdueOrderProductsAsync(string systemUserId)
         {
+            var today = DateTime.UtcNow.Date;
+
             var opQuery = _context
                 .Set<OrderProduct>()
                 .Where(op =>
                     op.Status == OrderProductStatus.InProgress
                     && op.EndDate != default(DateTime)
-                    && op.EndDate < nowUtc
+                    // compare only dates (day/month/year) by comparing to today's midnight
+                    && op.EndDate < today
                 );
 
             var updatedOps = await opQuery.ExecuteUpdateAsync(s =>
@@ -33,11 +36,16 @@ namespace TSI.Friday.Repository.Overdue
             return updatedOps;
         }
 
-        public async Task<int> MarkOverduePaymentsAsync(DateTime nowUtc, string systemUserId)
+        public async Task<int> MarkOverduePaymentsAsync(string systemUserId)
         {
+            var today = DateTime.UtcNow.Date;
+
             var pQuery = _context
                 .Set<Payment>()
-                .Where(p => p.Status == PaymentStatus.Pending && p.Date < nowUtc);
+                .Where(p => p.Status == PaymentStatus.Pending
+                // compare only date portion by comparing to today's midnight
+                && p.Date < today
+                );
 
             var updatedPayments = await pQuery.ExecuteUpdateAsync(s =>
                 s.SetProperty(p => p.Status, p => PaymentStatus.Delayed)

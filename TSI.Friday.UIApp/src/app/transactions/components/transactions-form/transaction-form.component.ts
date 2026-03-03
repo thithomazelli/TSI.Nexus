@@ -96,6 +96,7 @@ export class TransactionFormComponent
   private conditionSub?: Subscription;
   private typeSub?: Subscription;
   private paymentsSub?: Subscription;
+  private statusSubscription?: Subscription;
 
   businessPartners$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
@@ -124,6 +125,8 @@ export class TransactionFormComponent
     this.onTypeChanges();
     this.onInstallmentsChanges();
     this.setupAutoComplete();
+
+    this.setupStatusWatcher();
 
     // Subscription para price
     this.form.get('price')?.valueChanges.subscribe((price: number) => {
@@ -156,6 +159,9 @@ export class TransactionFormComponent
     if (this.paymentsSub) {
       this.paymentsSub.unsubscribe();
     }
+    if (this.statusSubscription) {
+      this.statusSubscription.unsubscribe();
+    }
   }
 
   onCurrencyBlur(formControlName: string): void {
@@ -179,27 +185,29 @@ export class TransactionFormComponent
       if (!businessPartnerName) {
         this.markAsTouched('businessPartnerName');
         this.form.get('businessPartnerName')!.setErrors({ required: true });
-        // Limpa orderId/orderNumber apenas se o valor for string (edição manual)
+        // Clear orderId/orderNumber only if the value is a string (manual edit)
         this.form.get('orderId')!.setValue(null);
         this.form.get('orderNumber')!.setValue('');
         return;
       }
-      // Verifica se o nome existe na lista de clientes
+      // Check if the name exists in the client list
       const clients = (this.businessPartners$ as any).source
         .value as BusinessPartner[];
       const found = clients.find((c) => c.name === businessPartnerName);
       if (found) {
         this.form.get('businessPartnerId')!.setValue(found.id);
         this.form.get('businessPartnerName')!.setValue(found.name);
-        // Não limpa orderId/orderNumber ao selecionar via autocomplete
+        // Do not clear orderId/orderNumber when selecting via autocomplete
       } else {
         const confirmRef = this.modalService.showConfirmation({
-          title: 'Cliente não encontrado',
-          message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-          cancelButtonText: 'Cancelar',
-          confirmButtonText: 'Sim',
-          confirmDelete: async () => {
-            // Abrir modal de adicionar cliente
+          title: 'Client not found',
+          message: `The client "${businessPartnerName}" does not exist. Do you want to add it?`,
+          cancelButtonText: 'Cancel',
+          confirmButtonText: 'Yes',
+        });
+        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            // Open modal to add client
             const clientFormRef: MatDialogRef<any> =
               this.modalService.showTemplateModal(
                 BusinessPartnerDetailsModalComponent,
@@ -225,20 +233,17 @@ export class TransactionFormComponent
                     .get('businessPartnerName')!
                     .setErrors({ required: true });
                   this.form.get('businessPartnerId')!.setValue(null);
-                  // Limpa orderId/orderNumber ao cancelar cadastro manual
+                  // Clear orderId/orderNumber when canceling manual registration
                   this.form.get('orderId')!.setValue(null);
                   this.form.get('orderNumber')!.setValue('');
                 }
               });
-          },
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (!confirmed) {
+          } else {
             this.form.get('businessPartnerName')!.setValue('');
             this.markAsTouched('businessPartnerName');
             this.form.get('businessPartnerName')!.setErrors({ required: true });
             this.form.get('businessPartnerId')!.setValue(null);
-            // Limpa orderId/orderNumber ao cancelar manualmente
+            // Clear orderId/orderNumber when canceling manually
             this.form.get('orderId')!.setValue(null);
             this.form.get('orderNumber')!.setValue('');
           }
@@ -286,7 +291,7 @@ export class TransactionFormComponent
           ...commonControls,
         });
 
-    // Bloqueia campos quando isEdit for true
+    // Disable fields when isEdit is true
     if (this.isEdit && this.form) {
       this.form.get('businessPartnerName')?.disable();
       this.form.get('totalOfPayments')?.disable();
@@ -296,7 +301,7 @@ export class TransactionFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      // Preenche campos conforme solicitado
+      // Fill fields as requested
       const totalOfPayments = this.data?.totalOfPayments || 1;
       const priceSum = this.data.price || 0;
       const pricePerInstallment =
@@ -312,7 +317,7 @@ export class TransactionFormComponent
           this.currencyService.formatCurrencyBRL(pricePerInstallment),
       });
 
-      // Bloqueia campo preço
+      // Disable price field
       this.form.get('price')?.disable();
     } else {
       this.form
@@ -373,7 +378,7 @@ export class TransactionFormComponent
         }
         businessPartnerNameCtrl.updateValueAndValidity();
       });
-      // Inicializa o valor ao criar o form
+      // Initialize value when creating the form
       this.showClientAndOrder = typeCtrl.value === TransactionType.Incoming;
       if (typeCtrl.value === TransactionType.Incoming) {
         businessPartnerNameCtrl.setValidators([Validators.required]);
@@ -401,7 +406,7 @@ export class TransactionFormComponent
           }
         },
       );
-      // Inicializa o valor ao criar o form
+      // Initialize value when creating the form
       this.isInstallment =
         conditionCtrl.value === TransactionCondition.InInstallments;
       if (!this.isInstallment) {
@@ -427,7 +432,7 @@ export class TransactionFormComponent
         },
       );
 
-      // Inicializa o valor ao criar o form
+      // Initialize value when creating the form
       const initialInstallments =
         paymentsCtrl.value > 0 ? paymentsCtrl.value : 1;
       const price = this.form.get('price')?.value || 0;
@@ -437,5 +442,49 @@ export class TransactionFormComponent
         .get('pricePerInstallmentFormatted')
         ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
     }
+  }
+
+  // Adiciona watcher para status igual ao order-form
+  private setupStatusWatcher(): void {
+    // hasOpenedPayments: simulates if there are open payments (adjust according to your logic)
+    const hasOpenedPayments = this.data && (this.data as any).hasOpenedPayments;
+    if (!this.isEdit || !this.form || !hasOpenedPayments) {
+      return;
+    }
+    // Remove previous subscription if any
+    if (this.statusSubscription) {
+      this.statusSubscription.unsubscribe();
+    }
+    // Add the field to the form if it does not exist
+    if (!this.form.contains('markAllOrderPaymentsAsReturned')) {
+      this.form.addControl(
+        'markAllOrderPaymentsAsReturned',
+        this.formBuilder.control(false),
+      );
+    }
+    this.statusSubscription = this.form
+      .get('status')
+      ?.valueChanges.subscribe(async (newStatus: PaymentStatus) => {
+        if (newStatus === PaymentStatus.Approved) {
+          const confirmed = await this.modalService
+            .showConfirmation({
+              title: 'Fechar pagamento',
+              message: 'Deseja marcar todos os pagamentos como retornados?',
+              confirmButtonText: 'Sim',
+              cancelButtonText: 'Não',
+            })
+            .afterClosed()
+            .toPromise();
+          this.form
+            .get('markAllOrderPaymentsAsReturned')
+            ?.setValue(!!confirmed);
+          if (this.data) {
+            (this.data as any).markAllPaymentsAsReturned = !!confirmed;
+          }
+        } else {
+          this.form.get('markAllOrderPaymentsAsReturned')?.setValue(false);
+          if (this.data) (this.data as any).markAllPaymentsAsReturned = false;
+        }
+      });
   }
 }

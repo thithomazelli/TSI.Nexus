@@ -7,6 +7,7 @@ import {
   Transaction,
   Payment,
   WebApiResponse,
+  PaymentService,
 } from '@friday/core';
 
 @Component({
@@ -29,6 +30,7 @@ export class PaymentDetailsModalComponent {
 
   constructor(
     private apiService: ApiService,
+    private paymentService: PaymentService,
     private modalService: ModalService,
     public dialogRef: MatDialogRef<PaymentDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
@@ -51,6 +53,7 @@ export class PaymentDetailsModalComponent {
         .subscribe((response: WebApiResponse<Payment>) => {
           this.saved.emit();
           this.modalService.hideModal(this.dialogRef);
+          this.paymentService.markPaymentAsChanged();
           this.modalService.showSweetNotification(
             '',
             response.message,

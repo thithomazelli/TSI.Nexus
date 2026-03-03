@@ -156,6 +156,7 @@
           <app-date-field
             formControlName="date"
             [label]="'Data Pagamento'"
+            [isDisabled]="data?.status === 'Approved'"
           ></app-date-field>
         </div>
 
@@ -239,7 +240,11 @@
       <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
         Cancelar
       </button>
-      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+      <button
+        type="submit"
+        class="btn btn-success"
+        [disabled]="form.invalid || data?.status === 'Approved'"
+      >
         {{ isEdit ? "Salvar" : "Adicionar" }}
       </button>
     </div>

@@ -13,7 +13,6 @@ export class ConfirmationComponent<T> {
   cancelButtonText: string;
   confirmButtonText: string;
   data: T | undefined;
-  confirmDelete!: () => void;
 
   constructor(
     public dialogRef: MatDialogRef<ConfirmationComponent<T>>,
@@ -25,6 +24,5 @@ export class ConfirmationComponent<T> {
     this.data = dialogData.data;
     this.cancelButtonText = dialogData.cancelButtonText || 'Cancelar';
     this.confirmButtonText = dialogData.confirmButtonText || 'Excluir';
-    this.confirmDelete = dialogData.confirmDelete;
   }
 }

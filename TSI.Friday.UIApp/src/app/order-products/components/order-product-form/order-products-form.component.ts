@@ -213,7 +213,9 @@ export class OrderProductsFormComponent
           message: `O produto "${productSku}" não existe. Deseja adicioná-lo?`,
           cancelButtonText: 'Cancelar',
           confirmButtonText: 'Sim',
-          confirmDelete: async () => {
+        });
+        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+          if (confirmed) {
             // Abrir modal de adicionar produto
             const productFormRef: MatDialogRef<any> =
               this.modalService.showTemplateModal(
@@ -237,10 +239,7 @@ export class OrderProductsFormComponent
                   this.cleanProductSelection();
                 }
               });
-          },
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (!confirmed) {
+          } else {
             this.cleanProductSelection();
           }
         });
@@ -264,7 +263,9 @@ export class OrderProductsFormComponent
           message: `O produto "${productName}" não existe. Deseja adicioná-lo?`,
           cancelButtonText: 'Cancelar',
           confirmButtonText: 'Sim',
-          confirmDelete: async () => {
+        });
+        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+          if (confirmed) {
             // Abrir modal de adicionar produto
             const productFormRef: MatDialogRef<any> =
               this.modalService.showTemplateModal(
@@ -288,10 +289,7 @@ export class OrderProductsFormComponent
                   this.cleanProductSelection();
                 }
               });
-          },
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (!confirmed) {
+          } else {
             this.cleanProductSelection();
           }
         });
@@ -387,6 +385,10 @@ export class OrderProductsFormComponent
   }
 
   onChangeAddressClick() {
+    if (this.data?.status === OrderProductStatus.Returned) {
+      return;
+    }
+
     this.showAllAddresses = !this.showAllAddresses;
   }
 
@@ -410,10 +412,13 @@ export class OrderProductsFormComponent
     const start = this.form.get('startDate')?.value;
     const end = this.form.get('endDate')?.value;
     if (start && end) {
+      // Compare only day/month/year, ignore time
       const startDate = new Date(start);
       const endDate = new Date(end);
+      startDate.setHours(0, 0, 0, 0);
+      endDate.setHours(0, 0, 0, 0);
       if (endDate < startDate) {
-        // Limpa o campo visualmente e logicamente
+        // Clear the field visually and logically
         if (this.endDateField && this.endDateField.clear) {
           this.endDateField.clear();
         }
@@ -549,7 +554,9 @@ export class OrderProductsFormComponent
   }
 
   private disableEditFields(): void {
-    if (this.isEdit && this.form) {
+    if (this.data?.status === OrderProductStatus.Returned) {
+      this.form.disable();
+    } else if (this.isEdit && this.form) {
       this.form.get('productSku')?.disable();
       this.form.get('productName')?.disable();
     }

@@ -1,10 +1,4 @@
-import {
-  animate,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
+import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { ApiService, ApiType, WebApiResponse } from '@friday/core';
 
@@ -13,26 +7,7 @@ import { ApiService, ApiType, WebApiResponse } from '@friday/core';
   templateUrl: './area-chart.component.html',
   styleUrl: './area-chart.component.scss',
   standalone: false,
-  animations: [
-    trigger('cardCollapse', [
-      state(
-        'open',
-        style({
-          height: '*',
-          opacity: 1,
-        }),
-      ),
-      state(
-        'closed',
-        style({
-          height: '0px',
-          opacity: 0,
-        }),
-      ),
-      transition('open => closed', [animate('250ms ease-in')]),
-      transition('closed => open', [animate('300ms ease-out')]),
-    ]),
-  ],
+  animations: [cardCollapseAnimation],
 })
 export class AreaChartComponent implements OnInit, OnChanges {
   @Input()

@@ -209,6 +209,7 @@ export class TransactionsComponent {
   filterEndDate: string | null = null;
   filterStatus = { Approved: false, Pending: false, Delayed: false };
   filterType = { Incoming: false, Outgoing: false };
+  showFiltersOnInit = false;
 
   constructor(
     private apiService: ApiService,
@@ -216,11 +217,19 @@ export class TransactionsComponent {
   ) {}
 
   ngOnInit(): void {
-    this.getTransactions();
+    this.setFiltersFromQueryParams();
+    this.getTransactions(() => this.applyFilters());
   }
 
-  refreshOrders(): void {
-    this.getTransactions();
+  private hasInitialFilters(): boolean {
+    if (this.filterStartDate || this.filterEndDate) return true;
+    if (Object.values(this.filterStatus).some((v) => v)) return true;
+    if (Object.values(this.filterType).some((v) => v)) return true;
+    return false;
+  }
+
+  refreshTransactions(): void {
+    this.getTransactions(() => this.applyFilters());
   }
 
   deleteOrder(order: Transaction): void {
@@ -228,7 +237,9 @@ export class TransactionsComponent {
       .delete<WebApiResponse<Transaction>>(`${this.baseEndPoint}/remove`, order)
       .subscribe((response: WebApiResponse<Transaction>) => {
         if (response.status === ResponseStatus.Success) {
-          this.rowData = this.rowData.filter((p) => p.id !== order.id);
+          this.filteredRowData = this.filteredRowData.filter(
+            (p) => p.id !== order.id,
+          );
         }
 
         this.modalService.hideModal();
@@ -247,7 +258,7 @@ export class TransactionsComponent {
     );
     if (ref.componentInstance && ref.componentInstance.saved) {
       ref.componentInstance.saved.subscribe(() => {
-        this.getTransactions();
+        this.getTransactions(() => this.applyFilters());
         ref.close();
       });
     }
@@ -305,12 +316,12 @@ export class TransactionsComponent {
     this.filteredRowData = [...this.rowData];
   }
 
-  private getTransactions(): void {
+  private getTransactions(callback?: () => void): void {
     this.apiService
       .get<WebApiResponse<Transaction[]>>(`${this.baseEndPoint}/getAll`)
       .subscribe((response: WebApiResponse<Transaction[]>) => {
         this.rowData = response.data ?? [];
-        this.filteredRowData = [...this.rowData];
+        if (callback) callback();
       });
   }
 
@@ -348,5 +359,47 @@ export class TransactionsComponent {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
+  }
+
+  private setFiltersFromQueryParams(): void {
+    const params =
+      window && window.location && window.location.search
+        ? Object.fromEntries(new URLSearchParams(window.location.search))
+        : {};
+
+    // Initializes filters
+    this.filterStatus = { Approved: false, Pending: false, Delayed: false };
+    this.filterType = { Incoming: false, Outgoing: false };
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+
+    // Status filters
+    if (params['status']) {
+      const statuses = String(params['status']).split(',');
+      statuses.forEach((s: string) => {
+        if (Object.prototype.hasOwnProperty.call(this.filterStatus, s)) {
+          (this.filterStatus as Record<string, boolean>)[s] = true;
+        }
+      });
+    }
+    // Type filters
+    if (params['type']) {
+      const types = String(params['type']).split(',');
+      types.forEach((t: string) => {
+        if (Object.prototype.hasOwnProperty.call(this.filterType, t)) {
+          (this.filterType as Record<string, boolean>)[t] = true;
+        }
+      });
+    }
+    // Date filters
+    if (params['startDate']) {
+      this.filterStartDate = params['startDate'];
+    }
+    if (params['endDate']) {
+      this.filterEndDate = params['endDate'];
+    }
+
+    // Set showFiltersOnInit only on initialization
+    this.showFiltersOnInit = this.hasInitialFilters();
   }
 }

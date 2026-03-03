@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+﻿using System;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using AutoMapper;
 using FluentAssertions;
 using Moq;
 using TSI.Friday.Contracts.Enums;
@@ -14,6 +17,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly OrderService _orderService;
         private readonly Mock<IRepository<Order>> _repository;
+        private readonly Mock<IRepository<OrderProduct>> _orderProductRepository;
         private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly IList<OrderDto> _orderListMock;
@@ -23,11 +27,13 @@ namespace TSI.Friday.Services.Tests.Services
         {
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _repository = new Mock<IRepository<Order>>();
+            _orderProductRepository = new Mock<IRepository<OrderProduct>>();
             _transactionService = new Mock<ITransactionService>();
             _sequenceService = new Mock<ISequenceService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
                 _repository.Object,
+                _orderProductRepository.Object,
                 _transactionService.Object,
                 _sequenceService.Object,
                 _mapper
@@ -237,6 +243,30 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(r => r.GetAllAsync(o => o.BusinessPartner), Times.Once);
+        }
+
+        [Fact]
+        public async Task OrderService_Update_WhenMarkAllProductsAsReturned_CallsExecuteUpdate()
+        {
+            // Arrange
+            var orderDto = new OrderDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                OrderNumber = "ORD-00001",
+                MarkAllProductsAsReturned = true,
+                Transaction = new TransactionDto(),
+            };
+
+            _repository.Setup(r => r.UpdateAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            _transactionService.Setup(t => t.Update(It.IsAny<TransactionDto>())).ReturnsAsync(new WebApiResponse<TransactionDto> { Status = ResponseStatus.Success, Data = orderDto.Transaction });
+            _orderProductRepository.Setup(r => r.ExecuteUpdateAsync(It.IsAny<Expression<Func<OrderProduct, bool>>>(), It.IsAny<Action<OrderProduct>>())).ReturnsAsync(1);
+
+            // Act
+            var result = await _orderService.Update(orderDto);
+
+            // Assert
+            result.Status.Should().Be(ResponseStatus.Success);
+            _orderProductRepository.Verify(r => r.ExecuteUpdateAsync(It.IsAny<Expression<Func<OrderProduct, bool>>>(), It.IsAny<Action<OrderProduct>>()), Times.Once);
         }
     }
 }

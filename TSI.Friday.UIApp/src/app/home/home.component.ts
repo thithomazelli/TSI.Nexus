@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { cardCollapseAnimation } from '../core/animations/card-collapse.animation';
 import { TransactionType } from '../core/enums/payment-type.enum';
 
 @Component({
@@ -6,6 +7,7 @@ import { TransactionType } from '../core/enums/payment-type.enum';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   standalone: false,
+  animations: [cardCollapseAnimation],
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
   TransactionType = TransactionType;

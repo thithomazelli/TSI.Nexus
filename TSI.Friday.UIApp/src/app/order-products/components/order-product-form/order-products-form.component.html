@@ -162,9 +162,10 @@
                   <span>{{ selectedAddress?.address }}</span>
                 </div>
                 <a
+                  class="address-action"
                   href="#"
                   (click)="$event.preventDefault(); onChangeAddressClick()"
-                  class="address-action"
+                  [class.disabled]="data?.status === 'Returned'"
                   >Alterar</a
                 >
               </div>
@@ -223,13 +224,14 @@
               <app-date-field
                 formControlName="startDate"
                 [label]="'Data Retirada'"
+                [isDisabled]="data?.status === 'Returned'"
               ></app-date-field>
             </div>
             <div class="col-6">
               <app-date-field
-                #endDateField
                 formControlName="endDate"
                 [label]="'Data Entrega'"
+                [isDisabled]="data?.status === 'Returned'"
               ></app-date-field>
             </div>
           </div>
@@ -319,7 +321,11 @@
       <button type="button" class="btn btn-secondary" (click)="onCancel()">
         Cancelar
       </button>
-      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+      <button
+        type="submit"
+        class="btn btn-success"
+        [disabled]="form.invalid || data?.status === 'Returned'"
+      >
         {{ isEdit ? "Salvar" : "Adicionar" }}
       </button>
     </div>

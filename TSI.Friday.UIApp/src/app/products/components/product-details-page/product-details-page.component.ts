@@ -19,7 +19,7 @@ export class ProductDetailsPageComponent {
   data?: Product | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'form' | 'image' | 'extra' = 'form';
+  activeTab: 'form' | 'image' | 'history' = 'form';
 
   private _baseEndPoint: ApiType = ApiType.Products;
 

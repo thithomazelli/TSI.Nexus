@@ -7,6 +7,7 @@
   min-width: 220px;
   margin-top: 0.25rem;
 }
+
 .filter-group-label {
   position: absolute;
   top: -0.9em;
@@ -19,8 +20,17 @@
   border-radius: 0.25em;
   z-index: 1;
 }
+
 .app-main {
   padding-bottom: 0;
+}
+
+@media (max-width: 576px) {
+  .login-box,
+  .register-box {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
 }
 
 .card-body {
@@ -189,4 +199,8 @@ mat-calendar {
 
 .swal-btn {
   min-width: 100px;
+}
+
+.date-filter-area {
+  width: 150px;
 }

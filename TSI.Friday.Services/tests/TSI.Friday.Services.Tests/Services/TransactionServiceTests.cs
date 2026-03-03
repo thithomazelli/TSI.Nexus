@@ -15,15 +15,21 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly TransactionService _transactionService;
         private readonly Mock<IRepository<Transaction>> _repository;
+        private readonly Mock<IRepository<Payment>> _paymentRepository;
         private readonly IList<TransactionDto> _transactionsMock;
         private readonly IMapper _mapper;
 
         public TransactionServiceTests()
         {
             _repository = new Mock<IRepository<Transaction>>();
+            _paymentRepository = new Mock<IRepository<Payment>>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
-            _transactionService = new TransactionService(_repository.Object, _mapper);
+            _transactionService = new TransactionService(
+                _repository.Object,
+                _paymentRepository.Object,
+                _mapper
+            );
 
             _transactionsMock = new List<TransactionDto>
             {
@@ -84,7 +90,9 @@ namespace TSI.Friday.Services.Tests.Services
             _repository
                 .Setup(_ => _.GetByIdAsync(It.IsAny<Guid>(), p => p.Payments))
                 .ReturnsAsync(transactionEntity);
-            _repository.Setup(_ => _.UpdateAsync(It.IsAny<Transaction>()));
+            _repository
+                .Setup(_ => _.UpdateAsync(It.IsAny<Transaction>()))
+                .Returns(Task.CompletedTask);
 
             var expected = new WebApiResponse<TransactionDto>
             {
@@ -200,6 +208,72 @@ namespace TSI.Friday.Services.Tests.Services
                         c => c.BusinessPartner,
                         o => o.Order,
                         p => p.Payments
+                    ),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task TransactionService_Update_WhenMarkAllPaymentsAsApproved_CallsExecuteUpdateOnPaymentRepository()
+        {
+            // Arrange
+            var txId = Guid.NewGuid();
+            var transactionEntity = new Transaction
+            {
+                Id = txId,
+                Payments = new List<Payment>
+                {
+                    new Payment
+                    {
+                        Id = Guid.NewGuid(),
+                        Status = PaymentStatus.Pending,
+                        TransactionId = txId,
+                    },
+                    new Payment
+                    {
+                        Id = Guid.NewGuid(),
+                        Status = PaymentStatus.Delayed,
+                        TransactionId = txId,
+                    },
+                },
+            };
+
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(txId, It.IsAny<Expression<Func<Transaction, object>>[]>())
+                )
+                .ReturnsAsync(transactionEntity);
+
+            _paymentRepository
+                .Setup(r =>
+                    r.ExecuteUpdateAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        It.IsAny<Action<Payment>>()
+                    )
+                )
+                .ReturnsAsync(2);
+
+            _repository
+                .Setup(r => r.UpdateAsync(It.IsAny<Transaction>()))
+                .Returns(Task.CompletedTask);
+
+            var dto = new TransactionDto
+            {
+                Id = txId,
+                MarkAllPaymentsAsApproved = true,
+                Description = "Tx",
+            };
+
+            // Act
+            var result = await _transactionService.Update(dto);
+
+            // Assert
+            result.Status.Should().Be(ResponseStatus.Success);
+            _paymentRepository.Verify(
+                r =>
+                    r.ExecuteUpdateAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        It.IsAny<Action<Payment>>()
                     ),
                 Times.Once
             );
