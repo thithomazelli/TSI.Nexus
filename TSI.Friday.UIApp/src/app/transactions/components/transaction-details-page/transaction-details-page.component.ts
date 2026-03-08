@@ -17,24 +17,24 @@ import {
   standalone: false,
 })
 export class TransactionDetailsPageComponent {
+  private _baseEndPoint: ApiType = ApiType.Transactions;
+
   isEdit = false;
   data?: Transaction | null = null;
   id: string | null = null;
   loading = false;
   activeTab: 'details' | 'payments' = 'details';
 
-  transactionTypeOptions = [
-    { label: 'Entrada', value: TransactionType.Incoming },
-    { label: 'Saída', value: TransactionType.Outgoing },
-  ];
+  transactionTypeOptions: Record<TransactionType, string> = {
+    [TransactionType.Incoming]: 'Entrada',
+    [TransactionType.Outgoing]: 'Saída',
+  };
 
-  transactionStatusOptions = [
-    { label: 'Aprovado', value: PaymentStatus.Approved },
-    { label: 'Atrasado', value: PaymentStatus.Delayed },
-    { label: 'Pendente', value: PaymentStatus.Pending },
-  ];
-
-  private _baseEndPoint: ApiType = ApiType.Transactions;
+  transactionStatusOptions: Record<PaymentStatus, string> = {
+    [PaymentStatus.Approved]: 'Aprovado',
+    [PaymentStatus.Delayed]: 'Atrasado',
+    [PaymentStatus.Pending]: 'Pendente',
+  };
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -87,6 +87,20 @@ export class TransactionDetailsPageComponent {
     if (this.id) {
       this.loadTransaction(this.id);
     }
+  }
+
+  getTransactionStatusLabel(): string {
+    if (!this.data?.status || this.data?.status === undefined) {
+      return '';
+    }
+    return this.transactionStatusOptions[this.data.status];
+  }
+
+  getTransactionTypeLabel(): string {
+    if (!this.data?.type || this.data?.type === undefined) {
+      return '';
+    }
+    return this.transactionTypeOptions[this.data.type];
   }
 
   private loadTransaction(id: string): void {

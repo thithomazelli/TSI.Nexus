@@ -20,18 +20,6 @@
     <!--begin::End Navbar Links-->
     <ng-container *ngIf="user$ | async as user">
       <ul class="navbar-nav ms-auto">
-        <!--begin::Navbar Search-->
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            data-widget="navbar-search"
-            href="#"
-            role="button"
-          >
-            <i class="bi bi-search"></i>
-          </a>
-        </li>
-        <!--end::Navbar Search-->
         <!--begin::Messages Dropdown Menu-->
         <li class="nav-item dropdown">
           <app-order-product-notification></app-order-product-notification>
@@ -77,7 +65,7 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
             <!--begin::User Image-->
-            <li class="user-header text-bg-primary">
+            <li class="user-header bg-body-secondary">
               <app-photo
                 *ngIf="data"
                 [entityClass]="'User'"
@@ -88,30 +76,15 @@
               </app-photo>
             </li>
             <!--end::User Image-->
-            <!--begin::Menu Body-->
-            <li class="user-body">
-              <div class="d-flex gap-2">
-                <a class="btn btn-primary btn-sm flex-fill text-center"
-                  >Seguidores</a
-                >
-                <a class="btn btn-primary btn-sm flex-fill text-center"
-                  >Vendas</a
-                >
-                <a class="btn btn-primary btn-sm flex-fill text-center"
-                  >Amigos</a
-                >
-              </div>
-            </li>
-            <!--end::Menu Body-->
             <!--begin::Menu Footer-->
 
             <li class="user-footer">
               <a
-                class="btn btn-default btn-flat"
+                class="btn btn-primary btn-flat"
                 [routerLink]="['/users/', user.id]"
                 >Perfil</a
               >
-              <a class="btn btn-default btn-flat float-end" (click)="logout()"
+              <a class="btn btn-danger btn-flat float-end" (click)="logout()"
                 >Sair</a
               >
             </li>

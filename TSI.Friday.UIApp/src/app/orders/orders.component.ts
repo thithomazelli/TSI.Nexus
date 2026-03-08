@@ -35,7 +35,7 @@ export class OrdersComponent {
     },
     {
       field: 'orderNumber',
-      headerName: 'Order Number',
+      headerName: 'Número do Pedido',
       sortable: true,
       filter: true,
       width: 150,
@@ -49,7 +49,7 @@ export class OrdersComponent {
     },
     {
       field: 'businessPartnerName',
-      headerName: 'Client Name',
+      headerName: 'Nome do Cliente',
       sortable: true,
       filter: true,
       flex: 1,
@@ -61,7 +61,7 @@ export class OrdersComponent {
     },
     {
       field: 'description',
-      headerName: 'Description',
+      headerName: 'Descrição',
       sortable: true,
       filter: true,
       flex: 2,
@@ -69,7 +69,7 @@ export class OrdersComponent {
     },
     {
       field: 'totalPrice',
-      headerName: 'Total Price',
+      headerName: 'Valor Total',
       sortable: true,
       filter: true,
       width: 120,
@@ -113,7 +113,7 @@ export class OrdersComponent {
         } else if (value === 'Open') {
           color = 'info';
           label = 'Em Aberto';
-        } else if (value === 'WaitingPayment' || value === 'Waiting payment') {
+        } else if (value === 'WaitingPayment') {
           color = 'warning';
           label = 'Aguardando Pagamento';
         }
@@ -121,7 +121,7 @@ export class OrdersComponent {
       },
     },
     {
-      headerName: '',
+      headerName: 'Ações',
       sortable: false,
       filter: false,
       maxWidth: 400,
