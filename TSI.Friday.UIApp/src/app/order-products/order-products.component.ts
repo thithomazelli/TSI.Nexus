@@ -247,7 +247,7 @@ export class OrderProductsComponent {
       },
       {
         field: 'totalPrice',
-        headerName: 'Total',
+        headerName: 'Valor Total',
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -329,7 +329,7 @@ export class OrderProductsComponent {
         },
       },
       {
-        headerName: '',
+        headerName: 'Ações',
         sortable: false,
         filter: false,
         resizable: true,

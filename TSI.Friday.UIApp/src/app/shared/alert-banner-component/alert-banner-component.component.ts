@@ -70,5 +70,15 @@ export class AlertBannerComponentComponent implements OnInit {
       InProgress: `Atenção: ${this.entity} em andamento`,
       Delayed: `Urgente: ${this.entity} atrasado`,
     };
+
+    if (this.entity === 'Transação') {
+      this._statusMessageMap = {
+        ...this._statusMessageMap,
+        Approved: `Excelente! ${this.entity} concluída`,
+        Closed: `Excelente! ${this.entity} concluída`,
+        Returned: `Excelente! ${this.entity} concluída`,
+        Delayed: `Urgente: ${this.entity} atrasada`,
+      };
+    }
   }
 }
