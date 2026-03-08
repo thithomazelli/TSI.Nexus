@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -135,8 +136,64 @@ catch
     // swallow to not break startup
 }
 
-// Serve uploaded files from a dedicated folder to avoid frontend watcher triggers
-var uploadsPath = Path.GetFullPath(Path.Combine("D:\\Development\\TSI.Friday", "uploads"));
+// Resolve uploads path: configuration > workspace-root (dev) > ContentRoot (server)
+string? configuredUploads = builder.Configuration["Uploads:Path"];
+string uploadsPath;
+if (!string.IsNullOrWhiteSpace(configuredUploads))
+{
+    // if relative path provided, resolve against content root
+    if (Path.IsPathRooted(configuredUploads))
+    {
+        uploadsPath = Path.GetFullPath(configuredUploads);
+    }
+    else
+    {
+        uploadsPath = Path.GetFullPath(
+            Path.Combine(app.Environment.ContentRootPath, configuredUploads)
+        );
+    }
+}
+else
+{
+    // detect workspace root for dev
+    static string? FindWorkspaceRoot(string startPath)
+    {
+        try
+        {
+            var dir = new DirectoryInfo(startPath);
+            while (dir != null && dir.FullName != dir.Root.FullName)
+            {
+                if (
+                    Directory.Exists(Path.Combine(dir.FullName, ".git"))
+                    || dir.GetFiles("*.sln").Any()
+                    || string.Equals(dir.Name, "TSI.Friday", StringComparison.OrdinalIgnoreCase)
+                )
+                {
+                    return dir.FullName;
+                }
+                dir = dir.Parent;
+            }
+        }
+        catch
+        {
+            // ignore and fallback
+        }
+
+        return null;
+    }
+
+    var workspaceRoot = FindWorkspaceRoot(app.Environment.ContentRootPath);
+    if (!string.IsNullOrWhiteSpace(workspaceRoot))
+    {
+        uploadsPath = Path.GetFullPath(Path.Combine(workspaceRoot, "uploads"));
+    }
+    else
+    {
+        // if workspace root not found, create uploads folder under ContentRootPath (app root)
+        uploadsPath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "uploads"));
+    }
+}
+
 Directory.CreateDirectory(uploadsPath);
 var uploadsProvider = new PhysicalFileProvider(uploadsPath);
 app.UseStaticFiles(

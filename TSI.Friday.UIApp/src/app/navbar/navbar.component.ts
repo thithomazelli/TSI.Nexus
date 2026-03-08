@@ -54,11 +54,11 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.photoService.photo$.subscribe((fileName: string) => {
-      if (fileName) {
+    this.photoService.photo$.subscribe((response) => {
+      if (response.fileName && this.data?.id == response.userId) {
         const apiBase = environment.appUrl; // ajuste conforme seu ambiente
-        this.imageUrl = `${apiBase}/uploads/User/${fileName}`;
-        this.data!.photo = fileName;
+        this.imageUrl = `${apiBase}/uploads/User/${response.fileName}`;
+        this.data!.photo = response.fileName;
       }
     });
 

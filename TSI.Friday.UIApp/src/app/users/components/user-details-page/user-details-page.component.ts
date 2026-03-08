@@ -44,9 +44,9 @@ export class UserDetailsPageComponent {
       this.data = null;
     }
 
-    this.photoService.photo$.subscribe((fileName: string) => {
-      if (fileName) {
-        this.data!.photo = fileName;
+    this.photoService.photo$.subscribe((response) => {
+      if (response.fileName) {
+        this.data!.photo = response.fileName;
       }
     });
   }

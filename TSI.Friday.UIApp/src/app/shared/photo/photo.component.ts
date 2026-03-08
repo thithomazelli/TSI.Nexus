@@ -247,6 +247,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
         if (this.entityClass === 'User') {
           this.photoService.updateUserPhoto(
             response?.fileName != '' ? response.fileName : 'no_profile.png',
+            this.data.id,
           );
         }
       });
