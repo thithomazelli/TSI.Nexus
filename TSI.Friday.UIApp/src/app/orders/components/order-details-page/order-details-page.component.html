@@ -19,18 +19,22 @@
                 <div class="text-center">
                   <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                      <b>Número do Pedido</b>
+                      <b>Número do Pedido: </b>
                       <span class="float-right">{{ data?.orderNumber }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Cliente</b>
+                      <b>Cliente: </b>
                       <span class="float-right">{{
                         data?.businessPartnerName
                       }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Status</b>
-                      <span class="float-right">{{ data?.status }}</span>
+                      <b>Status: </b>
+                      @for (option of orderStatusOptions; track option.value) {
+                        @if (option.value === data?.status) {
+                          <a class="float-right">{{ option.label }}</a>
+                        }
+                      }
                     </li>
                   </ul>
                 </div>

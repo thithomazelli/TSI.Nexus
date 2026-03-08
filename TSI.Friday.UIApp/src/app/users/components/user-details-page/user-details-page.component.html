@@ -20,94 +20,98 @@
                 [imageUrl]="data?.photo"
                 [entityClass]="'User'"
               ></app-photo>
-              <div class="box-profile">
+              <div class="box-profile" hidden="true">
                 <div class="text-center">
-                  <ul class="list-group list-group-unbordered mb-3">
-                    <li class="list-group-item">
-                      <b>Followers</b> <a class="float-right">1,322</a>
-                    </li>
-                    <li class="list-group-item">
-                      <b>Following</b> <a class="float-right">543</a>
-                    </li>
-                    <li class="list-group-item">
-                      <b>Friends</b> <a class="float-right">13,287</a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <!-- <img
+                  <div class="box-profile">
+                    <div class="text-center" hidden="true">
+                      <ul class="list-group list-group-unbordered mb-3">
+                        <li class="list-group-item">
+                          <b>Followers</b> <a class="float-right">1,322</a>
+                        </li>
+                        <li class="list-group-item">
+                          <b>Following</b> <a class="float-right">543</a>
+                        </li>
+                        <li class="list-group-item">
+                          <b>Friends</b> <a class="float-right">13,287</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  <!-- <img
               class="profile-user-img img-fluid img-circle"
               src="assets/img/user4-128x128.jpg"
               alt="User profile picture"
               /> -->
+                </div>
+              </div>
+              <!-- /.card-body -->
             </div>
+            <!-- /.card -->
           </div>
-          <!-- /.card-body -->
-        </div>
-        <!-- /.card -->
-      </div>
-      <!-- /.col -->
-      <div class="col-md-9">
-        <div class="card card card-secondary card-outline">
-          <div class="card-body">
-            <ul class="nav nav-tabs mb-3">
-              <li class="nav-item">
-                <a
-                  class="nav-link active"
-                  [class.active]="activeTab === 'details'"
-                  (click)="activeTab = 'details'"
-                  data-toggle="tab"
-                  >Detalhes</a
-                >
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link"
-                  [class.active]="activeTab === 'image'"
-                  (click)="activeTab = 'image'"
-                  data-toggle="tab"
-                  >Imagem</a
-                >
-              </li>
-            </ul>
+          <!-- /.col -->
+          <div class="col-md-9">
+            <div class="card card card-secondary card-outline">
+              <div class="card-body">
+                <ul class="nav nav-tabs mb-3">
+                  <li class="nav-item">
+                    <a
+                      class="nav-link active"
+                      [class.active]="activeTab === 'details'"
+                      (click)="activeTab = 'details'"
+                      data-toggle="tab"
+                      >Detalhes</a
+                    >
+                  </li>
+                  <li class="nav-item">
+                    <a
+                      class="nav-link"
+                      [class.active]="activeTab === 'image'"
+                      (click)="activeTab = 'image'"
+                      data-toggle="tab"
+                      >Imagem</a
+                    >
+                  </li>
+                </ul>
 
-            @if (loading) {
-              <div class="text-center py-4">Loading...</div>
-            }
-
-            @if (!loading) {
-              <div>
-                @if (activeTab === "details") {
-                  <div>
-                    <!-- data-form component: pass compact=true for page -->
-                    <app-user-form
-                      [isEdit]="isEdit"
-                      [data]="data"
-                      [compact]="true"
-                      (save)="save($event)"
-                      (cancel)="cancel()"
-                    ></app-user-form>
-                  </div>
+                @if (loading) {
+                  <div class="text-center py-4">Loading...</div>
                 }
-                @if (activeTab === "image") {
+
+                @if (!loading) {
                   <div>
-                    <app-photo
-                      [data]="data"
-                      [imageUrl]="data?.photo"
-                      [entityClass]="'User'"
-                    ></app-photo>
+                    @if (activeTab === "details") {
+                      <div>
+                        <!-- data-form component: pass compact=true for page -->
+                        <app-user-form
+                          [isEdit]="isEdit"
+                          [data]="data"
+                          [compact]="true"
+                          (save)="save($event)"
+                          (cancel)="cancel()"
+                        ></app-user-form>
+                      </div>
+                    }
+                    @if (activeTab === "image") {
+                      <div>
+                        <app-photo
+                          [data]="data"
+                          [imageUrl]="data?.photo"
+                          [entityClass]="'User'"
+                        ></app-photo>
+                      </div>
+                    }
                   </div>
                 }
               </div>
-            }
-          </div>
-        </div>
+            </div>
 
-        <!-- /.nav-tabs-custom -->
+            <!-- /.nav-tabs-custom -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
       </div>
-      <!-- /.col -->
+      <!-- /.container-fluid -->
     </div>
-    <!-- /.row -->
   </div>
-  <!-- /.container-fluid -->
 </section>

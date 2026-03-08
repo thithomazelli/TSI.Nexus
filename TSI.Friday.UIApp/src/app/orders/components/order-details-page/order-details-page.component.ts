@@ -6,6 +6,7 @@ import {
   ApiType,
   NotificationService,
   WebApiResponse,
+  OrderStatus,
 } from '@friday/core';
 
 @Component({
@@ -23,6 +24,12 @@ export class OrderDetailsPageComponent {
   private _baseEndPoint: ApiType = ApiType.Orders;
 
   activeTab: 'details' | 'products' | 'payments' = 'details';
+
+  orderStatusOptions = [
+    { label: 'Em aberto', value: OrderStatus.Open },
+    { label: 'Finalizado', value: OrderStatus.Closed },
+    { label: 'Aguardando pagamento', value: OrderStatus.WaitingPayment },
+  ];
 
   constructor(
     private activatedRoute: ActivatedRoute,
