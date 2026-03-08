@@ -123,21 +123,27 @@ export class AddressFormComponent
                     .normalize('NFD')
                     .replace(/\p{Diacritic}/gu, '')
                     .toLowerCase();
-                let cidadeFinal = '';
+                let cidadeFinal: string | null = null;
                 const cityValue = patch.city ?? '';
                 const cidadeMatch = this.cidades.find(
                   (c) => normalize(c.nome) === normalize(cityValue),
                 );
                 if (cidadeMatch) {
                   cidadeFinal = cidadeMatch.nome;
-                } else if (this.cidades.length > 0) {
-                  cidadeFinal = this.cidades[0].nome;
+                } else {
+                  cidadeFinal = null; // força placeholder
                 }
                 this.form.get('city')?.setValue(cidadeFinal);
                 this.form.get('city')?.updateValueAndValidity();
                 this.form.updateValueAndValidity();
               });
+          } else {
+            // Estado não encontrado, força placeholder
+            this.form.get('city')?.setValue(null);
           }
+        } else {
+          // Estado não selecionado, força placeholder
+          this.form.get('city')?.setValue(null);
         }
       };
       // Se for formGroup externo, só faz patch depois dos estados carregarem
@@ -207,7 +213,7 @@ export class AddressFormComponent
             index === self.findIndex((e) => e.id === cidade.id),
         );
         this.cidades = uniqueCidades;
-        let cidadeFinal = '';
+        let cidadeFinal: string | null = null;
         const cityControl = this.form.get('city');
         const normalize = (str: string) =>
           str
@@ -221,8 +227,8 @@ export class AddressFormComponent
           )
         ) {
           cidadeFinal = cityControl.value;
-        } else if (this.cidades.length > 0) {
-          cidadeFinal = this.cidades[0].nome;
+        } else {
+          cidadeFinal = null; // força placeholder
         }
         cityControl?.setValue(cidadeFinal);
         cityControl?.setValidators([Validators.required]);
@@ -296,6 +302,13 @@ export class AddressFormComponent
             index === self.findIndex((e) => e.id === estado.id),
         );
         this.estados = uniqueEstados;
+        // Força o valor null ao carregar estados para mostrar placeholder
+        if (this.form && this.form.get('state')) {
+          this.form.get('state')?.setValue(null);
+        }
+        if (this.form && this.form.get('city')) {
+          this.form.get('city')?.setValue(null);
+        }
       });
   }
 
@@ -331,7 +344,7 @@ export class AddressFormComponent
             cityControl?.setValue(cidadeFinal);
             cityControl?.updateValueAndValidity();
             this.form.updateValueAndValidity();
-          }, 100);
+          }, 150);
         } else {
           this.notificationService.showMessage(
             ResponseStatus.Error,

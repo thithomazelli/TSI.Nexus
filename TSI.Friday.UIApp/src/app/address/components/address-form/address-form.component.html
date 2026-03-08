@@ -117,7 +117,7 @@
                 class="form-select"
                 [class.is-invalid]="isInvalid('city')"
               >
-                <option [ngValue]="null">Selecione a cidade</option>
+                <option selected disabled>Selecione a cidade</option>
                 @for (
                   cidade of cidades;
                   track trackByCidadeId(i, cidade);
