@@ -24,25 +24,13 @@
                     </li>
                     <li class="list-group-item">
                       <b>Tipo: </b>
-                      @for (
-                        option of transactionTypeOptions;
-                        track option.value
-                      ) {
-                        @if (option.value === data?.type) {
-                          <a class="float-right">{{ option.label }}</a>
-                        }
-                      }
+                      <a class="float-right">{{ getTransactionTypeLabel() }}</a>
                     </li>
                     <li class="list-group-item">
                       <b>Status: </b>
-                      @for (
-                        option of transactionStatusOptions;
-                        track option.value
-                      ) {
-                        @if (option.value === data?.status) {
-                          <a class="float-right">{{ option.label }}</a>
-                        }
-                      }
+                      <a class="float-right">{{
+                        getTransactionStatusLabel()
+                      }}</a>
                     </li>
                   </ul>
                 </div>
@@ -73,7 +61,7 @@
                   [class.active]="activeTab === 'payments'"
                   (click)="activeTab = 'payments'"
                   data-toggle="tab"
-                  >Parcelas</a
+                  >Pagamentos</a
                 >
               </li>
             </ul>

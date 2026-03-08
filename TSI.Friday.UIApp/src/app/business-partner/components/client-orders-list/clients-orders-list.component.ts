@@ -38,7 +38,7 @@ export class ClientsOrdersListComponent {
     },
     {
       field: 'orderNumber',
-      headerName: 'Order Number',
+      headerName: 'Número do Pedido',
       sortable: true,
       filter: true,
       width: 150,
@@ -52,7 +52,7 @@ export class ClientsOrdersListComponent {
     },
     {
       field: 'description',
-      headerName: 'Description',
+      headerName: 'Descrição',
       sortable: true,
       filter: true,
       flex: 2,
@@ -60,7 +60,7 @@ export class ClientsOrdersListComponent {
     },
     {
       field: 'totalPrice',
-      headerName: 'Total Price',
+      headerName: 'Valor Total',
       sortable: true,
       filter: true,
       width: 120,
@@ -94,10 +94,7 @@ export class ClientsOrdersListComponent {
         } else if (value === 'Open') {
           color = 'info';
           label = 'Em Aberto';
-        } else if (
-          value === 'WaitingTransaction' ||
-          value === 'Waiting payment'
-        ) {
+        } else if (value === 'WaitingPayment') {
           color = 'warning';
           label = 'Aguardando Pagamento';
         }
@@ -105,21 +102,19 @@ export class ClientsOrdersListComponent {
       },
     },
     {
-      headerName: '',
+      headerName: 'Ações',
       sortable: false,
       filter: false,
       maxWidth: 400,
       resizable: true,
       width: 280,
-      cellRenderer: (params: ICellRendererParams) => {
+      cellRenderer: () => {
         return `
             <button class="btn btn-info btn-sm" data-action="view">
-              <i class="fas fa-edit"></i>
-              Edit
+              <i class="fas fa-edit" data-action="view"></i>
             </button>
             <button class="btn btn-danger btn-sm" data-action="delete">
-              <i class="fas fa-trash"></i>  
-              Delete
+              <i class="fas fa-trash" data-action="delete"></i> 
             </button>
           `;
       },

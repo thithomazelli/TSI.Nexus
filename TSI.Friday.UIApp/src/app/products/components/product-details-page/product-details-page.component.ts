@@ -22,11 +22,11 @@ export class ProductDetailsPageComponent {
   loading = false;
   activeTab: 'details' | 'image' | 'history' = 'details';
 
-  productTypeOptions = [
-    { label: 'Aluguel', value: ProductType.Rental },
-    { label: 'Venda', value: ProductType.Sale },
-    { label: 'Serviço', value: ProductType.Service },
-  ];
+  productTypeOptions: Record<ProductType, string> = {
+    [ProductType.Rental]: 'Aluguel',
+    [ProductType.Sale]: 'Venda',
+    [ProductType.Service]: 'Serviço',
+  };
 
   private _baseEndPoint: ApiType = ApiType.Products;
 
@@ -73,6 +73,13 @@ export class ProductDetailsPageComponent {
 
   cancel(): void {
     this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+  }
+
+  getProductTypeLabel(): string {
+    if (!this.data?.type || this.data?.type === undefined) {
+      return '';
+    }
+    return this.productTypeOptions[this.data.type];
   }
 
   private loadProduct(id: string): void {

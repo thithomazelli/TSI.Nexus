@@ -144,8 +144,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     this.accountService.logout();
   }
 
-  redirectToProfile(): void {}
-
   private applyResponsiveState(width: number): void {
     const body = document.body;
     if (width < this.mobileBreakpoint) {

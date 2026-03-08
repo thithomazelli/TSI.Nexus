@@ -65,7 +65,7 @@ export class TransactionsComponent {
     },
     {
       field: 'description',
-      headerName: 'Description',
+      headerName: 'Descrição',
       sortable: true,
       filter: true,
       flex: 2,
