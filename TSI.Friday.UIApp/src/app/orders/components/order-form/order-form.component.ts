@@ -10,7 +10,9 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
+
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
 import {
   BusinessPartnerService,
   BusinessPartner,
@@ -25,6 +27,7 @@ import {
   PaymentMethod,
   PaymentStatus,
 } from '@friday/core';
+
 import { MatDialogRef } from '@angular/material/dialog';
 
 import { Observable, startWith, map } from 'rxjs';
@@ -34,9 +37,9 @@ import { OrderProductsDetailsModalComponent } from '../../../order-products/comp
 
 @Component({
   selector: 'app-order-form',
-  standalone: false,
   templateUrl: './order-form.component.html',
   styleUrl: './order-form.component.scss',
+  standalone: false,
 })
 export class OrderFormComponent
   extends FormBaseComponent

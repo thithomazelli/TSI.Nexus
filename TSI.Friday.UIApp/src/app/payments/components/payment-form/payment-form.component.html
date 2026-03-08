@@ -44,6 +44,26 @@
               <div class="input-group-text"><i class="bi bi-building"></i></div>
             </div>
           </div>
+
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating">
+                <app-link-field
+                  [placeHolder]="'Transação'"
+                  [text]="form.get('transactionDescription')?.value || 'N/A'"
+                  [linkUrl]="
+                    form.get('transactionDescription')?.value
+                      ? ['/transactions', form.get('transactionId')?.value]
+                      : []
+                  "
+                >
+                </app-link-field>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-cash-stack"></i>
+              </div>
+            </div>
+          </div>
         </ng-container>
 
         <div class="col-md-6">

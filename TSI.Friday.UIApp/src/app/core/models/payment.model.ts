@@ -11,6 +11,7 @@ export interface Payment extends BaseModel {
   installmentNumber?: number;
   price?: number;
   transactionId?: string;
+  transactionDescription?: string;
   orderId?: string;
   orderNumber?: string;
   businessPartnerId?: string;

@@ -23,6 +23,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public Guid TransactionId { get; set; }
 
+        public string TransactionDescription { get; set; }
+
         public Guid? BusinessPartnerId { get; set; }
 
         public string BusinessPartnerName { get; set; }

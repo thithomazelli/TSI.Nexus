@@ -1,12 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  AccountService,
-  FormBaseComponent,
-  ModalService,
-  User,
-} from '@friday/core';
+import { AccountService, FormBaseComponent, User } from '@friday/core';
 import { take } from 'rxjs';
 
 @Component({
@@ -22,7 +17,6 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
 
   constructor(
     private accountService: AccountService,
-    private modalService: ModalService,
     private formBuilder: FormBuilder,
     private router: Router,
     private activatedRoute: ActivatedRoute,

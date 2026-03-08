@@ -53,6 +53,19 @@ namespace TSI.Friday.IoC
                         opt.MapFrom(src =>
                             (src as Company) != null ? ((Company)src).NationalRegistry : null
                         )
+                )
+                .ForMember(
+                    dest => dest.NextEmptyTransactionId,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Transactions != null
+                                ? src
+                                    .Transactions.Where(t => t.OrderId == null)
+                                    .OrderBy(t => t.Date)
+                                    .Select(t => (Guid?)t.Id)
+                                    .FirstOrDefault()
+                                : null
+                        )
                 );
 
             // Construct BusinessPartner (base) from DTO by dispatching to concrete maps
@@ -157,7 +170,10 @@ namespace TSI.Friday.IoC
                 )
                 .ForMember(
                     dest => dest.BusinessPartnerName,
-                    opt => opt.MapFrom(src => src.BusinessPartner != null ? src.BusinessPartner.Name : null)
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
                 )
                 // Transaction -> TransactionDto mapping: compute totals from Payments
                 .ForMember(
@@ -174,7 +190,11 @@ namespace TSI.Friday.IoC
                 // HasOpenedPayments: true when there is any payment not approved
                 .ForMember(
                     dest => dest.HasOpenedPayments,
-                    opt => opt.MapFrom(src => src.Payments != null && src.Payments.Any(p => p.Status != PaymentStatus.Approved))
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Payments != null
+                            && src.Payments.Any(p => p.Status != PaymentStatus.Approved)
+                        )
                 );
 
             CreateMap<TransactionDto, Transaction>()
@@ -194,7 +214,17 @@ namespace TSI.Friday.IoC
                 )
                 .ForMember(
                     dest => dest.BusinessPartnerName,
-                    opt => opt.MapFrom(src => src.BusinessPartner != null ? src.BusinessPartner.Name : null)
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.TransactionDescription,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Transaction != null ? src.Transaction.Description : null
+                        )
                 );
             CreateMap<PaymentDto, Payment>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));

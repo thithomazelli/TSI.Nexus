@@ -30,11 +30,7 @@
                     </li>
                     <li class="list-group-item">
                       <b>Status: </b>
-                      @for (option of orderStatusOptions; track option.value) {
-                        @if (option.value === data?.status) {
-                          <a class="float-right">{{ option.label }}</a>
-                        }
-                      }
+                      <a class="float-right">{{ getStatusLabel() }}</a>
                     </li>
                   </ul>
                 </div>

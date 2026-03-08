@@ -15,4 +15,5 @@ export interface BusinessPartner extends BaseModel {
   nationalRegistry: string;
   birthday: Date;
   addresses: Address[];
+  nextEmptyTransactionId?: string;
 }

@@ -167,13 +167,6 @@
           </div>
         </div>
 
-        <div class="col-6">
-          <app-date-field
-            formControlName="date"
-            [label]="'Data Pagamento'"
-          ></app-date-field>
-        </div>
-
         <div *ngIf="!compact" class="col-12">
           <div class="input-group">
             <div class="form-floating flex-fill">
@@ -190,22 +183,11 @@
           </div>
         </div>
 
-        <div *ngIf="!compact" class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="priceFormatted"
-                type="text"
-                placeholder="Valor"
-                class="form-control"
-                [class.is-invalid]="isInvalid('priceFormatted')"
-                [class.is-valid]="isValid('priceFormatted')"
-                (blur)="onCurrencyBlur('price')"
-              />
-              <label for="price">Valor</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
-          </div>
+        <div class="col-6">
+          <app-date-field
+            formControlName="date"
+            [label]="'Data Pagamento'"
+          ></app-date-field>
         </div>
 
         <div class="col-6">
@@ -231,7 +213,25 @@
           </div>
         </div>
 
-        <div class="col-6">
+        <div *ngIf="!compact" class="col-6 col-md-4">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="priceFormatted"
+                type="text"
+                placeholder="Valor"
+                class="form-control"
+                [class.is-invalid]="isInvalid('priceFormatted')"
+                [class.is-valid]="isValid('priceFormatted')"
+                (blur)="onCurrencyBlur('price')"
+              />
+              <label for="price">Valor</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
           <div class="input-group">
             <div class="form-floating flex-fill">
               <input
@@ -239,20 +239,20 @@
                 type="number"
                 min="1"
                 step="1"
-                placeholder="Total de parcelas"
+                placeholder="Parcelas"
                 class="form-control"
                 id="totalOfPayments"
                 [class.is-invalid]="isInvalid('totalOfPayments')"
                 [class.is-valid]="isValid('totalOfPayments')"
               />
-              <label for="totalOfPayments">Total de parcelas</label>
+              <label for="totalOfPayments">Parcelas</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-list-ol"></i>
             </div>
           </div>
         </div>
-        <div class="col-6">
+        <div class="col-6 col-md-5">
           <div class="input-group">
             <div class="form-floating flex-grow-1">
               <input

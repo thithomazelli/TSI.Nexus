@@ -158,6 +158,7 @@ export class PaymentFormComponent
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
       transactionId: [this.parentId],
+      transactionDescription: [''],
       businessPartnerId: [this.parentData?.businessPartnerId],
       businessPartnerName: [this.parentData?.businessPartnerName],
       orderId: [this.parentData?.orderId],

@@ -218,7 +218,8 @@ namespace TSI.Friday.Services
                 var payments = await _repository.QueryAsync(
                     p => p.TransactionId == transactionId,
                     c => c.BusinessPartner,
-                    o => o.Order
+                    o => o.Order,
+                    t => t.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
@@ -246,7 +247,8 @@ namespace TSI.Friday.Services
                 var payments = await _repository.QueryAsync(
                     p => p.BusinessPartnerId == businessPartnerId,
                     c => c.BusinessPartner,
-                    o => o.Order
+                    o => o.Order,
+                    t => t.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;
@@ -272,7 +274,8 @@ namespace TSI.Friday.Services
                 var payments = await _repository.QueryAsync(
                     p => p.OrderId == orderId,
                     c => c.BusinessPartner,
-                    o => o.Order
+                    o => o.Order,
+                    t => t.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
                 result.Status = ResponseStatus.Success;

@@ -200,10 +200,10 @@ export class TransactionFormComponent
         // Do not clear orderId/orderNumber when selecting via autocomplete
       } else {
         const confirmRef = this.modalService.showConfirmation({
-          title: 'Client not found',
-          message: `The client "${businessPartnerName}" does not exist. Do you want to add it?`,
-          cancelButtonText: 'Cancel',
-          confirmButtonText: 'Yes',
+          title: 'Cliente não encontrado',
+          message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
+          cancelButtonText: 'Cancelar',
+          confirmButtonText: 'Sim',
         });
         confirmRef.afterClosed().subscribe((confirmed: boolean) => {
           if (confirmed) {

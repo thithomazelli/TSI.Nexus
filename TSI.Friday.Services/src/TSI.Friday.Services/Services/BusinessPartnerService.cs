@@ -83,7 +83,8 @@ namespace TSI.Friday.Services
             {
                 var businessPartners = await _repository.QueryAsync(
                     _ => businessPartnerType.Equals(_.Type),
-                    c => c.Addresses
+                    c => c.Addresses,
+                    t => t.Transactions
                 );
 
                 result.Data = _mapper.Map<IEnumerable<BusinessPartnerDto>>(businessPartners);

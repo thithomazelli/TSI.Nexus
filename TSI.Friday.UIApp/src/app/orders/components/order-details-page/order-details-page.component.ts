@@ -11,25 +11,26 @@ import {
 
 @Component({
   selector: 'app-order-details-page',
-  standalone: false,
   templateUrl: './order-details-page.component.html',
   styleUrl: './order-details-page.component.scss',
+  standalone: false,
 })
 export class OrderDetailsPageComponent {
+  private _baseEndPoint: ApiType = ApiType.Orders;
+
   isEdit = false;
   data?: Order | null = null;
   id: string | null = null;
   loading = false;
   errorMessages?: string[];
-  private _baseEndPoint: ApiType = ApiType.Orders;
 
   activeTab: 'details' | 'products' | 'payments' = 'details';
 
-  orderStatusOptions = [
-    { label: 'Em aberto', value: OrderStatus.Open },
-    { label: 'Finalizado', value: OrderStatus.Closed },
-    { label: 'Aguardando pagamento', value: OrderStatus.WaitingPayment },
-  ];
+  orderStatusOptions: Record<OrderStatus, string> = {
+    [OrderStatus.Open]: 'Em aberto',
+    [OrderStatus.Closed]: 'Finalizado',
+    [OrderStatus.WaitingPayment]: 'Aguardando pagamento',
+  };
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -48,6 +49,14 @@ export class OrderDetailsPageComponent {
       this.isEdit = false;
       this.data = null;
     }
+  }
+
+  getStatusLabel(): string {
+    if (!this.data || this.data.status == null) {
+      return '';
+    }
+
+    return this.orderStatusOptions[this.data?.status] || '';
   }
 
   onSave(order: Order): void {
