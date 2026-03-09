@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import {
   ApiService,
@@ -23,6 +23,15 @@ import { TransactionDetailsModalComponent } from './components/transaction-detai
   styleUrl: './transactions.component.scss',
 })
 export class TransactionsComponent {
+  @Input()
+  compact: boolean = false;
+
+  @Input()
+  entity: string | null = '';
+
+  @Input()
+  parentData: any = null;
+
   baseEndPoint = ApiType.Transactions;
   rowData: Transaction[] = [];
 
@@ -54,155 +63,7 @@ export class TransactionsComponent {
     default: 'secondary',
   };
 
-  columnDefs: ColDef[] = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      sortable: true,
-      filter: true,
-      hide: true,
-      minWidth: 150,
-    },
-    {
-      field: 'description',
-      headerName: 'Descrição',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 400,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-    {
-      field: 'type',
-      headerName: 'Tipo',
-      sortable: true,
-      filter: true,
-      maxWidth: 120,
-      resizable: true,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return this.getTypeLabel(params.data?.type);
-      },
-      cellRenderer: (params: ValueFormatterParams) => {
-        const type = params.value ?? '';
-        return this.getTypeIcon(type) + this.getTypeLabel(type);
-      },
-    },
-    {
-      field: 'price',
-      headerName: 'Valor',
-      sortable: true,
-      filter: true,
-      maxWidth: 120,
-      cellClass: (params: ValueFormatterParams) => {
-        const type = params.data?.type;
-        if (type === 'Incoming') {
-          return 'text-success'; // verde escuro
-        } else if (type === 'Outgoing') {
-          return 'text-danger'; // vermelho
-        }
-        return '';
-      },
-      valueFormatter: (params: ValueFormatterParams): string => {
-        const v = params.value;
-        if (v == null || v === '') return '';
-        const n = Number(v);
-        if (Number.isNaN(n)) return String(v);
-        return n.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-      },
-    },
-    {
-      field: 'condition',
-      headerName: 'Condição',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 120,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return this.getConditionLabel(params.data?.condition);
-      },
-      valueFormatter: (params: ValueFormatterParams): string => {
-        return this.getConditionLabel(params.value);
-      },
-    },
-    {
-      field: 'date',
-      headerName: 'Data',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 120,
-      valueFormatter: (params: ValueFormatterParams) =>
-        this.formatDateBR(params.value),
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      maxWidth: 100,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return this.getStatusLabel(params.data?.status);
-      },
-      cellRenderer: (params: ICellRendererParams) => {
-        const status = params.value;
-        const color = this.getStatusColor(status);
-        const label = this.getStatusLabel(status);
-        return `<span class="badge bg-${color}">${label}</span>`;
-      },
-    },
-
-    {
-      field: 'businessPartnerName',
-      headerName: 'Cliente',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      maxWidth: 300,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? 'N/A';
-        return value;
-      },
-    },
-    {
-      field: 'orderNumber',
-      headerName: 'Pedido',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      maxWidth: 150,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? 'N/A';
-        return value;
-      },
-    },
-    {
-      headerName: 'Ações',
-      sortable: false,
-      filter: false,
-      resizable: false,
-      width: 300,
-      cellRenderer: () => {
-        return `
-          <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-eye" data-action="view"></i>
-          </button>
-          <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit" data-action="edit"></i>
-          </button>
-          <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash" data-action="delete"></i>
-          </button>
-        `;
-      },
-    },
-  ];
+  columnDefs: ColDef[] = [];
 
   filteredRowData: Transaction[] = [];
   filterStartDate: string | null = null;
@@ -219,13 +80,7 @@ export class TransactionsComponent {
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
     this.getTransactions(() => this.applyFilters());
-  }
-
-  private hasInitialFilters(): boolean {
-    if (this.filterStartDate || this.filterEndDate) return true;
-    if (Object.values(this.filterStatus).some((v) => v)) return true;
-    if (Object.values(this.filterType).some((v) => v)) return true;
-    return false;
+    this.initializeGrid();
   }
 
   refreshTransactions(): void {
@@ -316,9 +171,167 @@ export class TransactionsComponent {
     this.filteredRowData = [...this.rowData];
   }
 
+  private initializeGrid(): void {
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        sortable: true,
+        filter: true,
+        hide: true,
+        minWidth: 150,
+      },
+      {
+        field: 'description',
+        headerName: 'Descrição',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 400,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'type',
+        headerName: 'Tipo',
+        sortable: true,
+        filter: true,
+        maxWidth: 120,
+        resizable: true,
+        filterValueGetter: (params: ValueGetterParams) => {
+          return this.getTypeLabel(params.data?.type);
+        },
+        cellRenderer: (params: ValueFormatterParams) => {
+          const type = params.value ?? '';
+          return this.getTypeIcon(type) + this.getTypeLabel(type);
+        },
+      },
+      {
+        field: 'price',
+        headerName: 'Valor',
+        sortable: true,
+        filter: true,
+        maxWidth: 120,
+        cellClass: (params: ValueFormatterParams) => {
+          const type = params.data?.type;
+          if (type === 'Incoming') {
+            return 'text-success'; // verde escuro
+          } else if (type === 'Outgoing') {
+            return 'text-danger'; // vermelho
+          }
+          return '';
+        },
+        valueFormatter: (params: ValueFormatterParams): string => {
+          const v = params.value;
+          if (v == null || v === '') return '';
+          const n = Number(v);
+          if (Number.isNaN(n)) return String(v);
+          return n.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          });
+        },
+      },
+      {
+        field: 'condition',
+        headerName: 'Condição',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 120,
+        filterValueGetter: (params: ValueGetterParams) => {
+          return this.getConditionLabel(params.data?.condition);
+        },
+        valueFormatter: (params: ValueFormatterParams): string => {
+          return this.getConditionLabel(params.value);
+        },
+      },
+      {
+        field: 'date',
+        headerName: 'Data',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 120,
+        valueFormatter: (params: ValueFormatterParams) =>
+          this.formatDateBR(params.value),
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        maxWidth: 100,
+        filterValueGetter: (params: ValueGetterParams) => {
+          return this.getStatusLabel(params.data?.status);
+        },
+        cellRenderer: (params: ICellRendererParams) => {
+          const status = params.value;
+          const color = this.getStatusColor(status);
+          const label = this.getStatusLabel(status);
+          return `<span class="badge bg-${color}">${label}</span>`;
+        },
+      },
+
+      {
+        field: 'businessPartnerName',
+        headerName: 'Cliente',
+        sortable: true,
+        filter: true,
+        flex: 1,
+        maxWidth: 300,
+        hide: this.entity == 'BusinessPartner',
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? 'N/A';
+          return value;
+        },
+      },
+      {
+        field: 'orderNumber',
+        headerName: 'Pedido',
+        sortable: true,
+        filter: true,
+        flex: 1,
+        maxWidth: 150,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? 'N/A';
+          return value;
+        },
+      },
+      {
+        headerName: 'Ações',
+        sortable: false,
+        filter: false,
+        resizable: false,
+        width: 300,
+        cellRenderer: () => {
+          return `
+          <button class="btn btn-primary btn-sm" data-action="view">
+            <i class="fas fa-eye" data-action="view"></i>
+          </button>
+          <button class="btn btn-info btn-sm" data-action="edit">
+            <i class="fas fa-edit" data-action="edit"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" data-action="delete">
+            <i class="fas fa-trash" data-action="delete"></i>
+          </button>
+        `;
+        },
+      },
+    ];
+  }
+
   private getTransactions(callback?: () => void): void {
+    const endpoint =
+      this.entity != ''
+        ? `${this.baseEndPoint}/getBy${this.entity}Id/${this.parentData?.id}`
+        : `${this.baseEndPoint}/getAll`;
+
     this.apiService
-      .get<WebApiResponse<Transaction[]>>(`${this.baseEndPoint}/getAll`)
+      .get<WebApiResponse<Transaction[]>>(endpoint)
       .subscribe((response: WebApiResponse<Transaction[]>) => {
         this.rowData = response.data ?? [];
         if (callback) callback();
@@ -401,5 +414,12 @@ export class TransactionsComponent {
 
     // Set showFiltersOnInit only on initialization
     this.showFiltersOnInit = this.hasInitialFilters();
+  }
+
+  private hasInitialFilters(): boolean {
+    if (this.filterStartDate || this.filterEndDate) return true;
+    if (Object.values(this.filterStatus).some((v) => v)) return true;
+    if (Object.values(this.filterType).some((v) => v)) return true;
+    return false;
   }
 }

@@ -26,6 +26,7 @@ import {
   TransactionCondition,
   PaymentMethod,
   PaymentStatus,
+  Transaction,
 } from '@friday/core';
 
 import { MatDialogRef } from '@angular/material/dialog';
@@ -68,6 +69,7 @@ export class OrderFormComponent
   @Input()
   errors: string[] | undefined;
 
+  canDisplayTransactionForm: boolean = true;
   businessPartners$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
@@ -128,7 +130,7 @@ export class OrderFormComponent
       }
       // Check if the name exists in the client list
       const clients = (this.businessPartners$ as any).source
-        .value as BusinessPartner[];
+        ?.value as BusinessPartner[];
       const found = clients.find((c) => c.name === businessPartnerName);
       if (!found) {
         const confirmRef = this.modalService.showConfirmation({
@@ -176,23 +178,27 @@ export class OrderFormComponent
       return;
     }
 
-    // Ensure transactionGroup has the updated client fields
     const formValue = this.form.getRawValue();
-    if (formValue.transaction) {
-      formValue.transaction.businessPartnerId = formValue.businessPartnerId;
-      formValue.transaction.businessPartnerName = formValue.businessPartnerName;
+
+    // Ensure transactionGroup has the updated client fields
+    if (this.canDisplayTransactionForm) {
+      if (formValue.transaction) {
+        formValue.transaction.businessPartnerId = formValue.businessPartnerId;
+        formValue.transaction.businessPartnerName =
+          formValue.businessPartnerName;
+      }
+
+      // Ensure markAllOrderProductsAsReturned is sent
+      if (formValue.markAllOrderProductsAsReturned !== undefined) {
+        this.data!.markAllProductsAsReturned =
+          formValue.markAllOrderProductsAsReturned;
+      }
     }
 
     Object.assign(this.data!, formValue);
 
-    if (this.data?.transaction?.id == null) {
+    if (this.canDisplayTransactionForm && this.data?.transaction?.id == null) {
       delete this.data!.transaction!.id;
-    }
-
-    // Ensure markAllOrderProductsAsReturned is sent
-    if (formValue.markAllOrderProductsAsReturned !== undefined) {
-      this.data!.markAllProductsAsReturned =
-        formValue.markAllOrderProductsAsReturned;
     }
 
     this.save.emit(this.data!);
@@ -225,7 +231,7 @@ export class OrderFormComponent
       this.modalService.showNotification(
         false,
         '',
-        'Please select a client before adding products.',
+        'Por favor, selecione um cliente antes de adicionar produtos ao pedido.',
       );
       return;
     }
@@ -243,7 +249,7 @@ export class OrderFormComponent
         this.modalService.showNotification(
           true,
           '',
-          'Product added successfully',
+          'Produto adicionado ao pedido com sucesso.',
         );
         ref.close();
       });
@@ -251,34 +257,9 @@ export class OrderFormComponent
   }
 
   private initForm(): void {
-    const transactionGroup = this.formBuilder.group({
-      id: [null],
-      type: [TransactionType.Incoming],
-      date: [new Date(), Validators.required],
-      method: [PaymentMethod.Cash, Validators.required],
-      status: [PaymentStatus.Pending, Validators.required],
-      category: ['Recebimentos'],
-      condition: [
-        {
-          value: TransactionCondition.FullPayment,
-          disabled: this.isEdit ? true : false,
-        },
-      ],
-      totalOfPayments: [
-        {
-          value: 1,
-          disabled: this.isEdit ? true : false,
-        },
-        Validators.required,
-      ],
-      price: [0, [Validators.min(0)]],
-      pricePerInstallment: [0, [Validators.min(0)]],
-      pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
-    });
-
     this.form = this.formBuilder.group({
       orderNumber: [''],
-      businessPartnerId: [null],
+      businessPartnerId: [null, Validators.required],
       businessPartnerName: [
         { value: '', disabled: this.data?.businessPartnerId != null },
       ],
@@ -289,8 +270,9 @@ export class OrderFormComponent
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
       totalPriceFormatted: [{ value: 0, disabled: true }],
-      transaction: transactionGroup,
+      transactionId: [null],
     });
+    this.addTransactionForm();
 
     if (this.isEdit) {
       this.form.addControl('id', this.formBuilder.control(''));
@@ -307,8 +289,59 @@ export class OrderFormComponent
         );
         if (businessPartner) {
           this.form.get('businessPartnerId')!.setValue(businessPartner.id);
+          this.form
+            .get('transactionId')!
+            .setValue(businessPartner.nextEmptyTransactionId);
+          if (businessPartner.nextEmptyTransactionId) {
+            // Remove transaction form se existir
+            if (this.form.contains('transaction')) {
+              this.form.removeControl('transaction');
+            }
+            this.canDisplayTransactionForm = false;
+          } else {
+            // Adiciona transaction form se não existir
+            this.addTransactionForm();
+            this.canDisplayTransactionForm = true;
+          }
+        } else {
+          // Cliente removido, adiciona transaction form se não existir
+          this.addTransactionForm();
+          this.canDisplayTransactionForm = true;
         }
       });
+    }
+  }
+
+  /**
+   * Adiciona o transaction form ao form principal se não existir
+   */
+  private addTransactionForm(): void {
+    if (!this.form.contains('transaction')) {
+      const transactionGroup = this.formBuilder.group({
+        id: [null],
+        type: [TransactionType.Incoming],
+        date: [new Date(), Validators.required],
+        method: [PaymentMethod.Cash, Validators.required],
+        status: [PaymentStatus.Pending, Validators.required],
+        category: ['Recebimentos'],
+        condition: [
+          {
+            value: TransactionCondition.FullPayment,
+            disabled: this.isEdit ? true : false,
+          },
+        ],
+        totalOfPayments: [
+          {
+            value: 1,
+            disabled: this.isEdit ? true : false,
+          },
+          Validators.required,
+        ],
+        price: [0, [Validators.min(0)]],
+        pricePerInstallment: [0, [Validators.min(0)]],
+        pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
+      });
+      this.form.addControl('transaction', transactionGroup);
     }
   }
 
@@ -399,14 +432,15 @@ export class OrderFormComponent
       .get('totalPriceFormatted')
       ?.setValue(this.currencyService.formatCurrencyBRL(total));
 
-    const transactionGroup = this.transactionFormGroup;
-    const transactions = transactionGroup?.get('totalOfPayments')?.value || 1;
-    const pricePerInstallment = total / (transactions > 0 ? transactions : 1);
-
-    transactionGroup.get('price')?.setValue(total);
-    transactionGroup
-      .get('pricePerInstallmentFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(pricePerInstallment));
+    const transactionGroup = this.form.get('transaction') as FormGroup | null;
+    if (transactionGroup) {
+      const transactions = transactionGroup.get('totalOfPayments')?.value || 1;
+      const pricePerInstallment = total / (transactions > 0 ? transactions : 1);
+      transactionGroup.get('price')?.setValue(total);
+      transactionGroup
+        .get('pricePerInstallmentFormatted')
+        ?.setValue(this.currencyService.formatCurrencyBRL(pricePerInstallment));
+    }
   }
 
   private setupStatusWatcher(): void {

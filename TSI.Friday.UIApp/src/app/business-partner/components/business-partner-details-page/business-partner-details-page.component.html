@@ -75,6 +75,15 @@
               <li class="nav-item">
                 <a
                   class="nav-link"
+                  [class.active]="activeTab === 'transaction'"
+                  (click)="activeTab = 'transaction'"
+                  data-toggle="tab"
+                  >Transações</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
                   [class.active]="activeTab === 'payments'"
                   (click)="activeTab = 'payments'"
                   data-toggle="tab"
@@ -110,6 +119,14 @@
                   <app-client-orders-list
                     [parentData]="data"
                   ></app-client-orders-list>
+                }
+                @if (activeTab === "transaction") {
+                  <app-transactions
+                    [compact]="true"
+                    [entity]="'BusinessPartner'"
+                    [parentData]="data"
+                  >
+                  </app-transactions>
                 }
                 @if (activeTab === "payments") {
                   <app-payments

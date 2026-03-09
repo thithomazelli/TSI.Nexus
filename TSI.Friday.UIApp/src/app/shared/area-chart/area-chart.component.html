@@ -9,6 +9,7 @@
     </div>
   </div>
   <apx-chart
+    *ngIf="chartOptions && chartOptions.chart && chartOptions.chart.type"
     class="card-body-chart"
     [@cardCollapse]="isCardCollapsed ? 'closed' : 'open'"
     [series]="chartOptions?.series"

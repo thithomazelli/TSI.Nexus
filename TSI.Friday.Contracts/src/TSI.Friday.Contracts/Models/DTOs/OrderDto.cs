@@ -28,7 +28,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public Guid? TransactionId { get; set; }
 
-        public TransactionDto Transaction { get; set; }
+        public TransactionDto? Transaction { get; set; }
 
         public ICollection<OrderProductDto> OrderProducts { get; set; } = [];
 

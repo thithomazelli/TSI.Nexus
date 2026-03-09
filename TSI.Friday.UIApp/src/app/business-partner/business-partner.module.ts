@@ -11,6 +11,7 @@ import { AddressModule } from '../address/address.module';
 
 import { OrdersSharedModule } from '../orders/components/orders-shared.module';
 import { PaymentsModule } from '../payments/payments.module';
+import { TransactionsSharedModule } from '../transactions/transactions-shared.module';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { PaymentsModule } from '../payments/payments.module';
   imports: [
     BusinessPartnerSharedModule,
     OrdersSharedModule,
+    TransactionsSharedModule,
     BusinessPartnerRoutingModule,
     AddressModule,
     PaymentsModule,

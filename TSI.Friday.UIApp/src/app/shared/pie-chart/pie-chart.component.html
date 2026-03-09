@@ -10,15 +10,15 @@
     </div>
   </div>
   <apx-chart
-    *ngIf="chartOptions"
+    *ngIf="chartOptions && chartOptions.chart && chartOptions.chart.type"
     class="card-body-chart"
     [@cardCollapse]="isCardCollapsed ? 'closed' : 'open'"
-    [series]="chartOptions.series"
-    [chart]="chartOptions.chart"
-    [labels]="chartOptions.labels"
-    [fill]="chartOptions.fill"
-    [dataLabels]="chartOptions.dataLabels"
-    [responsive]="chartOptions.responsive"
+    [series]="chartOptions?.series"
+    [chart]="chartOptions?.chart"
+    [labels]="chartOptions?.labels"
+    [fill]="chartOptions?.fill"
+    [dataLabels]="chartOptions?.dataLabels"
+    [responsive]="chartOptions?.responsive"
     [tooltip]="chartOptions?.tooltip"
   ></apx-chart>
 </div>

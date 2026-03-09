@@ -71,6 +71,20 @@ namespace TSI.Friday.Services
                     orderDto.Transaction = null;
                     orderDto.TransactionId = transactionResult.Data?.Id ?? null;
                 }
+                else if (orderDto.TransactionId != null)
+                {
+                    // If TransactionId was provided without full Transaction data, we can try to fetch it to ensure it exists and get its OrderId if already set
+                    transactionResult = await _transactionService.FindById(
+                        orderDto.TransactionId.Value
+                    );
+                    if (
+                        transactionResult.Status == ResponseStatus.Success
+                        && transactionResult.Data != null
+                    )
+                    {
+                        orderDto.TransactionId = transactionResult.Data.Id;
+                    }
+                }
 
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.AddAsync(orderEntity);

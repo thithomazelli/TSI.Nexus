@@ -9,29 +9,18 @@
     </div>
   </div>
   <apx-chart
+    *ngIf="chartOptions && chartOptions.chart && chartOptions.chart.type"
     class="card-body-chart"
     [@cardCollapse]="isCardCollapsed ? 'closed' : 'open'"
-    [series]="chartOptions.series"
-    [chart]="chartOptions.chart"
-    [xaxis]="chartOptions.xaxis"
-    [yaxis]="chartOptions.yaxis"
-    [labels]="chartOptions.labels"
-    [stroke]="chartOptions.stroke"
-    [fill]="chartOptions.fill"
-    [dataLabels]="chartOptions.dataLabels"
-    [legend]="chartOptions.legend"
-    [tooltip]="chartOptions.tooltip"
+    [series]="chartOptions?.series"
+    [chart]="chartOptions?.chart"
+    [xaxis]="chartOptions?.xaxis"
+    [yaxis]="chartOptions?.yaxis"
+    [labels]="chartOptions?.labels"
+    [stroke]="chartOptions?.stroke"
+    [fill]="chartOptions?.fill"
+    [dataLabels]="chartOptions?.dataLabels"
+    [legend]="chartOptions?.legend"
+    [tooltip]="chartOptions?.tooltip"
   ></apx-chart>
 </div>
-<!-- 
-<apx-chart
-  [series]="chartOptions.series"
-  [chart]="chartOptions.chart"
-  [yaxis]="chartOptions.yaxis"
-  [xaxis]="chartOptions.xaxis"
-  [labels]="chartOptions.labels"
-  [stroke]="chartOptions.stroke"
-  [markers]="chartOptions.markers"
-  [fill]="chartOptions.fill"
-  [tooltip]="chartOptions.tooltip"
-></apx-chart> -->

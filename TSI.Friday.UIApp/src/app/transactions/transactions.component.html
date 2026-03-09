@@ -1,4 +1,5 @@
 <app-header
+  *ngIf="!compact"
   title="Transações"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
@@ -8,6 +9,7 @@
 
 <div class="app-content">
   <app-grid
+    [compactView]="compact"
     [className]="'Transações'"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"

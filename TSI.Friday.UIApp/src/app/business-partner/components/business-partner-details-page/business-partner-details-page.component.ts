@@ -21,7 +21,8 @@ export class BusinessPartnerDetailsPageComponent {
   data?: Company | Individual | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'address' | 'orders' | 'payments' = 'details';
+  activeTab: 'details' | 'address' | 'orders' | 'transaction' | 'payments' =
+    'details';
   title: string = '';
   baseEndPoint: string = '';
 
