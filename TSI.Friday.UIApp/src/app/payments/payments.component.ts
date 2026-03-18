@@ -12,6 +12,7 @@ import {
   WebApiResponse,
   PaymentStatus,
   PaymentService,
+  PaymentType,
 } from '@friday/core';
 import {
   ColDef,
@@ -40,10 +41,13 @@ export class PaymentsComponent {
   @Input()
   canAdd: boolean = false;
 
+  @Input()
+  filterByType: PaymentType | null = null;
+
   @Output()
   refreshParent = new EventEmitter<void>();
 
-  baseEndPoint = ApiType.Payment;
+  baseEndPoint = ApiType.Payments;
 
   rowData: Payment[] = [];
 
@@ -119,15 +123,13 @@ export class PaymentsComponent {
       });
   }
 
-  deleteOrder(paymentInstallment: Payment): void {
+  deleteOrder(paymentPayment: Payment): void {
     this.apiService
       .delete<
         WebApiResponse<Payment>
-      >(`${this.baseEndPoint}/remove`, paymentInstallment)
+      >(`${this.baseEndPoint}/remove`, paymentPayment)
       .subscribe((response: WebApiResponse<Payment>) => {
-        this.rowData = this.rowData.filter(
-          (p) => p.id !== paymentInstallment.id,
-        );
+        this.rowData = this.rowData.filter((p) => p.id !== paymentPayment.id);
         this.refreshParent.emit();
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
@@ -236,7 +238,6 @@ export class PaymentsComponent {
       {
         field: 'description',
         headerName: 'Descrição',
-        hide: this.compact,
         sortable: true,
         filter: true,
         flex: 2,
@@ -247,7 +248,7 @@ export class PaymentsComponent {
         },
       },
       {
-        field: 'installmentNumber',
+        field: 'paymentNumber',
         headerName: '#',
         sortable: true,
         filter: true,

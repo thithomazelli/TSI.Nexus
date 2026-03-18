@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
@@ -7,23 +8,27 @@ namespace TSI.Friday.Contracts.Models.DTOs
     {
         public Guid Id { get; set; }
 
-        public TransactionType Type { get; set; }
-
         public DateTime Date { get; set; }
 
         public string Category { get; set; }
 
         public string Description { get; set; }
 
-        public TransactionCondition Condition { get; set; }
-
         public int TotalOfPayments { get; set; }
 
-        public decimal Price { get; set; }
+        public decimal PaymentTotalPrice { get; set; }
 
-        public PaymentMethod Method { get; set; }
+        public int TotalOfExpenses { get; set; }
+
+        public decimal ExpenseTotalPrice { get; set; }
+
+        public PaymentType Type { get; set; }
 
         public PaymentStatus Status { get; set; }
+
+        public PaymentCondition Condition { get; set; }
+
+        public PaymentMethod Method { get; set; }
 
         public Guid? OrderId { get; set; }
 
@@ -36,5 +41,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public bool HasOpenedPayments { get; set; }
 
         public bool MarkAllPaymentsAsApproved { get; set; }
+
+        // Payments in the transaction (optional, present when DTO includes them)
+        public ICollection<PaymentDto> Payments { get; set; } = new List<PaymentDto>();
     }
 }

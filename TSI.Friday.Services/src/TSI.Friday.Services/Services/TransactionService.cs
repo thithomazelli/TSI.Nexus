@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Text.Json.Nodes;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
@@ -29,7 +27,11 @@ namespace TSI.Friday.Services
         /// TransactionService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Transaction> object used to initialize the internal variable using Dependency Injection.</param>
-        public TransactionService(IRepository<Transaction> repository, IRepository<Payment> paymentRepository, IMapper mapper)
+        public TransactionService(
+            IRepository<Transaction> repository,
+            IRepository<Payment> paymentRepository,
+            IMapper mapper
+        )
         {
             _repository = repository;
             _paymentRepository = paymentRepository;
@@ -89,7 +91,9 @@ namespace TSI.Friday.Services
                 {
                     // Bulk update payments for this transaction to Approved (skip already approved)
                     await _paymentRepository.ExecuteUpdateAsync(
-                        p => p.TransactionId == transactionEntity.Id && p.Status != PaymentStatus.Approved,
+                        p =>
+                            p.TransactionId == transactionEntity.Id
+                            && p.Status != PaymentStatus.Approved,
                         p => p.Status = PaymentStatus.Approved
                     );
                 }
@@ -216,7 +220,7 @@ namespace TSI.Friday.Services
                         var dto = _mapper.Map<TransactionDto>(p);
                         var price = ComputePriceFromPayments(p.Payments);
                         var status = ComputeStatusFromPayments(p.Payments);
-                        dto.Price = price;
+                        dto.PaymentTotalPrice = price;
                         dto.Status = status;
                         return dto;
                     })
@@ -258,9 +262,11 @@ namespace TSI.Friday.Services
                 }
 
                 var dto = _mapper.Map<TransactionDto>(transaction);
-                var price = ComputePriceFromPayments(transaction.Payments);
+                var paymentTotalPrice = ComputePriceFromPayments(transaction.Payments);
+                var expenseTotalPrice = ComputePriceFromExpenses(transaction.Payments);
                 var status = ComputeStatusFromPayments(transaction.Payments);
-                dto.Price = price;
+                dto.PaymentTotalPrice = paymentTotalPrice;
+                dto.ExpenseTotalPrice = expenseTotalPrice;
                 dto.Status = status;
 
                 result.Data = dto;
@@ -299,9 +305,11 @@ namespace TSI.Friday.Services
                     .Select(p =>
                     {
                         var dto = _mapper.Map<TransactionDto>(p);
-                        var price = ComputePriceFromPayments(p.Payments);
+                        var paymentTotalPrice = ComputePriceFromPayments(p.Payments);
+                        var expenseTotalPrice = ComputePriceFromExpenses(p.Payments);
                         var status = ComputeStatusFromPayments(p.Payments);
-                        dto.Price = price;
+                        dto.PaymentTotalPrice = paymentTotalPrice;
+                        dto.ExpenseTotalPrice = expenseTotalPrice;
                         dto.Status = status;
                         return dto;
                     })
@@ -316,78 +324,6 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Transaçãos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<JsonObject>> GetTransactionsGroupByCategory(TransactionType? type = null, DateTime? start = null, DateTime? end = null)
-        {
-            var result = new WebApiResponse<JsonObject>();
-            try
-            {
-                // Load transactions with payments
-                var transactions = await _repository.GetAllAsync(p => p.Payments);
-
-                // Determine period: default last12 months
-                DateTime now = DateTime.UtcNow.Date;
-                DateTime firstOfCurrentMonth = new DateTime(now.Year, now.Month,1);
-
-                var months = Enumerable.Range(0,12).Select(i => firstOfCurrentMonth.AddMonths(i -11)).ToList();
-                DateTime periodStart = months.First();
-                DateTime periodEnd = firstOfCurrentMonth.AddMonths(1);
-
-                if (start.HasValue && end.HasValue)
-                {
-                    var s = start.Value.ToUniversalTime();
-                    var e = end.Value.ToUniversalTime();
-                    periodStart = new DateTime(s.Year, s.Month,1);
-                    var endMonthFirst = new DateTime(e.Year, e.Month,1);
-                    periodEnd = endMonthFirst.AddMonths(1);
-                }
-
-                // Filter transactions by type (if provided), then flatten payments and filter by period
-                var filteredTransactions = transactions.AsEnumerable();
-                if (type.HasValue)
-                {
-                    filteredTransactions = filteredTransactions.Where(t => t.Type == type.Value);
-                }
-
-                var filteredPayments = filteredTransactions
-                    .SelectMany(t => (t.Payments ?? new List<Payment>())
-                    .Select(p => new
-                    {
-                        Category = string.IsNullOrWhiteSpace(t.Category) ? "" : t.Category,
-                        Price = p.Price,
-                        Date = p.Date.ToUniversalTime()
-                    }))
-                    .Where(p => p.Date >= periodStart && p.Date < periodEnd)
-                    .ToList();
-
-                // Group by category and sum prices
-                var grouped = filteredPayments
-                    .GroupBy(p => p.Category)
-                    .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Price) })
-                    .OrderByDescending(x => x.Total)
-                    .ToList();
-
-                // Build json object with category => totalPrice
-                var response = new JsonObject();
-                foreach (var g in grouped)
-                {
-                    // use empty string when category is null
-                    response[g.Category ?? string.Empty] = JsonValue.Create(g.Total);
-                }
-
-                result.Data = response;
-                result.Status = ResponseStatus.Success;
-                result.Message = "Transações agrupadas por categoria geradas com sucesso.";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message = $"Não foi possível acessar os registros de Transações na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -413,17 +349,53 @@ namespace TSI.Friday.Services
                 var nextMonth = originalDate.AddMonths(i - 1);
                 var payment = new Payment
                 {
-                    Type = transactionDto.Type,
+                    Type = PaymentType.Incoming,
                     Status = transactionDto.Status,
+                    Condition = transactionDto.Condition,
                     Method = transactionDto.Method,
                     Date = i == 1 ? originalDate : nextMonth,
                     Description =
                         $"{transactionDto.Description} - {i}/{transactionDto.TotalOfPayments}",
-                    InstallmentNumber = i,
+                    PaymentNumber = i,
                     Price =
-                        transactionDto.Price != 0 && transactionDto.TotalOfPayments > 0
-                            ? transactionDto.Price / transactionDto.TotalOfPayments
-                            : transactionDto.Price,
+                        transactionDto.PaymentTotalPrice != 0 && transactionDto.TotalOfPayments > 0
+                            ? transactionDto.PaymentTotalPrice / transactionDto.TotalOfPayments
+                            : transactionDto.PaymentTotalPrice,
+                    OrderId = transactionDto.OrderId,
+                    BusinessPartnerId = transactionDto.BusinessPartnerId,
+                    TransactionId = transactionEntity.Id,
+                    Transaction = transactionEntity,
+                };
+
+                if (
+                    payment.Status != PaymentStatus.Approved
+                    && payment.Date.ToUniversalTime().Date < DateTime.UtcNow.Date
+                )
+                {
+                    payment.Status = PaymentStatus.Delayed;
+                }
+
+                transactionEntity.Payments.Add(payment);
+            }
+
+            for (var i = 1; i <= (transactionDto.TotalOfExpenses); i++)
+            {
+                var originalDate = transactionDto.Date;
+                var nextMonth = originalDate.AddMonths(i - 1);
+                var payment = new Payment
+                {
+                    Type = PaymentType.Outgoing,
+                    Status = transactionDto.Status,
+                    Condition = transactionDto.Condition,
+                    Method = transactionDto.Method,
+                    Date = i == 1 ? originalDate : nextMonth,
+                    Description =
+                        $"{transactionDto.Description} - {i}/{transactionDto.TotalOfExpenses}",
+                    PaymentNumber = i,
+                    Price =
+                        transactionDto.ExpenseTotalPrice != 0 && transactionDto.TotalOfExpenses > 0
+                            ? transactionDto.ExpenseTotalPrice / transactionDto.TotalOfExpenses
+                            : transactionDto.ExpenseTotalPrice,
                     OrderId = transactionDto.OrderId,
                     BusinessPartnerId = transactionDto.BusinessPartnerId,
                     TransactionId = transactionEntity.Id,
@@ -450,7 +422,18 @@ namespace TSI.Friday.Services
         private static decimal ComputePriceFromPayments(IEnumerable<Payment>? payments)
         {
             var list = payments?.ToList() ?? new List<Payment>();
-            return list.Sum(i => i.Price);
+            return list.Sum(i => PaymentType.Incoming.Equals(i.Type) ? i.Price : 0m);
+        }
+
+        /// <summary>
+        /// Computes the total price from a collection of transaction payments.
+        /// </summary>
+        /// <param name="payments">Payments object</param>
+        /// <returns>The total price calculated from the payments</returns>
+        private static decimal ComputePriceFromExpenses(IEnumerable<Payment>? payments)
+        {
+            var list = payments?.ToList() ?? new List<Payment>();
+            return list.Sum(i => PaymentType.Outgoing.Equals(i.Type) ? i.Price : 0m);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@
     <div class="row">
       <div class="col-md-3">
         <!-- Profile Image -->
-        <div class="card card-secondary card-outline">
+        <div class="card card-secondary card-outline mb-2">
           <div class="card-body box-profile">
             <div class="text-center">
               <app-photo
@@ -63,7 +63,7 @@
                   >Endereço</a
                 >
               </li>
-              <li class="nav-item">
+              <li *ngIf="canDisplayOrdersTab" class="nav-item">
                 <a
                   class="nav-link"
                   [class.active]="activeTab === 'orders'"
@@ -116,9 +116,11 @@
                   </div>
                 }
                 @if (activeTab === "orders") {
-                  <app-client-orders-list
+                  <app-orders
+                    [compact]="true"
+                    [entity]="'BusinessPartner'"
                     [parentData]="data"
-                  ></app-client-orders-list>
+                  ></app-orders>
                 }
                 @if (activeTab === "transaction") {
                   <app-transactions

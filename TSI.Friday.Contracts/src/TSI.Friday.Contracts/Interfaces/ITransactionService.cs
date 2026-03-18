@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
@@ -60,14 +60,5 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<IEnumerable<TransactionDto>>> FindByBusinessPartnerId(
             Guid? businessPartnerId
         );
-
-        /// <summary>
-        /// Get transactions grouped by category summing payments for each category.
-        /// </summary>
-        /// <param name="type">Optional TransactionType to filter. If null returns both types.</param>
-        /// <param name="start">Optional start date (inclusive).</param>
-        /// <param name="end">Optional end date (inclusive).</param>
-        /// <returns>WebApiResponse with a JsonObject containing grouped results.</returns>
-        Task<WebApiResponse<JsonObject>> GetTransactionsGroupByCategory(TransactionType? type = null, DateTime? start = null, DateTime? end = null);
     }
 }

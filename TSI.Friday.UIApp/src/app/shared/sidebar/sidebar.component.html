@@ -127,12 +127,37 @@
           <li class="nav-item">
             <a
               routerLink="/payments"
+              [queryParams]="{ type: 'Incoming' }"
               routerLinkActive="active"
               [routerLinkActiveOptions]="{ exact: true }"
               class="nav-link"
             >
               <i class="nav-icon bi bi-file-earmark-text"></i>
-              <p>Extrato Pagamentos</p>
+              <p>Pagamentos</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              routerLink="/payments"
+              [queryParams]="{ type: 'Outgoing' }"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-bag-dash"></i>
+              <p>Despesas</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              routerLink="/reports"
+              [queryParams]="{ type: 'Outgoing' }"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-bar-chart"></i>
+              <p>Relatórios</p>
             </a>
           </li>
           <li class="nav-header">Admin</li>

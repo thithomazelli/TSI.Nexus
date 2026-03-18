@@ -1,6 +1,6 @@
 <app-header
   *ngIf="!compact"
-  title="Extrato dos Pagamentos"
+  title="Extrato dos Pagamentos e Despesas"
   [navigationMenus]="[
     { label: 'Home', link: '/home' },
     { label: 'Pagamentos', link: '' },
@@ -24,25 +24,28 @@
   ></app-grid>
 
   <ng-template #filtersTpl>
-    <div class="row g-2 mb-2">
-      <div class="date-filter-area">
+    <div class="row g-1 mb-2 flex-column flex-md-row">
+      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0">
         <app-date-field
           [(ngModel)]="filterStartDate"
           (ngModelChange)="applyFilters()"
           label="Início"
+          class="w-100 p-0"
         ></app-date-field>
       </div>
-      <div class="date-filter-area">
+      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0 ms-md-1">
         <app-date-field
           [(ngModel)]="filterEndDate"
           (ngModelChange)="applyFilters()"
           label="Fim"
+          class="w-100 p-0"
         ></app-date-field>
       </div>
-      <div class="col-auto d-flex align-items-center gap-2">
-        <div class="filter-group-box position-relative">
+      <!-- Status filter: full width on mobile, auto on desktop -->
+      <div class="col-12 col-md-auto d-flex align-items-end mb-2 mb-md-0 p-0">
+        <div class="filter-group-box position-relative w-100 w-md-auto ms-md-1">
           <span class="filter-group-label">Status</span>
-          <div class="d-flex align-items-center pt-2">
+          <div class="d-flex flex-wrap align-items-center pt-2 gap-2">
             <label class="form-check-label ms-2">
               <input
                 type="checkbox"
@@ -72,30 +75,43 @@
             </label>
           </div>
         </div>
-        <div class="filter-group-box position-relative">
-          <span class="filter-group-label">Tipo</span>
-          <div class="d-flex align-items-center pt-2">
-            <label class="form-check-label ms-2">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                [(ngModel)]="filterType.Incoming"
-                (change)="applyFilters()"
-              />
-              Entrada
-            </label>
-            <label class="form-check-label ms-2">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                [(ngModel)]="filterType.Outgoing"
-                (change)="applyFilters()"
-              />
-              Saída
-            </label>
+      </div>
+      <!-- Tipo filter: only in desktop -->
+      <ng-container *ngIf="!compact">
+        <div class="col-12 col-md-auto d-flex align-items-end mb-2 mb-md-0 p-0">
+          <div
+            class="filter-group-box position-relative w-100 w-md-auto ms-md-1"
+          >
+            <span class="filter-group-label">Tipo</span>
+            <div class="d-flex align-items-center pt-2">
+              <label class="form-check-label ms-2">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [(ngModel)]="filterType.Incoming"
+                  (change)="applyFilters()"
+                />
+                Entrada
+              </label>
+              <label class="form-check-label ms-2">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [(ngModel)]="filterType.Outgoing"
+                  (change)="applyFilters()"
+                />
+                Saída
+              </label>
+            </div>
           </div>
         </div>
-        <button class="btn btn-secondary" (click)="clearFilters()">
+      </ng-container>
+      <!-- Limpar button: own row on mobile, inline on desktop -->
+      <div class="col-12 col-md-auto d-flex align-items-end p-0">
+        <button
+          class="btn btn-secondary w-100 mt-2 mt-md-0 ms-md-1"
+          (click)="clearFilters()"
+        >
           Limpar
         </button>
       </div>

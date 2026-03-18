@@ -198,9 +198,10 @@ namespace TSI.Friday.Services.Tests.Services
                 .Setup(r =>
                     r.QueryAsync(
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                        op => op.Order,
+                        op => op.Order.BusinessPartner,
+                        op => op.Product,
+                        op => op.Address
                     )
                 )
                 .ReturnsAsync(items);
@@ -218,12 +219,13 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(
-                r =>
-                    r.QueryAsync(
+                op =>
+                    op.QueryAsync(
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                        op => op.Order,
+                        op => op.Order.BusinessPartner,
+                        op => op.Product,
+                        op => op.Address
                     ),
                 Times.Once
             );
@@ -275,6 +277,7 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
                         op => op.Order,
+                        op => op.Order.BusinessPartner,
                         op => op.Product,
                         op => op.Address
                     )
@@ -299,9 +302,10 @@ namespace TSI.Friday.Services.Tests.Services
                 r =>
                     r.QueryAsync(
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                        op => op.Order,
+                        op => op.Order.BusinessPartner,
+                        op => op.Product,
+                        op => op.Address
                     ),
                 Times.Once
             );

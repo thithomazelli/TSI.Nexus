@@ -10,7 +10,7 @@ import {
 } from '@friday/core';
 import { map, Observable, of, ReplaySubject } from 'rxjs';
 import { finalize, shareReplay } from 'rxjs/operators';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 import { HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 

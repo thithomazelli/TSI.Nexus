@@ -18,16 +18,21 @@ import {
   FormBaseComponent,
   ModalService,
   Order,
-  OrderService,
   PaymentMethod,
   PaymentStatus,
   Transaction,
-  TransactionCondition,
-  TransactionType,
+  PaymentCondition,
+  PaymentType,
 } from '@friday/core';
-import { Subscription } from 'rxjs';
 
-import { Observable, startWith, map } from 'rxjs';
+import {
+  distinctUntilChanged,
+  Subscription,
+  Observable,
+  startWith,
+  map,
+} from 'rxjs';
+
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 
 @Component({
@@ -58,7 +63,7 @@ export class TransactionFormComponent
   @Output()
   cancel = new EventEmitter<void>();
 
-  isInstallment = false;
+  isPayment = false;
   showClientAndOrder = false;
 
   statusOptions = [
@@ -68,8 +73,8 @@ export class TransactionFormComponent
   ];
 
   typeOptions = [
-    { label: 'Entrada', value: TransactionType.Incoming },
-    { label: 'Saída', value: TransactionType.Outgoing },
+    { label: 'Cliente', value: PaymentType.Incoming },
+    { label: 'Fornecedor', value: PaymentType.Outgoing },
   ];
 
   methodOptions = [
@@ -79,8 +84,8 @@ export class TransactionFormComponent
   ];
 
   conditionOptions = [
-    { label: 'À Vista', value: TransactionCondition.FullPayment },
-    { label: 'Parcelado', value: TransactionCondition.InInstallments },
+    { label: 'À Vista', value: PaymentCondition.FullPayment },
+    { label: 'Parcelado', value: PaymentCondition.InInstallments },
   ];
 
   categoryOptions = [
@@ -108,7 +113,6 @@ export class TransactionFormComponent
     private formBuilder: FormBuilder,
     private currencyService: CurrencyService,
     private businessPartnerService: BusinessPartnerService,
-    private orderService: OrderService,
     private modalService: ModalService,
   ) {
     super();
@@ -120,10 +124,9 @@ export class TransactionFormComponent
     } else {
       this.initForm();
     }
+
     this.patchFormWithData();
-    this.onConditionChanges();
     this.onTypeChanges();
-    this.onInstallmentsChanges();
     this.setupAutoComplete();
 
     this.setupStatusWatcher();
@@ -131,12 +134,12 @@ export class TransactionFormComponent
     // Subscription para price
     this.form.get('price')?.valueChanges.subscribe((price: number) => {
       const payments = this.form.get('totalOfPayments')?.value || 1;
-      const validInstallments = payments > 0 ? payments : 1;
-      const perInstallment = price / validInstallments;
-      this.form.get('pricePerInstallment')?.setValue(perInstallment);
+      const validPayments = payments > 0 ? payments : 1;
+      const perPayment = price / validPayments;
+      this.form.get('paymentTotalPrice')?.setValue(perPayment);
       this.form
-        .get('pricePerInstallmentFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
+        .get('paymentTotalPriceFormatted')
+        ?.setValue(this.currencyService.formatCurrencyBRL(perPayment));
     });
   }
 
@@ -144,6 +147,7 @@ export class TransactionFormComponent
     if (changes['data'] && changes['data'].currentValue && this.form) {
       this.form.patchValue(changes['data'].currentValue);
     }
+
     if (changes['isEdit'] && !changes['isEdit'].firstChange) {
       this.initForm();
     }
@@ -266,24 +270,32 @@ export class TransactionFormComponent
   }
 
   private initForm(): void {
+    const required = Validators.required;
     const commonControls = {
-      type: [this.compact ? 'Incoming' : '', Validators.required],
-      method: [PaymentMethod.Cash, Validators.required],
-      status: [PaymentStatus.Pending, Validators.required],
-      date: [new Date(), Validators.required],
-      category: ['', Validators.required],
-      description: ['', Validators.required],
-      price: [0, [Validators.required, Validators.min(0)]],
-      priceFormatted: [{ value: 0 }],
-      condition: [TransactionCondition.FullPayment, Validators.required],
-      totalOfPayments: [1, [Validators.min(1)]],
-      pricePerInstallment: [0, [Validators.min(0)]],
-      pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
+      type: ['Incoming', this.isEdit ? [] : required],
+      method: [PaymentMethod.Cash, this.isEdit ? [] : required],
+      status: [
+        {
+          value: PaymentStatus.Pending,
+          disabled: !this.data?.hasOpenedPayments && this.isEdit,
+        },
+      ],
+      date: [new Date(), required],
+      category: ['', this.isEdit ? [] : required],
+      description: ['', required],
+      condition: [PaymentCondition.FullPayment, this.isEdit ? [] : required],
+      totalOfPayments: [0, [Validators.min(0)]],
+      paymentTotalPrice: [0, [Validators.min(0)]],
+      paymentTotalPriceFormatted: [{ value: 0, disabled: this.isEdit }],
+      totalOfExpenses: [0, [Validators.min(0)]],
+      expenseTotalPrice: [0, [Validators.min(0)]],
+      expenseTotalPriceFormatted: [{ value: 0, disabled: this.isEdit }],
       businessPartnerId: [null],
       businessPartnerName: [''],
       orderId: [null],
       orderNumber: [{ value: '', disabled: true }],
     };
+
     this.form = !this.isEdit
       ? this.formBuilder.group(commonControls)
       : this.formBuilder.group({
@@ -295,6 +307,7 @@ export class TransactionFormComponent
     if (this.isEdit && this.form) {
       this.form.get('businessPartnerName')?.disable();
       this.form.get('totalOfPayments')?.disable();
+      this.form.get('totalOfExpenses')?.disable();
       this.form.get('type')?.disable();
     }
   }
@@ -303,32 +316,35 @@ export class TransactionFormComponent
     if (this.data && this.form) {
       // Fill fields as requested
       const totalOfPayments = this.data?.totalOfPayments || 1;
-      const priceSum = this.data.price || 0;
-      const pricePerInstallment =
-        priceSum / (totalOfPayments > 0 ? totalOfPayments : 1);
+      const paymentTotalPrice = this.data.paymentTotalPrice || 0;
+      const totalOfExpenses = this.data?.totalOfExpenses || 0;
+      const expenseTotalPrice = this.data.expenseTotalPrice || 0;
 
       this.form.patchValue({
         ...this.data,
         totalOfPayments,
-        price: priceSum,
-        pricePerInstallment,
-        priceFormatted: this.currencyService.formatCurrencyBRL(priceSum),
-        pricePerInstallmentFormatted:
-          this.currencyService.formatCurrencyBRL(pricePerInstallment),
+        paymentTotalPrice,
+        paymentTotalPriceFormatted:
+          this.currencyService.formatCurrencyBRL(paymentTotalPrice),
+        totalOfExpenses,
+        expenseTotalPrice,
+        expenseTotalPriceFormatted:
+          this.currencyService.formatCurrencyBRL(expenseTotalPrice),
       });
 
       // Disable price field
-      this.form.get('price')?.disable();
+      this.form.get('paymentTotalPrice')?.disable();
+      this.form.get('expenseTotalPrice')?.disable();
     } else {
       this.form
-        .get('priceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
-      this.form
-        .get('pricePerInstallmentFormatted')
+        .get('paymentTotalPriceFormatted')
         ?.setValue(
-          this.currencyService.formatCurrencyBRL(
-            this.data?.pricePerInstallment,
-          ),
+          this.currencyService.formatCurrencyBRL(this.data?.paymentTotalPrice),
+        );
+      this.form
+        .get('expenseTotalPriceFormatted')
+        ?.setValue(
+          this.currencyService.formatCurrencyBRL(this.data?.expenseTotalPrice),
         );
     }
   }
@@ -342,7 +358,11 @@ export class TransactionFormComponent
   }
 
   private businessPartnerNameAutoComplete() {
-    this.businessPartners$ = this.businessPartnerService.getClients(true);
+    this.businessPartners$ =
+      this.form.get('type')?.value == 'Incoming'
+        ? this.businessPartnerService.getClients(true)
+        : this.businessPartnerService.getSuppliers(true);
+
     this.filteredBusinessPartners$ = this.form
       .get('businessPartnerName')!
       .valueChanges.pipe(
@@ -365,13 +385,13 @@ export class TransactionFormComponent
       );
   }
 
-  private onTypeChanges(): void {
+  onTypeChanges(): void {
     const typeCtrl = this.form?.get('type');
     const businessPartnerNameCtrl = this.form?.get('businessPartnerName');
     if (typeCtrl && businessPartnerNameCtrl) {
       this.typeSub = typeCtrl.valueChanges.subscribe((val) => {
-        this.showClientAndOrder = val === TransactionType.Incoming;
-        if (val === TransactionType.Incoming) {
+        this.showClientAndOrder = val === PaymentType.Incoming;
+        if (val === PaymentType.Incoming) {
           businessPartnerNameCtrl.setValidators([Validators.required]);
         } else {
           businessPartnerNameCtrl.clearValidators();
@@ -379,76 +399,20 @@ export class TransactionFormComponent
         businessPartnerNameCtrl.updateValueAndValidity();
       });
       // Initialize value when creating the form
-      this.showClientAndOrder = typeCtrl.value === TransactionType.Incoming;
-      if (typeCtrl.value === TransactionType.Incoming) {
+      this.showClientAndOrder = typeCtrl.value === PaymentType.Incoming;
+      if (typeCtrl.value === PaymentType.Incoming) {
         businessPartnerNameCtrl.setValidators([Validators.required]);
       } else {
         businessPartnerNameCtrl.clearValidators();
       }
       businessPartnerNameCtrl.updateValueAndValidity();
     }
-  }
-
-  private onConditionChanges(): void {
-    const conditionCtrl = this.form?.get('condition');
-    if (conditionCtrl) {
-      this.conditionSub = conditionCtrl.valueChanges.subscribe(
-        (paymentCondition) => {
-          this.isInstallment =
-            paymentCondition === TransactionCondition.InInstallments;
-          if (paymentCondition !== TransactionCondition.InInstallments) {
-            const price = this.form.get('priceFormatted')?.value;
-            this.form.get('totalOfPayments')?.setValue(1);
-            this.form.get('totalOfPayments')?.disable();
-            this.form.get('pricePerInstallment')?.setValue(price);
-          } else {
-            this.form.get('totalOfPayments')?.enable();
-          }
-        },
-      );
-      // Initialize value when creating the form
-      this.isInstallment =
-        conditionCtrl.value === TransactionCondition.InInstallments;
-      if (!this.isInstallment) {
-        this.form.get('totalOfPayments')?.disable();
-      } else {
-        this.form.get('totalOfPayments')?.enable();
-      }
-    }
-  }
-
-  private onInstallmentsChanges(): void {
-    const paymentsCtrl = this.form?.get('totalOfPayments');
-    if (paymentsCtrl) {
-      this.paymentsSub = paymentsCtrl.valueChanges.subscribe(
-        (payments: number) => {
-          const price = this.form.get('price')?.value || 0;
-          const validInstallments = payments > 0 ? payments : 1;
-          const perInstallment = price / validInstallments;
-          this.form.get('pricePerInstallment')?.setValue(perInstallment);
-          this.form
-            .get('pricePerInstallmentFormatted')
-            ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
-        },
-      );
-
-      // Initialize value when creating the form
-      const initialInstallments =
-        paymentsCtrl.value > 0 ? paymentsCtrl.value : 1;
-      const price = this.form.get('price')?.value || 0;
-      const perInstallment = price / initialInstallments;
-      this.form.get('pricePerInstallment')?.setValue(perInstallment);
-      this.form
-        .get('pricePerInstallmentFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
-    }
+    this.setupAutoComplete();
   }
 
   // Adiciona watcher para status igual ao order-form
   private setupStatusWatcher(): void {
-    // hasOpenedPayments: simulates if there are open payments (adjust according to your logic)
-    const hasOpenedPayments = this.data && (this.data as any).hasOpenedPayments;
-    if (!this.isEdit || !this.form || !hasOpenedPayments) {
+    if (!this.isEdit || !this.form) {
       return;
     }
     // Remove previous subscription if any
@@ -456,34 +420,40 @@ export class TransactionFormComponent
       this.statusSubscription.unsubscribe();
     }
     // Add the field to the form if it does not exist
-    if (!this.form.contains('markAllOrderPaymentsAsReturned')) {
+    if (!this.form.contains('markAllPaymentsAsApproved')) {
       this.form.addControl(
-        'markAllOrderPaymentsAsReturned',
+        'markAllPaymentsAsApproved',
         this.formBuilder.control(false),
       );
     }
     this.statusSubscription = this.form
       .get('status')
-      ?.valueChanges.subscribe(async (newStatus: PaymentStatus) => {
-        if (newStatus === PaymentStatus.Approved) {
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe(async (newStatus: PaymentStatus) => {
+        // Checa se há pagamentos abertos no momento da mudança de status
+        const hasOpenedPayments =
+          this.data && (this.data as any).hasOpenedPayments;
+        if (newStatus === PaymentStatus.Approved && hasOpenedPayments) {
           const confirmed = await this.modalService
             .showConfirmation({
               title: 'Fechar pagamento',
-              message: 'Deseja marcar todos os pagamentos como retornados?',
+              message: 'Deseja marcar todos os pagamentos como aprovados?',
               confirmButtonText: 'Sim',
               cancelButtonText: 'Não',
             })
             .afterClosed()
             .toPromise();
-          this.form
-            .get('markAllOrderPaymentsAsReturned')
-            ?.setValue(!!confirmed);
+
+          if (!confirmed) {
+            this.form.get('status')?.setValue(this.data?.status || '');
+          }
+          this.form.get('markAllPaymentsAsApproved')?.setValue(!!confirmed);
           if (this.data) {
-            (this.data as any).markAllPaymentsAsReturned = !!confirmed;
+            (this.data as any).markAllPaymentsAsApproved = !!confirmed;
           }
         } else {
-          this.form.get('markAllOrderPaymentsAsReturned')?.setValue(false);
-          if (this.data) (this.data as any).markAllPaymentsAsReturned = false;
+          this.form.get('markAllPaymentsAsApproved')?.setValue(false);
+          if (this.data) (this.data as any).markAllPaymentsAsApproved = false;
         }
       });
   }

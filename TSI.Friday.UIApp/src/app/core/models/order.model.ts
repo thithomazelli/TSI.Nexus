@@ -6,6 +6,7 @@ import { Transaction } from './transaction.model';
 export interface Order extends BaseModel {
   id?: string;
   orderNumber?: string;
+  date?: Date;
   businessPartnerId?: string;
   businessPartnerName?: string;
   status?: OrderStatus;

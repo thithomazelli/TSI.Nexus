@@ -1,24 +1,25 @@
-import { TransactionCondition, PaymentMethod } from '../enums';
+import { PaymentCondition, PaymentMethod } from '../enums';
 import { PaymentStatus } from '../enums/payment-status.enum';
-import { TransactionType } from '../enums/payment-type.enum';
+import { PaymentType } from '../enums/payment-type.enum';
 import { BaseModel } from './base.model';
 
 export interface Transaction extends BaseModel {
   id?: string;
-  type?: TransactionType;
   date?: Date;
   category?: string;
   description?: string;
-  condition?: TransactionCondition;
   totalOfPayments?: number;
-  pricePerInstallment?: number;
-  method?: PaymentMethod;
+  paymentTotalPrice?: number;
+  totalOfExpenses?: number;
+  expenseTotalPrice?: number;
+  type?: PaymentType;
   status?: PaymentStatus;
-  price?: number;
+  method?: PaymentMethod;
+  condition?: PaymentCondition;
   orderId?: string;
   orderNumber?: string;
   businessPartnerId?: string;
   businessPartnerName?: string;
   hasOpenedPayments?: boolean;
-  markAllPaymentsAsReturned?: boolean;
+  markAllPaymentsAsApproved?: boolean;
 }
