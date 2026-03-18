@@ -20,17 +20,22 @@
                   <i class="bi bi-cash-coin" style="font-size: 4rem"></i>
                   <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                      <b>ID: </b> <a class="float-right">{{ data?.id }}</a>
+                      <b>Cliente: </b>
+                      <span class="float-right">{{
+                        data?.businessPartnerName
+                      }}</span>
                     </li>
                     <li class="list-group-item">
                       <b>Tipo: </b>
-                      <a class="float-right">{{ getPaymentTypeLabel() }}</a>
+                      <span class="float-right">{{
+                        getPaymentTypeLabel()
+                      }}</span>
                     </li>
                     <li class="list-group-item">
                       <b>Status: </b>
-                      <a class="float-right">{{
+                      <span class="float-right">{{
                         getTransactionStatusLabel()
-                      }}</a>
+                      }}</span>
                     </li>
                   </ul>
                 </div>
