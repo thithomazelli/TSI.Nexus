@@ -23,7 +23,7 @@
 
   <ng-template #filtersTpl>
     <div class="row g-2 mb-2 flex-column flex-md-row">
-      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0">
+      <div class="date-filter-area col-12 col-md-auto">
         <app-date-field
           [(ngModel)]="filterStartDate"
           (ngModelChange)="applyFilters()"
@@ -31,7 +31,7 @@
           class="w-100 p-0"
         ></app-date-field>
       </div>
-      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0">
+      <div class="date-filter-area col-12 col-md-auto mb-1 mb-md-0">
         <app-date-field
           [(ngModel)]="filterEndDate"
           (ngModelChange)="applyFilters()"
@@ -39,7 +39,7 @@
           class="w-100 p-0"
         ></app-date-field>
       </div>
-      <div class="col-12 col-md-auto d-flex align-items-end gap-2">
+      <div class="col-12 col-md-auto ms-md-2">
         <div class="filter-group-box position-relative mb-2 mb-md-0">
           <span class="filter-group-label">Status</span>
           <div class="d-flex flex-wrap align-items-center pt-2 gap-2">
@@ -72,10 +72,9 @@
             </label>
           </div>
         </div>
-        <button
-          class="btn btn-secondary w-100 mt-2 mt-md-0"
-          (click)="clearFilters()"
-        >
+      </div>
+      <div class="col-12 col-md-auto d-flex align-items-end">
+        <button class="btn btn-secondary w-100" (click)="clearFilters()">
           Limpar
         </button>
       </div>

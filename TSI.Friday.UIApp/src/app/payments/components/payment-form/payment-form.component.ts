@@ -144,17 +144,13 @@ export class PaymentFormComponent
   }
 
   submit(): void {
+    this.formSubmitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
     const rawValue = this.form.getRawValue();
-    // transactionId: [this.parentId],
-    // businessPartnerId: [this.parentData?.businessPartnerId],
-    // businessPartnerName: [this.parentData?.businessPartnerName],
-    // orderId: [this.parentData?.orderId],
-    // orderNumber: [this.parentData?.orderNumber],
 
     this.save.emit(rawValue);
   }
