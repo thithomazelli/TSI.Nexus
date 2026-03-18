@@ -12,17 +12,18 @@
   </div>
 </div>
 <div *ngIf="!loading">
-  <div class="mb-3 d-flex justify-content-end">
-    <div class="border rounded p-2 position-relative">
+  <div class="dashboard-toolbar mt-3 mb-3">
+    <h3 class="dashboard-title mb-0">Dashboard</h3>
+    <div class="dashboard-period-filter border rounded p-2 position-relative">
       <span class="position-absolute bg-white px-2 fw-semibold title-area"
         >Período</span
       >
       <div
-        class="d-flex flex-row gap-3 justify-content-center align-items-center mt-2"
+        class="dashboard-period-options d-flex flex-row gap-3 align-items-center mt-2"
       >
         <label
           *ngFor="let opt of periodOptions"
-          class="form-check-label d-flex align-items-center"
+          class="dashboard-period-option form-check-label d-flex align-items-center mb-0"
           style="font-weight: 500"
         >
           <input
@@ -39,21 +40,6 @@
     </div>
   </div>
   <div class="row mb-3 justify-content-end align-items-center">
-    <!-- <div class="mb-2">
-    <div class="col-12 col-md-3">
-      <label for="periodSelect" class="form-label">Período</label>
-      <select
-        id="periodSelect"
-        class="form-select"
-        [value]="selectedPeriod"
-        (change)="onPeriodChange($event)"
-      >
-        <option *ngFor="let opt of periodOptions" [value]="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
-    </div>
-  </div> -->
     <div
       class="col-lg-3 col-6"
       *ngFor="let card of cards; let i = index; trackBy: trackByInfoCard"
