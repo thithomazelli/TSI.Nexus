@@ -6,17 +6,21 @@ namespace TSI.Friday.Contracts.Models
 {
     public class Payment : BaseModel
     {
-        public TransactionType Type { get; set; }
+        public PaymentType Type { get; set; }
 
         public PaymentStatus Status { get; set; }
 
+        public PaymentCondition Condition { get; set; }
+
         public PaymentMethod Method { get; set; }
+
+        public string Category { get; set; }
 
         public DateTime Date { get; set; }
 
         public string Description { get; set; }
 
-        public int InstallmentNumber { get; set; }
+        public int PaymentNumber { get; set; }
 
         public decimal Price { get; set; }
 

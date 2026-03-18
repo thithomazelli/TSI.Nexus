@@ -1,8 +1,8 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, Renderer2, OnDestroy, NgZone } from '@angular/core';
 import { AccountService } from './core';
 import { filter, map, Observable, Subscription } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
-import { environment } from '../environments/environment.development';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +10,7 @@ import { environment } from '../environments/environment.development';
   styleUrl: './app.component.scss',
   standalone: false,
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   private sub?: Subscription;
   private applied: string[] = [];
   private lastRefresh = 0;
@@ -19,10 +19,20 @@ export class AppComponent implements OnInit {
   // expose login state for template
   isLoggedIn$: Observable<boolean>;
 
+  private activityEvents = [
+    'mousemove',
+    'mousedown',
+    'keydown',
+    'touchstart',
+    'scroll',
+  ];
+  private activityUnlisteners: Array<() => void> = [];
+
   constructor(
     private router: Router,
     private renderer: Renderer2,
     private accountService: AccountService,
+    private ngZone: NgZone,
   ) {
     this.isLoggedIn$ = this.accountService.user$.pipe(map((u) => !!u));
 
@@ -32,6 +42,19 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Adiciona listeners de atividade do usuário para resetar autologoff
+    this.ngZone.runOutsideAngular(() => {
+      this.activityEvents.forEach((event) => {
+        const unlisten = this.renderer.listen('document', event, () => {
+          // Só reseta se estiver logado
+          const jwt = this.accountService.getJWT();
+          if (jwt) {
+            this.accountService.startAutoLogout(jwt);
+          }
+        });
+        this.activityUnlisteners.push(unlisten);
+      });
+    });
     this.refreshUser();
     this.sub = this.router.events
       .pipe(filter((evt) => evt instanceof NavigationEnd))
@@ -54,6 +77,13 @@ export class AppComponent implements OnInit {
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
     this.applied.forEach((c) => this.renderer.removeClass(document.body, c));
+    // Remove listeners de atividade
+    this.activityUnlisteners.forEach((unlisten) => {
+      try {
+        unlisten();
+      } catch {}
+    });
+    this.activityUnlisteners = [];
   }
 
   private updateBodyClass(classes: string[]) {

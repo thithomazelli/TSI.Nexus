@@ -53,7 +53,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = payment,
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {payment.Description} cadastrada com sucesso.",
+                Message = $"Pagamento {payment.Description} cadastrada com sucesso.",
             };
 
             _serviceMock.Setup(s => s.Add(payment)).ReturnsAsync(expected);
@@ -94,7 +94,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = payment,
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {payment.Description} atualizada com sucesso.",
+                Message = $"Pagamento {payment.Description} atualizada com sucesso.",
             };
 
             _serviceMock.Setup(s => s.Update(payment)).ReturnsAsync(expected);
@@ -135,7 +135,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = payment,
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {payment.Description} removida com sucesso.",
+                Message = $"Pagamento {payment.Description} removida com sucesso.",
             };
 
             _serviceMock.Setup(s => s.Remove(payment)).ReturnsAsync(expected);
@@ -182,7 +182,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = _paymentsMock.First(p => p.Id == id),
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {_paymentsMock.First(p => p.Id == id).Description} encontrada com sucesso",
+                Message = $"Pagamento {_paymentsMock.First(p => p.Id == id).Description} encontrada com sucesso",
             };
 
             _serviceMock.Setup(s => s.FindById(id)).ReturnsAsync(expected);

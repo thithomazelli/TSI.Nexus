@@ -1,6 +1,6 @@
 ﻿namespace TSI.Friday.Contracts.Enums
 {
-    public enum TransactionType
+    public enum PaymentType
     {
         Incoming,
         Outgoing,

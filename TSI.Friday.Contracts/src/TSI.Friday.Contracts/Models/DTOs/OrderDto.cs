@@ -10,6 +10,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public string OrderNumber { get; set; }
 
+        public DateTime Date { get; set; }
+
         public Guid BusinessPartnerId { get; set; }
 
         public string BusinessPartnerName { get; set; }

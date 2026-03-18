@@ -74,14 +74,13 @@ namespace TSI.Friday.Services
 
                 result.Data = paymentDto;
                 result.Status = ResponseStatus.Success;
-                result.Message =
-                    $"Parcela do pagamento {paymentDto.Description} cadastrada com sucesso.";
+                result.Message = $"Pagamento {paymentDto.Description} cadastrada com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível cadastrar a Parcela do pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível cadastrar a Pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -117,14 +116,37 @@ namespace TSI.Friday.Services
 
                 result.Data = paymentDto;
                 result.Status = ResponseStatus.Success;
-                result.Message =
-                    $"Parcela do pagamento {paymentDto.Description} atualizada com sucesso.";
+                result.Message = $"Pagamento {paymentDto.Description} atualizada com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível atualizar os dados da Parcela do pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível atualizar os dados do pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<PaymentDto>> Remove(PaymentDto paymentDto)
+        {
+            WebApiResponse<PaymentDto> result = new();
+
+            try
+            {
+                var paymentEntity = _mapper.Map<Payment>(paymentDto);
+                await _repository.RemoveAsync(paymentEntity);
+
+                result.Data = paymentDto;
+                result.Status = ResponseStatus.Success;
+                result.Message = $"Pagamento {paymentDto.Description} removida com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível remover a Pagamento {paymentDto?.Description} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -150,32 +172,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Parcelas de Transação na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<WebApiResponse<PaymentDto>> Remove(PaymentDto paymentDto)
-        {
-            WebApiResponse<PaymentDto> result = new();
-
-            try
-            {
-                var paymentEntity = _mapper.Map<Payment>(paymentDto);
-                await _repository.RemoveAsync(paymentEntity);
-
-                result.Data = paymentDto;
-                result.Status = ResponseStatus.Success;
-                result.Message =
-                    $"Parcela do pagamento {paymentDto.Description} removida com sucesso.";
-            }
-            catch (Exception ex)
-            {
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível remover a Parcela do pagamento {paymentDto?.Description} da base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de Pagamentos de Transação na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -193,14 +190,14 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"Parcela do pagamento {result.Data.Description} encontrada com sucesso"
+                        ? $"Pagamento {result.Data.Description} encontrada com sucesso"
                         : $"Nenhuma Parcela de pagamento com o ID {id} foi encontrada";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Parcelas de Transação na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de Pagamentos de Transação na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -229,7 +226,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Parcelas do Transação baseado no Transação {transactionId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Pagamentos do Transação baseado no Transação {transactionId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -258,7 +255,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Parcelas do Transação baseado no BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Pagamentos do Transação baseado no BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -285,7 +282,44 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Parcelas do Transação baseado no Pedido {orderId}. Erro: {ex.Message}";
+                    $"Não foi possível acessar os Pagamentos do Transação baseado no Pedido {orderId}. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindDelayed()
+        {
+            WebApiResponse<IEnumerable<PaymentDto>> result = new();
+
+            try
+            {
+                var todayUtc = DateTime.UtcNow.Date;
+                var tomorrowUtc = todayUtc.AddDays(1);
+
+                var payments = await _repository.QueryAsync(
+                    t =>
+                        t.Status == PaymentStatus.Delayed
+                        || (
+                            t.Status != PaymentStatus.Approved
+                            && t.Date != default(DateTime)
+                            && t.Date < tomorrowUtc
+                        ),
+                    t => t.Transaction,
+                    t => t.BusinessPartner,
+                    t => t.Order
+                );
+
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de Pagamentos de Transação na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -364,9 +398,7 @@ namespace TSI.Friday.Services
                     .Select(m =>
                         (JsonNode)
                             JsonValue.Create(
-                                grouped.TryGetValue((TransactionType.Incoming, m), out var v)
-                                    ? v
-                                    : 0m
+                                grouped.TryGetValue((PaymentType.Incoming, m), out var v) ? v : 0m
                             )
                     )
                     .ToArray();
@@ -374,9 +406,7 @@ namespace TSI.Friday.Services
                     .Select(m =>
                         (JsonNode)
                             JsonValue.Create(
-                                grouped.TryGetValue((TransactionType.Outgoing, m), out var v)
-                                    ? v
-                                    : 0m
+                                grouped.TryGetValue((PaymentType.Outgoing, m), out var v) ? v : 0m
                             )
                     )
                     .ToArray();
@@ -404,37 +434,79 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindDelayed()
+        public async Task<WebApiResponse<JsonObject>> GetPaymentsGroupByCategory(
+            PaymentType? type = null,
+            DateTime? start = null,
+            DateTime? end = null
+        )
         {
-            WebApiResponse<IEnumerable<PaymentDto>> result = new();
-
+            var result = new WebApiResponse<JsonObject>();
             try
             {
-                var todayUtc = DateTime.UtcNow.Date;
-                var tomorrowUtc = todayUtc.AddDays(1);
+                // Determine period: default last12 months
+                DateTime now = DateTime.UtcNow.Date;
+                DateTime firstOfCurrentMonth = new DateTime(now.Year, now.Month, 1);
 
-                var payments = await _repository.QueryAsync(
-                    t =>
-                        t.Status == PaymentStatus.Delayed
-                        || (
-                            t.Status != PaymentStatus.Approved
-                            && t.Date != default(DateTime)
-                            && t.Date < tomorrowUtc
-                        ),
-                    t => t.Transaction,
-                    t => t.BusinessPartner,
-                    t => t.Order
-                );
+                var months = Enumerable
+                    .Range(0, 12)
+                    .Select(i => firstOfCurrentMonth.AddMonths(i - 11))
+                    .ToList();
+                DateTime periodStart = months.First();
+                DateTime periodEnd = firstOfCurrentMonth.AddMonths(1);
 
-                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
+                if (start.HasValue && end.HasValue)
+                {
+                    var s = start.Value.ToUniversalTime();
+                    var e = end.Value.ToUniversalTime();
+                    periodStart = new DateTime(s.Year, s.Month, 1);
+                    var endMonthFirst = new DateTime(e.Year, e.Month, 1);
+                    periodEnd = endMonthFirst.AddMonths(1);
+                }
+
+                // Load transactions with payments
+                var payments = await _repository.GetAllAsync();
+
+                // Filter transactions by type (if provided), then flatten payments and filter by period
+                var filteredPayments = payments.AsEnumerable();
+                if (type.HasValue)
+                {
+                    filteredPayments = filteredPayments.Where(t => t.Type == type.Value);
+                }
+
+                var paymentDataForCharts = filteredPayments
+                    .Select(p => new
+                    {
+                        Category = string.IsNullOrWhiteSpace(p.Category) ? "" : p.Category,
+                        Price = p.Price,
+                        Date = p.Date.ToUniversalTime(),
+                    })
+                    .Where(p => p.Date >= periodStart && p.Date < periodEnd)
+                    .ToList();
+
+                // Group by category and sum prices
+                var grouped = paymentDataForCharts
+                    .GroupBy(p => p.Category)
+                    .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Price) })
+                    .OrderByDescending(x => x.Total)
+                    .ToList();
+
+                // Build json object with category => totalPrice
+                var response = new JsonObject();
+                foreach (var g in grouped)
+                {
+                    // use empty string when category is null
+                    response[g.Category ?? string.Empty] = JsonValue.Create(g.Total);
+                }
+
+                result.Data = response;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+                result.Message = "Pagamentos agrupadas por categoria geradas com sucesso.";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Parcelas de Transação na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de Pagamentos na base de dados. Erro: {ex.Message}";
             }
 
             return result;

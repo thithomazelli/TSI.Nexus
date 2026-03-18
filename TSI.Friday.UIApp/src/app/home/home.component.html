@@ -28,25 +28,25 @@
       [@cardCollapse]="showFilters ? 'open' : 'closed'"
       class="home-filters-animated"
     >
-      <div class="row mb-2 justify-content-end" *ngIf="showFilters">
-        <div class="col-auto">
-          <div
-            class="d-flex gap-2 flex-wrap align-items-center justify-content-end"
-          >
-            <app-date-field
-              [(ngModel)]="filterStartDate"
-              label="Data início"
-              class="date-filter-area"
-            ></app-date-field>
-            <app-date-field
-              [(ngModel)]="filterEndDate"
-              label="Data fim"
-              class="date-filter-area"
-            ></app-date-field>
-            <button class="btn btn-secondary" (click)="clearFilters()">
-              Limpar
-            </button>
-          </div>
+      <div class="row mb-2 justify-content-end">
+        <div class="col-12 col-md-auto mb-2 mb-md-0">
+          <app-date-field
+            [(ngModel)]="filterStartDate"
+            label="Data início"
+            class="date-filter-area w-100"
+          ></app-date-field>
+        </div>
+        <div class="col-12 col-md-auto mb-2 mb-md-0">
+          <app-date-field
+            [(ngModel)]="filterEndDate"
+            label="Data fim"
+            class="date-filter-area w-100"
+          ></app-date-field>
+        </div>
+        <div class="col-12 col-md-auto d-flex align-items-end">
+          <button class="btn btn-secondary w-100" (click)="clearFilters()">
+            Limpar
+          </button>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
           [title]="'Saída'"
           [titleLayout]="'text-danger'"
           [iconLayout]="'bi bi-arrow-down-circle-fill text-danger ms-2'"
-          [transactionType]="TransactionType.Outgoing"
+          [paymentType]="PaymentType.Outgoing"
           [startDate]="filterStartDate"
           [endDate]="filterEndDate"
         ></app-pie-chart>

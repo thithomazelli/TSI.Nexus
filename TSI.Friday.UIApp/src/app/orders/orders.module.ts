@@ -16,7 +16,7 @@ import { OrderProductsModule } from '../order-products/order-products.module';
 import { OrderProductsSharedModule } from '../order-products/order-products-shared.module';
 
 @NgModule({
-  declarations: [OrdersComponent, OrderDetailsPageComponent],
+  declarations: [OrderDetailsPageComponent],
   imports: [
     OrdersSharedModule,
     OrdersRoutingModule,

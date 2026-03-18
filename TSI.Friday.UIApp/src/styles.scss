@@ -1,3 +1,16 @@
+@media print {
+  .no-print,
+  .btn-print,
+  .btn-generate-pdf {
+    display: none !important;
+  }
+}
+
+// Oculta elementos no PDF (usado em conjunto com generatePDF)
+.pdf-hide {
+  display: none !important;
+}
+
 /* Estilo para área agrupada de filtros (tipo fieldset/tab visual) */
 .filter-group-box {
   border: 1px solid #ced4da;
@@ -199,8 +212,4 @@ mat-calendar {
 
 .swal-btn {
   min-width: 100px;
-}
-
-.date-filter-area {
-  width: 150px;
 }

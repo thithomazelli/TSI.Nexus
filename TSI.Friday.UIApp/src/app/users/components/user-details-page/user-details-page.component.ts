@@ -60,6 +60,7 @@ export class UserDetailsPageComponent {
             response.status,
             response.message,
           );
+          this.data = response.data;
         });
     } else {
       this.apiService

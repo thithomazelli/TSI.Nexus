@@ -22,8 +22,8 @@ import {
   ModalService,
   CurrencyService,
   OrderProduct,
-  TransactionType,
-  TransactionCondition,
+  PaymentType,
+  PaymentCondition,
   PaymentMethod,
   PaymentStatus,
   Transaction,
@@ -195,10 +195,19 @@ export class OrderFormComponent
       }
     }
 
+    // Garante que o id da transação seja preservado
+    if (formValue.transaction && this.data?.transaction?.id) {
+      formValue.transaction.id = this.data.transaction.id;
+    }
+
     Object.assign(this.data!, formValue);
 
-    if (this.canDisplayTransactionForm && this.data?.transaction?.id == null) {
-      delete this.data!.transaction!.id;
+    if (
+      this.canDisplayTransactionForm &&
+      this.data?.transaction &&
+      this.data.transaction.id == null
+    ) {
+      delete this.data.transaction.id;
     }
 
     this.save.emit(this.data!);
@@ -264,6 +273,7 @@ export class OrderFormComponent
         { value: '', disabled: this.data?.businessPartnerId != null },
       ],
       description: [''],
+      date: [new Date(), Validators.required],
       status: [OrderStatus.Open, Validators.required],
       price: [{ value: 0, disabled: true }],
       priceFormatted: [{ value: 0, disabled: true }],
@@ -319,14 +329,14 @@ export class OrderFormComponent
     if (!this.form.contains('transaction')) {
       const transactionGroup = this.formBuilder.group({
         id: [null],
-        type: [TransactionType.Incoming],
+        type: [PaymentType.Incoming],
         date: [new Date(), Validators.required],
         method: [PaymentMethod.Cash, Validators.required],
         status: [PaymentStatus.Pending, Validators.required],
         category: ['Recebimentos'],
         condition: [
           {
-            value: TransactionCondition.FullPayment,
+            value: PaymentCondition.FullPayment,
             disabled: this.isEdit ? true : false,
           },
         ],
@@ -337,9 +347,20 @@ export class OrderFormComponent
           },
           Validators.required,
         ],
-        price: [0, [Validators.min(0)]],
-        pricePerInstallment: [0, [Validators.min(0)]],
-        pricePerInstallmentFormatted: [{ value: 0, disabled: true }],
+        paymentTotalPrice: [0, [Validators.min(0)]],
+        paymentTotalPriceFormatted: [{ value: 0, disabled: true }],
+
+        totalOfExpenses: [
+          {
+            value: 0,
+            disabled: this.isEdit ? true : false,
+          },
+          Validators.required,
+        ],
+        expenseTotalPrice: [0, [Validators.min(0)]],
+        expenseTotalPriceFormatted: [
+          { value: 0, disabled: this.isEdit ? true : false },
+        ],
       });
       this.form.addControl('transaction', transactionGroup);
     }
@@ -347,7 +368,7 @@ export class OrderFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      // Ensure price and totalPrice are never undefined or null
+      // Garante que o id da transação não seja perdido
       const patch = {
         ...this.data,
         priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
@@ -356,8 +377,8 @@ export class OrderFormComponent
         ),
         transaction: {
           ...this.data.transaction,
-          totalOfPayments: this.data.transaction?.totalOfPayments || 1,
-          pricePerInstallmentFormatted: this.currencyService.formatCurrencyBRL(
+          id: this.data.transaction?.id ?? null,
+          paymentTotalPriceFormatted: this.currencyService.formatCurrencyBRL(
             (this.data.totalPrice ?? 0) /
               (this.data.transaction?.totalOfPayments || 1),
           ),
@@ -435,11 +456,11 @@ export class OrderFormComponent
     const transactionGroup = this.form.get('transaction') as FormGroup | null;
     if (transactionGroup) {
       const transactions = transactionGroup.get('totalOfPayments')?.value || 1;
-      const pricePerInstallment = total / (transactions > 0 ? transactions : 1);
+      const pricePerPayment = total / (transactions > 0 ? transactions : 1);
       transactionGroup.get('price')?.setValue(total);
       transactionGroup
-        .get('pricePerInstallmentFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(pricePerInstallment));
+        .get('pricePerPaymentFormatted')
+        ?.setValue(this.currencyService.formatCurrencyBRL(pricePerPayment));
     }
   }
 

@@ -1,0 +1,342 @@
+<div id="print-section">
+  <app-header
+    title="Relatórios"
+    [navigationMenus]="[
+      { label: 'Home', link: '/home' },
+      { label: 'Relatórios', link: '' },
+    ]"
+  ></app-header>
+
+  <div class="app-content">
+    <div class="row g-1 mb-2 flex-column flex-md-row">
+      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0">
+        <app-date-field
+          [(ngModel)]="filterStartDate"
+          (ngModelChange)="applyFilters()"
+          label="Início"
+          class="w-100 p-0"
+        ></app-date-field>
+      </div>
+      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0 ms-md-1">
+        <app-date-field
+          [(ngModel)]="filterEndDate"
+          (ngModelChange)="applyFilters()"
+          label="Fim"
+          class="w-100 p-0"
+        ></app-date-field>
+      </div>
+      <!-- Status filter: full width on mobile, auto on desktop -->
+      <div class="col-12 col-md-auto d-flex align-items-end mb-2 mb-md-0 p-0">
+        <div class="filter-group-box position-relative w-100 w-md-auto ms-md-1">
+          <span class="filter-group-label">Status</span>
+          <div class="d-flex flex-wrap align-items-center pt-2 gap-2">
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Approved"
+                (change)="applyFilters()"
+              />
+              Pago
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Pending"
+                (change)="applyFilters()"
+              />
+              Em Aberto
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Delayed"
+                (change)="applyFilters()"
+              />
+              Atrasado
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- Tipo filter: full width on mobile, auto on desktop -->
+      <div class="col-12 col-md-auto d-flex align-items-end mb-2 mb-md-0 p-0">
+        <div class="filter-group-box position-relative w-100 w-md-auto ms-md-1">
+          <span class="filter-group-label">Tipo</span>
+          <div class="d-flex flex-wrap align-items-center pt-2 gap-2">
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterType.Incoming"
+                (change)="applyFilters()"
+              />
+              Entrada
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterType.Outgoing"
+                (change)="applyFilters()"
+              />
+              Saída
+            </label>
+          </div>
+        </div>
+      </div>
+      <!-- Limpar button: own row on mobile, inline on desktop -->
+      <div class="col-12 col-md-auto d-flex align-items-center p-0">
+        <button
+          class="btn btn-secondary w-100 mt-2 mt-md-0 ms-md-1 no-print"
+          (click)="clearFilters()"
+        >
+          Limpar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="callout callout-info no-print">
+              <h6>
+                <i class="fas fa-info"></i> Dica: use os botões de impressão na
+                parte inferior para imprimir o relatório.
+              </h6>
+            </div>
+
+            <!-- Main content -->
+            <div class="invoice p-3 mb-3">
+              <!-- Table row -->
+              <div class="row">
+                <div class="col-12 table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Pedido</th>
+                        <th>Cliente / Fornecedor</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let payment of filteredData">
+                        <td>
+                          <ng-container
+                            *ngIf="payment.orderNumber; else noOrder"
+                          >
+                            <a [routerLink]="['/orders', payment.orderId]">{{
+                              payment.orderNumber
+                            }}</a>
+                          </ng-container>
+                          <ng-template #noOrder>N/A</ng-template>
+                        </td>
+                        <td>
+                          <ng-container
+                            *ngIf="
+                              payment.businessPartnerType === 'Client';
+                              else supplierOrNone
+                            "
+                          >
+                            <a
+                              [routerLink]="[
+                                '/clients',
+                                payment.businessPartnerId,
+                              ]"
+                            >
+                              {{ payment.businessPartnerName }}
+                            </a>
+                          </ng-container>
+                          <ng-template #supplierOrNone>
+                            <ng-container
+                              *ngIf="
+                                payment.businessPartnerType === 'Supplier';
+                                else noPartnerLink
+                              "
+                            >
+                              <a
+                                [routerLink]="[
+                                  '/suppliers',
+                                  payment.businessPartnerId,
+                                ]"
+                              >
+                                {{ payment.businessPartnerName }}
+                              </a>
+                            </ng-container>
+                            <ng-template #noPartnerLink>
+                              {{ payment.businessPartnerName }}
+                            </ng-template>
+                          </ng-template>
+                        </td>
+                        <td>
+                          <a
+                            href="#"
+                            (click)="
+                              showPaymentDetails(payment);
+                              $event.preventDefault()
+                            "
+                          >
+                            {{ payment.description }}
+                          </a>
+                        </td>
+                        <td>
+                          <span
+                            class="badge bg-{{
+                              getStatusColor(payment.status)
+                            }}"
+                          >
+                            {{ getStatusLabel(payment.status) }}
+                          </span>
+                        </td>
+                        <td>{{ payment.date | date: "dd/MM/yyyy" }}</td>
+                        <td>
+                          <ng-container *ngIf="payment.type === 'Incoming'">
+                            <span class="me-1"
+                              ><i
+                                class="bi bi-arrow-up-circle-fill text-success"
+                              ></i
+                            ></span>
+                          </ng-container>
+                          <ng-container *ngIf="payment.type === 'Outgoing'">
+                            <span class="me-1"
+                              ><i
+                                class="bi bi-arrow-down-circle-fill text-danger"
+                              ></i
+                            ></span>
+                          </ng-container>
+                          {{ getTypeLabel(payment.type) }}
+                        </td>
+                        <td>
+                          <ng-container
+                            *ngIf="
+                              payment.type === 'Incoming' &&
+                              (payment?.price ?? 0) > 0
+                            "
+                          >
+                            <span class="fw-bold text-success"
+                              >+{{ payment.price | currency: "BRL" }}</span
+                            >
+                          </ng-container>
+                          <ng-container
+                            *ngIf="
+                              payment.type === 'Outgoing' &&
+                              (payment?.price ?? 0) > 0
+                            "
+                          >
+                            <span class="fw-bold text-danger"
+                              >-{{ payment.price | currency: "BRL" }}</span
+                            >
+                          </ng-container>
+                          <ng-container
+                            *ngIf="
+                              !(
+                                payment.type === 'Incoming' &&
+                                (payment?.price ?? 0) > 0
+                              ) &&
+                              !(
+                                payment.type === 'Outgoing' &&
+                                (payment?.price ?? 0) > 0
+                              )
+                            "
+                          >
+                            {{ payment.price | currency: "BRL" }}
+                          </ng-container>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <!-- /.col -->
+              </div>
+              <!-- /.row -->
+
+              <div class="row">
+                <!-- accepted payments column -->
+                <div class="col-4 col-md-8"></div>
+                <!-- /.col -->
+                <div class="col-8 col-md-4">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <tbody>
+                        <tr>
+                          <th class="col-8">Total Entrada:</th>
+                          <td>
+                            <span class="fw-bold text-success"
+                              >+{{ getTotalIncoming() | currency: "BRL" }}</span
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <th class="col-8">Total Saída:</th>
+                          <td>
+                            <span class="fw-bold text-danger"
+                              >-{{ getTotalOutgoing() | currency: "BRL" }}</span
+                            >
+                          </td>
+                        </tr>
+                        <tr>
+                          <th class="col-8">Total:</th>
+                          <td>
+                            <ng-container *ngIf="getTotal() > 0">
+                              <span class="fw-bold text-success"
+                                >+{{ getTotal() | currency: "BRL" }}</span
+                              >
+                            </ng-container>
+                            <ng-container *ngIf="getTotal() < 0">
+                              <span class="fw-bold text-danger">{{
+                                getTotal() | currency: "BRL"
+                              }}</span>
+                            </ng-container>
+                            <ng-container *ngIf="getTotal() === 0">
+                              <span>{{ getTotal() | currency: "BRL" }}</span>
+                            </ng-container>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <!-- /.col -->
+              </div>
+              <!-- /.row -->
+
+              <!-- this row will not appear when printing -->
+
+              <div class="row no-print">
+                <div class="col-12 d-flex justify-content-end gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-default btn-print-border"
+                    (click)="printSection()"
+                  >
+                    <i class="fas fa-print"></i> Imprimir
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="generatePDF()"
+                  >
+                    <i class="fas fa-download"></i> Gerar PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- /.invoice -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+</div>

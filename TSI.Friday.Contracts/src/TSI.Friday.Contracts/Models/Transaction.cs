@@ -7,17 +7,16 @@ namespace TSI.Friday.Contracts.Models
 {
     public class Transaction : BaseModel
     {
-        public TransactionType Type { get; set; }
-
         public DateTime Date { get; set; }
-
-        public string Category { get; set; }
 
         public string Description { get; set; }
 
-        public TransactionCondition Condition { get; set; }
+        // Payments collection (persisted)
+        public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-        public ICollection<Payment> Payments { get; set; } = [];
+        // Status of the transaction computed from its payments - do not persist to DB
+        [NotMapped]
+        public PaymentStatus Status { get; set; }
 
         public Guid? OrderId { get; set; }
 

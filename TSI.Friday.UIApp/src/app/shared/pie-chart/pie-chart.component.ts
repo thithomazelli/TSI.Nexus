@@ -1,11 +1,6 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
-import {
-  ApiService,
-  ApiType,
-  TransactionType,
-  WebApiResponse,
-} from '@friday/core';
+import { ApiService, ApiType, PaymentType, WebApiResponse } from '@friday/core';
 
 @Component({
   selector: 'app-pie-chart',
@@ -25,7 +20,7 @@ export class PieChartComponent implements OnInit, OnChanges {
   iconLayout: string = '';
 
   @Input()
-  transactionType?: TransactionType | null = null;
+  paymentType?: PaymentType | null = null;
 
   @Input()
   startDate: Date | null = null;
@@ -144,11 +139,11 @@ export class PieChartComponent implements OnInit, OnChanges {
   }
 
   private getEndPoint(): string {
-    let url = `${ApiType.Transactions}/GetTransactionsGroupByCategory`;
+    let url = `${ApiType.Payments}/GetPaymentsGroupByCategory`;
     const endPoint: string[] = [];
 
-    if (this.transactionType) {
-      endPoint.push(`type=${encodeURIComponent(this.transactionType)}`);
+    if (this.paymentType) {
+      endPoint.push(`type=${encodeURIComponent(this.paymentType)}`);
     }
 
     if (this.startDate) {

@@ -36,8 +36,9 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task DashboardService_GetInfoCardsAsync_ShouldReturnExpectedCards()
         {
             // Arrange
+            var days = 30;
             var today = DateTime.UtcNow.Date;
-            var from = today.AddDays(-30);
+            var from = today.AddDays(-days + 1);
 
             var orders = new List<Order>
             {
@@ -114,7 +115,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(delayedItems.Count);
 
             // Act
-            var response = await _service.GetInfoCardsAsync();
+            var response = await _service.GetInfoCardsAsync(days);
 
             // Assert
             response.Should().NotBeNull();
@@ -124,7 +125,9 @@ namespace TSI.Friday.Services.Tests.Services
             cards.Should().HaveCount(4);
 
             // Orders sum
-            var ordersCard = cards.FirstOrDefault(c => c.Title.Contains("Orders"));
+            var ordersCard = cards.FirstOrDefault(c =>
+                c.Title.Contains("Novos Pedidos") || c.Title.Contains("Orders")
+            );
             ordersCard.Should().NotBeNull();
             ordersCard
                 .Value.Should()
@@ -155,7 +158,9 @@ namespace TSI.Friday.Services.Tests.Services
             waitingCard.Value.Should().Be(pendingPct.ToString() + "%");
 
             // Delayed items count
-            var delayedCard = cards.FirstOrDefault(c => c.Title.Contains("Itens Atrasados"));
+            var delayedCard = cards.FirstOrDefault(c =>
+                c.Title.Contains("Devoluções") || c.Title.Contains("Itens Atrasados")
+            );
             delayedCard.Should().NotBeNull();
             delayedCard.Value.Should().Be(delayedItems.Count.ToString());
 

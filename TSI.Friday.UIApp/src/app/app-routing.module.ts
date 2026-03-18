@@ -61,6 +61,12 @@ const routes: Routes = [
       import('./products/products.module').then((m) => m.ProductsModule),
   },
   {
+    path: 'reports',
+    canActivate: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./reports/reports.module').then((m) => m.ReportsModule),
+  },
+  {
     path: 'suppliers',
     canActivate: [AuthorizationGuard],
     loadChildren: () =>

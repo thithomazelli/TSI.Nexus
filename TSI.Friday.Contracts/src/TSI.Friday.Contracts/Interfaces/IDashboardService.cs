@@ -7,6 +7,6 @@ namespace TSI.Friday.Contracts.Interfaces
 {
     public interface IDashboardService
     {
-        Task<WebApiResponse<IEnumerable<DashboardCardDto>>> GetInfoCardsAsync();
+        Task<WebApiResponse<IEnumerable<DashboardCardDto>>> GetInfoCardsAsync(int days);
     }
 }

@@ -121,7 +121,7 @@ export class AreaChartComponent implements OnInit, OnChanges {
   }
 
   private getEndPoint(): string {
-    let url = `${ApiType.Payment}/GetPaymentsHistory`;
+    let url = `${ApiType.Payments}/GetPaymentsHistory`;
     const endPoint: string[] = [];
 
     if (this.startDate) {
