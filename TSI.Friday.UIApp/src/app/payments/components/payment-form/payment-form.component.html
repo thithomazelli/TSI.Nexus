@@ -44,29 +44,29 @@
               <div class="input-group-text"><i class="bi bi-building"></i></div>
             </div>
           </div>
-
-          <div class="col-12">
-            <div class="input-group">
-              <div class="form-floating">
-                <app-link-field
-                  [placeHolder]="'Transação'"
-                  [text]="form.get('transactionDescription')?.value || 'N/A'"
-                  [linkUrl]="
-                    form.get('transactionDescription')?.value
-                      ? ['/transactions', form.get('transactionId')?.value]
-                      : []
-                  "
-                >
-                </app-link-field>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-cash-stack"></i>
-              </div>
-            </div>
-          </div>
         </ng-container>
 
-        <div class="col-md-6">
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating">
+              <app-link-field
+                [placeHolder]="'Transação'"
+                [text]="form.get('transactionDescription')?.value || 'N/A'"
+                [linkUrl]="
+                  form.get('transactionDescription')?.value
+                    ? ['/transactions', form.get('transactionId')?.value]
+                    : []
+                "
+              >
+              </app-link-field>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-cash-stack"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
           <div class="input-group">
             <div class="form-floating flex-fill select-floating">
               <select
@@ -86,6 +86,22 @@
             <div class="input-group-text">
               <i class="bi bi-credit-card-2-front"></i>
             </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="description"
+                type="text"
+                placeholder="Descrição"
+                class="form-control"
+                id="description"
+              />
+              <label for="description">Descrição</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-card-text"></i></div>
           </div>
         </div>
 
@@ -173,27 +189,55 @@
         </div>
 
         <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select
+                formControlName="condition"
+                class="form-select"
+                id="condition"
+                [class.is-invalid]="isInvalid('condition')"
+                [class.is-valid]="isValid('condition')"
+              >
+                <option value="" disabled selected>Condição</option>
+                @for (option of conditionOptions; track option) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              <label for="condition">Condição</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-calendar2-week"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select
+                formControlName="category"
+                class="form-select"
+                id="category"
+                [class.is-invalid]="isInvalid('category')"
+                [class.is-valid]="isValid('category')"
+              >
+                <option value="" disabled selected>Categoria</option>
+                @for (option of categoryOptions; track option) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              <label for="category">Categoria</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-tags"></i></div>
+          </div>
+        </div>
+
+        <div class="col-6">
           <app-date-field
             formControlName="date"
             [label]="'Data Pagamento'"
             [isDisabled]="data?.status === 'Approved'"
           ></app-date-field>
-        </div>
-
-        <div class="col-12">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="description"
-                type="text"
-                placeholder="Descrição"
-                class="form-control"
-                id="description"
-              />
-              <label for="description">Descrição</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-card-text"></i></div>
-          </div>
         </div>
 
         <div class="col-md-6">
@@ -223,13 +267,13 @@
                   type="number"
                   min="1"
                   step="1"
-                  placeholder="Total de parcelas"
+                  placeholder="Total de pagamentos"
                   class="form-control"
                   id="totalOfPayments"
                   [class.is-invalid]="isInvalid('totalOfPayments')"
                   [class.is-valid]="isValid('totalOfPayments')"
                 />
-                <label for="totalOfPayments">Total de parcelas</label>
+                <label for="totalOfPayments">Total de pagamentos</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-list-ol"></i>
@@ -242,13 +286,13 @@
                 <input
                   formControlName="priceFormatted"
                   type="text"
-                  placeholder="Valor por Parcela"
+                  placeholder="Valor"
                   class="form-control"
                   [class.is-invalid]="isInvalid('priceFormatted')"
                   [class.is-valid]="isValid('priceFormatted')"
                   (blur)="onCurrencyBlur('price')"
                 />
-                <label for="priceFormatted">Valor por Parcela</label>
+                <label for="priceFormatted">Valor</label>
               </div>
               <div class="input-group-text"><i class="bi bi-cash"></i></div>
             </div>
@@ -260,11 +304,7 @@
       <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
         Cancelar
       </button>
-      <button
-        type="submit"
-        class="btn btn-success"
-        [disabled]="form.invalid || data?.status === 'Approved'"
-      >
+      <button type="submit" class="btn btn-success" [disabled]="form.invalid">
         {{ isEdit ? "Salvar" : "Adicionar" }}
       </button>
     </div>

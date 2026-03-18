@@ -1,0 +1,10 @@
+.title-area {
+  top: -0.9em;
+  left: 1.2em;
+  font-size: 0.95em;
+  color: #495057;
+  background-color: rgba(
+    var(--bs-tertiary-bg-rgb),
+    var(--bs-bg-opacity)
+  ) !important;
+}

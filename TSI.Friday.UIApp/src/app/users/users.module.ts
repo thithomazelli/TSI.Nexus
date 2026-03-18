@@ -8,7 +8,6 @@ import { UserDetailsPageComponent } from './components/user-details-page/user-de
 
 import { UsersRoutingModule } from './users-routing.module';
 import { SharedModule } from '../shared/shared.module';
-import { ResetPasswordComponent } from '../account/reset-password/reset-password.component';
 import { AccountModule } from '../account/account.module';
 
 @NgModule({

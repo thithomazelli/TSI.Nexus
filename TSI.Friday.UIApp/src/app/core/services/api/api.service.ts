@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -19,7 +19,7 @@ export class ApiService {
   post<T>(apiUrl: string, model: any): Observable<T> {
     return this.httpClient.post<T>(
       `${environment.appUrl}/api/${apiUrl}`,
-      model
+      model,
     );
   }
 

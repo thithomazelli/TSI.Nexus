@@ -40,14 +40,9 @@ export class TransactionsComponent {
     Outgoing: 'Saída',
   };
 
-  typeIconMap: { [key: string]: string } = {
-    Incoming: '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>',
-    Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
-  };
-
   conditionMap: { [key: string]: string } = {
     FullPayment: 'À vista',
-    InInstallments: 'Parcelado',
+    InPayments: 'Parcelado',
   };
 
   statusMap: { [key: string]: string } = {
@@ -194,34 +189,33 @@ export class TransactionsComponent {
         },
       },
       {
-        field: 'type',
-        headerName: 'Tipo',
-        sortable: true,
-        filter: true,
-        maxWidth: 120,
-        resizable: true,
-        filterValueGetter: (params: ValueGetterParams) => {
-          return this.getTypeLabel(params.data?.type);
-        },
-        cellRenderer: (params: ValueFormatterParams) => {
-          const type = params.value ?? '';
-          return this.getTypeIcon(type) + this.getTypeLabel(type);
-        },
-      },
-      {
-        field: 'price',
-        headerName: 'Valor',
+        field: 'paymentTotalPrice',
+        headerName: 'Pagamentos',
         sortable: true,
         filter: true,
         maxWidth: 120,
         cellClass: (params: ValueFormatterParams) => {
-          const type = params.data?.type;
-          if (type === 'Incoming') {
-            return 'text-success'; // verde escuro
-          } else if (type === 'Outgoing') {
-            return 'text-danger'; // vermelho
-          }
-          return '';
+          return params.value > 0 ? 'text-success' : '';
+        },
+        valueFormatter: (params: ValueFormatterParams): string => {
+          const v = params.value;
+          if (v == null || v === '') return '';
+          const n = Number(v);
+          if (Number.isNaN(n)) return String(v);
+          return n.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          });
+        },
+      },
+      {
+        field: 'expenseTotalPrice',
+        headerName: 'Despesas',
+        sortable: true,
+        filter: true,
+        maxWidth: 120,
+        cellClass: (params: ValueFormatterParams) => {
+          return params.value > 0 ? 'text-danger' : '';
         },
         valueFormatter: (params: ValueFormatterParams): string => {
           const v = params.value;
@@ -336,14 +330,6 @@ export class TransactionsComponent {
         this.rowData = response.data ?? [];
         if (callback) callback();
       });
-  }
-
-  private getTypeLabel(type: string): string {
-    return this.typeMap[type] ?? type ?? '';
-  }
-
-  private getTypeIcon(type: string): string {
-    return this.typeIconMap[type] ?? '';
   }
 
   private getConditionLabel(condition: string): string {

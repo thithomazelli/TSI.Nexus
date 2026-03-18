@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ApiService, DashboardCard, WebApiResponse } from '@friday/core';
@@ -6,13 +6,21 @@ import { ApiType } from '../../core/enums/api-type.enum';
 
 @Component({
   selector: 'app-info-cards',
-  standalone: false,
   templateUrl: './info-cards.component.html',
   styleUrl: './info-cards.component.scss',
+  standalone: false,
 })
 export class InfoCardsComponent implements OnInit {
   loading = true;
   cards: DashboardCard[] = [];
+  showFilters = false;
+
+  periodOptions = [
+    { label: '30 dias', value: 30 },
+    { label: '60 dias', value: 60 },
+    { label: '90 dias', value: 90 },
+  ];
+  selectedPeriod = 30;
 
   private _baseEndPoint = ApiType.Dashboard;
   // Mapeamento de titles exatos para SVGs
@@ -31,14 +39,36 @@ export class InfoCardsComponent implements OnInit {
     private apiService: ApiService,
     private sanitizer: DomSanitizer,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
+
+  ngOnInit(): void {
+    this.loadCards(this.selectedPeriod);
+  }
+
+  onPeriodChange(event: Event) {
+    // Suporte tanto para select quanto radio
+    const input = event.target as HTMLInputElement | HTMLSelectElement;
+    const value = +input.value;
+    if (this.selectedPeriod !== value) {
+      this.selectedPeriod = value;
+      // Força atualização do Angular antes de buscar os dados
+      this.cdr.detectChanges();
+      this.loadCards(this.selectedPeriod);
+    }
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
   // Monta rota e params para cada card
   getCardLink(card: DashboardCard): { route: any[]; queryParams?: any } {
-    // Backend usa datas UTC, startDate = hoje-30, endDate = hoje (ambos 00:00 UTC)
+    // Backend usa datas UTC, startDate = hoje-period, endDate = hoje (ambos 00:00 UTC)
     const now = new Date();
     const from = new Date(
       Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
-        30 * 24 * 60 * 60 * 1000,
+        this.selectedPeriod * 24 * 60 * 60 * 1000,
     );
     const startDate = from.toISOString().slice(0, 10); // yyyy-MM-dd
     const endDate = new Date(
@@ -70,7 +100,7 @@ export class InfoCardsComponent implements OnInit {
         };
       case 'Devoluções em Atraso':
         return {
-          route: ['/orderProducts'],
+          route: ['/order-products'],
           queryParams: { status: 'Delayed' },
         };
       default:
@@ -78,16 +108,11 @@ export class InfoCardsComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.loadCards();
-  }
-
-  loadCards(): void {
-    this.loading = true;
+  loadCards(period: number = 30): void {
     this.apiService
       .get<
         WebApiResponse<DashboardCard[]>
-      >(`${this._baseEndPoint}/getInfoCards`)
+      >(`${this._baseEndPoint}/getInfoCards/${period}`)
       .subscribe({
         next: (response: WebApiResponse<DashboardCard[]>) => {
           this.cards = response.data ?? [];
@@ -138,7 +163,7 @@ export class InfoCardsComponent implements OnInit {
     const title = card.title || '';
     let svg = this._iconMap[title];
     if (!svg) {
-      svg = `<svg class=\"small-box-icon\" fill=\"currentColor\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg>`;
+      svg = `<svg class=\"small-box-icon\" fill=\"currentColor\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg>`;
     }
     return this.sanitizer.bypassSecurityTrustHtml(svg);
   }

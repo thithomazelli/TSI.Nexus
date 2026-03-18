@@ -21,12 +21,12 @@ export class PaymentDetailsModalComponent {
   saved = new EventEmitter<void>();
 
   isEdit = false;
-  data?: Transaction | null = null;
+  data?: Payment | null = null;
   id: string | null = null;
   parentId: string | null = null;
   parentData: any;
 
-  private _baseEndPoint: ApiType = ApiType.Payment;
+  private _baseEndPoint: ApiType = ApiType.Payments;
 
   constructor(
     private apiService: ApiService,
@@ -44,12 +44,12 @@ export class PaymentDetailsModalComponent {
     }
   }
 
-  save(paymentInstallment: Payment): void {
+  save(paymentPayment: Payment): void {
     if (this.isEdit && this.id) {
       this.apiService
         .put<
           WebApiResponse<Payment>
-        >(`${this._baseEndPoint}/update`, paymentInstallment)
+        >(`${this._baseEndPoint}/update`, paymentPayment)
         .subscribe((response: WebApiResponse<Payment>) => {
           this.saved.emit();
           this.modalService.hideModal(this.dialogRef);
@@ -64,7 +64,7 @@ export class PaymentDetailsModalComponent {
       this.apiService
         .post<
           WebApiResponse<Payment>
-        >(`${this._baseEndPoint}/add`, paymentInstallment)
+        >(`${this._baseEndPoint}/add`, paymentPayment)
         .subscribe((response: WebApiResponse<Payment>) => {
           this.saved.emit();
           this.modalService.hideModal(this.dialogRef);

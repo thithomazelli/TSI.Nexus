@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import { ApiService, ApiType, ModalService, PhotoService } from '@friday/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-photo',

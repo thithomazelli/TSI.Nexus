@@ -23,7 +23,7 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
   payments: Payment[] = [];
   total: number = 0;
 
-  private _baseEndPoint = ApiType.Payment;
+  private _baseEndPoint = ApiType.Payments;
 
   private _statusIconMap: Record<PaymentStatus, string> = {
     [PaymentStatus.Delayed]: 'bi bi-exclamation-triangle-fill text-danger',

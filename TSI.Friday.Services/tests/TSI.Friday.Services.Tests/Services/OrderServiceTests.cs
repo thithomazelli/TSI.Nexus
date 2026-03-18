@@ -48,6 +48,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Pedido Teste1",
                     BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     BusinessPartnerName = "ORD",
+                    Transaction = new TransactionDto(),
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
                 },
                 new OrderDto
@@ -57,6 +58,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Pedido Teste2",
                     BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     BusinessPartnerName = "THG",
+                    Transaction = new TransactionDto(),
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
                 },
             };
@@ -94,6 +96,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                     OrderNumber = "ORD-00001",
                     Description = "Novo Pedido",
+                    Transaction = new TransactionDto(),
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
                 Status = ResponseStatus.Success,
@@ -151,8 +154,9 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Transaction,
-                        pi => pi.Transaction.Payments
+                        op => op.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
                     )
                 )
                 .ReturnsAsync(orderEntity);
@@ -174,8 +178,9 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Transaction,
-                        pi => pi.Transaction.Payments
+                        op => op.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
                     ),
                 Times.Once
             );
@@ -191,8 +196,9 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Transaction,
-                        pi => pi.Transaction.Payments
+                        op => op.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
                     )
                 )
                 .ReturnsAsync((Order)null);
@@ -214,8 +220,9 @@ namespace TSI.Friday.Services.Tests.Services
                     r.GetByIdAsync(
                         id,
                         o => o.BusinessPartner,
-                        p => p.Transaction,
-                        pi => pi.Transaction.Payments
+                        op => op.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
                     ),
                 Times.Once
             );
@@ -228,7 +235,16 @@ namespace TSI.Friday.Services.Tests.Services
             var ordersMock = _mapper.Map<IList<Order>>(_orderListMock);
             ordersMock[0].BusinessPartner = new Individual { Name = "ORD" };
             ordersMock[1].BusinessPartner = new Individual { Name = "THG" };
-            _repository.Setup(r => r.GetAllAsync(o => o.BusinessPartner)).ReturnsAsync(ordersMock);
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        o => o.BusinessPartner,
+                        o => o.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Payments
+                    )
+                )
+                .ReturnsAsync(ordersMock);
 
             var expected = new WebApiResponse<IEnumerable<OrderDto>>
             {
@@ -242,7 +258,16 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Assert
             expected.Should().BeEquivalentTo(result);
-            _repository.Verify(r => r.GetAllAsync(o => o.BusinessPartner), Times.Once);
+            _repository.Verify(
+                r =>
+                    r.GetAllAsync(
+                        o => o.BusinessPartner,
+                        o => o.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Payments
+                    ),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -258,15 +283,37 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             _repository.Setup(r => r.UpdateAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
-            _transactionService.Setup(t => t.Update(It.IsAny<TransactionDto>())).ReturnsAsync(new WebApiResponse<TransactionDto> { Status = ResponseStatus.Success, Data = orderDto.Transaction });
-            _orderProductRepository.Setup(r => r.ExecuteUpdateAsync(It.IsAny<Expression<Func<OrderProduct, bool>>>(), It.IsAny<Action<OrderProduct>>())).ReturnsAsync(1);
+            _transactionService
+                .Setup(t => t.Update(It.IsAny<TransactionDto>()))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto>
+                    {
+                        Status = ResponseStatus.Success,
+                        Data = orderDto.Transaction,
+                    }
+                );
+            _orderProductRepository
+                .Setup(r =>
+                    r.ExecuteUpdateAsync(
+                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
+                        It.IsAny<Action<OrderProduct>>()
+                    )
+                )
+                .ReturnsAsync(1);
 
             // Act
             var result = await _orderService.Update(orderDto);
 
             // Assert
             result.Status.Should().Be(ResponseStatus.Success);
-            _orderProductRepository.Verify(r => r.ExecuteUpdateAsync(It.IsAny<Expression<Func<OrderProduct, bool>>>(), It.IsAny<Action<OrderProduct>>()), Times.Once);
+            _orderProductRepository.Verify(
+                r =>
+                    r.ExecuteUpdateAsync(
+                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
+                        It.IsAny<Action<OrderProduct>>()
+                    ),
+                Times.Once
+            );
         }
     }
 }

@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { cardCollapseAnimation } from '../core/animations/card-collapse.animation';
-import { TransactionType } from '../core/enums/payment-type.enum';
+import { PaymentType } from '../core/enums/payment-type.enum';
 
 @Component({
   selector: 'app-home',
@@ -10,7 +10,7 @@ import { TransactionType } from '../core/enums/payment-type.enum';
   animations: [cardCollapseAnimation],
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
-  TransactionType = TransactionType;
+  PaymentType = PaymentType;
   showFilters = false;
   filterStartDate: Date | null = null;
   filterEndDate: Date | null = null;

@@ -59,6 +59,7 @@ export class ProductDetailsPageComponent {
             response.status,
             response.message,
           );
+          this.data = response.data;
         });
     } else {
       this.apiService
