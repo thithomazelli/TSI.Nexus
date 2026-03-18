@@ -397,6 +397,7 @@ export class OrderProductsFormComponent
   }
 
   submit(): void {
+    this.formSubmitted = true;
     if (this.form.valid) {
       this.save.emit(this.form.getRawValue());
     } else {
