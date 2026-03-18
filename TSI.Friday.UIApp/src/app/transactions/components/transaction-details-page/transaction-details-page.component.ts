@@ -6,7 +6,7 @@ import {
   NotificationService,
   PaymentStatus,
   Transaction,
-  TransactionType,
+  PaymentType,
   WebApiResponse,
 } from '@friday/core';
 
@@ -25,9 +25,9 @@ export class TransactionDetailsPageComponent {
   loading = false;
   activeTab: 'details' | 'payments' = 'details';
 
-  transactionTypeOptions: Record<TransactionType, string> = {
-    [TransactionType.Incoming]: 'Entrada',
-    [TransactionType.Outgoing]: 'Saída',
+  paymentTypeOptions: Record<PaymentType, string> = {
+    [PaymentType.Incoming]: 'Entrada',
+    [PaymentType.Outgoing]: 'Saída',
   };
 
   transactionStatusOptions: Record<PaymentStatus, string> = {
@@ -67,6 +67,7 @@ export class TransactionDetailsPageComponent {
             response.status,
             response.message,
           );
+          this.data = response.data;
         });
     } else {
       this.apiService
@@ -96,11 +97,11 @@ export class TransactionDetailsPageComponent {
     return this.transactionStatusOptions[this.data.status];
   }
 
-  getTransactionTypeLabel(): string {
+  getPaymentTypeLabel(): string {
     if (!this.data?.type || this.data?.type === undefined) {
       return '';
     }
-    return this.transactionTypeOptions[this.data.type];
+    return this.paymentTypeOptions[this.data.type];
   }
 
   private loadTransaction(id: string): void {

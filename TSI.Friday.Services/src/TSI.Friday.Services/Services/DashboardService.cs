@@ -28,20 +28,17 @@ namespace TSI.Friday.Services
             _logger = logger;
         }
 
-        public async Task<WebApiResponse<IEnumerable<DashboardCardDto>>> GetInfoCardsAsync()
+        public async Task<WebApiResponse<IEnumerable<DashboardCardDto>>> GetInfoCardsAsync(int days)
         {
             var result = new WebApiResponse<IEnumerable<DashboardCardDto>>();
             var cards = new List<DashboardCardDto>();
             try
             {
                 var nowUtc = DateTime.UtcNow;
-                var from = nowUtc.Date; // midnight UTC30 days ago
+                var from = nowUtc.Date.AddDays(-days + 1); // include today back 'days' days
 
-                //1. Sum of Orders created in last30 days (DB aggregation)
-                var ordersSum = await _orderRepo.SumAsync(
-                    o => o.CreateDate >= from,
-                    o => o.TotalPrice
-                );
+                //1. Sum of Orders created in last 'days' days (DB aggregation)
+                var ordersSum = await _orderRepo.SumAsync(o => o.Date >= from, o => o.TotalPrice);
                 cards.Add(
                     new DashboardCardDto
                     {
@@ -53,41 +50,43 @@ namespace TSI.Friday.Services
                 //2/3 payments approved vs total and pending/delayed vs total (DB aggregations)
                 // Only consider payments that belong to Incoming transactions for these percentages
                 var totalIncomingPayments = await _paymentRepo.SumAsync(
-                    p => p.Date >= from && p.Transaction != null && p.Transaction.Type == TransactionType.Incoming,
+                    p => p.Date >= from && p.Type == PaymentType.Incoming,
                     p => p.Price
                 );
                 var approvedIncomingSum = await _paymentRepo.SumAsync(
                     p =>
                         p.Date >= from
-                        && p.Transaction != null
-                        && p.Transaction.Type == TransactionType.Incoming
+                        && p.Type == PaymentType.Incoming
                         && p.Status == PaymentStatus.Approved,
                     p => p.Price
                 );
                 var pendingDelayedIncomingSum = await _paymentRepo.SumAsync(
                     p =>
                         p.Date >= from
-                        && p.Transaction != null
-                        && p.Transaction.Type == TransactionType.Incoming
+                        && p.Type == PaymentType.Incoming
                         && (p.Status == PaymentStatus.Pending || p.Status == PaymentStatus.Delayed),
                     p => p.Price
                 );
                 var approvedPct =
-                    totalIncomingPayments == 0 ? 0 : (decimal)100 * approvedIncomingSum / totalIncomingPayments;
+                    totalIncomingPayments == 0
+                        ? 0
+                        : (decimal)100 * approvedIncomingSum / totalIncomingPayments;
                 var pendingPct =
-                    totalIncomingPayments == 0 ? 0 : (decimal)100 * pendingDelayedIncomingSum / totalIncomingPayments;
-                cards.Add(
-                    new DashboardCardDto
-                    {
-                        Title = "Recebidos (%)",
-                        Value = Math.Round(approvedPct).ToString() + "%",
-                    }
-                );
+                    totalIncomingPayments == 0
+                        ? 0
+                        : (decimal)100 * pendingDelayedIncomingSum / totalIncomingPayments;
                 cards.Add(
                     new DashboardCardDto
                     {
                         Title = "Aguardando (%)",
                         Value = Math.Round(pendingPct).ToString() + "%",
+                    }
+                );
+                cards.Add(
+                    new DashboardCardDto
+                    {
+                        Title = "Recebidos (%)",
+                        Value = Math.Round(approvedPct).ToString() + "%",
                     }
                 );
 

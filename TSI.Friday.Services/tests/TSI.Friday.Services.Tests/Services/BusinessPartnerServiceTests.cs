@@ -170,7 +170,8 @@ namespace TSI.Friday.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     )
                 )
                 .ReturnsAsync(clientsMock);
@@ -187,7 +188,8 @@ namespace TSI.Friday.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     ),
                 Times.Once
             );
@@ -212,7 +214,8 @@ namespace TSI.Friday.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     )
                 )
                 .ReturnsAsync(suppliersMock);
@@ -229,7 +232,8 @@ namespace TSI.Friday.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     ),
                 Times.Once
             );
@@ -250,7 +254,8 @@ namespace TSI.Friday.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     )
                 )
                 .ReturnsAsync(new List<BusinessPartner>());
@@ -268,7 +273,8 @@ namespace TSI.Friday.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     ),
                 Times.Once
             );
@@ -290,7 +296,8 @@ namespace TSI.Friday.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     )
                 )
                 .ThrowsAsync(exception);
@@ -307,7 +314,8 @@ namespace TSI.Friday.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
-                        c => c.Addresses
+                        c => c.Addresses,
+                        t => t.Transactions
                     ),
                 Times.Once
             );

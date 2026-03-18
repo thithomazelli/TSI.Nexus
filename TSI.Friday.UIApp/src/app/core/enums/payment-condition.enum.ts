@@ -1,4 +1,4 @@
-export enum TransactionCondition {
+export enum PaymentCondition {
   FullPayment = 'FullPayment',
   InInstallments = 'InInstallments',
 }

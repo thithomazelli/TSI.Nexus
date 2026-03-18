@@ -1,6 +1,6 @@
 export const environment = {
   tokenRefreshIntervalSeconds: 300,
   production: true,
-  appUrl: '',
+  appUrl: 'https://bianchinegocios.com.br/cacambas',
   userKey: 'fridayAppUser',
 };

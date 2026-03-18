@@ -5,6 +5,7 @@ import {
   ApiService,
   ApiType,
   BusinessPartner,
+  BusinessPartnerType,
   WebApiResponse,
 } from '@friday/core';
 
@@ -17,24 +18,17 @@ export class BusinessPartnerService {
   constructor(private apiService: ApiService) {}
 
   getClients(forceRefresh = false): Observable<BusinessPartner[]> {
-    if (!this.loaded || forceRefresh) {
-      this.apiService
-        .get<WebApiResponse<BusinessPartner[]>>(
-          `${this._baseEndPoint}/getAllClients`,
-        )
-        .pipe(
-          tap((response) => {
-            this.businessPartners$.next(response.data);
-            this.loaded = true;
-          }),
-          catchError(() => {
-            this.businessPartners$.next([]);
-            return of([]);
-          }),
-        )
-        .subscribe();
-    }
-    return this.businessPartners$.asObservable();
+    return this.getAllBusinessPartnersByType(
+      BusinessPartnerType.Client,
+      forceRefresh,
+    );
+  }
+
+  getSuppliers(forceRefresh = false): Observable<BusinessPartner[]> {
+    return this.getAllBusinessPartnersByType(
+      BusinessPartnerType.Supplier,
+      forceRefresh,
+    );
   }
 
   refreshBusinessPartners(): void {
@@ -51,5 +45,29 @@ export class BusinessPartnerService {
       current.push(businessPartner);
     }
     this.businessPartners$.next([...current]);
+  }
+
+  private getAllBusinessPartnersByType(
+    type: BusinessPartnerType,
+    forceRefresh = false,
+  ): Observable<BusinessPartner[]> {
+    if (!this.loaded || forceRefresh) {
+      this.apiService
+        .get<WebApiResponse<BusinessPartner[]>>(
+          `${this._baseEndPoint}/getAll${type === BusinessPartnerType.Client ? 'Clients' : 'Suppliers'}`,
+        )
+        .pipe(
+          tap((response) => {
+            this.businessPartners$.next(response.data);
+            this.loaded = true;
+          }),
+          catchError(() => {
+            this.businessPartners$.next([]);
+            return of([]);
+          }),
+        )
+        .subscribe();
+    }
+    return this.businessPartners$.asObservable();
   }
 }

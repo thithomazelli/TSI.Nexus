@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
+using TSI.Friday.Services;
 
 namespace TSI.Friday.WebAPI.Controllers
 {
@@ -138,7 +140,10 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <param name="OrderId">Order id to be used in the search</param>
         [HttpGet]
         [Route("GetPaymentsHistory")]
-        public async Task<IActionResult> GetPaymentsHistory([FromQuery] DateTime? start = null, [FromQuery] DateTime? end = null)
+        public async Task<IActionResult> GetPaymentsHistory(
+            [FromQuery] DateTime? start = null,
+            [FromQuery] DateTime? end = null
+        )
         {
             var webApiResponse = await _paymentService.GetPaymentsHistory(start, end);
             return Ok(webApiResponse);
@@ -152,6 +157,24 @@ namespace TSI.Friday.WebAPI.Controllers
         public async Task<IActionResult> GetDelayed()
         {
             var webApiResponse = await _paymentService.FindDelayed();
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
+        /// Get transactions grouped by category summing payments for each category
+        /// </summary>
+        /// <param name="type">PaymentType to filter (optional)</param>
+        /// <param name="start">Optional start date (inclusive)</param>
+        /// <param name="end">Optional end date (inclusive)</param>
+        [HttpGet]
+        [Route("GetPaymentsGroupByCategory")]
+        public async Task<IActionResult> GetPaymentsGroupByCategory(
+            [FromQuery] PaymentType? type = null,
+            [FromQuery] DateTime? start = null,
+            [FromQuery] DateTime? end = null
+        )
+        {
+            var webApiResponse = await _paymentService.GetPaymentsGroupByCategory(type, start, end);
             return Ok(webApiResponse);
         }
     }

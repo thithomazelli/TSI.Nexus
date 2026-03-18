@@ -105,21 +105,9 @@ namespace TSI.Friday.WebAPI.Controllers
         [Route("GetByBusinessPartnerId/{businessPartnerId}")]
         public async Task<IActionResult> GetByBusinessPartnerId(Guid? businessPartnerId)
         {
-            var webApiResponse = await _transactionService.FindByBusinessPartnerId(businessPartnerId);
-            return Ok(webApiResponse);
-        }
-
-        /// <summary>
-        /// Get transactions grouped by category summing payments for each category
-        /// </summary>
-        /// <param name="type">TransactionType to filter (optional)</param>
-        /// <param name="start">Optional start date (inclusive)</param>
-        /// <param name="end">Optional end date (inclusive)</param>
-        [HttpGet]
-        [Route("GetTransactionsGroupByCategory")]
-        public async Task<IActionResult> GetTransactionsGroupByCategory([FromQuery] TransactionType? type = null, [FromQuery] DateTime? start = null, [FromQuery] DateTime? end = null)
-        {
-            var webApiResponse = await _transactionService.GetTransactionsGroupByCategory(type, start, end);
+            var webApiResponse = await _transactionService.FindByBusinessPartnerId(
+                businessPartnerId
+            );
             return Ok(webApiResponse);
         }
     }

@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   ApiService,
   ApiType,
+  Company,
+  Individual,
   ModalService,
   Order,
-  OrderStatus,
   ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
@@ -22,126 +23,18 @@ import { OrderDetailsModalComponent } from './components/order-details-modal/ord
   styleUrl: './orders.component.scss',
 })
 export class OrdersComponent {
+  @Input()
+  compact: boolean = false;
+
+  @Input()
+  entity: string | null = '';
+
+  @Input()
+  parentData: Individual | Company | null = null;
+
   baseEndPoint = ApiType.Orders;
   rowData: Order[] = [];
-  columnDefs: ColDef[] = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      sortable: true,
-      filter: true,
-      // minWidth: 80,
-      hide: true,
-    },
-    {
-      field: 'orderNumber',
-      headerName: 'Número do Pedido',
-      sortable: true,
-      filter: true,
-      width: 150,
-      resizable: true,
-      // minWidth: 150,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        // href="#" prevents full page reload; onCellClicked handles navigation
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-    {
-      field: 'businessPartnerName',
-      headerName: 'Nome do Cliente',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        // href="#" prevents full page reload; onCellClicked handles navigation
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-    {
-      field: 'description',
-      headerName: 'Descrição',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      width: 200,
-    },
-    {
-      field: 'totalPrice',
-      headerName: 'Valor Total',
-      sortable: true,
-      filter: true,
-      width: 120,
-      cellClass: 'text-start',
-      valueFormatter: (params: ValueFormatterParams): string => {
-        const v = params.value;
-        if (v == null || v === '') return '';
-        const n = Number(v);
-        if (Number.isNaN(n)) return String(v);
-        return n.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL',
-        });
-      },
-    },
-    {
-      field: 'createDate',
-      headerName: 'Data',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      minWidth: 160,
-      valueFormatter: (params: ValueFormatterParams) =>
-        this.formatDateBR(params.value),
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      width: 80,
-      cellRenderer: (params: ICellRendererParams) => {
-        const value = params.value;
-        let color = 'secondary';
-        // Importar OrderStatus corretamente no topo do arquivo se necessário
-        let label = value;
-        if (value === 'Closed') {
-          color = 'success';
-          label = 'Fechado';
-        } else if (value === 'Open') {
-          color = 'info';
-          label = 'Em Aberto';
-        } else if (value === 'WaitingPayment') {
-          color = 'warning';
-          label = 'Aguardando Pagamento';
-        }
-        return `<span class="badge bg-${color}">${label}</span>`;
-      },
-    },
-    {
-      headerName: 'Ações',
-      sortable: false,
-      filter: false,
-      maxWidth: 400,
-      resizable: true,
-      width: 280,
-      cellRenderer: () => {
-        return `
-          <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-eye" data-action="view"></i>
-          </button>
-          <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit" data-action="edit"></i>
-          </button>
-          <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash" data-action="delete"></i>
-          </button>
-        `;
-      },
-    },
-  ];
+  columnDefs: ColDef[] = [];
 
   filteredRowData: Order[] = [];
   filterStartDate: string | null = null;
@@ -161,6 +54,7 @@ export class OrdersComponent {
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
     this.getOrders(() => this.applyFilters());
+    this.initializeGrid();
   }
 
   refreshOrders(): void {
@@ -187,6 +81,16 @@ export class OrdersComponent {
   }
 
   onOpenModal(initialState: any) {
+    if (this.parentData != null) {
+      initialState = {
+        ...initialState,
+        data: <Order>{
+          businessPartnerId: this.parentData?.id,
+          businessPartnerName: this.parentData?.name,
+          orderProducts: [],
+        },
+      };
+    }
     const ref = this.modalService.showTemplateModal(
       OrderDetailsModalComponent,
       initialState,
@@ -245,9 +149,136 @@ export class OrdersComponent {
     this.filteredRowData = [...this.rowData];
   }
 
+  private initializeGrid(): void {
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        sortable: true,
+        filter: true,
+        // minWidth: 80,
+        hide: true,
+      },
+      {
+        field: 'orderNumber',
+        headerName: 'Número do Pedido',
+        sortable: true,
+        filter: true,
+        width: 150,
+        resizable: true,
+        // minWidth: 150,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          // href="#" prevents full page reload; onCellClicked handles navigation
+          return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'businessPartnerName',
+        headerName: 'Nome do Cliente',
+        sortable: true,
+        filter: true,
+        flex: 1,
+        hide: this.entity === 'BusinessPartner',
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          // href="#" prevents full page reload; onCellClicked handles navigation
+          return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'description',
+        headerName: 'Descrição',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        width: 200,
+      },
+      {
+        field: 'totalPrice',
+        headerName: 'Valor Total',
+        sortable: true,
+        filter: true,
+        width: 120,
+        cellClass: 'text-start',
+        valueFormatter: (params: ValueFormatterParams): string => {
+          const v = params.value;
+          if (v == null || v === '') return '';
+          const n = Number(v);
+          if (Number.isNaN(n)) return String(v);
+          return n.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          });
+        },
+      },
+      {
+        field: 'date',
+        headerName: 'Data',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        minWidth: 160,
+        valueFormatter: (params: ValueFormatterParams) =>
+          this.formatDateBR(params.value),
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        sortable: true,
+        filter: true,
+        flex: 2,
+        width: 80,
+        cellRenderer: (params: ICellRendererParams) => {
+          const value = params.value;
+          let color = 'secondary';
+          // Importar OrderStatus corretamente no topo do arquivo se necessário
+          let label = value;
+          if (value === 'Closed') {
+            color = 'success';
+            label = 'Fechado';
+          } else if (value === 'Open') {
+            color = 'info';
+            label = 'Em Aberto';
+          } else if (value === 'WaitingPayment') {
+            color = 'warning';
+            label = 'Aguardando Pagamento';
+          }
+          return `<span class="badge bg-${color}">${label}</span>`;
+        },
+      },
+      {
+        headerName: 'Ações',
+        sortable: false,
+        filter: false,
+        maxWidth: 400,
+        resizable: true,
+        width: 280,
+        cellRenderer: () => {
+          return `
+          <button class="btn btn-primary btn-sm" data-action="view">
+            <i class="fas fa-eye" data-action="view"></i>
+          </button>
+          <button class="btn btn-info btn-sm" data-action="edit">
+            <i class="fas fa-edit" data-action="edit"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" data-action="delete">
+            <i class="fas fa-trash" data-action="delete"></i>
+          </button>
+        `;
+        },
+      },
+    ];
+  }
+
   private getOrders(callback?: () => void): void {
+    const endpoint =
+      this.entity != ''
+        ? `${this.baseEndPoint}/getBy${this.entity}Id/${this.parentData?.id}`
+        : `${this.baseEndPoint}/getAll`;
+
     this.apiService
-      .get<WebApiResponse<Order[]>>(`${this.baseEndPoint}/getAll`)
+      .get<WebApiResponse<Order[]>>(endpoint)
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
         if (callback) callback();

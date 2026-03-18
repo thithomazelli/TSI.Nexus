@@ -19,7 +19,8 @@ import {
   Payment,
   PaymentStatus,
   PaymentMethod,
-  TransactionType,
+  PaymentType,
+  PaymentCondition,
 } from '@friday/core';
 
 import { Observable } from 'rxjs';
@@ -44,7 +45,7 @@ export class PaymentFormComponent
   parentData: Transaction | undefined;
 
   @Input()
-  data?: Transaction | null;
+  data?: Payment | null;
 
   @Input()
   compact = false;
@@ -65,14 +66,29 @@ export class PaymentFormComponent
   ];
 
   typeOptions = [
-    { label: 'Entrada', value: TransactionType.Incoming },
-    { label: 'Saída', value: TransactionType.Outgoing },
+    { label: 'Entrada', value: PaymentType.Incoming },
+    { label: 'Saída', value: PaymentType.Outgoing },
   ];
 
   methodOptions = [
     { label: 'Dinheiro', value: PaymentMethod.Cash },
     { label: 'Pix', value: PaymentMethod.Pix },
     { label: 'Cartão de Crédito', value: PaymentMethod.CreditCard },
+  ];
+
+  conditionOptions = [
+    { label: 'À Vista', value: PaymentCondition.FullPayment },
+    { label: 'Parcelado', value: PaymentCondition.InInstallments },
+  ];
+
+  categoryOptions = [
+    { label: 'Combustível', value: 'Combustível' },
+    { label: 'Despesas Fixas', value: 'Despesas Fixas' },
+    { label: 'Despesas Variáveis', value: 'Despesas Variáveis' },
+    { label: 'Despesas Veículos', value: 'Despesas Veículos' },
+    { label: 'Diversos', value: 'Diversos' },
+    { label: 'Funcionários', value: 'Funcionários' },
+    { label: 'Recebimentos', value: 'Recebimentos' },
   ];
 
   businessPartners$!: Observable<BusinessPartner[]>;
@@ -150,15 +166,17 @@ export class PaymentFormComponent
   private initForm(): void {
     const commonControls = {
       type: ['', Validators.required],
-      method: ['', Validators.required],
       status: ['', Validators.required],
+      condition: ['', Validators.required],
+      method: ['', Validators.required],
+      category: ['', Validators.required],
       date: [new Date(), Validators.required],
       description: ['', Validators.required],
       installmentNumber: [0],
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
       transactionId: [this.parentId],
-      transactionDescription: [''],
+      transactionDescription: [this.parentData?.description],
       businessPartnerId: [this.parentData?.businessPartnerId],
       businessPartnerName: [this.parentData?.businessPartnerName],
       orderId: [this.parentData?.orderId],
@@ -194,8 +212,8 @@ export class PaymentFormComponent
   }
 
   private disableEditFields(): void {
-    if (this.data?.status === PaymentStatus.Approved) {
-      this.form.disable();
-    }
+    // if (this.data?.status === PaymentStatus.Approved) {
+    //   this.form.disable();
+    // }
   }
 }

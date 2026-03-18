@@ -124,13 +124,16 @@ namespace TSI.Friday.Services
                 var orderEntity = _mapper.Map<Order>(orderDto);
                 await _repository.UpdateAsync(orderEntity);
 
-                var transactionDto = orderDto.Transaction;
-                transactionDto.OrderId = orderEntity.Id;
-
-                var updRes = await _transactionService.Update(transactionDto);
-                if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
+                if (orderDto.Transaction != null)
                 {
-                    orderDto.Transaction = updRes.Data;
+                    var transactionDto = orderDto.Transaction;
+                    transactionDto.OrderId = orderEntity.Id;
+
+                    var updRes = await _transactionService.Update(transactionDto);
+                    if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
+                    {
+                        orderDto.Transaction = updRes.Data;
+                    }
                 }
 
                 // If UI requested marking all order products as returned, perform bulk update via repository
@@ -208,7 +211,13 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orders = await _repository.GetAllAsync(o => o.BusinessPartner);
+                var orders = await _repository.GetAllAsync(
+                    o => o.BusinessPartner,
+                    o => o.OrderProducts,
+                    t => t.Transaction,
+                    p => p.Payments
+                );
+
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -234,8 +243,8 @@ namespace TSI.Friday.Services
                     id,
                     o => o.BusinessPartner,
                     op => op.OrderProducts,
-                    p => p.Transaction,
-                    pi => pi.Transaction.Payments
+                    t => t.Transaction,
+                    p => p.Transaction.Payments
                 );
 
                 result.Data = _mapper.Map<OrderDto>(order);
@@ -264,7 +273,8 @@ namespace TSI.Friday.Services
             {
                 var order = await _repository.FirstOrDefaultAsync(
                     o => o.OrderNumber == orderNumber,
-                    o => o.BusinessPartner
+                    o => o.BusinessPartner,
+                    p => p.Transaction
                 );
 
                 result.Data = _mapper.Map<OrderDto>(order);
@@ -293,8 +303,9 @@ namespace TSI.Friday.Services
 
             try
             {
-                var orders = await _repository.QueryAsync(o =>
-                    o.BusinessPartnerId == businessPartnerId
+                var orders = await _repository.QueryAsync(
+                    o => o.BusinessPartnerId == businessPartnerId,
+                    p => p.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<OrderDto>>(orders);
                 result.Status = ResponseStatus.Success;

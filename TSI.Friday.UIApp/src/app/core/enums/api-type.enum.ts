@@ -7,7 +7,7 @@ export enum ApiType {
   Orders = 'orders',
   OrderProducts = 'orderproducts',
   Transactions = 'transactions',
-  Payment = 'payments',
+  Payments = 'payments',
   Photos = 'photos',
   Products = 'products',
   Users = 'users',

@@ -18,13 +18,14 @@ import {
 })
 export class BusinessPartnerDetailsPageComponent {
   isEdit = false;
-  data?: Company | Individual | null = null;
+  data: Company | Individual | null = null;
   id: string | null = null;
   loading = false;
   activeTab: 'details' | 'address' | 'orders' | 'transaction' | 'payments' =
     'details';
   title: string = '';
   baseEndPoint: string = '';
+  canDisplayOrdersTab = true;
 
   private _baseEndPoint: ApiType = ApiType.BusinessPartners;
 
@@ -57,6 +58,7 @@ export class BusinessPartnerDetailsPageComponent {
     } else if (url.includes('suppliers')) {
       this.baseEndPoint = 'suppliers';
       this.title = 'Fornecedor';
+      this.canDisplayOrdersTab = false;
     } else {
       this.baseEndPoint = '';
       this.title = '';
@@ -79,6 +81,7 @@ export class BusinessPartnerDetailsPageComponent {
             response.status,
             response.message,
           );
+          this.data = response.data;
         });
     } else {
       this.apiService

@@ -61,7 +61,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = paymentDto,
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {paymentDto.Description} cadastrada com sucesso.",
+                Message = $"Pagamento {paymentDto.Description} cadastrada com sucesso.",
             };
 
             // Act
@@ -83,7 +83,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = paymentDto,
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {paymentDto.Description} atualizada com sucesso.",
+                Message = $"Pagamento {paymentDto.Description} atualizada com sucesso.",
             };
 
             // Act
@@ -105,7 +105,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = paymentDto,
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {paymentDto.Description} removida com sucesso.",
+                Message = $"Pagamento {paymentDto.Description} removida com sucesso.",
             };
 
             // Act
@@ -128,7 +128,7 @@ namespace TSI.Friday.Services.Tests.Services
             {
                 Data = _mapper.Map<PaymentDto>(transaction),
                 Status = ResponseStatus.Success,
-                Message = $"Parcela do pagamento {transaction.Description} encontrada com sucesso",
+                Message = $"Pagamento {transaction.Description} encontrada com sucesso",
             };
 
             // Act
@@ -150,7 +150,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
                         c => c.BusinessPartner,
-                        o => o.Order
+                        o => o.Order,
+                        t => t.Transaction
                     )
                 )
                 .ReturnsAsync(transactions);
@@ -172,7 +173,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
                         c => c.BusinessPartner,
-                        o => o.Order
+                        o => o.Order,
+                        t => t.Transaction
                     ),
                 Times.Once
             );
@@ -191,7 +193,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
                         c => c.BusinessPartner,
-                        o => o.Order
+                        o => o.Order,
+                        t => t.Transaction
                     )
                 )
                 .ReturnsAsync(transactions);
@@ -213,7 +216,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
                         c => c.BusinessPartner,
-                        o => o.Order
+                        o => o.Order,
+                        t => t.Transaction
                     ),
                 Times.Once
             );
@@ -230,7 +234,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
                         c => c.BusinessPartner,
-                        o => o.Order
+                        o => o.Order,
+                        t => t.Transaction
                     )
                 )
                 .ReturnsAsync(transactions);
@@ -252,7 +257,8 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
                         c => c.BusinessPartner,
-                        o => o.Order
+                        o => o.Order,
+                        t => t.Transaction
                     ),
                 Times.Once
             );
@@ -289,21 +295,31 @@ namespace TSI.Friday.Services.Tests.Services
                 },
             };
 
-            var expectedQueryItems = expectedItems.Where(p =>
-                p.Status == PaymentStatus.Delayed || (p.Status != PaymentStatus.Approved && p.Date != default(DateTime) && p.Date < tomorrowUtc)
-            ).ToList();
+            var expectedQueryItems = expectedItems
+                .Where(p =>
+                    p.Status == PaymentStatus.Delayed
+                    || (
+                        p.Status != PaymentStatus.Approved
+                        && p.Date != default(DateTime)
+                        && p.Date < tomorrowUtc
+                    )
+                )
+                .ToList();
 
             _repository
                 .Setup(r =>
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
-                        It.IsAny<Expression<Func<Payment, object>>>(),
-                        It.IsAny<Expression<Func<Payment, object>>>()
+                        t => t.Transaction,
+                        t => t.BusinessPartner,
+                        t => t.Order
                     )
                 )
                 .ReturnsAsync(expectedQueryItems);
 
-            var expected = _mapper.Map<IEnumerable<PaymentDto>>(expectedQueryItems).OrderBy(p => p.Date);
+            var expected = _mapper
+                .Map<IEnumerable<PaymentDto>>(expectedQueryItems)
+                .OrderBy(p => p.Date);
 
             // Act
             var result = await _paymentService.FindDelayed();
@@ -315,8 +331,9 @@ namespace TSI.Friday.Services.Tests.Services
                 r =>
                     r.QueryAsync(
                         It.IsAny<Expression<Func<Payment, bool>>>(),
-                        It.IsAny<Expression<Func<Payment, object>>>(),
-                        It.IsAny<Expression<Func<Payment, object>>>()
+                        t => t.Transaction,
+                        t => t.BusinessPartner,
+                        t => t.Order
                     ),
                 Times.Once
             );

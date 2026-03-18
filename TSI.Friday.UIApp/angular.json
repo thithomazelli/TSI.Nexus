@@ -35,7 +35,8 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/web.config"
             ],
             "styles": [
               "node_modules/@fontsource/source-sans-3/index.css",
@@ -62,8 +63,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "3mb",
+                  "maximumError": "4mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -89,7 +90,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": {},
+          "options": {
+            "port": 80
+          },
           "configurations": {
             "production": {
               "buildTarget": "TSI.Friday.UIApp:build:production"
