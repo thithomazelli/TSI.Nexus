@@ -1,3 +1,28 @@
+.dashboard-toolbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-title {
+  flex: 1 1 auto;
+}
+
+.dashboard-period-filter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 100%;
+}
+
+.dashboard-period-options {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .title-area {
   top: -0.9em;
   left: 1.2em;
@@ -7,4 +32,29 @@
     var(--bs-tertiary-bg-rgb),
     var(--bs-bg-opacity)
   ) !important;
+}
+
+@media (max-width: 767.98px) {
+  .dashboard-toolbar {
+    align-items: stretch;
+  }
+
+  .dashboard-title,
+  .dashboard-period-filter {
+    width: 100%;
+  }
+
+  .dashboard-period-options {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    justify-content: initial;
+  }
+
+  .dashboard-period-option {
+    justify-content: center;
+    min-width: 0;
+    white-space: nowrap;
+  }
 }
