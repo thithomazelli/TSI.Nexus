@@ -1,9 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Publish as self-contained by default targeting Windows x64. Override on CLI with -r or properties if needed. -->
+    <!-- Optional: create a single-file executable (test thoroughly before enabling) -->
+    <!-- <PublishSingleFile>true</PublishSingleFile> -->
+    <!-- Optional: disable trimming to avoid reflection/runtime issues -->
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,4 +27,5 @@
     <ProjectReference Include="..\..\..\TSI.Friday.IoC\tests\TSI.Friday.IoC.Tests\TSI.Friday.IoC.Tests.csproj" />
   </ItemGroup>
 
+  <!-- web.config file is present in project folder and will be included by default implicit content items -->
 </Project>
