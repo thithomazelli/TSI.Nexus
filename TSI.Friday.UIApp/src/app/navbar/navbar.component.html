@@ -78,13 +78,13 @@
             <!--end::User Image-->
             <!--begin::Menu Footer-->
 
-            <li class="user-footer">
+            <li class="user-footer d-flex gap-2">
               <a
-                class="btn btn-primary btn-flat"
+                class="btn btn-primary btn-flat flex-fill"
                 [routerLink]="['/users/', user.id]"
                 >Perfil</a
               >
-              <a class="btn btn-danger btn-flat float-end" (click)="logout()"
+              <a class="btn btn-danger btn-flat flex-fill" (click)="logout()"
                 >Sair</a
               >
             </li>
