@@ -144,7 +144,7 @@ export class ProductsComponent implements OnInit {
       cellRenderer: (params: ICellRendererParams) => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-folder" data-action="view"></i>
+            <i class="fas fa-eye" data-action="view"></i>
           </button>
           <button class="btn btn-info btn-sm" data-action="edit">
             <i class="fas fa-edit" data-action="edit"></i>
