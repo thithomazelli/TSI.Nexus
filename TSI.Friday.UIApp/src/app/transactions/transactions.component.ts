@@ -193,7 +193,7 @@ export class TransactionsComponent {
         headerName: 'Pagamentos',
         sortable: true,
         filter: true,
-        maxWidth: 120,
+        maxWidth: 150,
         cellClass: (params: ValueFormatterParams) => {
           return params.value > 0 ? 'text-success' : '';
         },
