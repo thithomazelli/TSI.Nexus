@@ -30,7 +30,6 @@ export class ProductsComponent implements OnInit {
       headerName: 'ID',
       sortable: true,
       filter: true,
-      // minWidth: 80,
       hide: true,
     },
     {
@@ -140,6 +139,7 @@ export class ProductsComponent implements OnInit {
       filter: false,
       maxWidth: 400,
       resizable: true,
+      flex: 1,
       width: 280,
       cellRenderer: (params: ICellRendererParams) => {
         return `

@@ -97,10 +97,6 @@ export class GridComponent<T> implements OnInit {
 
   onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
-    const allColIds = this.gridApi
-      .getAllDisplayedColumns()
-      .map((col: any) => col.getColId());
-    this.gridApi.autoSizeColumns(allColIds);
   }
 
   toggleFilters() {
