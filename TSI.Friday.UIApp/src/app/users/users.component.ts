@@ -80,19 +80,6 @@ export class UsersComponent {
           routerLink="/${this.baseEndPoint}/${params.data.id}">${value}</a>`;
       },
     },
-    // {
-    //   field: 'userName',
-    //   headerName: 'Nome de Usuário',
-    //   sortable: true,
-    //   filter: true,
-    //   width: 300,
-    //   resizable: false,
-    //   cellRenderer: (params: ValueFormatterParams) => {
-    //     const value = params.value ?? '';
-    //     // href="#" prevents full page reload; onCellClicked handles navigation
-    //     return `<a data-action="view" routerLink="/${this.baseEndPoint}/${params.data.id}" class="ag-link">${value}</a>`;
-    //   },
-    // },
     {
       field: 'email',
       headerName: 'Email',
