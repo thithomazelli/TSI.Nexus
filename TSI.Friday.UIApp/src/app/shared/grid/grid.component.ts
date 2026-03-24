@@ -148,7 +148,7 @@ export class GridComponent<T> implements OnInit {
     this.modalService
       .showSweetConfirmation(
         '',
-        'Deseja realmente excluir este item?',
+        'Deseja realmente excluir este registro?',
         'question',
       )
       .then((result: any) => {
