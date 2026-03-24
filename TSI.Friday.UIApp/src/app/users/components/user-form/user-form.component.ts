@@ -46,8 +46,8 @@ export class UserFormComponent
   cancel = new EventEmitter<void>();
 
   roleOptions = [
-    { label: 'Admin', value: 'Admin' },
-    { label: 'User', value: 'User' },
+    { label: 'Administrador', value: 'Admin' },
+    { label: 'Usuário', value: 'User' },
   ];
 
   constructor(
