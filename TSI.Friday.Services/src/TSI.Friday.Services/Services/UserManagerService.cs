@@ -59,18 +59,18 @@ namespace TSI.Friday.Services
 
             if (user == null)
             {
-                return Unauthorized("Invalid username or password.");
+                return Unauthorized("E-mail ou senha inválidos.");
             }
 
             if (user.EmailConfirmed == false)
             {
-                return Unauthorized("Please confirm you email.");
+                return Unauthorized("Por favor, confirme o seu e-mail.");
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
             if (!result.Succeeded)
             {
-                return Unauthorized("Invalid username or password");
+                return Unauthorized("E-mail ou senha inválidos.");
             }
 
             return await CreateApplicationUserDto(user);
@@ -83,7 +83,7 @@ namespace TSI.Friday.Services
 
             if (user == null)
             {
-                return Unauthorized("User was not found.");
+                return Unauthorized("Usuário não foi encontrado.");
             }
 
             return await CreateApplicationUserDto(user);
@@ -95,7 +95,7 @@ namespace TSI.Friday.Services
             if (await CheckEmailExistisAsync(model.Email))
             {
                 return BadRequest(
-                    $"An existing account is using {model.Email}, email address. Please try with another email address"
+                    $"Já existe uma conta com o e-mail {model.Email}. Por favor, tente com outro endereço."
                 );
             }
 
@@ -144,14 +144,14 @@ namespace TSI.Friday.Services
                     {
                         Data = userToAdd,
                         Status = ResponseStatus.Success,
-                        Message = "User registered successfully.",
+                        Message = "Usuário cadastrado com sucesso.",
                     }
                 );
             }
             catch (Exception ex)
             {
                 return BadRequest(
-                    $"Failed to send email. Please contact admin. Error: {ex.Message}"
+                    $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
                 );
             }
         }
@@ -163,7 +163,7 @@ namespace TSI.Friday.Services
 
             if (user == null)
             {
-                return Unauthorized("This email address has not been registered yet.");
+                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
             }
 
             if (user.EmailConfirmed)
@@ -172,8 +172,8 @@ namespace TSI.Friday.Services
                     new JsonResult(
                         new
                         {
-                            title = "Email is already confirmed",
-                            message = "Your email has been confirmed successfully. You can login now.",
+                            title = "E-mail confirmado",
+                            message = "Seu e-mail foi confirmado com sucesso. Você pode entrar agora.",
                         }
                     )
                 );
@@ -188,15 +188,15 @@ namespace TSI.Friday.Services
 
                 if (!result.Succeeded)
                 {
-                    throw new Exception("Invalid token. Please try again.");
+                    throw new Exception("Token inválido. Por favor, tente novamente.");
                 }
 
                 return Ok(
                     new JsonResult(
                         new
                         {
-                            title = "Email Confirmed",
-                            message = "Your email has been confirmed successfully. You can login now.",
+                            title = "E-mail confirmado",
+                            message = "Seu e-mail foi confirmado com sucesso. Você pode entrar agora.",
                         }
                     )
                 );
@@ -204,7 +204,7 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 return BadRequest(
-                    $"Failed to confirm email. Please contact admin. Error: {ex.Message}"
+                    $"Falha ao confirmar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
                 );
             }
         }
@@ -214,20 +214,20 @@ namespace TSI.Friday.Services
         {
             if (string.IsNullOrEmpty(email))
             {
-                return BadRequest("Invalid email.");
+                return BadRequest("E-mail inválido.");
             }
 
             var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
             {
-                return Unauthorized("This email address has not been registered yet.");
+                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
             }
 
             if (user.EmailConfirmed)
             {
                 return BadRequest(
-                    "Your email address was confirmed before. Please login to your account."
+                    "Seu endereço de e-mail foi já está confirmado. Por favor, entre na sua conta."
                 );
             }
 
@@ -242,8 +242,8 @@ namespace TSI.Friday.Services
                     new JsonResult(
                         new
                         {
-                            title = "Confirmation link sent",
-                            message = "Please confirm your email address",
+                            title = "Confirmação enviada",
+                            message = "Por favor, confirme seu endereço de e-mail",
                         }
                     )
                 );
@@ -251,7 +251,7 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 return BadRequest(
-                    $"Failed to send email. Please contact admin. Error: {ex.Message}"
+                    $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
                 );
             }
         }
@@ -261,19 +261,19 @@ namespace TSI.Friday.Services
         {
             if (string.IsNullOrEmpty(email))
             {
-                return BadRequest("Invalid email.");
+                return BadRequest("E-mail inválido.");
             }
 
             var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
             {
-                return Unauthorized("This email address has not been registered yet.");
+                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
             }
 
             if (!user.EmailConfirmed)
             {
-                return BadRequest("Please confirm your email address first.");
+                return BadRequest("Por favor, confirme seu endereço de e-mail primeiro.");
             }
 
             try
@@ -287,8 +287,8 @@ namespace TSI.Friday.Services
                     new JsonResult(
                         new
                         {
-                            title = "Forgot username or password email sent",
-                            message = "Please check your email address",
+                            title = "E-mail de redefinição enviado",
+                            message = "Por favor, verifique o seu endereço de e-mail.",
                         }
                     )
                 );
@@ -296,7 +296,7 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 return BadRequest(
-                    $"Failed to send email. Please contact admin. Error: {ex.Message}"
+                    $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
                 );
             }
         }
@@ -308,12 +308,12 @@ namespace TSI.Friday.Services
 
             if (user == null)
             {
-                return Unauthorized("This email address has not been registered yet.");
+                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
             }
 
             if (!user.EmailConfirmed)
             {
-                return BadRequest("Please confirm your email address first.");
+                return BadRequest("Por favor, confirme seu endereço de e-mail primeiro.");
             }
 
             try
@@ -323,15 +323,15 @@ namespace TSI.Friday.Services
 
                 if (!result.Succeeded)
                 {
-                    throw new Exception("Invalid token. Please try again.");
+                    throw new Exception("Token inválido. Por favor, tente novamente.");
                 }
 
                 return Ok(
                     new JsonResult(
                         new
                         {
-                            title = "Password reset success",
-                            message = "Your password has been reset successfully.",
+                            title = "Senha redefinida",
+                            message = "Sua senha foi redefinida com sucesso.",
                         }
                     )
                 );
@@ -339,7 +339,7 @@ namespace TSI.Friday.Services
             catch (Exception ex)
             {
                 return BadRequest(
-                    $"Failed to reset password. Please contact admin. Error: {ex.Message}"
+                    $"Falha ao redefinir senha. Por favor, contate o administrador. Erro: {ex.Message}"
                 );
             }
         }
@@ -427,7 +427,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível atualizar os dados do Usuário {user.UserName} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível atualizar os dados do usuário {user.UserName} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -447,7 +447,7 @@ namespace TSI.Friday.Services
                     return new WebApiResponse<UserDto>
                     {
                         Status = ResponseStatus.Error,
-                        Message = "User not found.",
+                        Message = "Usuário não encontrado.",
                     };
                 }
 
@@ -461,7 +461,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível remover o Usuário {user.UserName} da base de dados. Erro: {ex.Message}";
+                    $"Não foi possível remover o usuário {user.UserName} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -492,7 +492,7 @@ namespace TSI.Friday.Services
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de usuários na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -511,13 +511,13 @@ namespace TSI.Friday.Services
                 result.Message =
                     result.Data != null
                         ? $"Usuário {result.Data.UserName} encontrado com sucesso"
-                        : $"Nenhum Usuário com o ID {id} foi encontrado";
+                        : $"Nenhum usuário com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Usuários na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível acessar os registros de usuários na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -558,13 +558,13 @@ namespace TSI.Friday.Services
                 $"{_config["JWT:ClientUrl"]}/{_config["Email:ConfirmationEmailPath"]}?token={token}&email={user.Email}";
 
             var body =
-                $"<p>Hello {user.FirstName} {user.LastName}</p>"
-                + "<p>Please confirm your email by clicking on the following link.</p>"
-                + $"<p><a href=\"{url}\">Confirm Email</a></p>"
-                + "<p>Thank you</p>"
+                $"<p>Olá {user.FirstName} {user.LastName}</p>"
+                + "<p>Por favor, confirme o seu e-mail clicando no link à seguir.</p>"
+                + $"<p><a href=\"{url}\">Confirmar e-mail</a></p>"
+                + "<p>Obrigado!</p>"
                 + $"<br>{_config["Email:ApplicationName"]}</p>";
 
-            var emailSend = new EmailSendDto(user.Email, "Confirm your email", body);
+            var emailSend = new EmailSendDto(user.Email, "Confirme seu e-mail", body);
 
             return await _emailService.SendEmailAsync(emailSend);
         }
@@ -577,14 +577,14 @@ namespace TSI.Friday.Services
                 $"{_config["JWT:ClientUrl"]}/{_config["Email:ResetPasswordPath"]}?token={token}&email={user.Email}";
 
             var body =
-                $"<p>Hello {user.FirstName} {user.LastName}</p>"
-                + $"<p>Username: {user.UserName}</p>"
-                + "<p>In order to reset your password, please click on the following link.</p>"
-                + $"<p><a href=\"{url}\">Reset password</a></p>"
-                + "<p>Thank you</p>"
+                $"<p>Olá {user.FirstName} {user.LastName}</p>"
+                + $"<p>Usuário: {user.UserName}</p>"
+                + "<p>Para redefinir a sua senha, por favor, clique no link à seguir.</p>"
+                + $"<p><a href=\"{url}\">Redefinir senha</a></p>"
+                + "<p>Obrigado!</p>"
                 + $"<br>{_config["Email:ApplicationName"]}</p>";
 
-            var emailSend = new EmailSendDto(user.Email, "Reset password", body);
+            var emailSend = new EmailSendDto(user.Email, "Redefinir sua senha", body);
 
             return await _emailService.SendEmailAsync(emailSend);
         }
