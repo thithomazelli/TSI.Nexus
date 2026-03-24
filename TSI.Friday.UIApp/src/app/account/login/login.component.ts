@@ -54,7 +54,8 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
     this.submitted = true;
     this.errorMessages = [];
 
-    if (!this.form.valid) {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
       return;
     }
 

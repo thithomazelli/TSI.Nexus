@@ -30,7 +30,6 @@ export class ProductsComponent implements OnInit {
       headerName: 'ID',
       sortable: true,
       filter: true,
-      // minWidth: 80,
       hide: true,
     },
     {
@@ -140,11 +139,12 @@ export class ProductsComponent implements OnInit {
       filter: false,
       maxWidth: 400,
       resizable: true,
+      flex: 1,
       width: 280,
       cellRenderer: (params: ICellRendererParams) => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-folder" data-action="view"></i>
+            <i class="fas fa-eye" data-action="view"></i>
           </button>
           <button class="btn btn-info btn-sm" data-action="edit">
             <i class="fas fa-edit" data-action="edit"></i>

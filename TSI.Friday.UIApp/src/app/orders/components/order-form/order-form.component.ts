@@ -1,3 +1,4 @@
+import { Subscription } from 'rxjs';
 import {
   Component,
   ElementRef,
@@ -26,7 +27,6 @@ import {
   PaymentCondition,
   PaymentMethod,
   PaymentStatus,
-  Transaction,
 } from '@friday/core';
 
 import { MatDialogRef } from '@angular/material/dialog';
@@ -79,7 +79,8 @@ export class OrderFormComponent
     { value: OrderStatus.WaitingPayment, label: 'Aguardando Pagamento' },
   ];
 
-  private statusSubscription?: any;
+  private statusSubscription?: Subscription;
+  private totalOfPaymentsSubscription?: Subscription;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -97,12 +98,14 @@ export class OrderFormComponent
     this.setupAutoComplete();
     this.totalPriceChange();
     this.setupStatusWatcher();
+    this.setupTotalOfPaymentsWatcher();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.data && this.form) {
       this.patchFormWithData();
       this.setupStatusWatcher();
+      this.setupTotalOfPaymentsWatcher();
     }
   }
 
@@ -111,6 +114,9 @@ export class OrderFormComponent
     this.filteredBusinessPartners$ = new Observable<BusinessPartner[]>();
     if (this.statusSubscription) {
       this.statusSubscription.unsubscribe();
+    }
+    if (this.totalOfPaymentsSubscription) {
+      this.totalOfPaymentsSubscription.unsubscribe();
     }
   }
 
@@ -272,6 +278,7 @@ export class OrderFormComponent
       businessPartnerId: [null, Validators.required],
       businessPartnerName: [
         { value: '', disabled: this.data?.businessPartnerId != null },
+        Validators.required,
       ],
       description: [''],
       date: [new Date(), Validators.required],
@@ -458,9 +465,9 @@ export class OrderFormComponent
     if (transactionGroup) {
       const transactions = transactionGroup.get('totalOfPayments')?.value || 1;
       const pricePerPayment = total / (transactions > 0 ? transactions : 1);
-      transactionGroup.get('price')?.setValue(total);
+      transactionGroup.get('paymentTotalPrice')?.setValue(total);
       transactionGroup
-        .get('pricePerPaymentFormatted')
+        .get('paymentTotalPriceFormatted')
         ?.setValue(this.currencyService.formatCurrencyBRL(pricePerPayment));
     }
   }
@@ -504,5 +511,20 @@ export class OrderFormComponent
           if (this.data) this.data.markAllProductsAsReturned = false;
         }
       });
+  }
+
+  private setupTotalOfPaymentsWatcher(): void {
+    // Remove subscription anterior se existir
+    if (this.totalOfPaymentsSubscription) {
+      this.totalOfPaymentsSubscription.unsubscribe();
+    }
+    const transactionGroup = this.form.get('transaction') as FormGroup | null;
+    if (transactionGroup && transactionGroup.get('totalOfPayments')) {
+      this.totalOfPaymentsSubscription = transactionGroup
+        .get('totalOfPayments')!
+        .valueChanges.subscribe(() => {
+          this.updateTotalPriceFields();
+        });
+    }
   }
 }

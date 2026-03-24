@@ -67,6 +67,7 @@ export class GridComponent<T> implements OnInit {
     sortable: true,
     filter: true,
     resizable: true,
+    suppressMovable: true,
   };
 
   private _parentId: string | null = null;
@@ -96,7 +97,6 @@ export class GridComponent<T> implements OnInit {
 
   onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
-    this.updateNoRowsOverlay();
   }
 
   toggleFilters() {
