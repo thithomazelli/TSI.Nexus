@@ -42,6 +42,7 @@ import { PieChartComponent } from './pie-chart/pie-chart.component';
 import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-trending.component';
 import { AlertBannerComponentComponent } from './alert-banner-component/alert-banner-component.component';
 import { InfoCardsComponent } from './info-cards/info-cards.component';
+import { ClickDirective } from '@friday/core';
 
 @NgModule({
   declarations: [
@@ -63,6 +64,7 @@ import { InfoCardsComponent } from './info-cards/info-cards.component';
     InfoCardsComponent,
   ],
   imports: [
+    ClickDirective,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -78,6 +80,7 @@ import { InfoCardsComponent } from './info-cards/info-cards.component';
     NgApexchartsModule,
   ],
   exports: [
+    ClickDirective,
     DateFieldComponent,
     LinkFieldComponent,
     SidebarComponent,

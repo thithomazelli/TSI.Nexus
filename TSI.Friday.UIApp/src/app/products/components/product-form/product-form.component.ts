@@ -1,20 +1,32 @@
 import {
   Component,
-  EventEmitter,
   Input,
   OnInit,
-  Output,
   OnChanges,
   SimpleChanges,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import {
+  ApiService,
+  ApiType,
   CurrencyService,
   FormBaseComponent,
+  ModalService,
+  NotificationService,
   Product,
+  ProductService,
   ProductType,
   ProductUnit,
+  ResponseStatus,
+  WebApiResponse,
 } from '@friday/core';
+import { ProductDetailsModalComponent } from '../product-details-modal/product-details-modal.component';
+import { MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { Observable, lastValueFrom, of } from 'rxjs';
+import { delay, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-form',
@@ -27,20 +39,19 @@ export class ProductFormComponent
   implements OnInit, OnChanges
 {
   @Input()
+  isModal = false;
+
+  @Input()
   isEdit = false;
 
   @Input()
   data?: Product | null;
 
-  // controla estilo compacto quando usado em page
   @Input()
   compact = false;
 
-  @Output()
-  save = new EventEmitter<Product>();
-
-  @Output()
-  cancel = new EventEmitter<void>();
+  @Input()
+  dialogRef?: MatDialogRef<ProductDetailsModalComponent>;
 
   unitOptions = [
     { label: 'Unidade', value: ProductUnit.Unit },
@@ -54,9 +65,15 @@ export class ProductFormComponent
     { label: 'Serviço', value: ProductType.Service },
   ];
 
+  private _baseEndPoint: ApiType = ApiType.Products;
+
   constructor(
-    private formBuilder: FormBuilder,
     private currencyService: CurrencyService,
+    private formBuilder: FormBuilder,
+    private modalService: ModalService,
+    private notificationService: NotificationService,
+    private productService: ProductService,
+    private routerService: Router,
   ) {
     super();
   }
@@ -78,16 +95,34 @@ export class ProductFormComponent
     }
   }
 
-  submit(): void {
-    if (this.form.invalid) {
+  submit(): Observable<WebApiResponse<Product> | null> {
+    if (this.form.invalid && this.form.touched) {
       this.form.markAllAsTouched();
-      return;
+      return of(null);
     }
-    this.save.emit(this.form.value as Product);
+
+    return this.save(this.form.value as Product).pipe(
+      tap({
+        next: (response) => {
+          if (this.isModal) {
+            this.saveModal(response);
+          } else {
+            this.savePage(response);
+          }
+        },
+        error: (err) => {
+          this.notificationService.showMessage('error', 'Erro ao salvar');
+        },
+      }),
+    );
   }
 
-  doCancel(): void {
-    this.cancel.emit();
+  cancel(): void {
+    if (this.isModal) {
+      this.modalService.hideModal(this.dialogRef);
+    } else {
+      this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    }
   }
 
   onPriceBlur(): void {
@@ -95,7 +130,6 @@ export class ProductFormComponent
     if (!priceControl) {
       return;
     }
-
     const value = this.currencyService.parseCurrencyBRL(priceControl.value);
     priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
     this.form.get('price')?.setValue(value);
@@ -144,5 +178,31 @@ export class ProductFormComponent
         quantityControl?.enable();
       }
     });
+  }
+
+  private save(product: Product): Observable<WebApiResponse<Product>> {
+    return this.isEdit && this.data
+      ? this.productService.update(product)
+      : this.productService.add(product);
+  }
+
+  private saveModal(response: WebApiResponse<Product>): any {
+    this.dialogRef?.close(response);
+    this.modalService.showNotification(
+      response.status == ResponseStatus.Success,
+      'Produto adicionado',
+      response.message,
+    );
+  }
+
+  private savePage(response: WebApiResponse<Product>): any {
+    if (this.isEdit && this.data) {
+      this.notificationService.showMessage(response.status, response.message);
+      this.data = response.data;
+    } else {
+      this.routerService.navigateByUrl(
+        `/${this._baseEndPoint}/${response.data.id}`,
+      );
+    }
   }
 }

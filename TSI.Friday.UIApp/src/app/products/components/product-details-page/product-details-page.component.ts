@@ -34,7 +34,6 @@ export class ProductDetailsPageComponent {
     private activatedRoute: ActivatedRoute,
     private apiService: ApiService,
     private routerService: Router,
-    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -48,32 +47,6 @@ export class ProductDetailsPageComponent {
       this.isEdit = false;
       this.data = null;
     }
-  }
-
-  save(product: Product): void {
-    if (this.isEdit && this.id) {
-      this.apiService
-        .put<WebApiResponse<Product>>(`${this._baseEndPoint}/update`, product)
-        .subscribe((response: WebApiResponse<Product>) => {
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-          this.data = response.data;
-        });
-    } else {
-      this.apiService
-        .post<WebApiResponse<Product>>(`${this._baseEndPoint}/add`, product)
-        .subscribe((response: WebApiResponse<Product>) => {
-          this.routerService.navigateByUrl(
-            `/${this._baseEndPoint}/${response.data.id}`,
-          );
-        });
-    }
-  }
-
-  cancel(): void {
-    this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
   }
 
   getProductTypeLabel(): string {

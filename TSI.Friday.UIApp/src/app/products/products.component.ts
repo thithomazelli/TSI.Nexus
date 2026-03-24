@@ -1,10 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   ApiService,
   ModalService,
+  NotificationService,
   Product,
+  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
+import { ProductService } from '../core/services/product/product.service';
+import { startWith, Subscription, tap } from 'rxjs';
 import {
   ColDef,
   ValueFormatterParams,
@@ -19,7 +23,7 @@ import { ProductDetailsModalComponent } from './components/product-details-modal
   templateUrl: './products.component.html',
   styleUrl: './products.component.scss',
 })
-export class ProductsComponent implements OnInit {
+export class ProductsComponent implements OnInit, OnDestroy {
   baseEndPoint = 'products';
 
   rowData: Product[] = [];
@@ -137,7 +141,7 @@ export class ProductsComponent implements OnInit {
       headerName: 'Ações',
       sortable: false,
       filter: false,
-      maxWidth: 400,
+      minWidth: 150,
       resizable: true,
       flex: 1,
       width: 280,
@@ -169,17 +173,49 @@ export class ProductsComponent implements OnInit {
     Service: 'Serviço',
   };
 
+  private productChangedSub?: Subscription;
+
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
+    private productService: ProductService,
   ) {}
 
   ngOnInit(): void {
-    this.getProducts();
+    this.productChangedSub = this.productService.productChanged$
+      .pipe(startWith(this.getProducts()))
+      .subscribe(() => {
+        this.getProducts();
+      });
+  }
+
+  ngOnDestroy(): void {
+    if (this.productChangedSub) {
+      this.productChangedSub.unsubscribe();
+    }
   }
 
   refreshProducts(): void {
-    this.getProducts();
+    this.apiService
+      .get<WebApiResponse<Product[]>>(`${this.baseEndPoint}/getAll`)
+      .pipe(
+        tap({
+          next: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Success,
+              'Produtos atualizados com sucesso',
+            ),
+          error: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Error,
+              'Erro ao atualizar produtos',
+            ),
+        }),
+      )
+      .subscribe((response: WebApiResponse<Product[]>) => {
+        this.rowData = response.data ?? [];
+      });
   }
 
   deleteProduct(product: Product): void {
@@ -197,16 +233,10 @@ export class ProductsComponent implements OnInit {
   }
 
   onOpenModal(initialState: any) {
-    const ref = this.modalService.showTemplateModal(
+    this.modalService.showTemplateModal(
       ProductDetailsModalComponent,
       initialState,
     );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.getProducts();
-        ref.close();
-      });
-    }
   }
 
   private getProducts(): void {
