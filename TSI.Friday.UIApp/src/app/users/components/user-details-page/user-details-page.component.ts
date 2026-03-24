@@ -32,25 +32,6 @@ export class UserDetailsPageComponent {
     private photoService: PhotoService,
   ) {}
 
-  // ngOnInit(): void {
-  //   const idParam = this.activatedRoute.snapshot.paramMap.get('id');
-
-  //   if (idParam && idParam !== 'new') {
-  //     this.isEdit = true;
-  //     this.id = idParam;
-  //     this.loadUser(idParam);
-  //   } else {
-  //     this.isEdit = false;
-  //     this.data = null;
-  //   }
-
-  //   this.photoService.photo$.subscribe((response) => {
-  //     if (response.fileName) {
-  //       this.data!.photo = response.fileName;
-  //     }
-  //   });
-  // }
-
   ngOnInit(): void {
     this.activatedRoute.paramMap.subscribe((params) => {
       const idParam = params.get('id');
