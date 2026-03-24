@@ -5,6 +5,7 @@ import {
   ApiType,
   ModalService,
   Product,
+  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
 
@@ -42,11 +43,11 @@ export class ProductDetailsModalComponent {
         .put<WebApiResponse<Product>>(`${this._baseEndPoint}/update`, product)
         .subscribe((response: WebApiResponse<Product>) => {
           this.saved.emit();
-          this.modalService.hideModal(this.dialogRef);
-          this.modalService.showSweetNotification(
+          this.dialogRef.close(response);
+          this.modalService.showNotification(
+            response.status == ResponseStatus.Success,
             '',
             response.message,
-            'success',
           );
         });
     } else {
@@ -54,11 +55,11 @@ export class ProductDetailsModalComponent {
         .post<WebApiResponse<Product>>(`${this._baseEndPoint}/add`, product)
         .subscribe((response: WebApiResponse<Product>) => {
           this.saved.emit();
-          this.modalService.hideModal(this.dialogRef);
-          this.modalService.showSweetNotification(
+          this.dialogRef.close(response);
+          this.modalService.showNotification(
+            response.status == ResponseStatus.Success,
             '',
             response.message,
-            'success',
           );
         });
     }

@@ -122,7 +122,7 @@ export class BusinessPartnerFormComponent
       raw.birthday = null;
     }
 
-    if (this.compact && raw.address && raw.address.zipcode != null) {
+    if (this.compact && raw.address && raw.address.zipCode != null) {
       // Se vier address preenchido, mova para addresses
       if (Object.keys(raw.address).some((k) => raw.address[k])) {
         if (!this.data!.addresses) {

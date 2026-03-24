@@ -37,6 +37,7 @@
                     [matAutocomplete]="auto"
                     #firstInput
                     [class.is-invalid]="isInvalid('businessPartnerName')"
+                    [class.is-valid]="isValid('businessPartnerName')"
                     placeholder="Cliente"
                     (blur)="onClientBlur()"
                   />
@@ -186,7 +187,7 @@
               <th class="table-header-title" scope="col">SKU</th>
               <th class="table-header-title" scope="col">Nome</th>
               <th class="table-header-title" scope="col">Preço</th>
-              <th class="table-header-title" scope="col">Qtd</th>
+              <th class="table-header-title" scope="col">Quantidade</th>
               <th class="" scope="col" style="width: 40px">
                 <a class="address-link" (click)="openOrderProductsModal()">
                   Adicionar

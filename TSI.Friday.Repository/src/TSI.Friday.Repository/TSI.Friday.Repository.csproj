@@ -11,8 +11,10 @@
     <ProjectReference Include="..\..\..\TSI.Friday.Data\src\TSI.Friday.Data\TSI.Friday.Data.csproj" />
   </ItemGroup>
 
+  <!-- Direct package references to override transitive older versions and avoid NU1605 package downgrade errors -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
   </ItemGroup>
 
 </Project>

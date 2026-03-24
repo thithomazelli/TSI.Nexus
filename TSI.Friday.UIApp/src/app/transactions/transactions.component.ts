@@ -181,7 +181,6 @@ export class TransactionsComponent {
         headerName: 'Descrição',
         sortable: true,
         filter: true,
-        flex: 2,
         maxWidth: 400,
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? '';
@@ -193,7 +192,7 @@ export class TransactionsComponent {
         headerName: 'Pagamentos',
         sortable: true,
         filter: true,
-        maxWidth: 120,
+        maxWidth: 150,
         cellClass: (params: ValueFormatterParams) => {
           return params.value > 0 ? 'text-success' : '';
         },
@@ -233,7 +232,6 @@ export class TransactionsComponent {
         headerName: 'Condição',
         sortable: true,
         filter: true,
-        flex: 2,
         maxWidth: 120,
         filterValueGetter: (params: ValueGetterParams) => {
           return this.getConditionLabel(params.data?.condition);
@@ -247,7 +245,6 @@ export class TransactionsComponent {
         headerName: 'Data',
         sortable: true,
         filter: true,
-        flex: 2,
         maxWidth: 120,
         valueFormatter: (params: ValueFormatterParams) =>
           this.formatDateBR(params.value),
@@ -257,8 +254,7 @@ export class TransactionsComponent {
         headerName: 'Status',
         sortable: true,
         filter: true,
-        flex: 2,
-        maxWidth: 100,
+        width: 100,
         filterValueGetter: (params: ValueGetterParams) => {
           return this.getStatusLabel(params.data?.status);
         },
@@ -289,7 +285,7 @@ export class TransactionsComponent {
         sortable: true,
         filter: true,
         flex: 1,
-        maxWidth: 150,
+        minWidth: 150,
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? 'N/A';
           return value;

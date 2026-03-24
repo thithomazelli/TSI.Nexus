@@ -118,7 +118,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
     }
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { facingMode: 'user' },
         audio: false,
       });
 

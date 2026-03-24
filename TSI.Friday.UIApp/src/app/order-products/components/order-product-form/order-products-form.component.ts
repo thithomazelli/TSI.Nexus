@@ -228,13 +228,13 @@ export class OrderProductsFormComponent
               );
             productFormRef
               .afterClosed()
-              .subscribe((result: Product | undefined) => {
+              .subscribe((result: WebApiResponse<Product> | undefined) => {
                 if (result) {
-                  // this.productService.addOrUpdateProduct(result);
-                  this.form.get('productId')!.setValue(result.id);
-                  this.form.get('productSku')!.setValue(result.sku);
-                  this.form.get('productName')!.setValue(result.name);
-                  this.form.get('productType')!.setValue(result.type);
+                  this.form.get('productId')!.setValue(result.data.id);
+                  this.form.get('productSku')!.setValue(result.data.sku);
+                  this.form.get('productName')!.setValue(result.data.name);
+                  this.form.get('productType')!.setValue(result.data.type);
+                  this.setupAutoComplete();
                 } else {
                   this.cleanProductSelection();
                 }
@@ -278,13 +278,13 @@ export class OrderProductsFormComponent
               );
             productFormRef
               .afterClosed()
-              .subscribe((result: Product | undefined) => {
-                if (result) {
-                  // this.productService.addOrUpdateProduct(result);
-                  this.form.get('productId')!.setValue(result.id);
-                  this.form.get('productSku')!.setValue(result.sku);
-                  this.form.get('productName')!.setValue(result.name);
-                  this.form.get('productType')!.setValue(result.type);
+              .subscribe((response: WebApiResponse<Product> | undefined) => {
+                if (response) {
+                  this.form.get('productId')!.setValue(response.data.id);
+                  this.form.get('productSku')!.setValue(response.data.sku);
+                  this.form.get('productName')!.setValue(response.data.name);
+                  this.form.get('productType')!.setValue(response.data.type);
+                  this.setupAutoComplete();
                 } else {
                   this.cleanProductSelection();
                 }
