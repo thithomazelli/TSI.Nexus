@@ -46,14 +46,19 @@
 
         <div class="col-12">
           <div class="input-group">
-            <div class="form-floating flex-fill">
-              <textarea
+            <div class="form-floating">
+              <input
                 formControlName="description"
+                type="text"
                 placeholder="Descrição"
                 class="form-control"
-                id="description"
-              ></textarea>
+                [class.is-invalid]="isInvalid('description')"
+                [class.is-valid]="isValid('description')"
+              />
               <label for="description">Descrição</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-card-text"></i>
             </div>
           </div>
         </div>
@@ -146,10 +151,12 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         Cancelar
       </button>
-      <button type="submit" class="btn btn-success">Salvar</button>
+      <button [appClick]="submit()" type="submit" class="btn btn-success">
+        Salvar
+      </button>
     </div>
   </form>
 </div>
