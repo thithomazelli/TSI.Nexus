@@ -5,11 +5,11 @@ namespace TSI.Friday.Contracts.Models.DTOs
     public class RegisterDto
     {
         [Required]
-        [StringLength(15, MinimumLength = 3, ErrorMessage = "First name must be at least {2}, and maximum {1} characters")]
+        [StringLength(15, MinimumLength = 3, ErrorMessage = "Nome precisa ter no mínimo {2} e no máximo {1} caracteres.")]
         public string FirstName { get; set; }
 
         [Required]
-        [StringLength(30, MinimumLength = 3, ErrorMessage = "Last name must be at least {2}, and maximum {1} characters")]
+        [StringLength(15, MinimumLength = 3, ErrorMessage = "Sobrenome precisa ter no mínimo {2} e no máximo {1} caracteres.")]
         public string LastName { get; set; }
 
         [Required]
@@ -17,7 +17,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public string Email { get; set; }
 
         [Required]
-        [StringLength(15, MinimumLength = 6, ErrorMessage = "Password must be at least {2}, and maximum {1} characters")]
+        [StringLength(15, MinimumLength = 6, ErrorMessage = "Senha precisa ter no mínimo {2} e no máximo {1} caracteres.")]
         public string Password { get; set; }
 
         /// <summary>

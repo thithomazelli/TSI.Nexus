@@ -7,15 +7,15 @@ namespace TSI.Friday.Contracts.Models.DTOs
         [Required]
         [RegularExpression(
             @"^([\w\!\#$\%\&\'*\+\-\/\=\?\^`{\|\}\~]+\.)*[\w\!\#$\%\&\'*\+\-\/\=\?\^`{\|\}\~]+@((((([a-zA-Z0-9]{1}[a-zA-Z0-9\-]{0,62}[a-zA-Z0-9]{1})|[a-zA-Z])\.)+[a-zA-Z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$",
-            ErrorMessage = "Invalid email address"
+            ErrorMessage = "Endereço de e-mail inválido."
         )]
         public string Email { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "É preciso informar uma nova senha.")]
         [StringLength(
             15,
             MinimumLength = 6,
-            ErrorMessage = "Password must be at least {2}, and maximum {1} characters"
+            ErrorMessage = "A senha precisa ter no mínimo {2} e no máximo {1} caracteres."
         )]
         public string NewPassword { get; set; }
     }

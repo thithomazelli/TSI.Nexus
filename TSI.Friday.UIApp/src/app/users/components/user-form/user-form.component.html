@@ -93,13 +93,25 @@
         </div>
         <div class="col-12">
           @if (isEdit) {
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                formControlName="emailConfirmed"
-              />
-              <label> Email confirmado </label>
+            <div class="col-12 d-flex align-items-center gap-2">
+              @if (isEdit) {
+                <div class="input-group">
+                  <span class="input-group-text"
+                    ><i class="bi bi-shield-check"></i
+                  ></span>
+                  <div
+                    class="form-control bg-light d-flex align-items-center justify-content-between"
+                  >
+                    <span>Email confirmado</span>
+                    <input
+                      class="form-check-input ms-2"
+                      type="checkbox"
+                      formControlName="emailConfirmed"
+                      style="margin: 0"
+                    />
+                  </div>
+                </div>
+              }
             </div>
           }
         </div>
@@ -110,20 +122,20 @@
                 <input
                   formControlName="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Senha"
                   class="form-control"
                   [class.is-invalid]="isInvalid('password')"
                 />
-                <label for="password">Password</label>
+                <label for="password">Senha</label>
                 @if (inputHasError("password", "required")) {
-                  <span class="text-danger">Password is required </span>
+                  <span class="text-danger">Senha é obrigatória </span>
                 }
                 @if (
                   inputHasError("password", "minlength") ||
                   inputHasError("password", "maxlength")
                 ) {
-                  <span class="text-danger"
-                    >Password must be at least 6, and maximum 15 characters
+                  <span class="text-primary"
+                    >A senha precisa ter no mínimo 6 e no máximo 15 caracteres.
                   </span>
                 }
               </div>
