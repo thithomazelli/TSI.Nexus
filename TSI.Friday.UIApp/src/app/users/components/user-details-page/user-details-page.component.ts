@@ -33,16 +33,18 @@ export class UserDetailsPageComponent {
   ) {}
 
   ngOnInit(): void {
-    const idParam = this.activatedRoute.snapshot.paramMap.get('id');
+    this.activatedRoute.paramMap.subscribe((params) => {
+      const idParam = params.get('id');
 
-    if (idParam && idParam !== 'new') {
-      this.isEdit = true;
-      this.id = idParam;
-      this.loadUser(idParam);
-    } else {
-      this.isEdit = false;
-      this.data = null;
-    }
+      if (idParam && idParam !== 'new') {
+        this.isEdit = true;
+        this.id = idParam;
+        this.loadUser(idParam);
+      } else {
+        this.isEdit = false;
+        this.data = null;
+      }
+    });
 
     this.photoService.photo$.subscribe((response) => {
       if (response.fileName) {
