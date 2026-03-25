@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
-  ApiService,
   ModalService,
   NotificationService,
   Product,
@@ -8,7 +7,7 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { ProductService } from '../core/services/product/product.service';
-import { startWith, Subscription, tap } from 'rxjs';
+import { startWith, Subscription, tap, Subject, takeUntil } from 'rxjs';
 import {
   ColDef,
   ValueFormatterParams,
@@ -19,9 +18,9 @@ import { ProductDetailsModalComponent } from './components/product-details-modal
 
 @Component({
   selector: 'app-products',
-  standalone: false,
   templateUrl: './products.component.html',
   styleUrl: './products.component.scss',
+  standalone: false,
 })
 export class ProductsComponent implements OnInit, OnDestroy {
   baseEndPoint = 'products';
@@ -173,32 +172,56 @@ export class ProductsComponent implements OnInit, OnDestroy {
     Service: 'Serviço',
   };
 
-  private productChangedSub?: Subscription;
+  private _productChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
 
   constructor(
-    private apiService: ApiService,
     private modalService: ModalService,
     private notificationService: NotificationService,
     private productService: ProductService,
   ) {}
 
   ngOnInit(): void {
-    this.productChangedSub = this.productService.productChanged$
-      .pipe(startWith(this.getProducts()))
+    this._productChangedSub = this.productService.productChanged$
+      .pipe(startWith(null), takeUntil(this._destroy$))
       .subscribe(() => {
         this.getProducts();
       });
   }
 
   ngOnDestroy(): void {
-    if (this.productChangedSub) {
-      this.productChangedSub.unsubscribe();
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._productChangedSub) {
+      this._productChangedSub.unsubscribe();
     }
   }
 
+  onOpenModal(initialState: any) {
+    this.modalService.showTemplateModal(
+      ProductDetailsModalComponent,
+      initialState,
+    );
+  }
+
+  deleteProduct(product: Product): void {
+    this.productService
+      .deleteProduct(product)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response: WebApiResponse<Product>) => {
+        this.rowData = this.rowData.filter((p) => p.id !== product.id);
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          'Produto excluído',
+          response.message,
+          'success',
+        );
+      });
+  }
+
   refreshProducts(): void {
-    this.apiService
-      .get<WebApiResponse<Product[]>>(`${this.baseEndPoint}/getAll`)
+    this.productService
+      .refreshProducts()
       .pipe(
         tap({
           next: () =>
@@ -212,36 +235,17 @@ export class ProductsComponent implements OnInit, OnDestroy {
               'Erro ao atualizar produtos',
             ),
         }),
+        takeUntil(this._destroy$),
       )
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];
       });
   }
 
-  deleteProduct(product: Product): void {
-    this.apiService
-      .delete<WebApiResponse<Product>>(`${this.baseEndPoint}/remove`, product)
-      .subscribe((response: WebApiResponse<Product>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== product.id);
-        this.modalService.hideModal();
-        this.modalService.showSweetNotification(
-          'Produto excluído',
-          response.message,
-          'success',
-        );
-      });
-  }
-
-  onOpenModal(initialState: any) {
-    this.modalService.showTemplateModal(
-      ProductDetailsModalComponent,
-      initialState,
-    );
-  }
-
   private getProducts(): void {
-    this.apiService
-      .get<WebApiResponse<Product[]>>(`${this.baseEndPoint}/getAll`)
+    this.productService
+      .getProducts()
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];
       });

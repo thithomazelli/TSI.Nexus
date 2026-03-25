@@ -1,37 +1,41 @@
 import { Injectable } from '@angular/core';
-import { ApiService, ApiType, WebApiResponse } from '@friday/core';
+import {
+  ApiService,
+  ApiType,
+  ResponseStatus,
+  WebApiResponse,
+} from '@friday/core';
 import { Product } from '@friday/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap, catchError, delay } from 'rxjs/operators';
+import { tap, delay } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private _baseEndPoint = ApiType.Products;
-  private products$ = new BehaviorSubject<Product[]>([]);
-  private loaded = false;
-  private productChangedSubject = new BehaviorSubject<void>(undefined);
+  private _products$ = new BehaviorSubject<Product[]>([]);
+  private _loaded = false;
+  private _productChangedSubject = new BehaviorSubject<void>(undefined);
 
-  productChanged$ = this.productChangedSubject.asObservable();
+  productChanged$ = this._productChangedSubject.asObservable();
 
   constructor(private apiService: ApiService) {}
 
-  getProducts(forceRefresh = true): Observable<Product[]> {
-    if (!this.loaded || forceRefresh) {
-      this.apiService
+  getProducts(forceRefresh = true): Observable<WebApiResponse<Product[]>> {
+    if (!this._loaded || forceRefresh) {
+      return this.apiService
         .get<WebApiResponse<Product[]>>(`${this._baseEndPoint}/getAll`)
         .pipe(
           tap((response) => {
-            this.products$.next(response.data);
-            this.loaded = true;
+            this._products$.next(response.data);
+            this._loaded = true;
           }),
-          catchError(() => {
-            this.products$.next([]);
-            return of([]);
-          }),
-        )
-        .subscribe();
+        );
     }
-    return this.products$.asObservable();
+    return of({
+      data: this._products$.value,
+      message: 'Produtos carregados do cache',
+      status: ResponseStatus.Success,
+    });
   }
 
   add(product: Product): Observable<WebApiResponse<Product>> {
@@ -40,7 +44,7 @@ export class ProductService {
       .post<WebApiResponse<Product>>(`${this._baseEndPoint}/add`, product)
       .pipe(
         delay(delayMs),
-        tap(() => this.productChangedSubject.next()),
+        tap(() => this._productChangedSubject.next()),
       );
   }
 
@@ -50,12 +54,19 @@ export class ProductService {
       .put<WebApiResponse<Product>>(`${this._baseEndPoint}/update`, product)
       .pipe(
         delay(delayMs),
-        tap(() => this.productChangedSubject.next()),
+        tap(() => this._productChangedSubject.next()),
       );
   }
 
-  refreshProducts(): void {
-    this.loaded = false;
-    this.getProducts(true).subscribe();
+  deleteProduct(product: Product): Observable<WebApiResponse<Product>> {
+    return this.apiService.delete<WebApiResponse<Product>>(
+      `${this._baseEndPoint}/remove`,
+      product,
+    );
+  }
+
+  refreshProducts(): Observable<WebApiResponse<Product[]>> {
+    this._loaded = false;
+    return this.getProducts(true);
   }
 }
