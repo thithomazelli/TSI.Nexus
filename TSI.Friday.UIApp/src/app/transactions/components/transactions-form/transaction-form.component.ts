@@ -23,6 +23,7 @@ import {
   Transaction,
   PaymentCondition,
   PaymentType,
+  WebApiResponse,
 } from '@friday/core';
 
 import {
@@ -103,8 +104,8 @@ export class TransactionFormComponent
   private paymentsSub?: Subscription;
   private statusSubscription?: Subscription;
 
-  businessPartners$!: Observable<BusinessPartner[]>;
-  filteredBusinessPartners$!: Observable<BusinessPartner[]>;
+  businessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
+  filteredBusinessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
 
   orders$!: Observable<Order[]>;
   filteredOrders$!: Observable<Order[]>;
@@ -257,7 +258,7 @@ export class TransactionFormComponent
   }
 
   submit(): void {
-    this.formSubmitted = true;
+    this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

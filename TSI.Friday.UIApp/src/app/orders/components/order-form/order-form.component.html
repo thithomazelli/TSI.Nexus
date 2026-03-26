@@ -45,7 +45,9 @@
                   <mat-autocomplete #auto="matAutocomplete">
                     <mat-option
                       *ngFor="
-                        let businessPartner of filteredBusinessPartners$ | async
+                        let businessPartner of (
+                          filteredBusinessPartners$ | async
+                        )?.data
                       "
                       [value]="businessPartner.name"
                     >

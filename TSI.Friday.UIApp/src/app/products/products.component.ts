@@ -26,7 +26,6 @@ export class ProductsComponent implements OnInit, OnDestroy {
   baseEndPoint = 'products';
 
   rowData: Product[] = [];
-
   columnDefs: ColDef[] = [
     {
       field: 'id',
@@ -206,7 +205,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   deleteProduct(product: Product): void {
     this.productService
-      .deleteProduct(product)
+      .delete(product)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Product>) => {
         this.rowData = this.rowData.filter((p) => p.id !== product.id);
@@ -221,7 +220,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   refreshProducts(): void {
     this.productService
-      .refreshProducts()
+      .refresh()
       .pipe(
         tap({
           next: () =>

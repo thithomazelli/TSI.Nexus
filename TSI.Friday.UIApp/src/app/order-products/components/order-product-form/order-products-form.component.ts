@@ -1,4 +1,4 @@
-import { firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import {
   Component,
   EventEmitter,
@@ -72,9 +72,9 @@ export class OrderProductsFormComponent
   showAllAddresses = false;
   customerAddresses: Address[] = [];
 
-  products$!: Observable<Product[]>;
-  filteredProductsSku$!: Observable<Product[]>;
-  filteredProductsName$!: Observable<Product[]>;
+  products$!: Observable<WebApiResponse<Product[]>>;
+  filteredProductsSku$!: Observable<WebApiResponse<Product[]>>;
+  filteredProductsName$!: Observable<WebApiResponse<Product[]>>;
 
   productTypeOptions = [
     { label: 'Aluguel', value: ProductType.Rental },
@@ -205,7 +205,7 @@ export class OrderProductsFormComponent
         return;
       }
       // Verifica se o sku existe na lista de produtos
-      const products = (this.products$ as any).source.value as Product[];
+      const products = (this.products$ as any).data as Product[];
       const found = products.find((p) => p.sku === productSku);
       if (!found) {
         const confirmRef = this.modalService.showConfirmation({
@@ -255,7 +255,7 @@ export class OrderProductsFormComponent
         return;
       }
       // Verifica se o nome existe na lista de clientes
-      const products = (this.products$ as any).source.value as Product[];
+      const products = (this.products$ as any).data as Product[];
       const found = products.find((p) => p.name === productName);
       if (!found) {
         const confirmRef = this.modalService.showConfirmation({
@@ -304,7 +304,7 @@ export class OrderProductsFormComponent
       return;
     }
 
-    const products = (this.products$ as any).source.value as Product[];
+    const products = (this.products$ as any).data as Product[];
     const product = products.find((p) => p.sku === productSku);
     if (product?.quantityInStock == null) {
       return;
@@ -397,7 +397,7 @@ export class OrderProductsFormComponent
   }
 
   submit(): void {
-    this.formSubmitted = true;
+    this.submitted = true;
     if (this.form.valid) {
       this.save.emit(this.form.getRawValue());
     } else {
@@ -527,7 +527,7 @@ export class OrderProductsFormComponent
     } else {
       // Atualiza productId ao selecionar produto
       this.form.get('productName')!.valueChanges.subscribe((name) => {
-        const product = (this.products$ as any).source.value.find(
+        const product = (this.products$ as any).data.find(
           (p: Product) => p.name === name,
         );
         if (product) {
@@ -577,7 +577,7 @@ export class OrderProductsFormComponent
         if (!filterValue) {
           return [];
         }
-        return (this.products$ as any).source.value
+        return (this.products$ as any).data
           .filter((product: Product) =>
             (product.sku || '').toLowerCase().includes(filterValue),
           )
@@ -607,7 +607,7 @@ export class OrderProductsFormComponent
           if (!filterValue) {
             return [];
           }
-          return (this.products$ as any).source.value
+          return (this.products$ as any).data
             .filter((product: Product) =>
               (product.name || '').toLowerCase().includes(filterValue),
             )

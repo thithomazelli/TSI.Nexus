@@ -150,7 +150,10 @@
                     ><br />
                     <span>{{ addr.address }}</span
                     ><br />
-                    <a class="address-link me-2" (click)="editAddress(addr)"
+                    <a
+                      class="address-link me-2"
+                      [attr.aria-disabled]="submitted"
+                      (click)="editAddress(addr)"
                       >Editar endereço</a
                     >
                   </div>
@@ -163,6 +166,7 @@
               *ngIf="!canDisplayNewAddressLink && !canDisplayAddressForm"
               href="#"
               class="address-link me-3"
+              [attr.aria-disabled]="submitted"
               (click)="$event.preventDefault(); displayNewAddress()"
               >Adicionar um novo endereço</a
             >
@@ -171,8 +175,6 @@
             *ngIf="canDisplayAddressForm"
             [formGroup]="addressFormGroup"
             [data]="selectedAddress"
-            (save)="saveAddress($event)"
-            (cancel)="cancelAddress()"
             [compact]="true"
           ></app-address-form>
 
@@ -181,6 +183,7 @@
               <button
                 type="button"
                 class="btn btn-secondary me-2"
+                [attr.aria-disabled]="submitted"
                 (click)="$event.preventDefault(); cancelAddress()"
               >
                 Cancelar
@@ -188,8 +191,7 @@
               <button
                 type="submit"
                 class="btn btn-success"
-                [class.disabled]="!addressFormGroup.valid"
-                [attr.aria-disabled]="!addressFormGroup.valid"
+                [class.disabled]="!addressFormGroup.valid || submitted"
                 (click)="
                   $event.preventDefault(); saveAddress(addressFormGroup.value)
                 "
@@ -201,6 +203,7 @@
                 *ngIf="data?.addresses?.length !== 0"
                 href="#"
                 class="address-link me-3"
+                [attr.aria-disabled]="submitted"
                 (click)="$event.preventDefault(); cancelAddress()"
                 >Cancelar
               </a>
@@ -209,8 +212,7 @@
                 id="newAddressLinkButton"
                 href="#"
                 class="address-link"
-                [class.disabled]="!addressFormGroup.valid"
-                [attr.aria-disabled]="!addressFormGroup.valid"
+                [class.disabled]="!addressFormGroup.valid || submitted"
                 (click)="
                   $event.preventDefault(); saveAddress(addressFormGroup.value)
                 "
@@ -226,10 +228,11 @@
       class="d-flex justify-content-end mt-3"
       *ngIf="!canDisplayAddressButtons"
     >
-      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         Cancelar
       </button>
       <button
+        [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
         [disabled]="canDisplayAddressButtons"

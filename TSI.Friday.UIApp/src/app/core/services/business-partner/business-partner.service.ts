@@ -1,73 +1,203 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, delay } from 'rxjs/operators';
 import {
   ApiService,
   ApiType,
   BusinessPartner,
   BusinessPartnerType,
+  Company,
+  Individual,
+  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
+import { AbstractControl, ValidatorFn } from '@angular/forms';
 
 @Injectable({ providedIn: 'root' })
 export class BusinessPartnerService {
-  private businessPartners$ = new BehaviorSubject<BusinessPartner[]>([]);
-  private loaded = false;
   private _baseEndPoint = ApiType.BusinessPartners;
+  private _businessPartners$ = new BehaviorSubject<BusinessPartner[]>([]);
+  private _loaded = false;
+
+  private _businessPartnerChangedSubject = new BehaviorSubject<void>(undefined);
+  businessPartnerChanged$ = this._businessPartnerChangedSubject.asObservable();
 
   constructor(private apiService: ApiService) {}
 
-  getClients(forceRefresh = false): Observable<BusinessPartner[]> {
+  getClients(
+    forceRefresh = true,
+  ): Observable<WebApiResponse<BusinessPartner[]>> {
     return this.getAllBusinessPartnersByType(
       BusinessPartnerType.Client,
       forceRefresh,
     );
   }
 
-  getSuppliers(forceRefresh = false): Observable<BusinessPartner[]> {
+  getSuppliers(
+    forceRefresh = true,
+  ): Observable<WebApiResponse<BusinessPartner[]>> {
     return this.getAllBusinessPartnersByType(
       BusinessPartnerType.Supplier,
       forceRefresh,
     );
   }
 
-  refreshBusinessPartners(): void {
-    this.loaded = false;
-    this.getClients(true).subscribe();
+  getById(id: string): Observable<WebApiResponse<BusinessPartner>> {
+    this._loaded = true;
+    return this.apiService
+      .get<
+        WebApiResponse<BusinessPartner>
+      >(`${this._baseEndPoint}/getById/${id}`)
+      .pipe(
+        tap(() => {
+          this._loaded = true;
+        }),
+      );
+  }
+
+  refresh(
+    type: BusinessPartnerType,
+  ): Observable<WebApiResponse<BusinessPartner[]>> {
+    this._loaded = false;
+    return this.getAllBusinessPartnersByType(type, true);
+  }
+
+  add(
+    businessPartner: Company | Individual,
+  ): Observable<WebApiResponse<Company | Individual>> {
+    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const endPointUrl =
+      businessPartner.documentType === 'Física'
+        ? ApiType.Individuals
+        : ApiType.Companies;
+
+    return this.apiService
+      .post<
+        WebApiResponse<Company | Individual>
+      >(`${endPointUrl}/add`, businessPartner)
+      .pipe(
+        delay(delayMs),
+        tap(() => this._businessPartnerChangedSubject.next()),
+      );
   }
 
   addOrUpdateBusinessPartner(businessPartner: BusinessPartner): void {
-    const current = this.businessPartners$.value;
+    const current = this._businessPartners$.value;
     const idx = current.findIndex((c) => c.id === businessPartner.id);
     if (idx > -1) {
       current[idx] = businessPartner;
     } else {
       current.push(businessPartner);
     }
-    this.businessPartners$.next([...current]);
+    this._businessPartners$.next([...current]);
+  }
+
+  update(
+    businessPartner: Company | Individual,
+  ): Observable<WebApiResponse<Company | Individual>> {
+    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const endPointUrl =
+      businessPartner.documentType === 'Física'
+        ? ApiType.Individuals
+        : ApiType.Companies;
+
+    return this.apiService
+      .put<
+        WebApiResponse<Company | Individual>
+      >(`${endPointUrl}/update`, businessPartner)
+      .pipe(
+        delay(delayMs),
+        tap(() => this._businessPartnerChangedSubject.next()),
+      );
+  }
+
+  delete(
+    businessPartner: BusinessPartner,
+  ): Observable<WebApiResponse<BusinessPartner>> {
+    return this.apiService.delete<WebApiResponse<BusinessPartner>>(
+      `${this._baseEndPoint}/remove`,
+      businessPartner,
+    );
+  }
+
+  cpfValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const value = (control.value || '').replace(/\D/g, '');
+      if (!value) return null;
+      if (value.length !== 11) return { cpfInvalido: true };
+      let sum = 0;
+      let remainder;
+      if (/^(\d)\1+$/.test(value)) return { cpfInvalido: true };
+      for (let i = 1; i <= 9; i++)
+        sum += parseInt(value.charAt(i - 1)) * (11 - i);
+      remainder = (sum * 10) % 11;
+      if (remainder === 10 || remainder === 11) remainder = 0;
+      if (remainder !== parseInt(value.charAt(9))) return { cpfInvalido: true };
+      sum = 0;
+      for (let i = 1; i <= 10; i++)
+        sum += parseInt(value.charAt(i - 1)) * (12 - i);
+      remainder = (sum * 10) % 11;
+      if (remainder === 10 || remainder === 11) remainder = 0;
+      if (remainder !== parseInt(value.charAt(10)))
+        return { cpfInvalido: true };
+      return null;
+    };
+  }
+
+  cnpjValidator(): ValidatorFn {
+    return (control: AbstractControl) => {
+      const value = (control.value || '').replace(/\D/g, '');
+      if (!value) return null;
+      if (value.length !== 14) return { cnpjInvalido: true };
+      if (/^(\d)\1+$/.test(value)) return { cnpjInvalido: true };
+      let length = value.length - 2;
+      let numbers = value.substring(0, length);
+      let digits = value.substring(length);
+      let sum = 0;
+      let pos = length - 7;
+      for (let i = length; i >= 1; i--) {
+        sum += parseInt(numbers.charAt(length - i)) * pos--;
+        if (pos < 2) pos = 9;
+      }
+      let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+      if (result !== parseInt(digits.charAt(0))) return { cnpjInvalido: true };
+      length = length + 1;
+      numbers = value.substring(0, length);
+      sum = 0;
+      pos = length - 7;
+      for (let i = length; i >= 1; i--) {
+        sum += parseInt(numbers.charAt(length - i)) * pos--;
+        if (pos < 2) pos = 9;
+      }
+      result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+      if (result !== parseInt(digits.charAt(1))) return { cnpjInvalido: true };
+      return null;
+    };
   }
 
   private getAllBusinessPartnersByType(
     type: BusinessPartnerType,
-    forceRefresh = false,
-  ): Observable<BusinessPartner[]> {
-    if (!this.loaded || forceRefresh) {
-      this.apiService
-        .get<WebApiResponse<BusinessPartner[]>>(
-          `${this._baseEndPoint}/getAll${type === BusinessPartnerType.Client ? 'Clients' : 'Suppliers'}`,
-        )
+    forceRefresh = true,
+  ): Observable<WebApiResponse<BusinessPartner[]>> {
+    if (!this._loaded || forceRefresh) {
+      return this.apiService
+        .get<
+          WebApiResponse<BusinessPartner[]>
+        >(`${this._baseEndPoint}/getAll${type === BusinessPartnerType.Client ? 'Clients' : 'Suppliers'}`)
         .pipe(
           tap((response) => {
-            this.businessPartners$.next(response.data);
-            this.loaded = true;
+            this._businessPartners$.next(response.data);
+            this._loaded = true;
           }),
-          catchError(() => {
-            this.businessPartners$.next([]);
-            return of([]);
-          }),
-        )
-        .subscribe();
+        );
     }
-    return this.businessPartners$.asObservable();
+    return of({
+      data: this._businessPartners$.value,
+      message:
+        type === BusinessPartnerType.Client
+          ? 'Clientes carregados do cache'
+          : 'Fornecedores carregados do cache',
+      status: ResponseStatus.Success,
+    });
   }
 }

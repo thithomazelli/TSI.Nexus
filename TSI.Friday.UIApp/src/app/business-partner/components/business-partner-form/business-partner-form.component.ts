@@ -1,29 +1,32 @@
 import {
   Component,
-  ElementRef,
-  EventEmitter,
   Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
-import {
-  FormBuilder,
-  Validators,
-  ValidatorFn,
-  AbstractControl,
-  FormGroup,
-} from '@angular/forms';
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+
 import {
   Address,
+  ApiType,
   BusinessPartner,
+  BusinessPartnerService,
   BusinessPartnerType,
   Company,
   FormBaseComponent,
   Individual,
+  ModalService,
+  NotificationService,
+  ResponseStatus,
+  WebApiResponse,
 } from '@friday/core';
+
+import { Observable, of, tap } from 'rxjs';
+
+import { BusinessPartnerDetailsModalComponent } from '../business-partner-details-modal/business-partner-details-modal.component';
 
 @Component({
   selector: 'app-business-partner-form',
@@ -35,13 +38,11 @@ export class BusinessPartnerFormComponent
   extends FormBaseComponent
   implements OnInit, OnChanges
 {
-  @ViewChild('firstInput') firstInput!: ElementRef;
+  @Input()
+  isModal = false;
 
   @Input()
   isEdit = false;
-
-  @Input()
-  isModal = false;
 
   @Input()
   data?: Individual | Company | null = <BusinessPartner>{};
@@ -50,13 +51,7 @@ export class BusinessPartnerFormComponent
   compact = false;
 
   @Input()
-  errors: string[] | undefined;
-
-  @Output()
-  save = new EventEmitter<any>(); // Troque 'any' por 'Client' se tiver o model
-
-  @Output()
-  cancel = new EventEmitter<void>();
+  dialogRef?: MatDialogRef<BusinessPartnerDetailsModalComponent>;
 
   canDisplayClientButtons = true;
   canDisplayAddressForm = true;
@@ -64,7 +59,15 @@ export class BusinessPartnerFormComponent
   canDisplayNewAddressLink = false;
   selectedAddressIndex: number | null = null;
 
-  constructor(private formBuilder: FormBuilder) {
+  private _baseEndPoint: ApiType = ApiType.BusinessPartners;
+
+  constructor(
+    private businessPartnerService: BusinessPartnerService,
+    private formBuilder: FormBuilder,
+    private modalService: ModalService,
+    private notificationService: NotificationService,
+    private routerService: Router,
+  ) {
     super();
   }
 
@@ -110,16 +113,16 @@ export class BusinessPartnerFormComponent
     return null;
   }
 
-  submit(): void {
-    this.formSubmitted = true;
+  submit(): Observable<WebApiResponse<BusinessPartner> | null> {
+    this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      return;
+      return of(null);
     }
 
     const raw = this.form.getRawValue();
     if (!raw.birthday || raw.birthday === '') {
-      raw.birthday = null;
+      delete raw.birthday;
     }
 
     if (this.compact && raw.address && raw.address.zipCode != null) {
@@ -134,9 +137,9 @@ export class BusinessPartnerFormComponent
         );
 
         if (idx !== -1) {
-          this.data!.addresses[idx] = raw.address;
-        } else {
-          this.data!.addresses.push(raw.address);
+          this.data!.addresses[idx] = new Address({ ...raw.address });
+        } else if (raw.address?.street != '') {
+          this.data!.addresses.push(new Address({ ...raw.address }));
         }
       }
 
@@ -150,7 +153,11 @@ export class BusinessPartnerFormComponent
       }
 
       // Se não tiver endereço default, define o primeiro como default
-      if (!this.data?.addresses.find((addr) => addr.isDefault)) {
+      if (
+        Array.isArray(this.data?.addresses) &&
+        this.data.addresses.length > 0 &&
+        !this.data.addresses.find((addr) => addr.isDefault)
+      ) {
         this.data!.addresses![0].isDefault = true;
       }
 
@@ -163,11 +170,28 @@ export class BusinessPartnerFormComponent
       Object.assign(this.data!, raw);
     }
 
-    this.save.emit(this.data);
+    return this.save(raw as BusinessPartner).pipe(
+      tap({
+        next: (response: WebApiResponse<BusinessPartner>) => {
+          if (this.isModal) {
+            this.saveModal(response);
+          } else {
+            this.savePage(response);
+          }
+        },
+        error: (err) => {
+          this.notificationService.showMessage('Error', 'Erro ao salvar');
+        },
+      }),
+    );
   }
 
-  doCancel(): void {
-    this.cancel.emit();
+  cancel(): void {
+    if (this.isModal) {
+      this.modalService.hideModal(this.dialogRef);
+    } else {
+      this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    }
   }
 
   onSaveAndAddNewAddress(): void {
@@ -279,8 +303,8 @@ export class BusinessPartnerFormComponent
       documentType: ['Física', [Validators.required]],
       phone: ['', []],
       mobile: ['', []],
-      socialSecurityCard: ['', this.cpfValidator()],
-      nationalRegistry: ['', this.cnpjValidator()],
+      socialSecurityCard: ['', this.businessPartnerService.cpfValidator()],
+      nationalRegistry: ['', this.businessPartnerService.cnpjValidator()],
       birthday: [null],
       photo: [''],
       address: this.compact ? addressGroup : null,
@@ -387,17 +411,21 @@ export class BusinessPartnerFormComponent
     if (documentType === 'Física') {
       this.form
         .get('socialSecurityCard')
-        ?.setValidators([Validators.required, this.cpfValidator()]);
+        ?.setValidators([
+          Validators.required,
+          this.businessPartnerService.cpfValidator(),
+        ]);
       this.form.get('nationalRegistry')?.clearValidators();
       this.form.get('nationalRegistry')?.setValue('');
-      this.form.get('birthday')?.setValidators([Validators.required]);
     } else if (documentType === 'Jurídica') {
       this.form
         .get('nationalRegistry')
-        ?.setValidators([Validators.required, this.cnpjValidator()]);
+        ?.setValidators([
+          Validators.required,
+          this.businessPartnerService.cnpjValidator(),
+        ]);
       this.form.get('socialSecurityCard')?.clearValidators();
       this.form.get('socialSecurityCard')?.setValue('');
-      this.form.get('birthday')?.clearValidators();
       if (clearBirthday) {
         this.form.get('birthday')?.setValue('');
       }
@@ -407,60 +435,39 @@ export class BusinessPartnerFormComponent
     this.form.get('birthday')?.updateValueAndValidity();
   }
 
-  // Validador customizado para CPF
-  private cpfValidator(): ValidatorFn {
-    return (control: AbstractControl) => {
-      const value = (control.value || '').replace(/\D/g, '');
-      if (!value) return null;
-      if (value.length !== 11) return { cpfInvalido: true };
-      let sum = 0;
-      let remainder;
-      if (/^(\d)\1+$/.test(value)) return { cpfInvalido: true };
-      for (let i = 1; i <= 9; i++)
-        sum += parseInt(value.charAt(i - 1)) * (11 - i);
-      remainder = (sum * 10) % 11;
-      if (remainder === 10 || remainder === 11) remainder = 0;
-      if (remainder !== parseInt(value.charAt(9))) return { cpfInvalido: true };
-      sum = 0;
-      for (let i = 1; i <= 10; i++)
-        sum += parseInt(value.charAt(i - 1)) * (12 - i);
-      remainder = (sum * 10) % 11;
-      if (remainder === 10 || remainder === 11) remainder = 0;
-      if (remainder !== parseInt(value.charAt(10)))
-        return { cpfInvalido: true };
-      return null;
-    };
+  private save(
+    businessPartner: Company | Individual,
+  ): Observable<WebApiResponse<BusinessPartner>> {
+    return this.isEdit && this.data
+      ? this.businessPartnerService.update(businessPartner)
+      : this.businessPartnerService.add(businessPartner);
   }
 
-  // Validador customizado para CNPJ
-  private cnpjValidator(): ValidatorFn {
-    return (control: AbstractControl) => {
-      const value = (control.value || '').replace(/\D/g, '');
-      if (!value) return null;
-      if (value.length !== 14) return { cnpjInvalido: true };
-      if (/^(\d)\1+$/.test(value)) return { cnpjInvalido: true };
-      let length = value.length - 2;
-      let numbers = value.substring(0, length);
-      let digits = value.substring(length);
-      let sum = 0;
-      let pos = length - 7;
-      for (let i = length; i >= 1; i--) {
-        sum += parseInt(numbers.charAt(length - i)) * pos--;
-        if (pos < 2) pos = 9;
-      }
-      let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-      if (result !== parseInt(digits.charAt(0))) return { cnpjInvalido: true };
-      length = length + 1;
-      numbers = value.substring(0, length);
-      sum = 0;
-      pos = length - 7;
-      for (let i = length; i >= 1; i--) {
-        sum += parseInt(numbers.charAt(length - i)) * pos--;
-        if (pos < 2) pos = 9;
-      }
-      result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-      if (result !== parseInt(digits.charAt(1))) return { cnpjInvalido: true };
-      return null;
-    };
+  private saveModal(response: WebApiResponse<BusinessPartner>): any {
+    this.dialogRef?.close(response);
+
+    if (response.status == ResponseStatus.Success) {
+      this.modalService.showNotification(
+        response.status == ResponseStatus.Success,
+        response.data.type === BusinessPartnerType.Client
+          ? 'Cliente adicionado'
+          : 'Fornecedor adicionado',
+        response.message,
+      );
+      return;
+    }
+
+    this.modalService.showNotification(false, '', response.message);
+  }
+
+  private savePage(response: WebApiResponse<BusinessPartner>): any {
+    if (this.isEdit && this.data) {
+      this.notificationService.showMessage(response.status, response.message);
+      this.data = response.data;
+    } else {
+      this.routerService.navigateByUrl(
+        `/${this._baseEndPoint}/${response.data.id}`,
+      );
+    }
   }
 }

@@ -8,10 +8,10 @@
 
 <div class="app-content">
   <app-grid
+    [baseEndPoint]="baseEndPoint"
     [className]="title"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [baseEndPoint]="baseEndPoint"
     [refresh]="refreshBusinessPartners.bind(this)"
     [delete]="deleteBusinessPartner.bind(this)"
     (openModal)="onOpenModal($event)"
