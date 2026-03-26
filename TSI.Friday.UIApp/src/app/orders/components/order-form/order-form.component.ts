@@ -27,6 +27,7 @@ import {
   PaymentCondition,
   PaymentMethod,
   PaymentStatus,
+  WebApiResponse,
 } from '@friday/core';
 
 import { MatDialogRef } from '@angular/material/dialog';
@@ -70,8 +71,8 @@ export class OrderFormComponent
   errors: string[] | undefined;
 
   canDisplayTransactionForm: boolean = true;
-  businessPartners$!: Observable<BusinessPartner[]>;
-  filteredBusinessPartners$!: Observable<BusinessPartner[]>;
+  businessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
+  filteredBusinessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
 
   orderStatusOptions = [
     { value: OrderStatus.Open, label: 'Em Aberto' },
@@ -110,8 +111,12 @@ export class OrderFormComponent
   }
 
   ngOnDestroy(): void {
-    this.businessPartners$ = new Observable<BusinessPartner[]>();
-    this.filteredBusinessPartners$ = new Observable<BusinessPartner[]>();
+    this.businessPartners$ = new Observable<
+      WebApiResponse<BusinessPartner[]>
+    >();
+    this.filteredBusinessPartners$ = new Observable<
+      WebApiResponse<BusinessPartner[]>
+    >();
     if (this.statusSubscription) {
       this.statusSubscription.unsubscribe();
     }
@@ -179,7 +184,7 @@ export class OrderFormComponent
   }
 
   submit(): void {
-    this.formSubmitted = true;
+    this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

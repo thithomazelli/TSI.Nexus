@@ -75,7 +75,7 @@ export class UserFormComponent
   }
 
   submit(): void {
-    this.formSubmitted = true;
+    this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

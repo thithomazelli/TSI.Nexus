@@ -1,14 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  ApiService,
-  ApiType,
-  BusinessPartner,
-  Company,
-  Individual,
-  NotificationService,
-  WebApiResponse,
-} from '@friday/core';
+import { BusinessPartnerService, Company, Individual } from '@friday/core';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-business-partner-details-page',
@@ -16,7 +9,7 @@ import {
   styleUrl: './business-partner-details-page.component.scss',
   standalone: false,
 })
-export class BusinessPartnerDetailsPageComponent {
+export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data: Company | Individual | null = null;
   id: string | null = null;
@@ -27,13 +20,12 @@ export class BusinessPartnerDetailsPageComponent {
   baseEndPoint: string = '';
   canDisplayOrdersTab = true;
 
-  private _baseEndPoint: ApiType = ApiType.BusinessPartners;
+  private _destroy$ = new Subject<void>();
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private apiService: ApiService,
+    private businessPartnerService: BusinessPartnerService,
     private routerService: Router,
-    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -43,11 +35,16 @@ export class BusinessPartnerDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      this.loadBusinessPartner(idParam);
+      this.getBusinessPartnerById(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
     }
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 
   private initialize(): void {
@@ -65,56 +62,18 @@ export class BusinessPartnerDetailsPageComponent {
     }
   }
 
-  save(businessPartner: Company | Individual): void {
-    this._baseEndPoint =
-      businessPartner.documentType === 'Física'
-        ? ApiType.Individuals
-        : ApiType.Companies;
-
-    if (this.isEdit && this.id) {
-      this.apiService
-        .put<
-          WebApiResponse<Company | Individual>
-        >(`${this._baseEndPoint}/update`, businessPartner)
-        .subscribe((response: WebApiResponse<Company | Individual>) => {
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-          this.data = response.data;
-        });
-    } else {
-      this.apiService
-        .post<
-          WebApiResponse<BusinessPartner>
-        >(`${this._baseEndPoint}/add`, businessPartner)
-        .subscribe((response: WebApiResponse<BusinessPartner>) => {
-          this.routerService.navigateByUrl(
-            `/${this._baseEndPoint}/${response.data.id}`,
-          );
-        });
-    }
-  }
-
-  cancel(): void {
-    this.routerService.navigateByUrl('/clients');
-  }
-
-  private loadBusinessPartner(id: string): void {
+  private getBusinessPartnerById(id: string): void {
     this.loading = true;
-    this.apiService
-      .get<
-        WebApiResponse<BusinessPartner>
-      >(`${this._baseEndPoint}/getById/${id}`)
+    this.businessPartnerService
+      .getById(id)
+      .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: (response: WebApiResponse<BusinessPartner>) => {
+        next: (response) => {
           this.loading = false;
-
           if (response.data == null) {
             this.routerService.navigateByUrl('/not-found');
             return;
           }
-
           this.data = response.data;
         },
         error: () => {

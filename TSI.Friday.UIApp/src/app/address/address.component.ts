@@ -1,14 +1,17 @@
 import { Component, Input } from '@angular/core';
 import {
-  ApiService,
-  ApiType,
   Address,
   ModalService,
   WebApiResponse,
   BusinessPartner,
+  AddressService,
+  NotificationService,
+  ResponseStatus,
 } from '@friday/core';
+
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { AddressDetailsModalComponent } from './components/address-details-modal/address-details-modal.component';
+import { startWith, Subject, Subscription, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-address',
@@ -19,8 +22,6 @@ import { AddressDetailsModalComponent } from './components/address-details-modal
 export class AddressComponent {
   @Input()
   parentData?: BusinessPartner | null = null;
-
-  private _baseEndPoint = ApiType.Addresses;
 
   rowData: Address[] = [];
   columnDefs: ColDef[] = [
@@ -131,17 +132,36 @@ export class AddressComponent {
     },
   ];
 
+  private _addressChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
+    private addressService: AddressService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
-    this.getAddresses();
+    this._addressChangedSub = this.addressService.addressChanged$
+      .pipe(startWith(null), takeUntil(this._destroy$))
+      .subscribe(() => {
+        this.getAddresses();
+      });
   }
 
-  refreshAddresses(): void {
-    this.getAddresses();
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._addressChangedSub) {
+      this._addressChangedSub.unsubscribe();
+    }
+  }
+
+  onOpenModal(initialState: any) {
+    this.modalService.showTemplateModal(
+      AddressDetailsModalComponent,
+      initialState,
+    );
   }
 
   deleteAddress(address: Address): void {
@@ -154,52 +174,63 @@ export class AddressComponent {
       return;
     }
 
-    this.apiService
-      .delete<WebApiResponse<Address>>(`${this._baseEndPoint}/remove`, address)
+    this.addressService
+      .deleteAddress(address)
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Address>) => {
         this.rowData = this.rowData.filter((p) => p.id !== address.id);
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          '',
+          'Endereço excluído',
           response.message,
-          response.status,
+          'success',
         );
+      });
+  }
+
+  refreshAddresses(): void {
+    this.addressService
+      .refresh(this.parentData?.id ?? '')
+      .pipe(
+        tap({
+          next: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Success,
+              'Endereços atualizados com sucesso',
+            ),
+          error: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Error,
+              'Erro ao atualizar endereços',
+            ),
+        }),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((response: WebApiResponse<Address[]>) => {
+        this.rowData = response.data ?? [];
       });
   }
 
   updateDefaultAddress(address: Address): void {
     address.isDefault = true;
-    this.apiService
-      .put<WebApiResponse<Address>>(`${this._baseEndPoint}/update`, address)
+    this.addressService
+      .update(address)
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Address>) => {
         this.getAddresses();
+        this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          '',
+          'Endereço atualizado',
           response.message,
-          response.status,
+          'success',
         );
-        this.refreshAddresses();
       });
-  }
-
-  onOpenModal(initialState: any) {
-    const ref = this.modalService.showTemplateModal(
-      AddressDetailsModalComponent,
-      initialState,
-    );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.refreshAddresses();
-        ref.close();
-      });
-    }
   }
 
   private getAddresses(): void {
-    this.apiService
-      .get<
-        WebApiResponse<Address[]>
-      >(`${this._baseEndPoint}/getAllByBusinessPartnerId/${this.parentData?.id}`)
+    this.addressService
+      .getAddresses(this.parentData?.id ?? '')
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Address[]>) => {
         this.rowData = response.data ?? [];
       });

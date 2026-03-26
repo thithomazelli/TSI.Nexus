@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import {
-  ApiService,
-  ApiType,
   BusinessPartner,
+  BusinessPartnerService,
   BusinessPartnerType,
   ModalService,
+  NotificationService,
+  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -14,6 +15,7 @@ import {
 } from 'ag-grid-community';
 import { BusinessPartnerDetailsModalComponent } from './components/business-partner-details-modal/business-partner-details-modal.component';
 import { Router } from '@angular/router';
+import { startWith, Subject, Subscription, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-business-partners',
@@ -22,10 +24,8 @@ import { Router } from '@angular/router';
   standalone: false,
 })
 export class BusinessPartnersComponent {
-  private _baseEndPoint = ApiType.BusinessPartners;
   title: string = '';
   baseEndPoint: string = '';
-
   rowData: BusinessPartner[] = [];
   columnDefs: ColDef[] = [
     {
@@ -154,15 +154,97 @@ export class BusinessPartnersComponent {
     },
   ];
 
+  private _businessPartnerChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
+    private businessPartnerService: BusinessPartnerService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
     private routerService: Router,
   ) {}
 
   ngOnInit(): void {
     this.initialize();
-    this.getBusinessPartners();
+    this._businessPartnerChangedSub =
+      this.businessPartnerService.businessPartnerChanged$
+        .pipe(startWith(null), takeUntil(this._destroy$))
+        .subscribe(() => {
+          this.getBusinessPartners();
+        });
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._businessPartnerChangedSub) {
+      this._businessPartnerChangedSub.unsubscribe();
+    }
+  }
+
+  onOpenModal(initialState: any) {
+    const initialStateWithData = {
+      ...initialState,
+      data: {
+        ...initialState.data,
+        type:
+          this.baseEndPoint === 'clients'
+            ? BusinessPartnerType.Client
+            : BusinessPartnerType.Supplier,
+      },
+    };
+
+    this.modalService.showTemplateModal(
+      BusinessPartnerDetailsModalComponent,
+      initialStateWithData,
+    );
+  }
+
+  deleteBusinessPartner(businessPartner: BusinessPartner): void {
+    this.businessPartnerService
+      .delete(businessPartner)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response: WebApiResponse<BusinessPartner>) => {
+        this.rowData = this.rowData.filter((p) => p.id !== businessPartner.id);
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          'Item excluído',
+          response.message,
+          response.status,
+        );
+      });
+  }
+
+  refreshBusinessPartners(): void {
+    const type =
+      this.baseEndPoint === 'clients'
+        ? BusinessPartnerType.Client
+        : BusinessPartnerType.Supplier;
+
+    this.businessPartnerService
+      .refresh(type)
+      .pipe(
+        tap({
+          next: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Success,
+              type === BusinessPartnerType.Client
+                ? 'Clientes atualizados com sucesso'
+                : 'Fornecedores atualizados com sucesso',
+            ),
+          error: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Error,
+              type === BusinessPartnerType.Client
+                ? 'Erro ao atualizar Clientes'
+                : 'Erro ao atualizar Fornecedores',
+            ),
+        }),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
+        this.rowData = response.data ?? [];
+      });
   }
 
   private initialize(): void {
@@ -179,57 +261,23 @@ export class BusinessPartnersComponent {
     }
   }
 
-  refreshBusinessPartners(): void {
-    this.getBusinessPartners();
-  }
-
-  deleteBusinessPartner(businessPartner: BusinessPartner): void {
-    this.apiService
-      .delete<
-        WebApiResponse<BusinessPartner>
-      >(`${this._baseEndPoint}/remove`, businessPartner)
-      .subscribe((response: WebApiResponse<BusinessPartner>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== businessPartner.id);
-        this.modalService.showSweetNotification(
-          '',
-          response.message,
-          'success',
-        );
-      });
-  }
-
-  onOpenModal(initialState: any) {
-    const initialStateWithData = {
-      ...initialState,
-      data: {
-        ...initialState.data,
-        type:
-          this.baseEndPoint === 'clients'
-            ? BusinessPartnerType.Client
-            : BusinessPartnerType.Supplier,
-      },
-    };
-
-    const ref = this.modalService.showTemplateModal(
-      BusinessPartnerDetailsModalComponent,
-      initialStateWithData,
-    );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.refreshBusinessPartners();
-        ref.close();
-      });
-    }
-  }
-
   private getBusinessPartners(): void {
-    const endpoint =
-      this.baseEndPoint === 'clients' ? 'getAllClients' : 'getAllSuppliers';
+    this.baseEndPoint === 'clients' ? this.getClients() : this.getSuppliers();
+  }
 
-    this.apiService
-      .get<
-        WebApiResponse<BusinessPartner[]>
-      >(`${this._baseEndPoint}/${endpoint}`)
+  private getClients(): void {
+    this.businessPartnerService
+      .getClients()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
+        this.rowData = response.data ?? [];
+      });
+  }
+
+  private getSuppliers(): void {
+    this.businessPartnerService
+      .getSuppliers()
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
       });
