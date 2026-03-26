@@ -7,11 +7,11 @@
 
 <div class="modal-body">
   <app-address-form
+    [isModal]="true"
     [isEdit]="isEdit"
     [data]="data"
-    (save)="save($event)"
-    (cancel)="close()"
+    [parentId]="parentId"
+    [dialogRef]="dialogRef"
     [compact]="false"
-    [errors]="errorMessages"
   ></app-address-form>
 </div>

@@ -1,4 +1,5 @@
 export * from './account/account.service';
+export * from './address/address.service';
 export * from './api/api.service';
 export * from './business-partner/business-partner.service';
 export * from './currency/currency.service';
@@ -9,3 +10,5 @@ export * from './order-product/order-product.service';
 export * from './payment/payment.service';
 export * from './photo/photo.service';
 export * from './product/product.service';
+export * from './transaction/transaction.service';
+export * from './user/user.service';

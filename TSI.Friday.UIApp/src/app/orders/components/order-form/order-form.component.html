@@ -45,7 +45,9 @@
                   <mat-autocomplete #auto="matAutocomplete">
                     <mat-option
                       *ngFor="
-                        let businessPartner of filteredBusinessPartners$ | async
+                        let businessPartner of (
+                          filteredBusinessPartners$ | async
+                        )?.data
                       "
                       [value]="businessPartner.name"
                     >
@@ -74,12 +76,12 @@
                 <input
                   formControlName="description"
                   type="text"
-                  placeholder="Description"
+                  placeholder="Descrição"
                   class="form-control"
                   [class.is-invalid]="isInvalid('description')"
                   [class.is-valid]="isValid('description')"
                 />
-                <label for="description">Description</label>
+                <label for="description">Descrição</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-card-text"></i>

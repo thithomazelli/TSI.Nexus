@@ -22,9 +22,9 @@ import { UserDetailsPageComponent } from '../../users/components/user-details-pa
 
 @Component({
   selector: 'app-reset-password',
-  standalone: false,
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
+  standalone: false,
 })
 export class ResetPasswordComponent
   extends FormBaseComponent

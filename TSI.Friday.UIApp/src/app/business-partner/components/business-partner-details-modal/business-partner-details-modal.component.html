@@ -7,12 +7,10 @@
 
 <div class="modal-body">
   <app-business-partner-form
-    [isEdit]="isEdit"
     [isModal]="true"
+    [isEdit]="isEdit"
     [data]="data"
-    (save)="save($event)"
-    (cancel)="close()"
+    [dialogRef]="dialogRef"
     [compact]="true"
-    [errors]="errorMessages"
   ></app-business-partner-form>
 </div>

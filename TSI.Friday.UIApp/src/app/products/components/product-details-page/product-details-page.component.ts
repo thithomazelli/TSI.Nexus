@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  ApiService,
   ApiType,
-  NotificationService,
   Product,
+  ProductService,
   ProductType,
   WebApiResponse,
 } from '@friday/core';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-product-details-page',
@@ -28,13 +28,13 @@ export class ProductDetailsPageComponent {
     [ProductType.Service]: 'Serviço',
   };
 
+  private _destroy$ = new Subject<void>();
   private _baseEndPoint: ApiType = ApiType.Products;
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private apiService: ApiService,
+    private productService: ProductService,
     private routerService: Router,
-    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -43,37 +43,11 @@ export class ProductDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      this.loadProduct(idParam);
+      this.getProductById(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
     }
-  }
-
-  save(product: Product): void {
-    if (this.isEdit && this.id) {
-      this.apiService
-        .put<WebApiResponse<Product>>(`${this._baseEndPoint}/update`, product)
-        .subscribe((response: WebApiResponse<Product>) => {
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-          this.data = response.data;
-        });
-    } else {
-      this.apiService
-        .post<WebApiResponse<Product>>(`${this._baseEndPoint}/add`, product)
-        .subscribe((response: WebApiResponse<Product>) => {
-          this.routerService.navigateByUrl(
-            `/${this._baseEndPoint}/${response.data.id}`,
-          );
-        });
-    }
-  }
-
-  cancel(): void {
-    this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
   }
 
   getProductTypeLabel(): string {
@@ -83,19 +57,18 @@ export class ProductDetailsPageComponent {
     return this.productTypeOptions[this.data.type];
   }
 
-  private loadProduct(id: string): void {
+  private getProductById(id: string): void {
     this.loading = true;
-    this.apiService
-      .get<WebApiResponse<Product>>(`${this._baseEndPoint}/getById/${id}`)
+    this.productService
+      .getById(id)
+      .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: (response: WebApiResponse<Product>) => {
+        next: (response) => {
           this.loading = false;
-
           if (response.data == null) {
             this.routerService.navigateByUrl('/not-found');
             return;
           }
-
           this.data = response.data;
         },
         error: () => {

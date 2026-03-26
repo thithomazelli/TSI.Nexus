@@ -30,7 +30,9 @@
                     (optionSelected)="selectProduct($event.option.value)"
                   >
                     <mat-option
-                      *ngFor="let product of filteredProductsSku$ | async"
+                      *ngFor="
+                        let product of (filteredProductsSku$ | async)?.data
+                      "
                       [value]="product"
                       [disabled]="product.disabled || product.alreadyUsed"
                       [ngClass]="{ 'text-muted': product.disabled }"
@@ -76,7 +78,9 @@
                     (optionSelected)="selectProduct($event.option.value)"
                   >
                     <mat-option
-                      *ngFor="let product of filteredProductsName$ | async"
+                      *ngFor="
+                        let product of (filteredProductsName$ | async)?.data
+                      "
                       [value]="product"
                       [disabled]="product.disabled || product.alreadyUsed"
                       [ngClass]="{
