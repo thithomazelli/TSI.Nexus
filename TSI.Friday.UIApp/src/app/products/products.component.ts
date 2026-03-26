@@ -135,6 +135,7 @@ export class ProductsComponent implements OnInit {
     },
     {
       headerName: 'Ações',
+      minWidth: 150,
       sortable: false,
       filter: false,
       maxWidth: 400,

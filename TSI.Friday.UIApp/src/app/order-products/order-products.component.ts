@@ -330,6 +330,7 @@ export class OrderProductsComponent {
       },
       {
         headerName: 'Ações',
+        minWidth: 150,
         sortable: false,
         filter: false,
         resizable: true,

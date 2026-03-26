@@ -7,6 +7,7 @@ const routes: Routes = [
   {
     path: '',
     runGuardsAndResolvers: 'always',
+    data: { roles: ['Admin'] },
     children: [
       {
         path: '',
@@ -15,11 +16,13 @@ const routes: Routes = [
       {
         path: 'new',
         component: TransactionDetailsPageComponent,
+        data: { roles: ['Financeiro'] },
       },
       {
         path: ':id',
         component: TransactionDetailsPageComponent,
         runGuardsAndResolvers: 'always',
+        data: { roles: ['Admin'] },
       },
     ],
   },

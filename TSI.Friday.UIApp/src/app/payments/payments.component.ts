@@ -356,6 +356,7 @@ export class PaymentsComponent {
       },
       {
         headerName: 'Ações',
+        minWidth: 150,
         sortable: false,
         filter: false,
         resizable: false,
