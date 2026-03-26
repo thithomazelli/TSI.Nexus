@@ -134,6 +134,7 @@ export class BusinessPartnersComponent {
     },
     {
       headerName: 'Ações',
+      minWidth: 150,
       sortable: false,
       filter: false,
       resizable: true,

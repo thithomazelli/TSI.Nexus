@@ -10,8 +10,6 @@ import { take } from 'rxjs';
   styleUrl: './confirm-email.component.scss',
 })
 export class ConfirmEmailComponent implements OnInit {
-  success: boolean = true;
-
   constructor(
     private accountService: AccountService,
     private modalService: ModalService,
@@ -19,35 +17,35 @@ export class ConfirmEmailComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.accountService.user$.pipe(take(1)).subscribe({
-      next: (user: User | null) => {
+      next: async (user: User | null) => {
         if (user) {
           this.router.navigate(['/']);
         } else {
           this.activatedRoute.queryParamMap.subscribe({
-            next: (params: any) => {
+            next: async (params: any) => {
               const confirmEmail = <ConfirmEmail>{
                 token: params.get('token'),
                 email: params.get('email'),
               };
 
               this.accountService.confirmEmail(confirmEmail).subscribe({
-                next: (response: any) => {
-                  this.modalService.showSweetNotification(
+                next: async (response: any) => {
+                  await this.modalService.showSweetNotification(
                     response.value.title,
                     response.value.message,
                     'success',
                   );
+                  this.router.navigate(['/account/login']);
                 },
-                error: (response: any) => {
-                  this.success = false;
-
-                  this.modalService.showSweetNotification(
+                error: async (response: any) => {
+                  await this.modalService.showSweetNotification(
                     'Failed',
                     response.error,
                     'error',
                   );
+                  this.router.navigate(['/account/login']);
                 },
               });
             },
@@ -57,7 +55,7 @@ export class ConfirmEmailComponent implements OnInit {
     });
   }
 
-  resendEmailConfirmation(): void {
-    this.router.navigateByUrl('/account/send-email/resend-email-confirmation');
-  }
+  // resendEmailConfirmation(): void {
+  //   this.router.navigateByUrl('/account/send-email/resend-email-confirmation');
+  // }
 }
