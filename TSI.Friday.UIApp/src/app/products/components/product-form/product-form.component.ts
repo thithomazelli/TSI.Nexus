@@ -4,12 +4,13 @@ import {
   OnInit,
   OnChanges,
   SimpleChanges,
-  Output,
-  EventEmitter,
 } from '@angular/core';
+
 import { FormBuilder, Validators } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+
 import {
-  ApiService,
   ApiType,
   CurrencyService,
   FormBaseComponent,
@@ -22,11 +23,11 @@ import {
   ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
+
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
 import { ProductDetailsModalComponent } from '../product-details-modal/product-details-modal.component';
-import { MatDialogRef } from '@angular/material/dialog';
-import { Router } from '@angular/router';
-import { Observable, lastValueFrom, of } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-form',
@@ -96,14 +97,14 @@ export class ProductFormComponent
   }
 
   submit(): Observable<WebApiResponse<Product> | null> {
-    if (this.form.invalid && this.form.touched) {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
       return of(null);
     }
 
-    return this.save(this.form.value as Product).pipe(
+    return this.save(this.form.getRawValue() as Product).pipe(
       tap({
-        next: (response) => {
+        next: (response: WebApiResponse<Product>) => {
           if (this.isModal) {
             this.saveModal(response);
           } else {

@@ -5,7 +5,7 @@ import {
   ElementRef,
   Renderer2,
 } from '@angular/core';
-import { Observable, isObservable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { WebApiResponse } from '../utilities';
 
@@ -13,7 +13,7 @@ import { WebApiResponse } from '../utilities';
   selector: '[appClick]',
 })
 export class ClickDirective {
-  @Input('appClick') action$!: Observable<WebApiResponse<any> | null>;
+  @Input('appClick') action$!: () => Observable<WebApiResponse<any> | null>;
 
   private spinnerEl: HTMLElement | null = null;
 
@@ -24,14 +24,14 @@ export class ClickDirective {
 
   @HostListener('click')
   onClick() {
-    if (!this.action$ || !isObservable(this.action$)) {
+    if (!this.action$ || typeof this.action$ !== 'function') {
       return;
     }
 
     this.setDisabled(true);
     this.setLoadingClass(true);
     this.addSpinner();
-    this.action$
+    this.action$()
       .pipe(
         tap({
           next: () => this.finishLoading(),
@@ -50,7 +50,11 @@ export class ClickDirective {
   }
 
   private setDisabled(disabled: boolean) {
-    this.renderer.setProperty(this.el.nativeElement, 'disabled', disabled);
+    const nativeEl = this.el.nativeElement;
+    // Só trata elementos nativos que aceitam disabled
+    if (nativeEl.tagName && nativeEl.tagName.toLowerCase() !== 'a') {
+      this.renderer.setProperty(nativeEl, 'disabled', disabled);
+    }
     // Se o botão está dentro de um form, desabilita o form inteiro
     this.setFormDisabled(disabled);
   }
@@ -73,6 +77,43 @@ export class ClickDirective {
       }
       parent = parent.parentElement;
     }
+    // Desabilita todos os controles do form, incluindo <a>
+    const elements = parent.querySelectorAll(
+      'input, button, select, textarea, a',
+    );
+    elements.forEach((el: HTMLElement) => {
+      if (el !== this.el.nativeElement) {
+        if (el.tagName && el.tagName.toLowerCase() === 'a') {
+          if (disabled) {
+            el.setAttribute('aria-disabled', 'true');
+            el.setAttribute('tabindex', '-1');
+            el.classList.add('disabled');
+            if (!(el as any).__aClickHandler) {
+              (el as any).__aClickHandler = (e: Event) => {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+              };
+              el.addEventListener('click', (el as any).__aClickHandler, true);
+            }
+          } else {
+            el.removeAttribute('aria-disabled');
+            el.removeAttribute('tabindex');
+            el.classList.remove('disabled');
+            if ((el as any).__aClickHandler) {
+              el.removeEventListener(
+                'click',
+                (el as any).__aClickHandler,
+                true,
+              );
+              (el as any).__aClickHandler = null;
+            }
+          }
+        } else {
+          this.renderer.setProperty(el, 'disabled', disabled);
+        }
+      }
+    });
   }
 
   private setLoadingClass(loading: boolean) {

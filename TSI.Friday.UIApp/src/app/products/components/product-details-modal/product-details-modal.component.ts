@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ModalService, Product } from '@friday/core';
+import { Product } from '@friday/core';
 
 @Component({
   selector: 'app-product-details-modal',
@@ -14,7 +14,6 @@ export class ProductDetailsModalComponent {
   id: string | null = null;
 
   constructor(
-    private modalService: ModalService,
     public dialogRef: MatDialogRef<ProductDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
@@ -26,6 +25,6 @@ export class ProductDetailsModalComponent {
   }
 
   close(): void {
-    this.modalService.hideModal(this.dialogRef);
+    this.dialogRef.close(null);
   }
 }

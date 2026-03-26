@@ -4,12 +4,11 @@ export class FormBaseComponent {
   form!: FormGroup;
   submitted = false;
   errorMessages: string[] = [];
-  formSubmitted = false;
 
   isInvalid(fieldName: string): boolean {
     const control = this.form.get(fieldName);
     return (
-      (control && control.invalid && (control.touched || this.formSubmitted)) ||
+      (control && control.invalid && (control.touched || this.submitted)) ||
       false
     );
   }
@@ -19,7 +18,7 @@ export class FormBaseComponent {
     return (
       !!control &&
       control.valid &&
-      (control.touched || this.formSubmitted) &&
+      (control.touched || this.submitted) &&
       control.value &&
       control.value.toString().trim() !== ''
     );

@@ -14,8 +14,8 @@ export class ProductService {
   private _baseEndPoint = ApiType.Products;
   private _products$ = new BehaviorSubject<Product[]>([]);
   private _loaded = false;
-  private _productChangedSubject = new BehaviorSubject<void>(undefined);
 
+  private _productChangedSubject = new BehaviorSubject<void>(undefined);
   productChanged$ = this._productChangedSubject.asObservable();
 
   constructor(private apiService: ApiService) {}
@@ -38,6 +38,22 @@ export class ProductService {
     });
   }
 
+  getById(id: string): Observable<WebApiResponse<Product>> {
+    this._loaded = true;
+    return this.apiService
+      .get<WebApiResponse<Product>>(`${this._baseEndPoint}/getById/${id}`)
+      .pipe(
+        tap(() => {
+          this._loaded = true;
+        }),
+      );
+  }
+
+  refresh(): Observable<WebApiResponse<Product[]>> {
+    this._loaded = false;
+    return this.getProducts(true);
+  }
+
   add(product: Product): Observable<WebApiResponse<Product>> {
     const delayMs = 5000; // delay de 5 segundos para teste visual
     return this.apiService
@@ -58,15 +74,10 @@ export class ProductService {
       );
   }
 
-  deleteProduct(product: Product): Observable<WebApiResponse<Product>> {
+  delete(product: Product): Observable<WebApiResponse<Product>> {
     return this.apiService.delete<WebApiResponse<Product>>(
       `${this._baseEndPoint}/remove`,
       product,
     );
-  }
-
-  refreshProducts(): Observable<WebApiResponse<Product[]>> {
-    this._loaded = false;
-    return this.getProducts(true);
   }
 }
