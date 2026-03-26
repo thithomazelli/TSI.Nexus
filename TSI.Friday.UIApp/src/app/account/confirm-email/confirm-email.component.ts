@@ -54,8 +54,4 @@ export class ConfirmEmailComponent implements OnInit {
       },
     });
   }
-
-  // resendEmailConfirmation(): void {
-  //   this.router.navigateByUrl('/account/send-email/resend-email-confirmation');
-  // }
 }
