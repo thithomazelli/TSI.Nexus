@@ -7,6 +7,7 @@ const routes: Routes = [
   {
     path: '',
     runGuardsAndResolvers: 'always',
+    data: { roles: ['Admin'] },
     children: [
       {
         path: '',
