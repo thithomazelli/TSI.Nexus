@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
 import { AuthorizationGuard } from './core/guards/authorization.guard';
 import { HomeComponent } from './home/home.component';
 import { NotFoundComponent } from './shared/components/errors/not-found/not-found.component';
@@ -18,7 +17,7 @@ const routes: Routes = [
   },
   {
     path: 'clients',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./business-partner/business-partner.module').then(
         (m) => m.BusinessPartnerModule,
@@ -26,23 +25,23 @@ const routes: Routes = [
   },
   {
     path: 'home',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     component: HomeComponent,
   },
   {
     path: 'not-found',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     component: NotFoundComponent,
   },
   {
     path: 'orders',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./orders/orders.module').then((m) => m.OrdersModule),
   },
   {
     path: 'order-products',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./order-products/order-products.module').then(
         (m) => m.OrderProductsModule,
@@ -50,25 +49,25 @@ const routes: Routes = [
   },
   {
     path: 'payments',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./payments/payments.module').then((m) => m.PaymentsModule),
   },
   {
     path: 'products',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./products/products.module').then((m) => m.ProductsModule),
   },
   {
     path: 'reports',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./reports/reports.module').then((m) => m.ReportsModule),
   },
   {
     path: 'suppliers',
-    canActivate: [AuthorizationGuard],
+    canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./business-partner/business-partner.module').then(
         (m) => m.BusinessPartnerModule,
