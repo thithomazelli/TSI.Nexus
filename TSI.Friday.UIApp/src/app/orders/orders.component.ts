@@ -261,6 +261,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         headerName: 'Ações',
+        minWidth: 150,
         sortable: false,
         filter: false,
         maxWidth: 400,
