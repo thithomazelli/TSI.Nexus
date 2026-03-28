@@ -3,6 +3,7 @@ import {
   ApiService,
   ApiType,
   ModalService,
+  ResponseStatus,
   User,
   WebApiResponse,
 } from '@friday/core';
@@ -155,11 +156,12 @@ export class UsersComponent {
     this.apiService
       .delete<WebApiResponse<User>>(`${this.baseEndPoint}/remove`, user)
       .subscribe((response: WebApiResponse<User>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== user.id);
+        if (response.status === ResponseStatus.Success) {
+          this.rowData = this.rowData.filter((p) => p.id !== user.id);
+        }
         this.modalService.hideModal();
-
         this.modalService.showSweetNotification(
-          'Usuário excluído',
+          '',
           response.message,
           'success',
         );

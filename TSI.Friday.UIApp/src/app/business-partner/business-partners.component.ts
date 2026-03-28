@@ -205,10 +205,14 @@ export class BusinessPartnersComponent {
       .delete(businessPartner)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<BusinessPartner>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== businessPartner.id);
+        if (response.status === ResponseStatus.Success) {
+          this.rowData = this.rowData.filter(
+            (p) => p.id !== businessPartner.id,
+          );
+        }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Item excluído',
+          '',
           response.message,
           response.status,
         );
