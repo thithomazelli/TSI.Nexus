@@ -165,8 +165,13 @@
             class="btn btn-primary"
             type="button"
             (click)="resendEmailConfirmation()"
+            [disabled]="isResendingEmail"
           >
-            Reenviar e-mail de confirmação
+            @if (isResendingEmail) {
+              Aguarde {{ resendEmailCountdown }}s para tentar novamente
+            } @else {
+              Reenviar e-mail de confirmação
+            }
           </button>
         }
         @if (isEdit) {
@@ -184,6 +189,7 @@
         <button type="button" class="btn btn-secondary" (click)="doCancel()">
           Cancelar
         </button>
+        <button type="button" class="btn btn-danger">Remover</button>
         <button type="submit" class="btn btn-success">Salvar</button>
       </div>
     </div>
