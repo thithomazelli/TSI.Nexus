@@ -11,11 +11,18 @@ import {
 import { FormBuilder, Validators } from '@angular/forms';
 import {
   AccountService,
+  ApiType,
   FormBaseComponent,
   ModalService,
+  NotificationService,
+  ResponseStatus,
   User,
+  UserService,
+  WebApiResponse,
 } from '@friday/core';
 import { ResetPasswordComponent } from '../../../account/reset-password/reset-password.component';
+import { tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-form',
@@ -27,6 +34,9 @@ export class UserFormComponent
   extends FormBaseComponent
   implements OnInit, OnChanges, OnDestroy
 {
+  @Input()
+  isModal = false;
+
   @Input()
   isEdit = false;
 
@@ -55,10 +65,15 @@ export class UserFormComponent
   private resendEmailTimer: any;
   readonly RESEND_EMAIL_COOLDOWN_MS = 60000;
 
+  private _baseEndPoint: ApiType = ApiType.Users;
+
   constructor(
     private formBuilder: FormBuilder,
     private accountService: AccountService,
+    private notificationService: NotificationService,
+    private userService: UserService,
     private modalService: ModalService,
+    private routerService: Router,
   ) {
     super();
   }
@@ -98,6 +113,53 @@ export class UserFormComponent
     this.cancel.emit();
   }
 
+  deleteUser(): void {
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este registro?',
+        'question',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.userService
+            .delete(this.data as User)
+            .pipe(
+              tap({
+                next: (response: WebApiResponse<User>) => {
+                  if (this.isModal) {
+                    this.modalService.hideModal();
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  } else {
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                    if (response.status === ResponseStatus.Success) {
+                      this.routerService.navigateByUrl(
+                        `/${this._baseEndPoint}`,
+                      );
+                    }
+                  }
+                },
+                error: (err) => {
+                  this.notificationService.showMessage(
+                    'error',
+                    'Erro ao remover',
+                  );
+                },
+              }),
+            )
+            .subscribe();
+        }
+      });
+  }
+
   resendEmailConfirmation(): void {
     if (this.isResendingEmail) {
       return;
@@ -124,6 +186,27 @@ export class UserFormComponent
           this.resetResendEmailCooldown();
         },
       });
+  }
+
+  forgotPassword(): void {
+    const initialState = {
+      data: this.data,
+    };
+    const ref = this.modalService.showTemplateModal(
+      ResetPasswordComponent,
+      initialState,
+    );
+
+    if (ref.componentInstance && ref.componentInstance.saved) {
+      ref.componentInstance.saved.subscribe((response: any) => {
+        this.modalService.showNotification(
+          true,
+          response.value.title,
+          response.value.message,
+        );
+        ref.close();
+      });
+    }
   }
 
   private resetResendEmailCooldown(): void {
@@ -194,27 +277,6 @@ export class UserFormComponent
   private getResendEmailCooldownKey(): string {
     const email = this.form?.get('email')?.value || this.data?.email || '';
     return `resendEmailCooldown_${email}`;
-  }
-
-  forgotPassword(): void {
-    const initialState = {
-      data: this.data,
-    };
-    const ref = this.modalService.showTemplateModal(
-      ResetPasswordComponent,
-      initialState,
-    );
-
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe((response: any) => {
-        this.modalService.showNotification(
-          true,
-          response.value.title,
-          response.value.message,
-        );
-        ref.close();
-      });
-    }
   }
 
   private initForm(): void {

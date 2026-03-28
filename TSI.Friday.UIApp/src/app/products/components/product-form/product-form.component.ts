@@ -143,23 +143,15 @@ export class ProductFormComponent
                   if (this.isModal) {
                     this.modalService.hideModal(this.dialogRef);
                     this.modalService.showSweetNotification(
-                      response.status === ResponseStatus.Success
-                        ? 'Produto excluído'
-                        : 'Erro ao excluir produto',
+                      '',
                       response.message,
-                      response.status === ResponseStatus.Success
-                        ? 'success'
-                        : 'error',
+                      response.status,
                     );
                   } else {
                     this.modalService.showSweetNotification(
-                      response.status === ResponseStatus.Success
-                        ? 'Produto excluído'
-                        : 'Erro ao excluir produto',
+                      '',
                       response.message,
-                      response.status === ResponseStatus.Success
-                        ? 'success'
-                        : 'error',
+                      response.status,
                     );
                     if (response.status === ResponseStatus.Success) {
                       this.routerService.navigateByUrl(

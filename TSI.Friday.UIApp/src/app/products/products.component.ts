@@ -213,11 +213,9 @@ export class ProductsComponent implements OnInit, OnDestroy {
         }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          response.status === ResponseStatus.Success
-            ? 'Produto excluído'
-            : 'Erro ao excluir produto',
+          '',
           response.message,
-          response.status === ResponseStatus.Success ? 'success' : 'error',
+          response.status,
         );
       });
   }

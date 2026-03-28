@@ -189,7 +189,11 @@
         <button type="button" class="btn btn-secondary" (click)="doCancel()">
           Cancelar
         </button>
-        <button type="button" class="btn btn-danger">Remover</button>
+        @if (isEdit) {
+          <button (click)="deleteUser()" type="button" class="btn btn-danger">
+            Remover
+          </button>
+        }
         <button type="submit" class="btn btn-success">Salvar</button>
       </div>
     </div>
