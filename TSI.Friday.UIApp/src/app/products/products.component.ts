@@ -196,7 +196,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
     }
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     this.modalService.showTemplateModal(
       ProductDetailsModalComponent,
       initialState,

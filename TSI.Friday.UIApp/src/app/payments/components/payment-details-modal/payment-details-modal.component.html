@@ -7,12 +7,12 @@
 
 <div class="modal-body">
   <app-payment-form
+    [isModal]="true"
     [isEdit]="isEdit"
     [data]="data"
+    [dialogRef]="dialogRef"
     [parentId]="parentId"
     [parentData]="parentData"
-    (save)="save($event)"
-    (cancel)="close()"
     [compact]="false"
   ></app-payment-form>
 </div>

@@ -22,6 +22,7 @@ export class AlertBannerComponentComponent implements OnInit {
     Closed: 'check',
     Returned: 'check',
     Delayed: 'exclamation',
+    MissingPayments: 'exclamation',
     default: 'info',
   };
 
@@ -35,6 +36,7 @@ export class AlertBannerComponentComponent implements OnInit {
     Closed: 'success',
     Returned: 'success',
     Delayed: 'danger',
+    MissingPayments: 'danger',
     WaitingPayment: 'warning',
     default: 'secondary',
   };
@@ -69,6 +71,7 @@ export class AlertBannerComponentComponent implements OnInit {
       WaitingPayment: `Atenção: ${this.entity} aguardando pagamento`,
       InProgress: `Atenção: ${this.entity} em andamento`,
       Delayed: `Urgente: ${this.entity} atrasado`,
+      MissingPayments: `Urgente: Total do Pedido é superior à soma dos pagamentos cadastrados na transação. Adicione novos pagamentos ou ajuste os existentes para resolver essa pendência.`,
     };
 
     if (this.entity === 'Transação') {

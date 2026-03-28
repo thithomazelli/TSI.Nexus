@@ -157,7 +157,7 @@ export class AddressComponent {
     }
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     this.modalService.showTemplateModal(
       AddressDetailsModalComponent,
       initialState,

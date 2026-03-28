@@ -1,9 +1,7 @@
 import {
   Component,
-  EventEmitter,
   Input,
   OnInit,
-  Output,
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
@@ -24,6 +22,10 @@ import {
   PaymentCondition,
   PaymentType,
   WebApiResponse,
+  ApiType,
+  NotificationService,
+  TransactionService,
+  ResponseStatus,
 } from '@friday/core';
 
 import {
@@ -32,9 +34,14 @@ import {
   Observable,
   startWith,
   map,
+  of,
+  tap,
+  combineLatestWith,
 } from 'rxjs';
 
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
+import { TransactionDetailsModalComponent } from '../transaction-details-modal/transaction-details-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-transaction-form',
@@ -47,10 +54,16 @@ export class TransactionFormComponent
   implements OnInit, OnChanges
 {
   @Input()
+  isModal = false;
+
+  @Input()
   isEdit = false;
 
   @Input()
   data?: Transaction | null;
+
+  @Input()
+  parentData?: Order | null;
 
   @Input()
   compact = false;
@@ -58,11 +71,8 @@ export class TransactionFormComponent
   @Input()
   formGroup: FormGroup<any> | null = null;
 
-  @Output()
-  save = new EventEmitter<Transaction>();
-
-  @Output()
-  cancel = new EventEmitter<void>();
+  @Input()
+  dialogRef?: MatDialogRef<TransactionDetailsModalComponent>;
 
   isPayment = false;
   showClientAndOrder = false;
@@ -99,22 +109,24 @@ export class TransactionFormComponent
     { label: 'Recebimentos', value: 'Recebimentos' },
   ];
 
-  private conditionSub?: Subscription;
-  private typeSub?: Subscription;
-  private paymentsSub?: Subscription;
-  private statusSubscription?: Subscription;
+  private _subscriptions: Subscription[] = [];
+  private _baseEndPoint = ApiType.Transactions;
 
   businessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
-  filteredBusinessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
+  businessPartnersArray$!: Observable<BusinessPartner[]>;
+  filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
   orders$!: Observable<Order[]>;
   filteredOrders$!: Observable<Order[]>;
 
   constructor(
-    private formBuilder: FormBuilder,
-    private currencyService: CurrencyService,
     private businessPartnerService: BusinessPartnerService,
+    private currencyService: CurrencyService,
+    private formBuilder: FormBuilder,
     private modalService: ModalService,
+    private notificationService: NotificationService,
+    private routerService: Router,
+    private transactionService: TransactionService,
   ) {
     super();
   }
@@ -155,17 +167,37 @@ export class TransactionFormComponent
   }
 
   ngOnDestroy(): void {
-    if (this.conditionSub) {
-      this.conditionSub.unsubscribe();
+    this._subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  submit(): Observable<WebApiResponse<Transaction> | null> {
+    this.submitted = true;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return of(null);
     }
-    if (this.typeSub) {
-      this.typeSub.unsubscribe();
-    }
-    if (this.paymentsSub) {
-      this.paymentsSub.unsubscribe();
-    }
-    if (this.statusSubscription) {
-      this.statusSubscription.unsubscribe();
+
+    return this.save(this.form.getRawValue() as Transaction).pipe(
+      tap({
+        next: (response: WebApiResponse<Transaction>) => {
+          if (this.isModal) {
+            this.saveModal(response);
+          } else {
+            this.savePage(response);
+          }
+        },
+        error: (err) => {
+          this.notificationService.showMessage('Error', 'Erro ao salvar');
+        },
+      }),
+    );
+  }
+
+  cancel(): void {
+    if (this.isModal) {
+      this.modalService.hideModal(this.dialogRef);
+    } else {
+      this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
     }
   }
 
@@ -182,93 +214,79 @@ export class TransactionFormComponent
 
   async onClientBlur(): Promise<void> {
     setTimeout(() => {
-      const businessPartnerValue = this.form.get('businessPartnerName')!.value;
-      const businessPartnerName =
-        typeof businessPartnerValue === 'string'
-          ? businessPartnerValue.trim()
-          : '';
+      const businessPartnerName = this.form
+        .get('businessPartnerName')!
+        .value?.trim();
       if (!businessPartnerName) {
-        this.markAsTouched('businessPartnerName');
-        this.form.get('businessPartnerName')!.setErrors({ required: true });
-        // Clear orderId/orderNumber only if the value is a string (manual edit)
-        this.form.get('orderId')!.setValue(null);
-        this.form.get('orderNumber')!.setValue('');
+        this.cleanClientSelection();
         return;
       }
-      // Check if the name exists in the client list
-      const clients = (this.businessPartners$ as any).source
-        .value as BusinessPartner[];
-      const found = clients.find((c) => c.name === businessPartnerName);
-      if (found) {
-        this.form.get('businessPartnerId')!.setValue(found.id);
-        this.form.get('businessPartnerName')!.setValue(found.name);
-        // Do not clear orderId/orderNumber when selecting via autocomplete
-      } else {
-        const confirmRef = this.modalService.showConfirmation({
-          title: 'Cliente não encontrado',
-          message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-          cancelButtonText: 'Cancelar',
-          confirmButtonText: 'Sim',
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (confirmed) {
-            // Open modal to add client
-            const clientFormRef: MatDialogRef<any> =
-              this.modalService.showTemplateModal(
-                BusinessPartnerDetailsModalComponent,
-                {
-                  data: { name: businessPartnerName },
-                  width: '600px',
-                  disableClose: true,
-                },
-              );
-            clientFormRef
-              .afterClosed()
-              .subscribe((result: BusinessPartner | undefined) => {
-                if (result) {
-                  this.businessPartnerService.addOrUpdateBusinessPartner(
-                    result,
+      // Sempre checa a lista de clientes, mesmo se businessPartnerId estiver vazio
+      const sub = this.businessPartnersArray$.subscribe((clients) => {
+        const found = clients.find((c) => c.name === businessPartnerName);
+        if (!found) {
+          const confirmRef = this.modalService.showConfirmation({
+            title: 'Cliente não encontrado',
+            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sim',
+          });
+          const confirmSub = confirmRef
+            .afterClosed()
+            .subscribe((confirmed: boolean) => {
+              if (confirmed) {
+                // Open modal to add client
+                const clientFormRef: MatDialogRef<any> =
+                  this.modalService.showTemplateModal(
+                    BusinessPartnerDetailsModalComponent,
+                    {
+                      data: { name: businessPartnerName },
+                      width: '600px',
+                      disableClose: true,
+                    },
                   );
-                  this.form.get('businessPartnerName')!.setValue(result.name);
-                  this.form.get('businessPartnerId')!.setValue(result.id);
-                } else {
-                  this.form.get('businessPartnerName')!.setValue('');
-                  this.markAsTouched('businessPartnerName');
-                  this.form
-                    .get('businessPartnerName')!
-                    .setErrors({ required: true });
-                  this.form.get('businessPartnerId')!.setValue(null);
-                  // Clear orderId/orderNumber when canceling manual registration
-                  this.form.get('orderId')!.setValue(null);
-                  this.form.get('orderNumber')!.setValue('');
-                }
-              });
-          } else {
-            this.form.get('businessPartnerName')!.setValue('');
-            this.markAsTouched('businessPartnerName');
-            this.form.get('businessPartnerName')!.setErrors({ required: true });
-            this.form.get('businessPartnerId')!.setValue(null);
-            // Clear orderId/orderNumber when canceling manually
-            this.form.get('orderId')!.setValue(null);
-            this.form.get('orderNumber')!.setValue('');
-          }
-        });
-      }
+                const clientFormSub = clientFormRef
+                  .afterClosed()
+                  .subscribe((result: BusinessPartner | undefined) => {
+                    if (result) {
+                      this.businessPartnerService.addOrUpdateBusinessPartner(
+                        result,
+                      );
+                      this.form
+                        .get('businessPartnerName')!
+                        .setValue(result.name);
+                      this.form.get('businessPartnerId')!.setValue(result.id);
+                    } else {
+                      this.cleanClientSelection();
+                    }
+                  });
+                this._subscriptions.push(clientFormSub);
+              } else {
+                this.cleanClientSelection();
+              }
+            });
+          this._subscriptions.push(confirmSub);
+        }
+      });
+      this._subscriptions.push(sub);
     }, 200);
   }
 
-  submit(): void {
-    this.submitted = true;
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.save.emit(this.form.getRawValue());
+  private cleanClientSelection(): void {
+    this.form.get('businessPartnerId')!.setValue('');
+    this.markAsTouched('businessPartnerId');
+    this.form.get('businessPartnerId')!.setErrors({ required: true });
+    this.form.get('businessPartnerName')!.setValue('');
+    this.markAsTouched('businessPartnerName');
+    this.form.get('businessPartnerName')!.setErrors({ required: true });
+    this.form.get('orderId')!.setValue(null);
+    this.form.get('orderNumber')!.setValue('');
   }
 
-  doCancel(): void {
-    this.cancel.emit();
+  missingPayments(): boolean {
+    return (
+      (this.parentData?.totalPrice || 0) > (this.data?.paymentTotalPrice || 0)
+    );
   }
 
   private initForm(): void {
@@ -311,7 +329,24 @@ export class TransactionFormComponent
       this.form.get('totalOfPayments')?.disable();
       this.form.get('totalOfExpenses')?.disable();
       this.form.get('type')?.disable();
-    }
+    } else
+      this._subscriptions.push(
+        this.form.get('businessPartnerName')!.valueChanges.subscribe((name) => {
+          const sub = this.businessPartnersArray$.subscribe(
+            (businessPartners) => {
+              const businessPartner = businessPartners.find(
+                (p: BusinessPartner) => p.name === name,
+              );
+              if (businessPartner) {
+                this.form
+                  .get('businessPartnerId')!
+                  .setValue(businessPartner.id);
+              }
+            },
+          );
+          this._subscriptions.push(sub);
+        }),
+      );
   }
 
   private patchFormWithData(): void {
@@ -360,28 +395,23 @@ export class TransactionFormComponent
   }
 
   private businessPartnerNameAutoComplete() {
-    this.businessPartners$ =
-      this.form.get('type')?.value == 'Incoming'
-        ? this.businessPartnerService.getClients(true)
-        : this.businessPartnerService.getSuppliers(true);
+    this.businessPartners$ = this.businessPartnerService.getClients(true);
+    this.businessPartnersArray$ = this.businessPartners$.pipe(
+      map((response) => response.data ?? []),
+    );
 
     this.filteredBusinessPartners$ = this.form
       .get('businessPartnerName')!
       .valueChanges.pipe(
         startWith(''),
-        map((value: string | BusinessPartner) => {
-          let filterValue = '';
-          if (typeof value === 'string') {
-            filterValue = value.toLowerCase();
-          } else if (value && typeof value === 'object') {
-            filterValue = value.name?.toLowerCase() || '';
-          }
+        combineLatestWith(this.businessPartnersArray$),
+        map(([value, businessPartners]) => {
+          const filterValue = (value || '').toLowerCase();
           if (!filterValue) {
             return [];
           }
-          return (this.businessPartners$ as any).source.value.filter(
-            (businessPartner: BusinessPartner) =>
-              (businessPartner.name || '').toLowerCase().includes(filterValue),
+          return businessPartners.filter((businessPartner: BusinessPartner) =>
+            (businessPartner.name || '').toLowerCase().includes(filterValue),
           );
         }),
       );
@@ -391,15 +421,17 @@ export class TransactionFormComponent
     const typeCtrl = this.form?.get('type');
     const businessPartnerNameCtrl = this.form?.get('businessPartnerName');
     if (typeCtrl && businessPartnerNameCtrl) {
-      this.typeSub = typeCtrl.valueChanges.subscribe((val) => {
-        this.showClientAndOrder = val === PaymentType.Incoming;
-        if (val === PaymentType.Incoming) {
-          businessPartnerNameCtrl.setValidators([Validators.required]);
-        } else {
-          businessPartnerNameCtrl.clearValidators();
-        }
-        businessPartnerNameCtrl.updateValueAndValidity();
-      });
+      this._subscriptions.push(
+        typeCtrl.valueChanges.subscribe((val) => {
+          this.showClientAndOrder = val === PaymentType.Incoming;
+          if (val === PaymentType.Incoming) {
+            businessPartnerNameCtrl.setValidators([Validators.required]);
+          } else {
+            businessPartnerNameCtrl.clearValidators();
+          }
+          businessPartnerNameCtrl.updateValueAndValidity();
+        }),
+      );
       // Initialize value when creating the form
       this.showClientAndOrder = typeCtrl.value === PaymentType.Incoming;
       if (typeCtrl.value === PaymentType.Incoming) {
@@ -417,10 +449,7 @@ export class TransactionFormComponent
     if (!this.isEdit || !this.form) {
       return;
     }
-    // Remove previous subscription if any
-    if (this.statusSubscription) {
-      this.statusSubscription.unsubscribe();
-    }
+
     // Add the field to the form if it does not exist
     if (!this.form.contains('markAllPaymentsAsApproved')) {
       this.form.addControl(
@@ -428,35 +457,65 @@ export class TransactionFormComponent
         this.formBuilder.control(false),
       );
     }
-    this.statusSubscription = this.form
-      .get('status')
-      ?.valueChanges.pipe(distinctUntilChanged())
-      .subscribe(async (newStatus: PaymentStatus) => {
-        // Checa se há pagamentos abertos no momento da mudança de status
-        const hasOpenedPayments =
-          this.data && (this.data as any).hasOpenedPayments;
-        if (newStatus === PaymentStatus.Approved && hasOpenedPayments) {
-          const confirmed = await this.modalService
-            .showConfirmation({
-              title: 'Fechar pagamento',
-              message: 'Deseja marcar todos os pagamentos como aprovados?',
-              confirmButtonText: 'Sim',
-              cancelButtonText: 'Não',
-            })
-            .afterClosed()
-            .toPromise();
+    this._subscriptions.push(
+      this.form
+        .get('status')!
+        .valueChanges.pipe(distinctUntilChanged())
+        .subscribe(async (newStatus: PaymentStatus) => {
+          // Checa se há pagamentos abertos no momento da mudança de status
+          const hasOpenedPayments =
+            this.data && (this.data as any).hasOpenedPayments;
+          if (newStatus === PaymentStatus.Approved && hasOpenedPayments) {
+            const confirmed = await this.modalService
+              .showConfirmation({
+                title: 'Fechar pagamento',
+                message: 'Deseja marcar todos os pagamentos como aprovados?',
+                confirmButtonText: 'Sim',
+                cancelButtonText: 'Não',
+              })
+              .afterClosed()
+              .toPromise();
 
-          if (!confirmed) {
-            this.form.get('status')?.setValue(this.data?.status || '');
+            if (!confirmed) {
+              this.form.get('status')?.setValue(this.data?.status || '');
+            }
+            this.form.get('markAllPaymentsAsApproved')?.setValue(!!confirmed);
+            if (this.data) {
+              (this.data as any).markAllPaymentsAsApproved = !!confirmed;
+            }
+          } else {
+            this.form.get('markAllPaymentsAsApproved')?.setValue(false);
+            if (this.data) (this.data as any).markAllPaymentsAsApproved = false;
           }
-          this.form.get('markAllPaymentsAsApproved')?.setValue(!!confirmed);
-          if (this.data) {
-            (this.data as any).markAllPaymentsAsApproved = !!confirmed;
-          }
-        } else {
-          this.form.get('markAllPaymentsAsApproved')?.setValue(false);
-          if (this.data) (this.data as any).markAllPaymentsAsApproved = false;
-        }
-      });
+        }),
+    );
+  }
+
+  private save(
+    transaction: Transaction,
+  ): Observable<WebApiResponse<Transaction>> {
+    return this.isEdit && this.data
+      ? this.transactionService.update(transaction)
+      : this.transactionService.add(transaction);
+  }
+
+  private saveModal(response: WebApiResponse<Transaction>): void {
+    this.dialogRef?.close(response);
+    this.modalService.showSweetNotification(
+      '',
+      response.message,
+      response.status,
+    );
+  }
+
+  private savePage(response: WebApiResponse<Transaction>): void {
+    if (this.isEdit && this.data) {
+      this.notificationService.showMessage(response.status, response.message);
+      this.data = response.data;
+    } else {
+      this.routerService.navigateByUrl(
+        `/${this._baseEndPoint}/${response.data.id}`,
+      );
+    }
   }
 }

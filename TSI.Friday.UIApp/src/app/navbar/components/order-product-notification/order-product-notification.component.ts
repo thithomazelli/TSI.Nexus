@@ -20,11 +20,6 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
   orderProducts: OrderProduct[] = [];
   total: number = 0;
 
-  private _baseEndPoint = ApiType.OrderProducts;
-
-  private _orderProductChangedSub?: Subscription;
-  private _destroy$ = new Subject<void>();
-
   private _statusIconMap: Record<OrderProductStatus, string> = {
     [OrderProductStatus.Delayed]: 'bi bi-exclamation-triangle-fill text-danger',
     [OrderProductStatus.InProgress]: 'bi bi-hourglass-split text-info',
@@ -36,6 +31,9 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
     [OrderProductStatus.InProgress]: 'Entrega em andamento',
     [OrderProductStatus.Returned]: 'Produto devolvido',
   };
+
+  private _orderProductChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
 
   constructor(
     private orderProductService: OrderProductService,
@@ -92,7 +90,11 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
     }
 
     const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
     const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+
     const diffMs = now.getTime() - d.getTime();
     const diffDays = Math.abs(Math.floor(diffMs / (1000 * 60 * 60 * 24)));
     if (diffDays === 0) {
@@ -104,7 +106,7 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
     return `${diffDays} dias atrás`;
   }
 
-  onOpenModal(orderProduct: OrderProduct) {
+  openModal(orderProduct: OrderProduct) {
     this.modalService.showTemplateModal(OrderProductsDetailsModalComponent, {
       isEdit: true,
       id: orderProduct.id,

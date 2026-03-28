@@ -26,6 +26,7 @@ export class NotificationService {
       toast: true,
       position: 'top-end',
       timer: 3000,
+      showCloseButton: true,
       showConfirmButton: false,
       timerProgressBar: true,
       background: '#198754', // verde bootstrap
@@ -34,6 +35,7 @@ export class NotificationService {
         title: 'swal2-title-custom',
         popup: 'swal2-popup-small',
         htmlContainer: 'swal2-html-custom',
+        closeButton: 'swal2-close-custom',
       },
     });
   }
@@ -46,6 +48,7 @@ export class NotificationService {
       toast: true,
       position: 'top-end',
       timer: 4000,
+      showCloseButton: true,
       showConfirmButton: false,
       timerProgressBar: true,
       background: '#dc3545', // vermelho bootstrap
@@ -54,6 +57,7 @@ export class NotificationService {
         title: 'swal2-title-custom',
         popup: 'swal2-popup-small',
         htmlContainer: 'swal2-html-custom',
+        closeButton: 'swal2-close-custom',
       },
     });
   }

@@ -1,4 +1,5 @@
 <div class="transaction-form-wrapper">
+  <h5 class="mt-3 mb-2">Dados da Transação</h5>
   @if (isEdit && data?.status) {
     <app-alert-banner-component
       [status]="data?.status"
@@ -11,7 +12,6 @@
       <div class="row g-1 mb-1">
         <!-- Second line: businessPartnerId and orderId -->
         @if (!compact) {
-          <h5 class="mt-3 mb-2">Dados da Transação</h5>
           <div class="col-12 col-md-4">
             <div class="input-group">
               <div class="form-floating flex-fill">
@@ -62,9 +62,7 @@
                   >
                     <mat-option
                       *ngFor="
-                        let businessPartner of (
-                          filteredBusinessPartners$ | async
-                        )?.data
+                        let businessPartner of filteredBusinessPartners$ | async
                       "
                       [value]="businessPartner.name"
                     >
@@ -198,6 +196,12 @@
         }
 
         <h5 class="mt-3 mb-2">Dados do Pagamento</h5>
+        @if (missingPayments()) {
+          <app-alert-banner-component
+            [status]="'MissingPayments'"
+            [entity]="'Pagamentos'"
+          ></app-alert-banner-component>
+        }
 
         @if (!isEdit) {
           <div class="col-6">
@@ -274,13 +278,13 @@
               <input
                 formControlName="paymentTotalPriceFormatted"
                 type="text"
-                placeholder="Total por Pagamentos"
+                placeholder="Preço Total Pagamentos"
                 class="form-control"
                 [class.is-invalid]="isInvalid('paymentTotalPriceFormatted')"
                 [class.is-valid]="isValid('paymentTotalPriceFormatted')"
                 (blur)="onCurrencyBlur('paymentTotalPrice')"
               />
-              <label for="paymentTotalPrice">Total por Pagamentos</label>
+              <label for="paymentTotalPrice">Preço Total Pagamentos</label>
             </div>
             <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
           </div>
@@ -314,13 +318,13 @@
               <input
                 formControlName="expenseTotalPriceFormatted"
                 type="text"
-                placeholder="Total por Despesas"
+                placeholder="Preço Total Despesas"
                 class="form-control"
                 [class.is-invalid]="isInvalid('expenseTotalPriceFormatted')"
                 [class.is-valid]="isValid('expenseTotalPriceFormatted')"
                 (blur)="onCurrencyBlur('expenseTotalPrice')"
               />
-              <label for="expenseTotalPrice">Total por Despesa</label>
+              <label for="expenseTotalPrice">Preço Total Despesas</label>
             </div>
             <div class="input-group-text"><i class="bi bi-cash"></i></div>
           </div>
@@ -329,10 +333,14 @@
     </div>
 
     <div *ngIf="!compact" class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         Cancelar
       </button>
-      <button type="submit" class="btn btn-success">
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success"
+      >
         {{ isEdit ? "Salvar" : "Adicionar" }}
       </button>
     </div>
