@@ -142,66 +142,6 @@ export class OrderFormComponent
     return this.form.get('transaction') as FormGroup;
   }
 
-  async onClientBlur(): Promise<void> {
-    setTimeout(() => {
-      const businessPartnerName = this.form
-        .get('businessPartnerName')!
-        .value?.trim();
-      if (!businessPartnerName) {
-        this.cleanClientSelection();
-        return;
-      }
-      // Sempre checa a lista de clientes, mesmo se businessPartnerId estiver vazio
-      const sub = this.businessPartnersArray$.subscribe((clients) => {
-        const found = clients.find((c) => c.name === businessPartnerName);
-        if (!found) {
-          const confirmRef = this.modalService.showConfirmation({
-            title: 'Cliente não encontrado',
-            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
-          });
-          const confirmSub = confirmRef
-            .afterClosed()
-            .subscribe((confirmed: boolean) => {
-              if (confirmed) {
-                // Open modal to add client
-                const clientFormRef: MatDialogRef<any> =
-                  this.modalService.showTemplateModal(
-                    BusinessPartnerDetailsModalComponent,
-                    {
-                      data: { name: businessPartnerName },
-                      width: '600px',
-                      disableClose: true,
-                    },
-                  );
-                const clientFormSub = clientFormRef
-                  .afterClosed()
-                  .subscribe((result: BusinessPartner | undefined) => {
-                    if (result) {
-                      this.businessPartnerService.addOrUpdateBusinessPartner(
-                        result,
-                      );
-                      this.form
-                        .get('businessPartnerName')!
-                        .setValue(result.name);
-                      this.form.get('businessPartnerId')!.setValue(result.id);
-                    } else {
-                      this.cleanClientSelection();
-                    }
-                  });
-                this._subscriptions.push(clientFormSub);
-              } else {
-                this.cleanClientSelection();
-              }
-            });
-          this._subscriptions.push(confirmSub);
-        }
-      });
-      this._subscriptions.push(sub);
-    }, 200);
-  }
-
   submit(): Observable<WebApiResponse<Order> | null> {
     this.submitted = true;
     if (this.form.invalid) {
@@ -269,6 +209,66 @@ export class OrderFormComponent
     }
   }
 
+  async onClientBlur(): Promise<void> {
+    setTimeout(() => {
+      const businessPartnerName = this.form
+        .get('businessPartnerName')!
+        .value?.trim();
+      if (!businessPartnerName) {
+        this.cleanClientSelection();
+        return;
+      }
+      // Sempre checa a lista de clientes, mesmo se businessPartnerId estiver vazio
+      const sub = this.businessPartnersArray$.subscribe((clients) => {
+        const found = clients.find((c) => c.name === businessPartnerName);
+        if (!found) {
+          const confirmRef = this.modalService.showConfirmation({
+            title: 'Cliente não encontrado',
+            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sim',
+          });
+          const confirmSub = confirmRef
+            .afterClosed()
+            .subscribe((confirmed: boolean) => {
+              if (confirmed) {
+                // Open modal to add client
+                const clientFormRef: MatDialogRef<any> =
+                  this.modalService.showTemplateModal(
+                    BusinessPartnerDetailsModalComponent,
+                    {
+                      data: { name: businessPartnerName },
+                      width: '600px',
+                      disableClose: true,
+                    },
+                  );
+                const clientFormSub = clientFormRef
+                  .afterClosed()
+                  .subscribe((result: BusinessPartner | undefined) => {
+                    if (result) {
+                      this.businessPartnerService.addOrUpdateBusinessPartner(
+                        result,
+                      );
+                      this.form
+                        .get('businessPartnerName')!
+                        .setValue(result.name);
+                      this.form.get('businessPartnerId')!.setValue(result.id);
+                    } else {
+                      this.cleanClientSelection();
+                    }
+                  });
+                this._subscriptions.push(clientFormSub);
+              } else {
+                this.cleanClientSelection();
+              }
+            });
+          this._subscriptions.push(confirmSub);
+        }
+      });
+      this._subscriptions.push(sub);
+    }, 200);
+  }
+
   removeProduct(index: number): void {
     if (!this.data?.orderProducts) {
       return;
@@ -327,7 +327,6 @@ export class OrderFormComponent
     if (this.isEdit) {
       this.form.addControl('id', this.formBuilder.control(''));
     } else {
-      // Atualiza productId ao selecionar produto
       this._subscriptions.push(
         this.form.get('businessPartnerName')!.valueChanges.subscribe((name) => {
           const sub = this.businessPartnersArray$.subscribe(
@@ -375,7 +374,6 @@ export class OrderFormComponent
         ],
         paymentTotalPrice: [0, [Validators.min(0)]],
         paymentTotalPriceFormatted: [{ value: 0, disabled: true }],
-
         totalOfExpenses: [
           {
             value: 0,
@@ -394,7 +392,11 @@ export class OrderFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      // Garante que o id da transação não seja perdido
+      const paymentTotalPrice = !this.isEdit
+        ? (this.data.totalPrice ?? 0) /
+          (this.data.transaction?.totalOfPayments || 1)
+        : this.data.transaction?.paymentTotalPrice;
+
       const patch = {
         ...this.data,
         priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
@@ -404,10 +406,8 @@ export class OrderFormComponent
         transaction: {
           ...this.data.transaction,
           id: this.data.transaction?.id ?? null,
-          paymentTotalPriceFormatted: this.currencyService.formatCurrencyBRL(
-            (this.data.totalPrice ?? 0) /
-              (this.data.transaction?.totalOfPayments || 1),
-          ),
+          paymentTotalPriceFormatted:
+            this.currencyService.formatCurrencyBRL(paymentTotalPrice),
         },
       };
 
@@ -482,7 +482,7 @@ export class OrderFormComponent
       ?.setValue(this.currencyService.formatCurrencyBRL(total));
 
     const transactionGroup = this.form.get('transaction') as FormGroup | null;
-    if (transactionGroup) {
+    if (!this.isEdit && transactionGroup) {
       const transactions = transactionGroup.get('totalOfPayments')?.value || 1;
       const pricePerPayment = total / (transactions > 0 ? transactions : 1);
       transactionGroup.get('paymentTotalPrice')?.setValue(total);

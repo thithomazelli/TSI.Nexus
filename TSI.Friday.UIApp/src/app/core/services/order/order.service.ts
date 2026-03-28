@@ -1,13 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { delay, tap } from 'rxjs/operators';
-import {
-  ApiService,
-  ApiType,
-  WebApiResponse,
-  Order,
-  ResponseStatus,
-} from '@friday/core';
+import { ApiService, ApiType, WebApiResponse, Order } from '@friday/core';
 
 @Injectable({
   providedIn: 'root',
@@ -15,8 +9,6 @@ import {
 export class OrderService {
   private _baseEndPoint = ApiType.Orders;
   private _orders$ = new BehaviorSubject<Order[]>([]);
-  private _loaded = false;
-
   private _orderChangedSubject = new BehaviorSubject<void>(undefined);
   orderChanged$ = this._orderChangedSubject.asObservable();
 
@@ -28,13 +20,11 @@ export class OrderService {
       .pipe(
         tap((response) => {
           this._orders$.next(response.data);
-          this._loaded = true;
         }),
       );
   }
 
   getById(orderId: string): Observable<WebApiResponse<Order>> {
-    this._loaded = true;
     return this.apiService.get<WebApiResponse<Order>>(
       `${ApiType.Orders}/getById/${orderId}`,
     );
@@ -50,13 +40,11 @@ export class OrderService {
       .pipe(
         tap((response) => {
           this._orders$.next(response.data);
-          this._loaded = true;
         }),
       );
   }
 
   refreshOrders(): Observable<WebApiResponse<Order[]>> {
-    this._loaded = false;
     return this.getAll();
   }
 

@@ -53,9 +53,6 @@ export class PaymentsComponent implements OnInit, OnDestroy {
   @Input()
   filterByType: PaymentType | null = null;
 
-  @Output()
-  refreshParent = new EventEmitter<void>();
-
   baseEndPoint = ApiType.Payments;
 
   rowData: Payment[] = [];
@@ -92,7 +89,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
   filterType = { Incoming: false, Outgoing: false };
   showFiltersOnInit = false;
 
-  private _productChangedSub?: Subscription;
+  private _paymentChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
   constructor(
@@ -107,15 +104,19 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe((params) => {
       this.setFiltersFromQueryParams(params);
       this.showFiltersOnInit = this.hasInitialFilters();
-      this.getPayment(() => this.applyFilters());
+      this._paymentChangedSub = this.paymentService.paymentChanged$
+        .pipe(takeUntil(this._destroy$))
+        .subscribe(() => {
+          this.getPayment(() => this.applyFilters(), false);
+        });
     });
   }
 
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
-    if (this._productChangedSub) {
-      this._productChangedSub.unsubscribe();
+    if (this._paymentChangedSub) {
+      this._paymentChangedSub.unsubscribe();
     }
   }
 

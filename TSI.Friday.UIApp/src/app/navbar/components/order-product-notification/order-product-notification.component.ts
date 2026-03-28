@@ -20,9 +20,6 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
   orderProducts: OrderProduct[] = [];
   total: number = 0;
 
-  private _orderProductChangedSub?: Subscription;
-  private _destroy$ = new Subject<void>();
-
   private _statusIconMap: Record<OrderProductStatus, string> = {
     [OrderProductStatus.Delayed]: 'bi bi-exclamation-triangle-fill text-danger',
     [OrderProductStatus.InProgress]: 'bi bi-hourglass-split text-info',
@@ -34,6 +31,9 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
     [OrderProductStatus.InProgress]: 'Entrega em andamento',
     [OrderProductStatus.Returned]: 'Produto devolvido',
   };
+
+  private _orderProductChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
 
   constructor(
     private orderProductService: OrderProductService,

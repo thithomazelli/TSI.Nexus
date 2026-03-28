@@ -50,7 +50,7 @@ export class PaymentFormComponent
   parentId: string | null = null;
 
   @Input()
-  parentData: Transaction | undefined;
+  parentData: Transaction | Order | null = null;
 
   @Input()
   data?: Payment | null;
@@ -170,9 +170,11 @@ export class PaymentFormComponent
       tap({
         next: (response: WebApiResponse<Payment>) => {
           this.dialogRef?.close(response);
-          if (response.data.orderId) {
-            this.saveModal(response);
-          }
+          this.modalService.showSweetNotification(
+            '',
+            response.message,
+            response.status,
+          );
         },
         error: (err) => {
           this.notificationService.showMessage('Error', 'Erro ao salvar');
@@ -186,6 +188,24 @@ export class PaymentFormComponent
   }
 
   private initForm(): void {
+    let transactionDescription = '';
+    let orderId = '';
+    let transactionId = '';
+
+    // Is Order
+    if (this.parentData && 'transactionId' in this.parentData) {
+      transactionDescription = this.parentData.transaction?.description || '';
+      orderId = this.parentData?.id || '';
+      transactionId = this.parentData?.transactionId || '';
+    }
+
+    // Is Transaction
+    if (this.parentData && 'orderId' in this.parentData) {
+      transactionDescription = this.parentData.description || '';
+      orderId = this.parentData?.orderId || '';
+      transactionId = this.parentId ?? '';
+    }
+
     const commonControls = {
       type: ['', Validators.required],
       status: ['', Validators.required],
@@ -197,11 +217,11 @@ export class PaymentFormComponent
       installmentNumber: [0],
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
-      transactionId: [this.parentId],
-      transactionDescription: [this.parentData?.description],
+      transactionId: [transactionId],
+      transactionDescription: [transactionDescription],
       businessPartnerId: [this.parentData?.businessPartnerId],
       businessPartnerName: [this.parentData?.businessPartnerName],
-      orderId: [this.parentData?.orderId],
+      orderId: [orderId],
       orderNumber: [this.parentData?.orderNumber],
     };
 
@@ -243,9 +263,5 @@ export class PaymentFormComponent
     return this.isEdit && this.data
       ? this.paymentService.update(payment)
       : this.paymentService.add(payment);
-  }
-
-  private saveModal(response: WebApiResponse<Payment>): void {
-    this.notificationService.showMessage(response.status, response.message);
   }
 }
