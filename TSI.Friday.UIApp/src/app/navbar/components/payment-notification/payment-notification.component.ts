@@ -1,16 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { merge, filter, mergeMap } from 'rxjs';
+import { Subscription, Subject, takeUntil, switchMap } from 'rxjs';
 import { Router } from '@angular/router';
 import { ModalService, PaymentService } from '@friday/core';
 import { PaymentDetailsModalComponent } from '../../../payments/components/payment-details-modal/payment-details-modal.component';
 
-import {
-  ApiService,
-  ApiType,
-  Payment,
-  PaymentStatus,
-  WebApiResponse,
-} from '@friday/core';
+import { Payment, PaymentStatus, WebApiResponse } from '@friday/core';
 
 @Component({
   selector: 'app-payment-notification',
@@ -19,11 +13,8 @@ import {
   standalone: false,
 })
 export class PaymentNotificationComponent implements OnInit, OnDestroy {
-  private subscription: any;
   payments: Payment[] = [];
   total: number = 0;
-
-  private _baseEndPoint = ApiType.Payments;
 
   private _statusIconMap: Record<PaymentStatus, string> = {
     [PaymentStatus.Delayed]: 'bi bi-exclamation-triangle-fill text-danger',
@@ -37,41 +28,32 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
     [PaymentStatus.Approved]: 'Pagamento aprovado',
   };
 
+  private _paymentChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
-    private paymentService: PaymentService,
     private modalService: ModalService,
+    private paymentService: PaymentService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.subscription = merge(
-      this.apiService.get<WebApiResponse<Payment[]>>(
-        `${this._baseEndPoint}/getDelayed`,
-      ),
-      this.paymentService.hasPaymentChanged().pipe(
-        filter((changed) => changed === true),
-        mergeMap(() =>
-          this.apiService.get<WebApiResponse<Payment[]>>(
-            `${this._baseEndPoint}/getDelayed`,
-          ),
-        ),
-      ),
-    ).subscribe({
-      next: (response: WebApiResponse<Payment[]>) => {
+    this._paymentChangedSub = this.paymentService.paymentChanged$
+      .pipe(
+        switchMap(() => this.paymentService.getDelayed()),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((response: WebApiResponse<Payment[]>) => {
         this.payments = response?.data || [];
         this.total = this.payments.length;
-      },
-      error: () => {
-        this.payments = [];
-        this.total = 0;
-      },
-    });
+      });
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._paymentChangedSub) {
+      this._paymentChangedSub.unsubscribe();
     }
   }
 
@@ -101,9 +83,12 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
     }
 
     const now = new Date();
+    now.setHours(0, 0, 0, 0);
     const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+
     const diffMs = now.getTime() - d.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffDays = Math.abs(Math.floor(diffMs / (1000 * 60 * 60 * 24)));
     if (diffDays === 0) {
       return 'Hoje';
     }
@@ -113,7 +98,7 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
     return `${diffDays} dias atrás`;
   }
 
-  onOpenModal(payment: Payment) {
+  openModal(payment: Payment) {
     this.modalService.showTemplateModal(PaymentDetailsModalComponent, {
       isEdit: true,
       id: payment.id,

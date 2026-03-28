@@ -181,7 +181,7 @@ export class BusinessPartnersComponent {
     }
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     const initialStateWithData = {
       ...initialState,
       data: {

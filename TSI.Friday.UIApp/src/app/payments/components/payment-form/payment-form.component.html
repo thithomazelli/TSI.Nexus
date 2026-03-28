@@ -301,10 +301,14 @@
       </div>
     </div>
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         Cancelar
       </button>
-      <button type="submit" class="btn btn-success">
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success"
+      >
         {{ isEdit ? "Salvar" : "Adicionar" }}
       </button>
     </div>

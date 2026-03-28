@@ -82,7 +82,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
     }
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     const initialStateWithParent = {
       ...initialState,
       parentId: initialState.data?.orderId || this.parentId,
@@ -183,14 +183,16 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const entity = this.isFromProductsView ? 'Product' : 'Order';
     let orderProducts$: Observable<WebApiResponse<OrderProduct[]>>;
 
     if (this.isFullList) {
       orderProducts$ = this.orderProductService.getAll();
-    } else if (this.isFromProductsView) {
-      orderProducts$ = this.orderProductService.getByProductId(this.parentId!);
     } else {
-      orderProducts$ = this.orderProductService.getByOrderId(this.parentId!);
+      orderProducts$ = this.orderProductService.getByEntityId(
+        this.parentId!,
+        entity,
+      );
     }
 
     orderProducts$
@@ -213,6 +215,29 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
             'Produtos do pedido atualizados com sucesso',
           );
         }
+      });
+  }
+
+  private markAsReturned(orderProduct: OrderProduct): void {
+    if (!orderProduct) {
+      return;
+    }
+
+    const updatedOrderProduct: OrderProduct = {
+      ...orderProduct,
+      status: OrderProductStatus.Returned,
+    };
+
+    this.orderProductService
+      .update(updatedOrderProduct)
+      .subscribe((response: WebApiResponse<OrderProduct>) => {
+        this.getOrderProducts(() => this.applyFilters(), false);
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          '',
+          response.message,
+          response.status,
+        );
       });
   }
 
@@ -368,29 +393,6 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
         },
       },
     ];
-  }
-
-  private markAsReturned(orderProduct: OrderProduct): void {
-    if (!orderProduct) {
-      return;
-    }
-
-    const updatedOrderProduct: OrderProduct = {
-      ...orderProduct,
-      status: OrderProductStatus.Returned,
-    };
-
-    this.orderProductService
-      .update(updatedOrderProduct)
-      .subscribe((response: WebApiResponse<OrderProduct>) => {
-        this.getOrderProducts(() => this.applyFilters(), false);
-        this.modalService.hideModal();
-        this.modalService.showSweetNotification(
-          '',
-          response.message,
-          response.status,
-        );
-      });
   }
 
   private formatDateBR(date: string | Date): string {

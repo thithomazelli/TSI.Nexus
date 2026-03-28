@@ -69,6 +69,8 @@ namespace TSI.Friday.Services
 
             try
             {
+                UpdatePaymentStatusByDate(paymentDto);
+
                 var paymentEntity = _mapper.Map<Payment>(paymentDto);
                 await _repository.AddAsync(paymentEntity);
 
@@ -93,23 +95,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                // Normalize payment date to UTC date (compare only day/month/year)
-                var paymentDateUtc = paymentDto.Date;
-                if (paymentDto.Date.Kind != DateTimeKind.Utc)
-                {
-                    // Convert local/unspecified kinds to UTC to have a consistent date comparison
-                    paymentDateUtc = paymentDto.Date.ToUniversalTime();
-                }
-
-                var todayUtcDate = DateTime.UtcNow.Date;
-
-                if (
-                    paymentDto.Status == PaymentStatus.Pending
-                    && paymentDateUtc.Date < todayUtcDate
-                )
-                {
-                    paymentDto.Status = PaymentStatus.Delayed;
-                }
+                UpdatePaymentStatusByDate(paymentDto);
 
                 var paymentEntity = _mapper.Map<Payment>(paymentDto);
                 await _repository.UpdateAsync(paymentEntity);
@@ -541,6 +527,31 @@ namespace TSI.Friday.Services
                 .ToArray();
 
             return new JsonArray(nodes);
+        }
+
+        /// <summary>
+        /// Ensure the payment status is consistent with the payment date.
+        /// If the payment date (UTC date only) is before today's UTC date, set the status to Delayed.
+        /// This enforces business rule regardless of what the caller provided.
+        /// </summary>
+        /// <param name="paymentDto"></param>
+        private static void UpdatePaymentStatusByDate(PaymentDto paymentDto)
+        {
+            if (paymentDto == null)
+                return;
+
+            var paymentDateUtc = paymentDto.Date;
+            if (paymentDto.Date != DateTime.UtcNow)
+            {
+                paymentDateUtc = paymentDto.Date.ToUniversalTime();
+            }
+
+            var todayUtcDate = DateTime.UtcNow.Date;
+
+            if (paymentDateUtc.Date < todayUtcDate)
+            {
+                paymentDto.Status = PaymentStatus.Delayed;
+            }
         }
 
         #endregion Private methods

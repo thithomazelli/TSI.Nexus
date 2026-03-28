@@ -101,7 +101,7 @@ export class TransactionsComponent {
       });
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     const ref = this.modalService.showTemplateModal(
       TransactionDetailsModalComponent,
       initialState,

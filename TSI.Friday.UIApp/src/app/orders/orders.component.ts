@@ -76,7 +76,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     }
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     if (this.parentData != null) {
       initialState = {
         ...initialState,

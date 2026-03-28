@@ -17,7 +17,7 @@
     [refresh]="refreshOrderProducts.bind(this)"
     [delete]="deleteOrderProduct.bind(this)"
     [update]="updateOrderProductStatus.bind(this)"
-    (openModal)="onOpenModal($event)"
+    (openModal)="openModal($event)"
     [filtersTemplate]="filtersTpl"
     [showFilters]="showFiltersOnInit"
     [canAdd]="!isFullList"
