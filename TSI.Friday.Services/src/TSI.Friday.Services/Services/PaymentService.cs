@@ -74,7 +74,7 @@ namespace TSI.Friday.Services
                 var paymentEntity = _mapper.Map<Payment>(paymentDto);
                 await _repository.AddAsync(paymentEntity);
 
-                result.Data = paymentDto;
+                result.Data = _mapper.Map<PaymentDto>(paymentEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pagamento {paymentDto.Description} cadastrada com sucesso.";
             }
@@ -100,7 +100,7 @@ namespace TSI.Friday.Services
                 var paymentEntity = _mapper.Map<Payment>(paymentDto);
                 await _repository.UpdateAsync(paymentEntity);
 
-                result.Data = paymentDto;
+                result.Data = _mapper.Map<PaymentDto>(paymentEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Pagamento {paymentDto.Description} atualizada com sucesso.";
             }

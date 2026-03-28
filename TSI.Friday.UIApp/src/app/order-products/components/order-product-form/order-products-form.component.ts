@@ -192,9 +192,11 @@ export class OrderProductsFormComponent
       tap({
         next: (response: WebApiResponse<OrderProduct>) => {
           this.dialogRef?.close(response);
-          if (response.data.orderId) {
-            this.saveModal(response);
-          }
+          this.modalService.showSweetNotification(
+            '',
+            response.message,
+            response.status,
+          );
         },
         error: (err) => {
           this.notificationService.showMessage('Error', 'Erro ao salvar');
@@ -758,9 +760,5 @@ export class OrderProductsFormComponent
     return this.isEdit && this.data
       ? this.orderProductService.update(orderProduct)
       : this.orderProductService.add(orderProduct);
-  }
-
-  private saveModal(response: WebApiResponse<OrderProduct>): void {
-    this.notificationService.showMessage(response.status, response.message);
   }
 }

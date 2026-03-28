@@ -107,7 +107,12 @@ export class AddressFormComponent
     return this.save(this.form.getRawValue() as Address).pipe(
       tap({
         next: (response: WebApiResponse<Address>) => {
-          this.saveModal(response);
+          this.dialogRef?.close(response);
+          this.modalService.showSweetNotification(
+            '',
+            response.message,
+            response.status,
+          );
         },
         error: (err) => {
           this.notificationService.showMessage('error', 'Erro ao salvar');
@@ -165,11 +170,6 @@ export class AddressFormComponent
     return this.isEdit && this.data
       ? this.addressService.update(address)
       : this.addressService.add(address);
-  }
-
-  private saveModal(response: WebApiResponse<Address>): void {
-    this.dialogRef?.close(response);
-    this.notificationService.showMessage(response.status, response.message);
   }
 
   private setupAutoComplete(): void {

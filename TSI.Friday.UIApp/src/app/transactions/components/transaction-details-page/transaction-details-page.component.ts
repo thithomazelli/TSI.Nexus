@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
-  ApiService,
-  ApiType,
-  NotificationService,
   PaymentStatus,
   Transaction,
   PaymentType,
   WebApiResponse,
+  PaymentService,
+  TransactionService,
 } from '@friday/core';
+import { merge, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-transaction-details-page',
@@ -17,8 +17,6 @@ import {
   standalone: false,
 })
 export class TransactionDetailsPageComponent {
-  private _baseEndPoint: ApiType = ApiType.Transactions;
-
   isEdit = false;
   data?: Transaction | null = null;
   id: string | null = null;
@@ -36,11 +34,14 @@ export class TransactionDetailsPageComponent {
     [PaymentStatus.Pending]: 'Pendente',
   };
 
+  private _transactionChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
     private activatedRoute: ActivatedRoute,
-    private apiService: ApiService,
+    private paymentService: PaymentService,
     private routerService: Router,
-    private notificationService: NotificationService,
+    private transactionService: TransactionService,
   ) {}
 
   ngOnInit(): void {
@@ -49,44 +50,18 @@ export class TransactionDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      this.loadTransaction(idParam);
+      this.getTransactionById(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
     }
   }
 
-  save(payment: Transaction): void {
-    if (this.isEdit && this.id) {
-      this.apiService
-        .put<
-          WebApiResponse<Transaction>
-        >(`${this._baseEndPoint}/update`, payment)
-        .subscribe((response: WebApiResponse<Transaction>) => {
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-          this.data = response.data;
-        });
-    } else {
-      this.apiService
-        .post<WebApiResponse<Transaction>>(`${this._baseEndPoint}/add`, payment)
-        .subscribe((response: WebApiResponse<Transaction>) => {
-          this.routerService.navigateByUrl(
-            `/${this._baseEndPoint}/${response.data.id}`,
-          );
-        });
-    }
-  }
-
-  cancel(): void {
-    this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
-  }
-
-  onTransactionUpdated(): void {
-    if (this.id) {
-      this.loadTransaction(this.id);
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._transactionChangedSub) {
+      this._transactionChangedSub.unsubscribe();
     }
   }
 
@@ -104,19 +79,23 @@ export class TransactionDetailsPageComponent {
     return this.paymentTypeOptions[this.data.type];
   }
 
-  private loadTransaction(id: string): void {
+  private getTransactionById(id: string): void {
     this.loading = true;
-    this.apiService
-      .get<WebApiResponse<Transaction>>(`${this._baseEndPoint}/getById/${id}`)
+    this._transactionChangedSub = merge(
+      this.transactionService.transactionChanged$,
+      this.paymentService.paymentChanged$,
+    )
+      .pipe(
+        switchMap(() => this.transactionService.getById(id)),
+        takeUntil(this._destroy$),
+      )
       .subscribe({
         next: (response: WebApiResponse<Transaction>) => {
           this.loading = false;
-
           if (response.data == null) {
             this.routerService.navigateByUrl('/not-found');
             return;
           }
-
           this.data = response.data;
         },
         error: () => {

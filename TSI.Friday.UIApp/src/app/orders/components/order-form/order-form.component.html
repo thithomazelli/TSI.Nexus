@@ -233,6 +233,7 @@
             [formGroup]="transactionFormGroup"
             [compact]="true"
             [data]="data?.transaction"
+            [parentData]="data"
           ></app-transaction-form>
         } @else {
           <div [ngClass]="'callout callout-success mb-2'">
