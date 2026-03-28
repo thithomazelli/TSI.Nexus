@@ -45,9 +45,7 @@
                   <mat-autocomplete #auto="matAutocomplete">
                     <mat-option
                       *ngFor="
-                        let businessPartner of (
-                          filteredBusinessPartners$ | async
-                        )?.data
+                        let businessPartner of filteredBusinessPartners$ | async
                       "
                       [value]="businessPartner.name"
                     >
@@ -191,9 +189,9 @@
               <th class="table-header-title" scope="col">Preço</th>
               <th class="table-header-title" scope="col">Quantidade</th>
               <th class="" scope="col" style="width: 40px">
-                <a class="address-link" (click)="openOrderProductsModal()">
+                <button class="address-link" (click)="openOrderProductsModal()">
                   Adicionar
-                </a>
+                </button>
               </th>
             </tr>
           </thead>
@@ -246,10 +244,16 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="doCancel()">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         Cancelar
       </button>
-      <button type="submit" class="btn btn-success">Salvar</button>
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success"
+      >
+        Salvar
+      </button>
     </div>
   </form>
 </div>

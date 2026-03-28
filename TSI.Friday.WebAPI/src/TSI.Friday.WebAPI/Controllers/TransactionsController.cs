@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TSI.Friday.Contracts.Enums;
+using System;
+using System.Threading.Tasks;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
 

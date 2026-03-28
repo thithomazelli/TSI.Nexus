@@ -1,42 +1,24 @@
-import { Component, Inject, Output, EventEmitter } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {
-  ApiService,
-  ApiType,
-  FormBaseComponent,
-  ModalService,
-  NotificationService,
-  OrderProduct,
-  OrderProductService,
-  WebApiResponse,
-} from '@friday/core';
+import { OrderProduct } from '@friday/core';
 
 @Component({
   selector: 'app-order-product-details-modal',
-  standalone: false,
   templateUrl: './order-products-details-modal.component.html',
   styleUrl: './order-products-details-modal.component.scss',
+  standalone: false,
 })
-export class OrderProductsDetailsModalComponent extends FormBaseComponent {
-  @Output()
-  saved = new EventEmitter<OrderProduct>();
-
+export class OrderProductsDetailsModalComponent {
   isEdit = false;
   data?: OrderProduct | null = null;
   id: string | null = null;
   parentId: string | null = null;
   parentData: any;
-  private _baseEndPoint = ApiType.OrderProducts;
 
   constructor(
-    private apiService: ApiService,
-    private orderProductService: OrderProductService,
-    private modalService: ModalService,
-    private notificationService: NotificationService,
     public dialogRef: MatDialogRef<OrderProductsDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
-    super();
     if (dialogData) {
       this.isEdit = dialogData.isEdit ?? false;
       this.data = dialogData.data ?? null;
@@ -46,45 +28,7 @@ export class OrderProductsDetailsModalComponent extends FormBaseComponent {
     }
   }
 
-  save(orderProduct: OrderProduct): void {
-    if (!this.parentId) {
-      this.saved.emit(orderProduct);
-      return;
-    }
-
-    orderProduct.orderId = this.parentId ?? undefined;
-
-    if (this.isEdit && this.id) {
-      this.apiService
-        .put<
-          WebApiResponse<OrderProduct>
-        >(`${this._baseEndPoint}/update`, orderProduct)
-        .subscribe((response: WebApiResponse<OrderProduct>) => {
-          this.saved.emit();
-          this.orderProductService.markOrderProductAsChanged();
-          this.modalService.hideModal(this.dialogRef);
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-        });
-    } else {
-      this.apiService
-        .post<
-          WebApiResponse<OrderProduct>
-        >(`${this._baseEndPoint}/add`, orderProduct)
-        .subscribe((response: WebApiResponse<OrderProduct>) => {
-          this.saved.emit();
-          this.modalService.hideModal(this.dialogRef);
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-        });
-    }
-  }
-
   close(): void {
-    this.modalService.hideModal(this.dialogRef);
+    this.dialogRef.close(null);
   }
 }

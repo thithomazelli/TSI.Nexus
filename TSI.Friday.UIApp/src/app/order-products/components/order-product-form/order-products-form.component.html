@@ -5,7 +5,7 @@
       [entity]="'Item do pedido'"
     ></app-alert-banner-component>
   }
-  <form [formGroup]="form" (ngSubmit)="submit()">
+  <form [formGroup]="form">
     <div class="modal-scrollable-area">
       <!-- Sessão 1: Informações do Produto -->
       <section>
@@ -30,9 +30,7 @@
                     (optionSelected)="selectProduct($event.option.value)"
                   >
                     <mat-option
-                      *ngFor="
-                        let product of (filteredProductsSku$ | async)?.data
-                      "
+                      *ngFor="let product of filteredProductsSku$ | async"
                       [value]="product"
                       [disabled]="product.disabled || product.alreadyUsed"
                       [ngClass]="{ 'text-muted': product.disabled }"
@@ -78,9 +76,7 @@
                     (optionSelected)="selectProduct($event.option.value)"
                   >
                     <mat-option
-                      *ngFor="
-                        let product of (filteredProductsName$ | async)?.data
-                      "
+                      *ngFor="let product of filteredProductsName$ | async"
                       [value]="product"
                       [disabled]="product.disabled || product.alreadyUsed"
                       [ngClass]="{
@@ -322,10 +318,11 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3 gap-2">
-      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+      <button type="button" class="btn btn-secondary" (click)="cancel()">
         Cancelar
       </button>
       <button
+        [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
         [disabled]="form.invalid || data?.status === 'Returned'"

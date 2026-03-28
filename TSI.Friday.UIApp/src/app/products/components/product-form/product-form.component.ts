@@ -126,6 +126,61 @@ export class ProductFormComponent
     }
   }
 
+  delete(): void {
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este registro?',
+        'question',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.productService
+            .delete(this.data as Product)
+            .pipe(
+              tap({
+                next: (response: WebApiResponse<Product>) => {
+                  if (this.isModal) {
+                    this.modalService.hideModal(this.dialogRef);
+                    this.modalService.showSweetNotification(
+                      response.status === ResponseStatus.Success
+                        ? 'Produto excluído'
+                        : 'Erro ao excluir produto',
+                      response.message,
+                      response.status === ResponseStatus.Success
+                        ? 'success'
+                        : 'error',
+                    );
+                  } else {
+                    this.modalService.showSweetNotification(
+                      response.status === ResponseStatus.Success
+                        ? 'Produto excluído'
+                        : 'Erro ao excluir produto',
+                      response.message,
+                      response.status === ResponseStatus.Success
+                        ? 'success'
+                        : 'error',
+                    );
+                    if (response.status === ResponseStatus.Success) {
+                      this.routerService.navigateByUrl(
+                        `/${this._baseEndPoint}`,
+                      );
+                    }
+                  }
+                },
+                error: (err) => {
+                  this.notificationService.showMessage(
+                    'error',
+                    'Erro ao remover',
+                  );
+                },
+              }),
+            )
+            .subscribe();
+        }
+      });
+  }
+
   onPriceBlur(): void {
     const priceControl = this.form.get('priceFormatted');
     if (!priceControl) {
@@ -187,7 +242,7 @@ export class ProductFormComponent
       : this.productService.add(product);
   }
 
-  private saveModal(response: WebApiResponse<Product>): any {
+  private saveModal(response: WebApiResponse<Product>): void {
     this.dialogRef?.close(response);
     this.modalService.showNotification(
       response.status == ResponseStatus.Success,
@@ -196,7 +251,7 @@ export class ProductFormComponent
     );
   }
 
-  private savePage(response: WebApiResponse<Product>): any {
+  private savePage(response: WebApiResponse<Product>): void {
     if (this.isEdit && this.data) {
       this.notificationService.showMessage(response.status, response.message);
       this.data = response.data;

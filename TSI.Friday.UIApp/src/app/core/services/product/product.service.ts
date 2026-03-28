@@ -55,7 +55,7 @@ export class ProductService {
   }
 
   add(product: Product): Observable<WebApiResponse<Product>> {
-    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const delayMs = 3000; // delay de 5 segundos para teste visual
     return this.apiService
       .post<WebApiResponse<Product>>(`${this._baseEndPoint}/add`, product)
       .pipe(
@@ -65,7 +65,7 @@ export class ProductService {
   }
 
   update(product: Product): Observable<WebApiResponse<Product>> {
-    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const delayMs = 3000; // delay de 5 segundos para teste visual
     return this.apiService
       .put<WebApiResponse<Product>>(`${this._baseEndPoint}/update`, product)
       .pipe(
