@@ -1,9 +1,8 @@
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import {
   Component,
-  EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -20,28 +19,46 @@ import {
   ModalService,
   ProductType,
   Address,
-  ApiService,
   WebApiResponse,
-  ApiType,
   Order,
   ResponseStatus,
+  NotificationService,
+  OrderProductService,
+  OrderService,
+  AddressService,
 } from '@friday/core';
-import { Observable, startWith, map } from 'rxjs';
+import {
+  Observable,
+  startWith,
+  map,
+  of,
+  tap,
+  firstValueFrom,
+  combineLatestWith,
+  Subscription,
+} from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
 import { AddressDetailsModalComponent } from '../../../address/components/address-details-modal/address-details-modal.component';
+import { OrderProductsDetailsModalComponent } from '../order-product-details-modal/order-products-details-modal.component';
 
 @Component({
   selector: 'app-order-products-form',
-  standalone: false,
   templateUrl: './order-products-form.component.html',
   styleUrl: './order-products-form.component.scss',
+  standalone: false,
 })
 export class OrderProductsFormComponent
   extends FormBaseComponent
-  implements OnInit, OnChanges
+  implements OnInit, OnChanges, OnDestroy
 {
+  @Input()
+  isModal = false;
+
+  @Input()
+  isEdit = false;
+
   @ViewChild('endDateField')
   endDateField: any;
 
@@ -52,29 +69,21 @@ export class OrderProductsFormComponent
   parentData: any;
 
   @Input()
-  isEdit = false;
-
-  @Input()
   data?: OrderProduct | null;
 
   @Input()
   compact = false;
 
   @Input()
-  errors: string[] | undefined;
-
-  @Output()
-  save = new EventEmitter<OrderProduct>();
-
-  @Output()
-  cancel = new EventEmitter<void>();
+  dialogRef?: MatDialogRef<OrderProductsDetailsModalComponent>;
 
   showAllAddresses = false;
   customerAddresses: Address[] = [];
 
   products$!: Observable<WebApiResponse<Product[]>>;
-  filteredProductsSku$!: Observable<WebApiResponse<Product[]>>;
-  filteredProductsName$!: Observable<WebApiResponse<Product[]>>;
+  productsArray$!: Observable<Product[]>;
+  filteredProductsSku$!: Observable<Product[]>;
+  filteredProductsName$!: Observable<Product[]>;
 
   productTypeOptions = [
     { label: 'Aluguel', value: ProductType.Rental },
@@ -103,14 +112,18 @@ export class OrderProductsFormComponent
     },
   ];
 
+  private _subscriptions: Subscription[] = [];
   private _orderData: Order | null = null;
 
   constructor(
-    private apiService: ApiService,
-    private formBuilder: FormBuilder,
-    private productService: ProductService,
-    private modalService: ModalService,
+    private addressService: AddressService,
     private currencyService: CurrencyService,
+    private formBuilder: FormBuilder,
+    private modalService: ModalService,
+    private notificationService: NotificationService,
+    private orderService: OrderService,
+    private orderProductService: OrderProductService,
+    private productService: ProductService,
   ) {
     super();
   }
@@ -136,9 +149,11 @@ export class OrderProductsFormComponent
         }
       };
       setQuantityState(productTypeControl.value);
-      productTypeControl.valueChanges.subscribe((type: string) => {
-        setQuantityState(type);
-      });
+      this._subscriptions.push(
+        productTypeControl.valueChanges.subscribe((type: string) => {
+          setQuantityState(type);
+        }),
+      );
     }
   }
 
@@ -146,6 +161,10 @@ export class OrderProductsFormComponent
     if (changes['data'] && this.data && this.form) {
       this.patchFormWithData();
     }
+  }
+
+  ngOnDestroy(): void {
+    this._subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   get defaultAddress(): Address | null {
@@ -169,11 +188,11 @@ export class OrderProductsFormComponent
     } else if (this.parentId == null) {
       return;
     }
+
     const response = await firstValueFrom(
-      this.apiService.get<WebApiResponse<Order>>(
-        `${ApiType.Orders}/GetById/${this.parentId}`,
-      ),
+      this.orderService.getById(this.parentId),
     );
+
     this._orderData = response.data ?? null;
   }
 
@@ -183,10 +202,11 @@ export class OrderProductsFormComponent
       return;
     }
     const response = await firstValueFrom(
-      this.apiService.get<WebApiResponse<Address[]>>(
-        `${ApiType.Addresses}/getAllByBusinessPartnerId/${this._orderData.businessPartnerId}`,
+      this.addressService.getAllByBusinessPartnerId(
+        this._orderData.businessPartnerId,
       ),
     );
+
     this.customerAddresses = (response.data ?? []).map(
       (addr) => new Address({ ...addr }),
     );
@@ -204,46 +224,46 @@ export class OrderProductsFormComponent
         this.cleanProductSelection();
         return;
       }
-      // Verifica se o sku existe na lista de produtos
-      const products = (this.products$ as any).data as Product[];
-      const found = products.find((p) => p.sku === productSku);
-      if (!found) {
-        const confirmRef = this.modalService.showConfirmation({
-          title: 'Produto não encontrado',
-          message: `O produto "${productSku}" não existe. Deseja adicioná-lo?`,
-          cancelButtonText: 'Cancelar',
-          confirmButtonText: 'Sim',
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (confirmed) {
-            // Abrir modal de adicionar produto
-            const productFormRef: MatDialogRef<any> =
-              this.modalService.showTemplateModal(
-                ProductDetailsModalComponent,
-                {
-                  data: { sku: productSku },
-                  width: '600px',
-                  disableClose: true,
-                },
-              );
-            productFormRef
-              .afterClosed()
-              .subscribe((result: WebApiResponse<Product> | undefined) => {
-                if (result) {
-                  this.form.get('productId')!.setValue(result.data.id);
-                  this.form.get('productSku')!.setValue(result.data.sku);
-                  this.form.get('productName')!.setValue(result.data.name);
-                  this.form.get('productType')!.setValue(result.data.type);
-                  this.setupAutoComplete();
-                } else {
-                  this.cleanProductSelection();
-                }
-              });
-          } else {
-            this.cleanProductSelection();
-          }
-        });
-      }
+      const sub = this.productsArray$.subscribe((products) => {
+        const found = products.find((p) => p.sku === productSku);
+        if (!found) {
+          const confirmRef = this.modalService.showConfirmation({
+            title: 'Produto não encontrado',
+            message: `O produto "${productSku}" não existe. Deseja adicioná-lo?`,
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sim',
+          });
+          confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+            if (confirmed) {
+              const productFormRef: MatDialogRef<any> =
+                this.modalService.showTemplateModal(
+                  ProductDetailsModalComponent,
+                  {
+                    data: { sku: productSku },
+                    width: '600px',
+                    disableClose: true,
+                  },
+                );
+              productFormRef
+                .afterClosed()
+                .subscribe((result: WebApiResponse<Product> | undefined) => {
+                  if (result) {
+                    this.form.get('productId')!.setValue(result.data.id);
+                    this.form.get('productSku')!.setValue(result.data.sku);
+                    this.form.get('productName')!.setValue(result.data.name);
+                    this.form.get('productType')!.setValue(result.data.type);
+                    this.setupAutoComplete();
+                  } else {
+                    this.cleanProductSelection();
+                  }
+                });
+            } else {
+              this.cleanProductSelection();
+            }
+          });
+        }
+        sub.unsubscribe();
+      });
     }, 200);
   }
 
@@ -254,46 +274,46 @@ export class OrderProductsFormComponent
         this.cleanProductSelection();
         return;
       }
-      // Verifica se o nome existe na lista de clientes
-      const products = (this.products$ as any).data as Product[];
-      const found = products.find((p) => p.name === productName);
-      if (!found) {
-        const confirmRef = this.modalService.showConfirmation({
-          title: 'Produto não encontrado',
-          message: `O produto "${productName}" não existe. Deseja adicioná-lo?`,
-          cancelButtonText: 'Cancelar',
-          confirmButtonText: 'Sim',
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (confirmed) {
-            // Abrir modal de adicionar produto
-            const productFormRef: MatDialogRef<any> =
-              this.modalService.showTemplateModal(
-                ProductDetailsModalComponent,
-                {
-                  data: { name: productName },
-                  width: '600px',
-                  disableClose: true,
-                },
-              );
-            productFormRef
-              .afterClosed()
-              .subscribe((response: WebApiResponse<Product> | undefined) => {
-                if (response) {
-                  this.form.get('productId')!.setValue(response.data.id);
-                  this.form.get('productSku')!.setValue(response.data.sku);
-                  this.form.get('productName')!.setValue(response.data.name);
-                  this.form.get('productType')!.setValue(response.data.type);
-                  this.setupAutoComplete();
-                } else {
-                  this.cleanProductSelection();
-                }
-              });
-          } else {
-            this.cleanProductSelection();
-          }
-        });
-      }
+      const sub = this.productsArray$.subscribe((products) => {
+        const found = products.find((p) => p.name === productName);
+        if (!found) {
+          const confirmRef = this.modalService.showConfirmation({
+            title: 'Produto não encontrado',
+            message: `O produto "${productName}" não existe. Deseja adicioná-lo?`,
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sim',
+          });
+          confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+            if (confirmed) {
+              const productFormRef: MatDialogRef<any> =
+                this.modalService.showTemplateModal(
+                  ProductDetailsModalComponent,
+                  {
+                    data: { name: productName },
+                    width: '600px',
+                    disableClose: true,
+                  },
+                );
+              productFormRef
+                .afterClosed()
+                .subscribe((response: WebApiResponse<Product> | undefined) => {
+                  if (response) {
+                    this.form.get('productId')!.setValue(response.data.id);
+                    this.form.get('productSku')!.setValue(response.data.sku);
+                    this.form.get('productName')!.setValue(response.data.name);
+                    this.form.get('productType')!.setValue(response.data.type);
+                    this.setupAutoComplete();
+                  } else {
+                    this.cleanProductSelection();
+                  }
+                });
+            } else {
+              this.cleanProductSelection();
+            }
+          });
+        }
+        sub.unsubscribe();
+      });
     }, 200);
   }
 
@@ -396,17 +416,30 @@ export class OrderProductsFormComponent
     this.showAllAddresses = false;
   }
 
-  submit(): void {
+  submit(): Observable<WebApiResponse<OrderProduct> | null> {
     this.submitted = true;
-    if (this.form.valid) {
-      this.save.emit(this.form.getRawValue());
-    } else {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      return of(null);
     }
+
+    return this.save(this.form.getRawValue() as OrderProduct).pipe(
+      tap({
+        next: (response: WebApiResponse<OrderProduct>) => {
+          this.dialogRef?.close(response);
+          if (response.data.orderId) {
+            this.saveModal(response);
+          }
+        },
+        error: (err) => {
+          this.notificationService.showMessage('Error', 'Erro ao salvar');
+        },
+      }),
+    );
   }
 
-  onCancel(): void {
-    this.cancel.emit();
+  cancel(): void {
+    this.modalService.hideModal(this.dialogRef);
   }
 
   validateEndDate(): void {
@@ -484,6 +517,7 @@ export class OrderProductsFormComponent
       }
     });
   }
+
   private initForm(): void {
     const today = new Date();
     const fiveDaysLater = new Date();
@@ -526,14 +560,17 @@ export class OrderProductsFormComponent
       this.form.addControl('id', this.formBuilder.control(''));
     } else {
       // Atualiza productId ao selecionar produto
-      this.form.get('productName')!.valueChanges.subscribe((name) => {
-        const product = (this.products$ as any).data.find(
-          (p: Product) => p.name === name,
-        );
-        if (product) {
-          this.form.get('productId')!.setValue(product.id);
-        }
-      });
+      this._subscriptions.push(
+        this.form.get('productName')!.valueChanges.subscribe((name) => {
+          const sub = this.productsArray$.subscribe((products) => {
+            const product = products.find((p: Product) => p.name === name);
+            if (product) {
+              this.form.get('productId')!.setValue(product.id);
+            }
+          });
+          this._subscriptions.push(sub);
+        }),
+      );
     }
   }
 
@@ -565,9 +602,19 @@ export class OrderProductsFormComponent
 
   private setupAutoComplete(): void {
     this.products$ = this.productService.getProducts();
+    this.productsArray$ = this.products$.pipe(
+      map((response) => response.data ?? []),
+    );
+
+    this.productSkuAutoComplete();
+    this.productNameAutoComplete();
+  }
+
+  private productSkuAutoComplete(): void {
     this.filteredProductsSku$ = this.form.get('productSku')!.valueChanges.pipe(
       startWith(''),
-      map((value: string | Product) => {
+      combineLatestWith(this.productsArray$),
+      map(([value, products]) => {
         let filterValue = '';
         if (typeof value === 'string') {
           filterValue = value.toLowerCase();
@@ -577,7 +624,7 @@ export class OrderProductsFormComponent
         if (!filterValue) {
           return [];
         }
-        return (this.products$ as any).data
+        return products
           .filter((product: Product) =>
             (product.sku || '').toLowerCase().includes(filterValue),
           )
@@ -592,12 +639,15 @@ export class OrderProductsFormComponent
           }));
       }),
     );
+  }
 
+  private productNameAutoComplete(): void {
     this.filteredProductsName$ = this.form
       .get('productName')!
       .valueChanges.pipe(
         startWith(''),
-        map((value: string | Product) => {
+        combineLatestWith(this.productsArray$),
+        map(([value, products]) => {
           let filterValue = '';
           if (typeof value === 'string') {
             filterValue = value.toLowerCase();
@@ -607,7 +657,7 @@ export class OrderProductsFormComponent
           if (!filterValue) {
             return [];
           }
-          return (this.products$ as any).data
+          return products
             .filter((product: Product) =>
               (product.name || '').toLowerCase().includes(filterValue),
             )
@@ -629,21 +679,33 @@ export class OrderProductsFormComponent
     setTimeout(() => this.updateTotalPrice(), 0);
 
     // Atualiza totalPrice ao alterar produto, quantidade, preço ou desconto
-    this.form
-      .get('productSku')
-      ?.valueChanges.subscribe(() => this.updateTotalPrice());
+    this.form.get('productSku')?.valueChanges &&
+      this._subscriptions.push(
+        this.form
+          .get('productSku')!
+          .valueChanges.subscribe(() => this.updateTotalPrice()),
+      );
 
-    this.form
-      .get('productName')
-      ?.valueChanges.subscribe(() => this.updateTotalPrice());
+    this.form.get('productName')?.valueChanges &&
+      this._subscriptions.push(
+        this.form
+          .get('productName')!
+          .valueChanges.subscribe(() => this.updateTotalPrice()),
+      );
 
-    this.form
-      .get('quantity')
-      ?.valueChanges.subscribe(() => this.updateTotalPrice());
+    this.form.get('quantity')?.valueChanges &&
+      this._subscriptions.push(
+        this.form
+          .get('quantity')!
+          .valueChanges.subscribe(() => this.updateTotalPrice()),
+      );
 
-    this.form
-      .get('discount')
-      ?.valueChanges.subscribe(() => this.updateTotalPrice());
+    this.form.get('discount')?.valueChanges &&
+      this._subscriptions.push(
+        this.form
+          .get('discount')!
+          .valueChanges.subscribe(() => this.updateTotalPrice()),
+      );
   }
 
   private updateTotalPrice(): void {
@@ -681,5 +743,24 @@ export class OrderProductsFormComponent
     this.form.get('productType')!.setValue('');
     this.markAsTouched('productType');
     this.form.get('productType')!.setErrors({ required: true });
+  }
+
+  private save(
+    orderProduct: OrderProduct,
+  ): Observable<WebApiResponse<OrderProduct>> {
+    if (!this.parentId) {
+      return this.orderProductService.addTemporary(
+        this.form.getRawValue() as OrderProduct,
+      );
+    }
+
+    orderProduct.orderId = this.parentId ?? undefined;
+    return this.isEdit && this.data
+      ? this.orderProductService.update(orderProduct)
+      : this.orderProductService.add(orderProduct);
+  }
+
+  private saveModal(response: WebApiResponse<OrderProduct>): void {
+    this.notificationService.showMessage(response.status, response.message);
   }
 }

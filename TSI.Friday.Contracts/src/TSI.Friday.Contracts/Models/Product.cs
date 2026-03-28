@@ -22,5 +22,6 @@ namespace TSI.Friday.Contracts.Models
         public int QuantityInStock { get; set; }
 
         public ICollection<ProductPhoto> ProductPhotos { get; set; }
+        public virtual ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
     }
 }

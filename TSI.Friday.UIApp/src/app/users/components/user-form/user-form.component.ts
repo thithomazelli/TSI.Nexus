@@ -3,6 +3,7 @@ import {
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -24,7 +25,7 @@ import { ResetPasswordComponent } from '../../../account/reset-password/reset-pa
 })
 export class UserFormComponent
   extends FormBaseComponent
-  implements OnInit, OnChanges
+  implements OnInit, OnChanges, OnDestroy
 {
   @Input()
   isEdit = false;
@@ -32,7 +33,6 @@ export class UserFormComponent
   @Input()
   data?: User | null;
 
-  // controla estilo compacto quando usado em page
   @Input()
   compact = false;
 
@@ -50,6 +50,11 @@ export class UserFormComponent
     { label: 'Usuário', value: 'User' },
   ];
 
+  isResendingEmail = false;
+  resendEmailCountdown = 0;
+  private resendEmailTimer: any;
+  readonly RESEND_EMAIL_COOLDOWN_MS = 60000;
+
   constructor(
     private formBuilder: FormBuilder,
     private accountService: AccountService,
@@ -60,17 +65,23 @@ export class UserFormComponent
 
   ngOnInit(): void {
     this.initForm();
+    this.restoreResendEmailCooldown();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // quando data chegar depois do init, apenas patch no form
     if (changes['data'] && changes['data'].currentValue && this.form) {
       this.form.patchValue(changes['data'].currentValue);
     }
 
-    // se o modo de edição mudar depois, re-inicializa o form com o novo modo
     if (changes['isEdit'] && !changes['isEdit'].firstChange) {
       this.initForm();
+      this.restoreResendEmailCooldown();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.resendEmailTimer) {
+      clearInterval(this.resendEmailTimer);
     }
   }
 
@@ -88,10 +99,17 @@ export class UserFormComponent
   }
 
   resendEmailConfirmation(): void {
+    if (this.isResendingEmail) {
+      return;
+    }
+
+    this.isResendingEmail = true;
+
     this.accountService
       .resendEmailConfirmation(this.form.get('email')?.value)
       .subscribe({
         next: (response: any) => {
+          this.saveResendEmailCooldown();
           this.modalService.hideModal();
           this.modalService.showNotification(
             true,
@@ -99,7 +117,83 @@ export class UserFormComponent
             response.value.message,
           );
         },
+        error: () => {
+          this.resetResendEmailCooldown();
+        },
+        complete: () => {
+          this.resetResendEmailCooldown();
+        },
       });
+  }
+
+  private resetResendEmailCooldown(): void {
+    if (this.resendEmailTimer) {
+      clearInterval(this.resendEmailTimer);
+    }
+
+    this.resendEmailCountdown = Math.ceil(this.RESEND_EMAIL_COOLDOWN_MS / 1000);
+
+    this.resendEmailTimer = setInterval(() => {
+      this.resendEmailCountdown--;
+      if (this.resendEmailCountdown <= 0) {
+        clearInterval(this.resendEmailTimer);
+        this.isResendingEmail = false;
+        this.resendEmailCountdown = 0;
+        localStorage.removeItem(this.getResendEmailCooldownKey());
+      }
+    }, 1000);
+  }
+
+  private saveResendEmailCooldown(): void {
+    const timestamp = Date.now();
+    localStorage.setItem(
+      this.getResendEmailCooldownKey(),
+      timestamp.toString(),
+    );
+  }
+
+  private restoreResendEmailCooldown(): void {
+    const email = this.form?.get('email')?.value;
+    if (!email) {
+      return;
+    }
+
+    const storedTimestamp = localStorage.getItem(
+      this.getResendEmailCooldownKey(),
+    );
+    if (!storedTimestamp) {
+      return;
+    }
+
+    const lastSendTime = parseInt(storedTimestamp, 10);
+    const elapsedTime = Date.now() - lastSendTime;
+    const remainingTime = this.RESEND_EMAIL_COOLDOWN_MS - elapsedTime;
+
+    if (remainingTime > 0) {
+      this.isResendingEmail = true;
+      this.resendEmailCountdown = Math.ceil(remainingTime / 1000);
+
+      if (this.resendEmailTimer) {
+        clearInterval(this.resendEmailTimer);
+      }
+
+      this.resendEmailTimer = setInterval(() => {
+        this.resendEmailCountdown--;
+        if (this.resendEmailCountdown <= 0) {
+          clearInterval(this.resendEmailTimer);
+          this.isResendingEmail = false;
+          this.resendEmailCountdown = 0;
+          localStorage.removeItem(this.getResendEmailCooldownKey());
+        }
+      }, 1000);
+    } else {
+      localStorage.removeItem(this.getResendEmailCooldownKey());
+    }
+  }
+
+  private getResendEmailCooldownKey(): string {
+    const email = this.form?.get('email')?.value || this.data?.email || '';
+    return `resendEmailCooldown_${email}`;
   }
 
   forgotPassword(): void {

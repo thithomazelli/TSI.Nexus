@@ -9,8 +9,8 @@
 
 <div class="app-content">
   <app-grid
-    [className]="'Produtos do Pedido'"
     [compactView]="compact"
+    [className]="'Produtos do Pedido'"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
@@ -19,8 +19,8 @@
     [update]="updateOrderProductStatus.bind(this)"
     (openModal)="onOpenModal($event)"
     [filtersTemplate]="filtersTpl"
-    [canAdd]="!isFullList"
     [showFilters]="showFiltersOnInit"
+    [canAdd]="!isFullList"
   ></app-grid>
 
   <ng-template #filtersTpl>

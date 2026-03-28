@@ -11,13 +11,13 @@ import {
 
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { AddressDetailsModalComponent } from './components/address-details-modal/address-details-modal.component';
-import { startWith, Subject, Subscription, takeUntil, tap } from 'rxjs';
+import { Subject, Subscription, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-address',
-  standalone: false,
   templateUrl: './address.component.html',
   styleUrl: './address.component.scss',
+  standalone: false,
 })
 export class AddressComponent {
   @Input()
@@ -143,7 +143,7 @@ export class AddressComponent {
 
   ngOnInit(): void {
     this._addressChangedSub = this.addressService.addressChanged$
-      .pipe(startWith(null), takeUntil(this._destroy$))
+      .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
         this.getAddresses();
       });
@@ -175,7 +175,7 @@ export class AddressComponent {
     }
 
     this.addressService
-      .deleteAddress(address)
+      .delete(address)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Address>) => {
         this.rowData = this.rowData.filter((p) => p.id !== address.id);

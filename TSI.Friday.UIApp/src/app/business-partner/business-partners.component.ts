@@ -15,7 +15,7 @@ import {
 } from 'ag-grid-community';
 import { BusinessPartnerDetailsModalComponent } from './components/business-partner-details-modal/business-partner-details-modal.component';
 import { Router } from '@angular/router';
-import { startWith, Subject, Subscription, takeUntil, tap } from 'rxjs';
+import { Subject, Subscription, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-business-partners',
@@ -168,7 +168,7 @@ export class BusinessPartnersComponent {
     this.initialize();
     this._businessPartnerChangedSub =
       this.businessPartnerService.businessPartnerChanged$
-        .pipe(startWith(null), takeUntil(this._destroy$))
+        .pipe(takeUntil(this._destroy$))
         .subscribe(() => {
           this.getBusinessPartners();
         });

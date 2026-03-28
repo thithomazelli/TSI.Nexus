@@ -65,7 +65,7 @@ export class BusinessPartnerService {
   add(
     businessPartner: Company | Individual,
   ): Observable<WebApiResponse<Company | Individual>> {
-    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const delayMs = 3000; // delay de 5 segundos para teste visual
     const endPointUrl =
       businessPartner.documentType === 'Física'
         ? ApiType.Individuals
@@ -95,7 +95,7 @@ export class BusinessPartnerService {
   update(
     businessPartner: Company | Individual,
   ): Observable<WebApiResponse<Company | Individual>> {
-    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const delayMs = 3000; // delay de 5 segundos para teste visual
     const endPointUrl =
       businessPartner.documentType === 'Física'
         ? ApiType.Individuals

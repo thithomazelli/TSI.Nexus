@@ -7,7 +7,7 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { ProductService } from '../core/services/product/product.service';
-import { startWith, Subscription, tap, Subject, takeUntil } from 'rxjs';
+import { Subscription, tap, Subject, takeUntil } from 'rxjs';
 import {
   ColDef,
   ValueFormatterParams,
@@ -182,7 +182,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._productChangedSub = this.productService.productChanged$
-      .pipe(startWith(null), takeUntil(this._destroy$))
+      .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
         this.getProducts();
       });
@@ -208,12 +208,16 @@ export class ProductsComponent implements OnInit, OnDestroy {
       .delete(product)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Product>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== product.id);
+        if (response.status === ResponseStatus.Success) {
+          this.rowData = this.rowData.filter((p) => p.id !== product.id);
+        }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Produto excluído',
+          response.status === ResponseStatus.Success
+            ? 'Produto excluído'
+            : 'Erro ao excluir produto',
           response.message,
-          'success',
+          response.status === ResponseStatus.Success ? 'success' : 'error',
         );
       });
   }

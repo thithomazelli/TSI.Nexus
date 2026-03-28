@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using TSI.Friday.Contracts.Enums;
+﻿using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Utilities;
@@ -14,6 +13,7 @@ namespace TSI.Friday.Services
         /// Repository object created to access the Product registers on database using EntityFramework.
         /// </summary>
         private readonly IRepository<Product> _repository;
+        private readonly IRepository<OrderProduct> _orderProductRepository;
 
         #endregion Properties
 
@@ -23,9 +23,10 @@ namespace TSI.Friday.Services
         /// ProductService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Product> object used to initialize the internal variable using Dependency Injection.</param>
-        public ProductService(IRepository<Product> repository)
+        public ProductService(IRepository<Product> repository, IRepository<OrderProduct> orderProductRepository)
         {
             _repository = repository;
+            _orderProductRepository = orderProductRepository;
         }
 
         /// <inheritdoc />
@@ -103,6 +104,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (await _orderProductRepository.AnyAsync(_ => _.ProductId == product.Id))
+                {
+                    result.Data = product;
+                    result.Status = ResponseStatus.Error;
+                    result.Message = $"Produto {product.Name} não pode ser removido pois está vinculado à um pedido.";
+                    return result;
+                }
+
                 await _repository.RemoveAsync(product);
 
                 result.Data = product;
