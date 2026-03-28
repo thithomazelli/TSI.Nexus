@@ -187,7 +187,7 @@ export class ProductFormComponent
       : this.productService.add(product);
   }
 
-  private saveModal(response: WebApiResponse<Product>): any {
+  private saveModal(response: WebApiResponse<Product>): void {
     this.dialogRef?.close(response);
     this.modalService.showNotification(
       response.status == ResponseStatus.Success,
@@ -196,7 +196,7 @@ export class ProductFormComponent
     );
   }
 
-  private savePage(response: WebApiResponse<Product>): any {
+  private savePage(response: WebApiResponse<Product>): void {
     if (this.isEdit && this.data) {
       this.notificationService.showMessage(response.status, response.message);
       this.data = response.data;

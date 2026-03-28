@@ -1,11 +1,12 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
-  ApiService,
   ApiType,
   Company,
   Individual,
   ModalService,
+  NotificationService,
   Order,
+  OrderService,
   ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
@@ -15,6 +16,7 @@ import {
   ValueFormatterParams,
 } from 'ag-grid-community';
 import { OrderDetailsModalComponent } from './components/order-details-modal/order-details-modal.component';
+import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-orders',
@@ -22,7 +24,7 @@ import { OrderDetailsModalComponent } from './components/order-details-modal/ord
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss',
 })
-export class OrdersComponent {
+export class OrdersComponent implements OnInit, OnDestroy {
   @Input()
   compact: boolean = false;
 
@@ -46,38 +48,32 @@ export class OrdersComponent {
   };
   showFiltersOnInit = false;
 
+  private _orderChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
+    private orderService: OrderService,
   ) {}
 
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
-    this.getOrders(() => this.applyFilters());
     this.initializeGrid();
-  }
 
-  refreshOrders(): void {
-    this.getOrders(() => this.applyFilters());
-  }
-
-  deleteOrder(order: Order): void {
-    this.apiService
-      .delete<WebApiResponse<Order>>(`${this.baseEndPoint}/remove`, order)
-      .subscribe((response: WebApiResponse<Order>) => {
-        if (response.status === ResponseStatus.Success) {
-          this.filteredRowData = this.filteredRowData.filter(
-            (p) => p.id !== order.id,
-          );
-        }
-
-        this.modalService.hideModal();
-        this.modalService.showSweetNotification(
-          '',
-          response.message,
-          response.status,
-        );
+    this._orderChangedSub = this.orderService.orderChanged$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => {
+        this.getOrders(() => this.applyFilters());
       });
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._orderChangedSub) {
+      this._orderChangedSub.unsubscribe();
+    }
   }
 
   onOpenModal(initialState: any) {
@@ -91,16 +87,32 @@ export class OrdersComponent {
         },
       };
     }
-    const ref = this.modalService.showTemplateModal(
+
+    this.modalService.showTemplateModal(
       OrderDetailsModalComponent,
       initialState,
     );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.getOrders(() => this.applyFilters());
-        ref.close();
+  }
+
+  deleteOrder(order: Order): void {
+    this.orderService
+      .delete(order)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response: WebApiResponse<Order>) => {
+        this.filteredRowData = this.filteredRowData.filter(
+          (p) => p.id !== order.id,
+        );
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          'Pedido de venda excluído',
+          response.message,
+          'success',
+        );
       });
-    }
+  }
+
+  refreshOrders(): void {
+    this.getOrders(() => this.applyFilters(), true);
   }
 
   applyFilters(): void {
@@ -271,17 +283,27 @@ export class OrdersComponent {
     ];
   }
 
-  private getOrders(callback?: () => void): void {
-    const endpoint =
-      this.entity != ''
-        ? `${this.baseEndPoint}/getBy${this.entity}Id/${this.parentData?.id}`
-        : `${this.baseEndPoint}/getAll`;
+  private getOrders(callback?: () => void, isRefresh = false): void {
+    let orders$: Observable<WebApiResponse<Order[]>> =
+      this.entity != '' && this.parentData?.id != null
+        ? this.orderService.getByBusinessPartnerId(this.parentData.id)
+        : this.orderService.getAll();
 
-    this.apiService
-      .get<WebApiResponse<Order[]>>(endpoint)
+    orders$
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
-        if (callback) callback();
+
+        if (callback) {
+          callback();
+        }
+
+        if (isRefresh) {
+          this.notificationService.showMessage(
+            ResponseStatus.Success,
+            'Pedidos atualizados com sucesso',
+          );
+        }
       });
   }
 

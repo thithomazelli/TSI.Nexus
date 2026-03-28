@@ -1,14 +1,16 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   Address,
-  ApiService,
   ApiType,
   ModalService,
+  NotificationService,
   OrderProductService,
   OrderProductStatus,
+  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
+
 import {
   ColDef,
   ICellRendererParams,
@@ -16,6 +18,7 @@ import {
 } from 'ag-grid-community';
 import { OrderProduct } from '@friday/core';
 import { OrderProductsDetailsModalComponent } from './components/order-product-details-modal/order-products-details-modal.component';
+import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-order-products',
@@ -23,7 +26,7 @@ import { OrderProductsDetailsModalComponent } from './components/order-product-d
   styleUrl: './order-products.component.scss',
   standalone: false,
 })
-export class OrderProductsComponent {
+export class OrderProductsComponent implements OnInit, OnDestroy {
   @Input()
   compact: boolean = false;
 
@@ -36,9 +39,6 @@ export class OrderProductsComponent {
   @Input()
   isFromProductsView: boolean = false;
 
-  @Output()
-  orderProductsUpdated = new EventEmitter<string>();
-
   baseEndPoint = ApiType.OrderProducts;
 
   columnDefs: ColDef[] = [];
@@ -50,25 +50,69 @@ export class OrderProductsComponent {
   filterStatus = { InProgress: false, Delayed: false, Returned: false };
   showFiltersOnInit = false;
 
+  private _orderProductChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
-    private orderProductService: OrderProductService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
+    private orderProductService: OrderProductService,
     private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.setFiltersFromQueryParams(params);
-      // Set showFiltersOnInit only on initialization
       this.showFiltersOnInit = this.hasInitialFilters();
-      this.getOrderProducts(() => this.applyFilters());
+      this._orderProductChangedSub =
+        this.orderProductService.orderProductChanged$
+          .pipe(takeUntil(this._destroy$))
+          .subscribe(() => {
+            this.getOrderProducts(() => this.applyFilters(), false);
+          });
     });
     this.initializeGrid();
   }
 
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._orderProductChangedSub) {
+      this._orderProductChangedSub.unsubscribe();
+    }
+  }
+
+  onOpenModal(initialState: any) {
+    const initialStateWithParent = {
+      ...initialState,
+      parentId: initialState.data?.orderId || this.parentId,
+    };
+
+    this.modalService.showTemplateModal(
+      OrderProductsDetailsModalComponent,
+      initialStateWithParent,
+    );
+  }
+
+  deleteOrderProduct(orderProduct: OrderProduct): void {
+    this.orderProductService
+      .delete(orderProduct)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response: WebApiResponse<OrderProduct>) => {
+        this.filteredRowData = this.filteredRowData.filter(
+          (p) => p.id !== orderProduct.id,
+        );
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          'Item excluído',
+          response.message,
+          'success',
+        );
+      });
+  }
+
   refreshOrderProducts(): void {
-    this.getOrderProducts(() => this.applyFilters());
+    this.getOrderProducts(() => this.applyFilters(), true);
   }
 
   updateOrderProductStatus(orderProduct: OrderProduct): void {
@@ -89,44 +133,6 @@ export class OrderProductsComponent {
 
         this.markAsReturned(orderProduct);
       });
-  }
-
-  deleteOrderProduct(orderProduct: OrderProduct): void {
-    this.apiService
-      .delete<
-        WebApiResponse<OrderProduct>
-      >(`${this.baseEndPoint}/remove`, orderProduct)
-      .subscribe((response: WebApiResponse<OrderProduct>) => {
-        this.filteredRowData = this.filteredRowData.filter(
-          (p) => p.id !== orderProduct.id,
-        );
-        this.orderProductsUpdated.emit(this.parentId ?? '');
-        this.modalService.hideModal();
-        this.modalService.showSweetNotification(
-          '',
-          response.message,
-          'success',
-        );
-      });
-  }
-
-  onOpenModal(initialState: any) {
-    const initialStateWithParent = {
-      ...initialState,
-      parentId: initialState.data?.orderId || this.parentId,
-    };
-
-    const ref = this.modalService.showTemplateModal(
-      OrderProductsDetailsModalComponent,
-      initialStateWithParent,
-    );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.getOrderProducts(() => this.applyFilters());
-        this.orderProductsUpdated.emit(this.parentId ?? '');
-        ref.close();
-      });
-    }
   }
 
   applyFilters(): void {
@@ -171,20 +177,24 @@ export class OrderProductsComponent {
     this.filteredRowData = [...this.rowData];
   }
 
-  private getOrderProducts(callback?: () => void): void {
+  private getOrderProducts(callback?: () => void, isRefresh = false): void {
     if (!this.parentId && !this.isFullList) {
       if (callback) callback();
       return;
     }
 
-    const endPointUrl = this.isFromProductsView
-      ? `${this.baseEndPoint}/getByProductId/${this.parentId}`
-      : this.isFullList
-        ? `${this.baseEndPoint}/getAll`
-        : `${this.baseEndPoint}/getByOrderId/${this.parentId}`;
+    let orderProducts$: Observable<WebApiResponse<OrderProduct[]>>;
 
-    this.apiService
-      .get<WebApiResponse<OrderProduct[]>>(endPointUrl)
+    if (this.isFullList) {
+      orderProducts$ = this.orderProductService.getAll();
+    } else if (this.isFromProductsView) {
+      orderProducts$ = this.orderProductService.getByProductId(this.parentId!);
+    } else {
+      orderProducts$ = this.orderProductService.getByOrderId(this.parentId!);
+    }
+
+    orderProducts$
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<OrderProduct[]>) => {
         this.rowData =
           response.data?.sort(
@@ -195,6 +205,13 @@ export class OrderProductsComponent {
 
         if (callback) {
           callback();
+        }
+
+        if (isRefresh) {
+          this.notificationService.showMessage(
+            ResponseStatus.Success,
+            'Produtos do pedido atualizados com sucesso',
+          );
         }
       });
   }
@@ -358,15 +375,15 @@ export class OrderProductsComponent {
       return;
     }
 
-    const updatedOrderProduct = { ...orderProduct, status: 'Returned' };
-    this.apiService
-      .put<
-        WebApiResponse<OrderProduct>
-      >(`${this.baseEndPoint}/update`, updatedOrderProduct)
+    const updatedOrderProduct: OrderProduct = {
+      ...orderProduct,
+      status: OrderProductStatus.Returned,
+    };
+
+    this.orderProductService
+      .update(updatedOrderProduct)
       .subscribe((response: WebApiResponse<OrderProduct>) => {
-        this.getOrderProducts(() => this.applyFilters());
-        this.orderProductsUpdated.emit(this.parentId ?? '');
-        this.orderProductService.markOrderProductAsChanged();
+        this.getOrderProducts(() => this.applyFilters(), false);
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',

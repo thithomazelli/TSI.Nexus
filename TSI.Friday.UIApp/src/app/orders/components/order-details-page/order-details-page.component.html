@@ -73,10 +73,7 @@
               <app-order-form
                 [isEdit]="isEdit"
                 [data]="data"
-                (save)="onSave($event)"
-                (cancel)="onCancel()"
                 [compact]="false"
-                [errors]="errorMessages"
               ></app-order-form>
             </div>
 
@@ -85,7 +82,6 @@
                 [compact]="true"
                 [isFullList]="false"
                 [parentId]="data?.id"
-                (orderProductsUpdated)="onOrderProductsUpdated()"
               ></app-order-products>
             </div>
             <div *ngIf="activeTab === 'payments'">
