@@ -44,13 +44,21 @@ export class AddressService {
     });
   }
 
+  getAllByBusinessPartnerId(
+    businessPartnerId: string,
+  ): Observable<WebApiResponse<Address[]>> {
+    return this.apiService.get<WebApiResponse<Address[]>>(
+      `${ApiType.Addresses}/getAllByBusinessPartnerId/${businessPartnerId}`,
+    );
+  }
+
   refresh(parentId: string): Observable<WebApiResponse<Address[]>> {
     this._loaded = false;
     return this.getAddresses(parentId, true);
   }
 
   add(address: Address): Observable<WebApiResponse<Address>> {
-    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const delayMs = 3000; // delay de 5 segundos para teste visual
     return this.apiService
       .post<WebApiResponse<Address>>(`${this._baseEndPoint}/add`, address)
       .pipe(
@@ -60,7 +68,7 @@ export class AddressService {
   }
 
   update(address: Address): Observable<WebApiResponse<Address>> {
-    const delayMs = 5000; // delay de 5 segundos para teste visual
+    const delayMs = 3000; // delay de 5 segundos para teste visual
     return this.apiService
       .put<WebApiResponse<Address>>(`${this._baseEndPoint}/update`, address)
       .pipe(
@@ -69,7 +77,7 @@ export class AddressService {
       );
   }
 
-  deleteAddress(address: Address): Observable<WebApiResponse<Address>> {
+  delete(address: Address): Observable<WebApiResponse<Address>> {
     return this.apiService.delete<WebApiResponse<Address>>(
       `${this._baseEndPoint}/remove`,
       address,

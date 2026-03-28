@@ -1,12 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  ApiType,
-  Product,
-  ProductService,
-  ProductType,
-  WebApiResponse,
-} from '@friday/core';
+import { Product, ProductService, ProductType } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -15,7 +9,7 @@ import { Subject, takeUntil } from 'rxjs';
   styleUrl: './product-details-page.component.scss',
   standalone: false,
 })
-export class ProductDetailsPageComponent {
+export class ProductDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data?: Product | null = null;
   id: string | null = null;
@@ -29,7 +23,6 @@ export class ProductDetailsPageComponent {
   };
 
   private _destroy$ = new Subject<void>();
-  private _baseEndPoint: ApiType = ApiType.Products;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -48,6 +41,11 @@ export class ProductDetailsPageComponent {
       this.isEdit = false;
       this.data = null;
     }
+  }
+
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 
   getProductTypeLabel(): string {

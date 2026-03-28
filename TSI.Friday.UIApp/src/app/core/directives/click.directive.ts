@@ -16,6 +16,7 @@ export class ClickDirective {
   @Input('appClick') action$!: () => Observable<WebApiResponse<any> | null>;
 
   private spinnerEl: HTMLElement | null = null;
+  private _prevDisabledState: Map<HTMLElement, boolean> = new Map();
 
   constructor(
     private el: ElementRef,
@@ -28,6 +29,7 @@ export class ClickDirective {
       return;
     }
 
+    this.saveDisabledState();
     this.setDisabled(true);
     this.setLoadingClass(true);
     this.addSpinner();
@@ -42,11 +44,60 @@ export class ClickDirective {
       .subscribe();
   }
 
+  private saveDisabledState() {
+    this._prevDisabledState.clear();
+    const nativeEl = this.el.nativeElement;
+    // Salva o estado do botão clicado
+    this._prevDisabledState.set(nativeEl, nativeEl.disabled);
+    // Salva o estado dos campos do form, se houver
+    let parent = nativeEl.parentElement;
+    while (parent) {
+      if (parent.tagName && parent.tagName.toLowerCase() === 'form') {
+        const elements = parent.querySelectorAll(
+          'input, button, select, textarea, a',
+        );
+        elements.forEach((el: HTMLElement) => {
+          if (el !== nativeEl) {
+            // Para <a>, considera aria-disabled
+            if (el.tagName && el.tagName.toLowerCase() === 'a') {
+              this._prevDisabledState.set(
+                el,
+                el.getAttribute('aria-disabled') === 'true',
+              );
+            } else {
+              this._prevDisabledState.set(el, (el as any).disabled);
+            }
+          }
+        });
+        break;
+      }
+      parent = parent.parentElement;
+    }
+  }
+
   private finishLoading() {
-    this.setFormDisabled(false);
-    this.setDisabled(false);
+    this.restoreDisabledState();
     this.setLoadingClass(false);
     this.removeSpinner();
+  }
+
+  private restoreDisabledState() {
+    this._prevDisabledState.forEach((wasDisabled, el) => {
+      if (el.tagName && el.tagName.toLowerCase() === 'a') {
+        if (wasDisabled) {
+          el.setAttribute('aria-disabled', 'true');
+          el.setAttribute('tabindex', '-1');
+          el.classList.add('disabled');
+        } else {
+          el.removeAttribute('aria-disabled');
+          el.removeAttribute('tabindex');
+          el.classList.remove('disabled');
+        }
+      } else {
+        this.renderer.setProperty(el, 'disabled', wasDisabled);
+      }
+    });
+    this._prevDisabledState.clear();
   }
 
   private setDisabled(disabled: boolean) {
@@ -56,64 +107,51 @@ export class ClickDirective {
       this.renderer.setProperty(nativeEl, 'disabled', disabled);
     }
     // Se o botão está dentro de um form, desabilita o form inteiro
-    this.setFormDisabled(disabled);
-  }
-
-  private setFormDisabled(disabled: boolean) {
-    let parent = this.el.nativeElement.parentElement;
+    let parent = nativeEl.parentElement;
     while (parent) {
       if (parent.tagName && parent.tagName.toLowerCase() === 'form') {
-        this.renderer.setProperty(parent, 'disabled', disabled);
-        // Desabilita todos os controles do form
         const elements = parent.querySelectorAll(
-          'input, button, select, textarea',
+          'input, button, select, textarea, a',
         );
         elements.forEach((el: HTMLElement) => {
-          if (el !== this.el.nativeElement) {
-            this.renderer.setProperty(el, 'disabled', disabled);
+          if (el !== nativeEl) {
+            if (el.tagName && el.tagName.toLowerCase() === 'a') {
+              // Handler único por elemento
+              const handlerKey = '__aClickHandler_appClick';
+              if (disabled) {
+                el.setAttribute('aria-disabled', 'true');
+                el.setAttribute('tabindex', '-1');
+                el.classList.add('disabled');
+                if (!(el as any)[handlerKey]) {
+                  (el as any)[handlerKey] = (e: Event) => {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    return false;
+                  };
+                  el.addEventListener('click', (el as any)[handlerKey], true);
+                }
+              } else {
+                el.removeAttribute('aria-disabled');
+                el.removeAttribute('tabindex');
+                el.classList.remove('disabled');
+                if ((el as any)[handlerKey]) {
+                  el.removeEventListener(
+                    'click',
+                    (el as any)[handlerKey],
+                    true,
+                  );
+                  (el as any)[handlerKey] = null;
+                }
+              }
+            } else {
+              this.renderer.setProperty(el, 'disabled', disabled);
+            }
           }
         });
         break;
       }
       parent = parent.parentElement;
     }
-    // Desabilita todos os controles do form, incluindo <a>
-    const elements = parent.querySelectorAll(
-      'input, button, select, textarea, a',
-    );
-    elements.forEach((el: HTMLElement) => {
-      if (el !== this.el.nativeElement) {
-        if (el.tagName && el.tagName.toLowerCase() === 'a') {
-          if (disabled) {
-            el.setAttribute('aria-disabled', 'true');
-            el.setAttribute('tabindex', '-1');
-            el.classList.add('disabled');
-            if (!(el as any).__aClickHandler) {
-              (el as any).__aClickHandler = (e: Event) => {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                return false;
-              };
-              el.addEventListener('click', (el as any).__aClickHandler, true);
-            }
-          } else {
-            el.removeAttribute('aria-disabled');
-            el.removeAttribute('tabindex');
-            el.classList.remove('disabled');
-            if ((el as any).__aClickHandler) {
-              el.removeEventListener(
-                'click',
-                (el as any).__aClickHandler,
-                true,
-              );
-              (el as any).__aClickHandler = null;
-            }
-          }
-        } else {
-          this.renderer.setProperty(el, 'disabled', disabled);
-        }
-      }
-    });
   }
 
   private setLoadingClass(loading: boolean) {

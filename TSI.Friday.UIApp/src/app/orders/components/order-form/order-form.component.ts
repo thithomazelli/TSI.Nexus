@@ -1,15 +1,11 @@
-import { Subscription } from 'rxjs';
+import { combineLatestWith, of, Subscription, tap } from 'rxjs';
 import {
   Component,
-  ElementRef,
-  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
 
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -22,12 +18,16 @@ import {
   FormBaseComponent,
   ModalService,
   CurrencyService,
-  OrderProduct,
   PaymentType,
   PaymentCondition,
   PaymentMethod,
   PaymentStatus,
   WebApiResponse,
+  ApiType,
+  ResponseStatus,
+  NotificationService,
+  OrderService,
+  OrderProductService,
 } from '@friday/core';
 
 import { MatDialogRef } from '@angular/material/dialog';
@@ -36,6 +36,8 @@ import { Observable, startWith, map } from 'rxjs';
 
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 import { OrderProductsDetailsModalComponent } from '../../../order-products/components/order-product-details-modal/order-products-details-modal.component';
+import { OrderDetailsModalComponent } from '../order-details-modal/order-details-modal.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-order-form',
@@ -47,14 +49,8 @@ export class OrderFormComponent
   extends FormBaseComponent
   implements OnInit, OnChanges, OnDestroy
 {
-  @Output()
-  save = new EventEmitter<Order>();
-
-  @Output()
-  cancel = new EventEmitter<void>();
-
-  @ViewChild('firstInput')
-  firstInput!: ElementRef;
+  @Input()
+  isModal = false;
 
   @Input()
   isEdit = false;
@@ -68,11 +64,12 @@ export class OrderFormComponent
   compact = false;
 
   @Input()
-  errors: string[] | undefined;
+  dialogRef?: MatDialogRef<OrderDetailsModalComponent>;
 
   canDisplayTransactionForm: boolean = true;
   businessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
-  filteredBusinessPartners$!: Observable<WebApiResponse<BusinessPartner[]>>;
+  businessPartnersArray$!: Observable<BusinessPartner[]>;
+  filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
   orderStatusOptions = [
     { value: OrderStatus.Open, label: 'Em Aberto' },
@@ -80,14 +77,20 @@ export class OrderFormComponent
     { value: OrderStatus.WaitingPayment, label: 'Aguardando Pagamento' },
   ];
 
+  private _subscriptions: Subscription[] = [];
+  private _baseEndPoint = ApiType.Orders;
   private statusSubscription?: Subscription;
   private totalOfPaymentsSubscription?: Subscription;
 
   constructor(
-    private formBuilder: FormBuilder,
     private businessPartnerService: BusinessPartnerService,
-    private modalService: ModalService,
     private currencyService: CurrencyService,
+    private formBuilder: FormBuilder,
+    private modalService: ModalService,
+    private notificationService: NotificationService,
+    private orderService: OrderService,
+    private orderProductService: OrderProductService,
+    private routerService: Router,
   ) {
     super();
   }
@@ -100,6 +103,21 @@ export class OrderFormComponent
     this.totalPriceChange();
     this.setupStatusWatcher();
     this.setupTotalOfPaymentsWatcher();
+
+    this._subscriptions.push(
+      this.orderProductService.orderProductAdded$.subscribe((orderProduct) => {
+        if (orderProduct) {
+          this.data?.orderProducts?.push(orderProduct);
+          this.updatePriceFields();
+          this.updateTotalPriceFields();
+          this.modalService.showNotification(
+            true,
+            '',
+            'Produto adicionado ao pedido com sucesso.',
+          );
+        }
+      }),
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -111,18 +129,13 @@ export class OrderFormComponent
   }
 
   ngOnDestroy(): void {
-    this.businessPartners$ = new Observable<
-      WebApiResponse<BusinessPartner[]>
-    >();
-    this.filteredBusinessPartners$ = new Observable<
-      WebApiResponse<BusinessPartner[]>
-    >();
     if (this.statusSubscription) {
       this.statusSubscription.unsubscribe();
     }
     if (this.totalOfPaymentsSubscription) {
       this.totalOfPaymentsSubscription.unsubscribe();
     }
+    this._subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   get transactionFormGroup(): FormGroup {
@@ -134,60 +147,66 @@ export class OrderFormComponent
       const businessPartnerName = this.form
         .get('businessPartnerName')!
         .value?.trim();
-      const businessPartnerId = this.form.get('businessPartnerId')!.value;
-      if (!businessPartnerName || !businessPartnerId) {
+      if (!businessPartnerName) {
         this.cleanClientSelection();
         return;
       }
-      // Check if the name exists in the client list
-      const clients = (this.businessPartners$ as any).source
-        ?.value as BusinessPartner[];
-      const found = clients.find((c) => c.name === businessPartnerName);
-      if (!found) {
-        const confirmRef = this.modalService.showConfirmation({
-          title: 'Cliente não encontrado',
-          message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-          cancelButtonText: 'Cancelar',
-          confirmButtonText: 'Sim',
-        });
-        confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-          if (confirmed) {
-            // Open modal to add client
-            const clientFormRef: MatDialogRef<any> =
-              this.modalService.showTemplateModal(
-                BusinessPartnerDetailsModalComponent,
-                {
-                  data: { name: businessPartnerName },
-                  width: '600px',
-                  disableClose: true,
-                },
-              );
-            clientFormRef
-              .afterClosed()
-              .subscribe((result: BusinessPartner | undefined) => {
-                if (result) {
-                  this.businessPartnerService.addOrUpdateBusinessPartner(
-                    result,
+      // Sempre checa a lista de clientes, mesmo se businessPartnerId estiver vazio
+      const sub = this.businessPartnersArray$.subscribe((clients) => {
+        const found = clients.find((c) => c.name === businessPartnerName);
+        if (!found) {
+          const confirmRef = this.modalService.showConfirmation({
+            title: 'Cliente não encontrado',
+            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sim',
+          });
+          const confirmSub = confirmRef
+            .afterClosed()
+            .subscribe((confirmed: boolean) => {
+              if (confirmed) {
+                // Open modal to add client
+                const clientFormRef: MatDialogRef<any> =
+                  this.modalService.showTemplateModal(
+                    BusinessPartnerDetailsModalComponent,
+                    {
+                      data: { name: businessPartnerName },
+                      width: '600px',
+                      disableClose: true,
+                    },
                   );
-                  this.form.get('businessPartnerName')!.setValue(result.name);
-                  this.form.get('businessPartnerId')!.setValue(result.id);
-                } else {
-                  this.cleanClientSelection();
-                }
-              });
-          } else {
-            this.cleanClientSelection();
-          }
-        });
-      }
+                const clientFormSub = clientFormRef
+                  .afterClosed()
+                  .subscribe((result: BusinessPartner | undefined) => {
+                    if (result) {
+                      this.businessPartnerService.addOrUpdateBusinessPartner(
+                        result,
+                      );
+                      this.form
+                        .get('businessPartnerName')!
+                        .setValue(result.name);
+                      this.form.get('businessPartnerId')!.setValue(result.id);
+                    } else {
+                      this.cleanClientSelection();
+                    }
+                  });
+                this._subscriptions.push(clientFormSub);
+              } else {
+                this.cleanClientSelection();
+              }
+            });
+          this._subscriptions.push(confirmSub);
+        }
+      });
+      this._subscriptions.push(sub);
     }, 200);
   }
 
-  submit(): void {
+  submit(): Observable<WebApiResponse<Order> | null> {
     this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      return;
+      return of(null);
     }
 
     const formValue = this.form.getRawValue();
@@ -222,11 +241,32 @@ export class OrderFormComponent
       delete this.data.transaction.id;
     }
 
-    this.save.emit(this.data!);
+    if (this.data == null) {
+      return of(null);
+    }
+
+    return this.save(this.data).pipe(
+      tap({
+        next: (response: WebApiResponse<Order>) => {
+          if (this.isModal) {
+            this.saveModal(response);
+          } else {
+            this.savePage(response);
+          }
+        },
+        error: (err) => {
+          this.notificationService.showMessage('Error', 'Erro ao salvar');
+        },
+      }),
+    );
   }
 
-  doCancel(): void {
-    this.cancel.emit();
+  cancel(): void {
+    if (this.isModal) {
+      this.modalService.hideModal(this.dialogRef);
+    } else {
+      this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    }
   }
 
   removeProduct(index: number): void {
@@ -257,24 +297,10 @@ export class OrderFormComponent
       return;
     }
 
-    const ref = this.modalService.showTemplateModal(
+    this.modalService.showTemplateModal(
       OrderProductsDetailsModalComponent,
       initialState,
     );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe((orderProduct: OrderProduct) => {
-        this.data?.orderProducts?.push(orderProduct);
-
-        this.updatePriceFields();
-        this.updateTotalPriceFields();
-        this.modalService.showNotification(
-          true,
-          '',
-          'Produto adicionado ao pedido com sucesso.',
-        );
-        ref.close();
-      });
-    }
   }
 
   private initForm(): void {
@@ -295,43 +321,30 @@ export class OrderFormComponent
       totalPriceFormatted: [{ value: 0, disabled: true }],
       transactionId: [null],
     });
+
     this.addTransactionForm();
 
     if (this.isEdit) {
       this.form.addControl('id', this.formBuilder.control(''));
     } else {
-      if (this.data?.businessPartnerId != null) {
-        return;
-      }
-
-      this.form.get('businessPartnerName')!.valueChanges.subscribe((name) => {
-        const businessPartner = (
-          this.businessPartners$ as any
-        ).source.value.find(
-          (c: BusinessPartner) => (c.name || c.name) === name,
-        );
-        if (businessPartner) {
-          this.form.get('businessPartnerId')!.setValue(businessPartner.id);
-          this.form
-            .get('transactionId')!
-            .setValue(businessPartner.nextEmptyTransactionId);
-          if (businessPartner.nextEmptyTransactionId) {
-            // Remove transaction form se existir
-            if (this.form.contains('transaction')) {
-              this.form.removeControl('transaction');
-            }
-            this.canDisplayTransactionForm = false;
-          } else {
-            // Adiciona transaction form se não existir
-            this.addTransactionForm();
-            this.canDisplayTransactionForm = true;
-          }
-        } else {
-          // Cliente removido, adiciona transaction form se não existir
-          this.addTransactionForm();
-          this.canDisplayTransactionForm = true;
-        }
-      });
+      // Atualiza productId ao selecionar produto
+      this._subscriptions.push(
+        this.form.get('businessPartnerName')!.valueChanges.subscribe((name) => {
+          const sub = this.businessPartnersArray$.subscribe(
+            (businessPartners) => {
+              const businessPartner = businessPartners.find(
+                (p: BusinessPartner) => p.name === name,
+              );
+              if (businessPartner) {
+                this.form
+                  .get('businessPartnerId')!
+                  .setValue(businessPartner.id);
+              }
+            },
+          );
+          this._subscriptions.push(sub);
+        }),
+      );
     }
   }
 
@@ -413,20 +426,22 @@ export class OrderFormComponent
 
   private setupAutoComplete(): void {
     this.businessPartners$ = this.businessPartnerService.getClients(true);
+    this.businessPartnersArray$ = this.businessPartners$.pipe(
+      map((response) => response.data ?? []),
+    );
+
     this.filteredBusinessPartners$ = this.form
       .get('businessPartnerName')!
       .valueChanges.pipe(
         startWith(''),
-        map((value) => {
-          const filterValue = value?.toLowerCase() || '';
+        combineLatestWith(this.businessPartnersArray$),
+        map(([value, businessPartners]) => {
+          const filterValue = (value || '').toLowerCase();
           if (!filterValue) {
             return [];
           }
-          return (this.businessPartners$ as any).source.value.filter(
-            (businessPartner: BusinessPartner) =>
-              (businessPartner.name || businessPartner.name || '')
-                .toLowerCase()
-                .includes(filterValue),
+          return businessPartners.filter((businessPartner: BusinessPartner) =>
+            (businessPartner.name || '').toLowerCase().includes(filterValue),
           );
         }),
       );
@@ -530,6 +545,32 @@ export class OrderFormComponent
         .valueChanges.subscribe(() => {
           this.updateTotalPriceFields();
         });
+    }
+  }
+
+  private save(order: Order): Observable<WebApiResponse<Order>> {
+    return this.isEdit && this.data
+      ? this.orderService.update(order)
+      : this.orderService.add(order);
+  }
+
+  private saveModal(response: WebApiResponse<Order>): void {
+    this.dialogRef?.close(response);
+    this.modalService.showNotification(
+      response.status == ResponseStatus.Success,
+      'Pedido adicionado',
+      response.message,
+    );
+  }
+
+  private savePage(response: WebApiResponse<Order>): void {
+    if (this.isEdit && this.data) {
+      this.notificationService.showMessage(response.status, response.message);
+      this.data = response.data;
+    } else {
+      this.routerService.navigateByUrl(
+        `/${this._baseEndPoint}/${response.data.id}`,
+      );
     }
   }
 }

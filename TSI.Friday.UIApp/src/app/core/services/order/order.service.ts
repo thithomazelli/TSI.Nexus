@@ -1,48 +1,88 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
-import { ApiService, ApiType, WebApiResponse, Order } from '@friday/core';
+import { delay, tap } from 'rxjs/operators';
+import {
+  ApiService,
+  ApiType,
+  WebApiResponse,
+  Order,
+  ResponseStatus,
+} from '@friday/core';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class OrderService {
-  private orders$ = new BehaviorSubject<Order[]>([]);
-  private loaded = false;
   private _baseEndPoint = ApiType.Orders;
+  private _orders$ = new BehaviorSubject<Order[]>([]);
+  private _loaded = false;
+
+  private _orderChangedSubject = new BehaviorSubject<void>(undefined);
+  orderChanged$ = this._orderChangedSubject.asObservable();
 
   constructor(private apiService: ApiService) {}
 
-  getOrders(forceRefresh = false): Observable<Order[]> {
-    if (!this.loaded || forceRefresh) {
-      this.apiService
-        .get<WebApiResponse<Order[]>>(`${this._baseEndPoint}/getAll`)
-        .pipe(
-          tap((response) => {
-            this.orders$.next(response.data);
-            this.loaded = true;
-          }),
-          catchError(() => {
-            this.orders$.next([]);
-            return of([]);
-          }),
-        )
-        .subscribe();
-    }
-    return this.orders$.asObservable();
+  getAll(): Observable<WebApiResponse<Order[]>> {
+    return this.apiService
+      .get<WebApiResponse<Order[]>>(`${this._baseEndPoint}/getAll`)
+      .pipe(
+        tap((response) => {
+          this._orders$.next(response.data);
+          this._loaded = true;
+        }),
+      );
   }
 
-  refreshOrders(): void {
-    this.loaded = false;
-    this.getOrders(true).subscribe();
+  getById(orderId: string): Observable<WebApiResponse<Order>> {
+    this._loaded = true;
+    return this.apiService.get<WebApiResponse<Order>>(
+      `${ApiType.Orders}/getById/${orderId}`,
+    );
   }
 
-  addOrUpdateOrder(order: Order): void {
-    const current = this.orders$.value;
-    const idx = current.findIndex((o) => o.id === order.id);
-    if (idx > -1) {
-      current[idx] = order;
-    } else {
-      current.push(order);
-    }
-    this.orders$.next([...current]);
+  getByBusinessPartnerId(
+    businessPartnerId: string,
+  ): Observable<WebApiResponse<Order[]>> {
+    return this.apiService
+      .get<
+        WebApiResponse<Order[]>
+      >(`${this._baseEndPoint}/getByBusinessPartnerId/${businessPartnerId}`)
+      .pipe(
+        tap((response) => {
+          this._orders$.next(response.data);
+          this._loaded = true;
+        }),
+      );
+  }
+
+  refreshOrders(): Observable<WebApiResponse<Order[]>> {
+    this._loaded = false;
+    return this.getAll();
+  }
+
+  add(order: Order): Observable<WebApiResponse<Order>> {
+    const delayMs = 3000; // delay de 5 segundos para teste visual
+    return this.apiService
+      .post<WebApiResponse<Order>>(`${this._baseEndPoint}/add`, order)
+      .pipe(
+        delay(delayMs),
+        tap(() => this._orderChangedSubject.next()),
+      );
+  }
+
+  update(order: Order): Observable<WebApiResponse<Order>> {
+    const delayMs = 3000; // delay de 5 segundos para teste visual
+    return this.apiService
+      .put<WebApiResponse<Order>>(`${this._baseEndPoint}/update`, order)
+      .pipe(
+        delay(delayMs),
+        tap(() => this._orderChangedSubject.next()),
+      );
+  }
+
+  delete(order: Order): Observable<WebApiResponse<Order>> {
+    return this.apiService
+      .delete<WebApiResponse<Order>>(`${this._baseEndPoint}/remove`, order)
+      .pipe(tap(() => this._orderChangedSubject.next()));
   }
 }

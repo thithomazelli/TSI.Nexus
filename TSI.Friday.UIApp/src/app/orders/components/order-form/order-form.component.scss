@@ -15,7 +15,17 @@
 }
 
 .address-link {
+  border: none;
+  background: none;
   font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+  text-decoration: underline;
+}
+
+.address-link:hover {
+  color: #f55252;
+  --bs-link-color-rgb: var(--bs-link-hover-color-rgb);
 }
 
 /* Fonte menor para todo o formulário */

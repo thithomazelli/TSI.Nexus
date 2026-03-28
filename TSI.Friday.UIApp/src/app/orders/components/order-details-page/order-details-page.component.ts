@@ -1,13 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  Order,
-  ApiService,
-  ApiType,
-  NotificationService,
-  WebApiResponse,
-  OrderStatus,
-} from '@friday/core';
+import { Order, WebApiResponse, OrderStatus, OrderService } from '@friday/core';
 
 @Component({
   selector: 'app-order-details-page',
@@ -16,13 +9,10 @@ import {
   standalone: false,
 })
 export class OrderDetailsPageComponent {
-  private _baseEndPoint: ApiType = ApiType.Orders;
-
   isEdit = false;
   data?: Order | null = null;
   id: string | null = null;
   loading = false;
-  errorMessages?: string[];
 
   activeTab: 'details' | 'products' | 'payments' = 'details';
 
@@ -34,9 +24,8 @@ export class OrderDetailsPageComponent {
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private orderService: OrderService,
     private routerService: Router,
-    private apiService: ApiService,
-    private notificationService: NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -44,7 +33,7 @@ export class OrderDetailsPageComponent {
     if (idParam && idParam !== 'new') {
       this.isEdit = true;
       this.id = idParam;
-      this.loadOrder(idParam);
+      this.getOrderById(idParam);
     } else {
       this.isEdit = false;
       this.data = null;
@@ -59,61 +48,21 @@ export class OrderDetailsPageComponent {
     return this.orderStatusOptions[this.data?.status] || '';
   }
 
-  onSave(order: Order): void {
-    if (this.isEdit && this.id) {
-      this.apiService
-        .put<WebApiResponse<Order>>(`${this._baseEndPoint}/update`, order)
-        .subscribe((response: WebApiResponse<Order>) => {
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-          this.data = response.data;
-        });
-    } else {
-      this.apiService
-        .post<WebApiResponse<Order>>(`${this._baseEndPoint}/add`, order)
-        .subscribe((response: WebApiResponse<Order>) => {
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-          if (response.data && response.data.id) {
-            this.routerService.navigate([`/orders/${response.data.id}`]);
-          }
-        });
-    }
-  }
-
-  onCancel(): void {
-    this.routerService.navigate([`/${this._baseEndPoint}`]);
-  }
-
-  onOrderProductsUpdated() {
-    if (this.id) {
-      this.loadOrder(this.id);
-    }
-  }
-
-  private loadOrder(id: string): void {
+  private getOrderById(id: string): void {
     this.loading = true;
-    this.apiService
-      .get<WebApiResponse<Order>>(`${this._baseEndPoint}/getById/${id}`)
-      .subscribe({
-        next: (response: WebApiResponse<Order>) => {
-          this.loading = false;
-
-          if (response.data == null) {
-            this.routerService.navigateByUrl('/not-found');
-            return;
-          }
-
-          this.data = response.data;
-        },
-        error: () => {
-          this.loading = false;
+    this.orderService.getById(id).subscribe({
+      next: (response: WebApiResponse<Order>) => {
+        this.loading = false;
+        if (response.data == null) {
           this.routerService.navigateByUrl('/not-found');
-        },
-      });
+          return;
+        }
+        this.data = response.data;
+      },
+      error: () => {
+        this.loading = false;
+        this.routerService.navigateByUrl('/not-found');
+      },
+    });
   }
 }

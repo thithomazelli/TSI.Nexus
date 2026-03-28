@@ -3,13 +3,12 @@ import { Router } from '@angular/router';
 import { ModalService, OrderProductService } from '@friday/core';
 import { OrderProductsDetailsModalComponent } from '../../../order-products/components/order-product-details-modal/order-products-details-modal.component';
 import {
-  ApiService,
   ApiType,
   OrderProduct,
   OrderProductStatus,
   WebApiResponse,
 } from '@friday/core';
-import { filter, merge, mergeMap } from 'rxjs';
+import { Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-order-product-notification',
@@ -18,11 +17,13 @@ import { filter, merge, mergeMap } from 'rxjs';
   standalone: false,
 })
 export class OrderProductNotificationComponent implements OnInit, OnDestroy {
-  private subscription: any;
   orderProducts: OrderProduct[] = [];
   total: number = 0;
 
   private _baseEndPoint = ApiType.OrderProducts;
+
+  private _orderProductChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
 
   private _statusIconMap: Record<OrderProductStatus, string> = {
     [OrderProductStatus.Delayed]: 'bi bi-exclamation-triangle-fill text-danger',
@@ -37,40 +38,28 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
   };
 
   constructor(
-    private apiService: ApiService,
     private orderProductService: OrderProductService,
     private modalService: ModalService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.subscription = merge(
-      this.apiService.get<WebApiResponse<OrderProduct[]>>(
-        `${this._baseEndPoint}/getDelayed`,
-      ),
-      this.orderProductService.hasOrderProductChanged().pipe(
-        filter((changed) => changed === true),
-        mergeMap(() =>
-          this.apiService.get<WebApiResponse<OrderProduct[]>>(
-            `${this._baseEndPoint}/getDelayed`,
-          ),
-        ),
-      ),
-    ).subscribe({
-      next: (response: WebApiResponse<OrderProduct[]>) => {
+    this._orderProductChangedSub = this.orderProductService.orderProductChanged$
+      .pipe(
+        switchMap(() => this.orderProductService.getDelayed()),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((response: WebApiResponse<OrderProduct[]>) => {
         this.orderProducts = response?.data || [];
         this.total = this.orderProducts.length;
-      },
-      error: () => {
-        this.orderProducts = [];
-        this.total = 0;
-      },
-    });
+      });
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._orderProductChangedSub) {
+      this._orderProductChangedSub.unsubscribe();
     }
   }
 
