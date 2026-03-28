@@ -105,10 +105,10 @@ namespace TSI.Friday.Services
             try
             {
                 if (await _orderProductRepository.AnyAsync(_ => _.ProductId == product.Id))
-                {
+                    {
                     result.Data = product;
-                    result.Status = ResponseStatus.Error;
-                    result.Message = $"Produto {product.Name} não pode ser removido pois está vinculado à um pedido.";
+                    result.Status = ResponseStatus.Warning;
+                    result.Message = $"Produto {product.Name} não pode ser removido pois está vinculado à um ou mais pedidos.";
                     return result;
                 }
 

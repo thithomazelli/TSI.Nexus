@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
@@ -62,13 +63,20 @@ namespace TSI.Friday.Services
                 result.Message =
                     $"{_businessPartnerMap[businessPartnerDto.Type]} {businessPartner.Name} removido com sucesso.";
             }
+            catch (DbUpdateException ex)
+            {
+                result.Status = ResponseStatus.Warning;
+                result.Message = 
+                    ex.InnerException?.Message.Contains("foreign key constraint fails") == true
+                    ? $"Não é possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} pois ele está vinculado à um ou mais pedidos."
+                    : $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
+            }
             catch (Exception ex)
             {
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
             }
-
             return result;
         }
 
