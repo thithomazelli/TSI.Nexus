@@ -1,22 +1,76 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, delay, Observable, tap } from 'rxjs';
 import { ApiType } from '../../enums';
 import { ApiService } from '../api/api.service';
+import { WebApiResponse } from '../../utilities';
+import { Payment } from '../../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PaymentService {
   private _baseEndPoint = ApiType.Payments;
-  private paymentChanged = new BehaviorSubject<boolean>(true);
+  private _payments$ = new BehaviorSubject<Payment[]>([]);
+  private _paymentChangedSubject = new BehaviorSubject<void>(undefined);
+
+  paymentChanged$ = this._paymentChangedSubject.asObservable();
 
   constructor(private apiService: ApiService) {}
 
-  markPaymentAsChanged(): void {
-    this.paymentChanged.next(true);
+  getAll(): Observable<WebApiResponse<Payment[]>> {
+    return this.apiService
+      .get<WebApiResponse<Payment[]>>(`${this._baseEndPoint}/getAll`)
+      .pipe(
+        tap((response) => {
+          this._payments$.next(response.data);
+        }),
+      );
   }
 
-  hasPaymentChanged(): Observable<boolean> {
-    return this.paymentChanged.asObservable();
+  getByEntityId(
+    id: string,
+    entity: string,
+  ): Observable<WebApiResponse<Payment[]>> {
+    return this.apiService
+      .get<
+        WebApiResponse<Payment[]>
+      >(`${this._baseEndPoint}/getBy${entity}Id/${id}`)
+      .pipe(
+        tap((response) => {
+          this._payments$.next(response.data);
+        }),
+      );
+  }
+
+  getDelayed(): Observable<WebApiResponse<Payment[]>> {
+    return this.apiService.get<WebApiResponse<Payment[]>>(
+      `${this._baseEndPoint}/getDelayed`,
+    );
+  }
+
+  add(payment: Payment): Observable<WebApiResponse<Payment>> {
+    const delayMs = 1000; // delay de 1 segundo para teste visual
+    return this.apiService
+      .post<WebApiResponse<Payment>>(`${this._baseEndPoint}/add`, payment)
+      .pipe(
+        delay(delayMs),
+        tap(() => this._paymentChangedSubject.next()),
+      );
+  }
+
+  update(payment: Payment): Observable<WebApiResponse<Payment>> {
+    const delayMs = 1000; // delay de 1 segundo para teste visual
+    return this.apiService
+      .put<WebApiResponse<Payment>>(`${this._baseEndPoint}/update`, payment)
+      .pipe(
+        delay(delayMs),
+        tap(() => this._paymentChangedSubject.next()),
+      );
+  }
+
+  delete(payment: Payment): Observable<WebApiResponse<Payment>> {
+    return this.apiService
+      .delete<WebApiResponse<Payment>>(`${this._baseEndPoint}/remove`, payment)
+      .pipe(tap(() => this._paymentChangedSubject.next()));
   }
 }

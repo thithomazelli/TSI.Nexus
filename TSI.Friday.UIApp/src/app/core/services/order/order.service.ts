@@ -61,7 +61,7 @@ export class OrderService {
   }
 
   add(order: Order): Observable<WebApiResponse<Order>> {
-    const delayMs = 3000; // delay de 5 segundos para teste visual
+    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<WebApiResponse<Order>>(`${this._baseEndPoint}/add`, order)
       .pipe(
@@ -71,7 +71,7 @@ export class OrderService {
   }
 
   update(order: Order): Observable<WebApiResponse<Order>> {
-    const delayMs = 3000; // delay de 5 segundos para teste visual
+    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<WebApiResponse<Order>>(`${this._baseEndPoint}/update`, order)
       .pipe(

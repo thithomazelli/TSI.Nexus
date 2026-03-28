@@ -16,7 +16,7 @@
     [baseEndPoint]="baseEndPoint"
     [refresh]="refreshTransactions.bind(this)"
     [delete]="deleteOrder.bind(this)"
-    (openModal)="onOpenModal($event)"
+    (openModal)="openModal($event)"
     [filtersTemplate]="filtersTpl"
     [showFilters]="showFiltersOnInit"
   ></app-grid>

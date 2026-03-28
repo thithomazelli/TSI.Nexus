@@ -4,7 +4,6 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -130,7 +129,6 @@ export class OrderProductsFormComponent
 
   async ngOnInit(): Promise<void> {
     this.initForm();
-    this.disableEditFields();
     this.patchFormWithData();
     this.setupAutoComplete();
     this.totalPriceChange();
@@ -155,6 +153,8 @@ export class OrderProductsFormComponent
         }),
       );
     }
+
+    this.disableEditFields();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -179,6 +179,32 @@ export class OrderProductsFormComponent
     return (
       this.customerAddresses?.find((a) => a.id === id) || this.defaultAddress
     );
+  }
+
+  submit(): Observable<WebApiResponse<OrderProduct> | null> {
+    this.submitted = true;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return of(null);
+    }
+
+    return this.save(this.form.getRawValue() as OrderProduct).pipe(
+      tap({
+        next: (response: WebApiResponse<OrderProduct>) => {
+          this.dialogRef?.close(response);
+          if (response.data.orderId) {
+            this.saveModal(response);
+          }
+        },
+        error: (err) => {
+          this.notificationService.showMessage('Error', 'Erro ao salvar');
+        },
+      }),
+    );
+  }
+
+  cancel(): void {
+    this.modalService.hideModal(this.dialogRef);
   }
 
   async initParentInfo() {
@@ -414,32 +440,6 @@ export class OrderProductsFormComponent
 
   onSelectAddressRadio() {
     this.showAllAddresses = false;
-  }
-
-  submit(): Observable<WebApiResponse<OrderProduct> | null> {
-    this.submitted = true;
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return of(null);
-    }
-
-    return this.save(this.form.getRawValue() as OrderProduct).pipe(
-      tap({
-        next: (response: WebApiResponse<OrderProduct>) => {
-          this.dialogRef?.close(response);
-          if (response.data.orderId) {
-            this.saveModal(response);
-          }
-        },
-        error: (err) => {
-          this.notificationService.showMessage('Error', 'Erro ao salvar');
-        },
-      }),
-    );
-  }
-
-  cancel(): void {
-    this.modalService.hideModal(this.dialogRef);
   }
 
   validateEndDate(): void {

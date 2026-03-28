@@ -58,7 +58,7 @@ export class AddressService {
   }
 
   add(address: Address): Observable<WebApiResponse<Address>> {
-    const delayMs = 3000; // delay de 5 segundos para teste visual
+    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<WebApiResponse<Address>>(`${this._baseEndPoint}/add`, address)
       .pipe(
@@ -68,7 +68,7 @@ export class AddressService {
   }
 
   update(address: Address): Observable<WebApiResponse<Address>> {
-    const delayMs = 3000; // delay de 5 segundos para teste visual
+    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<WebApiResponse<Address>>(`${this._baseEndPoint}/update`, address)
       .pipe(

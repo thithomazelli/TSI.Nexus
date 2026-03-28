@@ -153,7 +153,7 @@ export class UsersComponent {
       });
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     const ref = this.modalService.showTemplateModal(
       UserDetailsModalComponent,
       initialState,
