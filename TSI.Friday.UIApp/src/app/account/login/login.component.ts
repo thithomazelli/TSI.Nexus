@@ -1,8 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AccountService, FormBaseComponent, User } from '@friday/core';
-import { take } from 'rxjs';
+import {
+  AccountService,
+  FormBaseComponent,
+  User,
+  WebApiResponse,
+} from '@friday/core';
+import { Observable, of, take, tap } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -50,35 +55,37 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
     });
   }
 
-  login(): void {
+  login(): Observable<WebApiResponse<User> | null> {
     this.submitted = true;
     this.errorMessages = [];
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      return;
+      return of(null);
     }
 
-    this.accountService.login(this.form.value).subscribe({
-      next: (response: any) => {
-        if (this.returnUrl) {
-          this.router.navigateByUrl(this.returnUrl);
-        } else {
-          this.router.navigateByUrl('');
-        }
-      },
-      error: (response) => {
-        if (response.error.errors) {
-          this.errorMessages = response.error.errors;
-        } else if (typeof response.error === 'string') {
-          this.errorMessages.push(response.error);
-        } else {
-          this.errorMessages = [
-            'Falha na comunicação com o servidor. Tente novamente mais tarde.',
-          ];
-        }
-      },
-    });
+    return this.accountService.login(this.form.value).pipe(
+      tap({
+        next: (response: any) => {
+          if (this.returnUrl) {
+            this.router.navigateByUrl(this.returnUrl);
+          } else {
+            this.router.navigateByUrl('');
+          }
+        },
+        error: (response) => {
+          if (response.error.errors) {
+            this.errorMessages = response.error.errors;
+          } else if (typeof response.error === 'string') {
+            this.errorMessages.push(response.error);
+          } else {
+            this.errorMessages = [
+              'Falha na comunicação com o servidor. Tente novamente mais tarde.',
+            ];
+          }
+        },
+      }),
+    );
   }
 
   resendEmailConfirmation(): void {
