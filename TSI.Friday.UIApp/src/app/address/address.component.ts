@@ -112,7 +112,8 @@ export class AddressComponent {
       width: 100,
     },
     {
-      headerName: '',
+      headerName: 'Ações',
+      minWidth: 150,
       sortable: false,
       filter: false,
       maxWidth: 400,
@@ -121,12 +122,10 @@ export class AddressComponent {
       cellRenderer: () => {
         return `
           <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit"></i>
-            Edit
+            <i class="fas fa-edit data-action="edit""></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash"></i>  
-            Delete
+            <i class="fas fa-trash data-action="delete"></i>
           </button>
         `;
       },

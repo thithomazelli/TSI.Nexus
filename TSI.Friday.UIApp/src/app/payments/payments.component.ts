@@ -373,6 +373,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         headerName: 'Ações',
+        minWidth: 150,
         sortable: false,
         filter: false,
         resizable: false,

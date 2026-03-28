@@ -5,7 +5,14 @@ import { PaymentsComponent } from './payments.component';
 const routes: Routes = [
   {
     path: '',
-    component: PaymentsComponent,
+    runGuardsAndResolvers: 'always',
+    data: { roles: ['Admin'] },
+    children: [
+      {
+        path: '',
+        component: PaymentsComponent,
+      },
+    ],
   },
 ];
 
