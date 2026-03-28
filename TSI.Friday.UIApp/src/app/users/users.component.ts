@@ -10,6 +10,7 @@ import {
   ColDef,
   ICellRendererParams,
   ValueFormatterParams,
+  ValueGetterParams,
 } from 'ag-grid-community';
 import { UserDetailsModalComponent } from './components/user-details-modal/user-details-modal.component';
 import { environment } from '../../environments/environment';
@@ -101,9 +102,16 @@ export class UsersComponent {
       sortable: true,
       filter: true,
       resizable: true,
+      filterValueGetter: (params: ValueGetterParams) => {
+        return this.getRoleLabel(params.data?.role);
+      },
+      cellRenderer: (params: ICellRendererParams) => {
+        return this.getRoleLabel(params.data?.role);
+      },
     },
     {
       headerName: 'Ações',
+      minWidth: 150,
       sortable: false,
       filter: false,
       maxWidth: 400,
@@ -124,6 +132,11 @@ export class UsersComponent {
       },
     },
   ];
+
+  roleMap: { [key: string]: string } = {
+    Admin: 'Administrador',
+    User: 'Usuário',
+  };
 
   constructor(
     private apiService: ApiService,
@@ -177,5 +190,9 @@ export class UsersComponent {
       .subscribe((response: WebApiResponse<User[]>) => {
         this.rowData = response.data ?? [];
       });
+  }
+
+  private getRoleLabel(role: string): string {
+    return this.roleMap[role] ?? role ?? '';
   }
 }

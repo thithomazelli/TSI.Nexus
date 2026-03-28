@@ -293,6 +293,7 @@ export class TransactionsComponent {
       },
       {
         headerName: 'Ações',
+        minWidth: 150,
         sortable: false,
         filter: false,
         resizable: false,
