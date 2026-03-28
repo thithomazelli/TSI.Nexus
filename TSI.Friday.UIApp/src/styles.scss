@@ -217,3 +217,11 @@ mat-calendar {
 .modal-title {
   font-weight: 700;
 }
+
+.swal2-close-custom {
+  position: absolute !important;
+  top: 0px !important;
+  right: 0px !important;
+  left: auto !important;
+  transform: none !important;
+}

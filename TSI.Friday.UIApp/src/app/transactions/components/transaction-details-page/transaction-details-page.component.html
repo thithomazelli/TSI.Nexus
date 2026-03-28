@@ -83,8 +83,6 @@
                       [isEdit]="isEdit"
                       [data]="data"
                       [compact]="false"
-                      (save)="save($event)"
-                      (cancel)="cancel()"
                     ></app-transaction-form>
                   </div>
                 }
@@ -93,8 +91,7 @@
                     [compact]="true"
                     [canAdd]="true"
                     [entity]="'Transaction'"
-                    [data]="data"
-                    (refreshParent)="onTransactionUpdated()"
+                    [parentData]="data"
                   ></app-payments>
                 }
               </div>

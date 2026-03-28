@@ -325,7 +325,7 @@
         [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
-        [disabled]="form.invalid || data?.status === 'Returned'"
+        [disabled]="data?.status === 'Returned'"
       >
         {{ isEdit ? "Salvar" : "Adicionar" }}
       </button>

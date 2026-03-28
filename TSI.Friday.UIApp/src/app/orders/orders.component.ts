@@ -20,9 +20,9 @@ import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-orders',
-  standalone: false,
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss',
+  standalone: false,
 })
 export class OrdersComponent implements OnInit, OnDestroy {
   @Input()
@@ -76,7 +76,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     }
   }
 
-  onOpenModal(initialState: any) {
+  openModal(initialState: any) {
     if (this.parentData != null) {
       initialState = {
         ...initialState,
@@ -99,14 +99,16 @@ export class OrdersComponent implements OnInit, OnDestroy {
       .delete(order)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Order>) => {
-        this.filteredRowData = this.filteredRowData.filter(
-          (p) => p.id !== order.id,
-        );
+        if (response.status === ResponseStatus.Success) {
+          this.filteredRowData = this.filteredRowData.filter(
+            (p) => p.id !== order.id,
+          );
+        }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Pedido de venda excluído',
+          '',
           response.message,
-          'success',
+          response.status,
         );
       });
   }

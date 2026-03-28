@@ -1,8 +1,14 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import {
-  ApiService,
   ApiType,
   BusinessPartner,
   ModalService,
@@ -13,6 +19,8 @@ import {
   PaymentStatus,
   PaymentService,
   PaymentType,
+  ResponseStatus,
+  NotificationService,
 } from '@friday/core';
 import {
   ColDef,
@@ -21,6 +29,7 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community';
 import { PaymentDetailsModalComponent } from './components/payment-details-modal/payment-details-modal.component';
+import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-payments',
@@ -28,12 +37,12 @@ import { PaymentDetailsModalComponent } from './components/payment-details-modal
   styleUrl: './payments.component.scss',
   standalone: false,
 })
-export class PaymentsComponent {
+export class PaymentsComponent implements OnInit, OnDestroy {
   @Input()
   entity: string = '';
 
   @Input()
-  data?: BusinessPartner | Order | Transaction | null = null;
+  parentData?: BusinessPartner | Order | Transaction | null = null;
 
   @Input()
   compact: boolean = false;
@@ -43,9 +52,6 @@ export class PaymentsComponent {
 
   @Input()
   filterByType: PaymentType | null = null;
-
-  @Output()
-  refreshParent = new EventEmitter<void>();
 
   baseEndPoint = ApiType.Payments;
 
@@ -83,10 +89,13 @@ export class PaymentsComponent {
   filterType = { Incoming: false, Outgoing: false };
   showFiltersOnInit = false;
 
+  private _paymentChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
-    private paymentService: PaymentService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
+    private paymentService: PaymentService,
     private route: ActivatedRoute,
   ) {}
 
@@ -95,12 +104,58 @@ export class PaymentsComponent {
     this.route.queryParams.subscribe((params) => {
       this.setFiltersFromQueryParams(params);
       this.showFiltersOnInit = this.hasInitialFilters();
-      this.getPayment(() => this.applyFilters());
+      this._paymentChangedSub = this.paymentService.paymentChanged$
+        .pipe(takeUntil(this._destroy$))
+        .subscribe(() => {
+          this.getPayment(() => this.applyFilters(), false);
+        });
     });
   }
 
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._paymentChangedSub) {
+      this._paymentChangedSub.unsubscribe();
+    }
+  }
+
+  openModal(initialState: any) {
+    const initialStateWithParent = {
+      ...initialState,
+      parentId: this.parentData?.id,
+      parentData: this.parentData,
+    };
+
+    this.modalService.showTemplateModal(
+      PaymentDetailsModalComponent,
+      initialStateWithParent,
+    );
+  }
+
+  deleteOrder(payment: Payment): void {
+    this.paymentService
+      .delete(payment)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response: WebApiResponse<Payment>) => {
+        const isSuccess = response.status === ResponseStatus.Success;
+        if (isSuccess) {
+          this.filteredRowData = this.filteredRowData.filter(
+            (p) => p.id !== payment.id,
+          );
+        }
+
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          '',
+          response.message,
+          response.status,
+        );
+      });
+  }
+
   refreshOrders(): void {
-    this.getPayment(() => this.applyFilters());
+    this.getPayment(() => this.applyFilters(), true);
   }
 
   updatePaymentStatus(payment: Payment): void {
@@ -121,43 +176,6 @@ export class PaymentsComponent {
 
         this.markAsApproved(payment);
       });
-  }
-
-  deleteOrder(paymentPayment: Payment): void {
-    this.apiService
-      .delete<
-        WebApiResponse<Payment>
-      >(`${this.baseEndPoint}/remove`, paymentPayment)
-      .subscribe((response: WebApiResponse<Payment>) => {
-        this.rowData = this.rowData.filter((p) => p.id !== paymentPayment.id);
-        this.refreshParent.emit();
-        this.modalService.hideModal();
-        this.modalService.showSweetNotification(
-          '',
-          response.message,
-          response.status,
-        );
-      });
-  }
-
-  onOpenModal(initialState: any) {
-    const initialStateWithParent = {
-      ...initialState,
-      parentId: this.data?.id,
-      parentData: this.data,
-    };
-
-    const ref = this.modalService.showTemplateModal(
-      PaymentDetailsModalComponent,
-      initialStateWithParent,
-    );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.refreshParent.emit();
-        this.getPayment(() => this.applyFilters());
-        ref.close();
-      });
-    }
   }
 
   applyFilters(): void {
@@ -375,17 +393,53 @@ export class PaymentsComponent {
     ];
   }
 
-  private getPayment(callback?: () => void): void {
-    const endpoint =
-      this.entity != ''
-        ? `${this.baseEndPoint}/getBy${this.entity}Id/${this.data?.id}`
-        : `${this.baseEndPoint}/getAll`;
+  private getPayment(callback?: () => void, isRefresh = false): void {
+    let payments$: Observable<WebApiResponse<Payment[]>>;
 
-    this.apiService
-      .get<WebApiResponse<Payment[]>>(endpoint)
+    if (this.entity === '') {
+      payments$ = this.paymentService.getAll();
+    } else {
+      payments$ = this.paymentService.getByEntityId(
+        this.parentData?.id!,
+        this.entity,
+      );
+    }
+
+    payments$
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.rowData = response.data ?? [];
-        if (callback) callback();
+
+        if (callback) {
+          callback();
+        }
+
+        if (isRefresh) {
+          this.notificationService.showMessage(
+            ResponseStatus.Success,
+            'Pagamentos atualizados com sucesso',
+          );
+        }
+      });
+  }
+
+  private markAsApproved(payment: Payment): void {
+    if (!payment) {
+      return;
+    }
+
+    const updatedPayment = { ...payment, status: PaymentStatus.Approved };
+
+    this.paymentService
+      .update(updatedPayment)
+      .subscribe((response: WebApiResponse<Payment>) => {
+        this.getPayment(() => this.applyFilters(), false);
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          '',
+          response.message,
+          response.status,
+        );
       });
   }
 
@@ -451,29 +505,6 @@ export class PaymentsComponent {
       return true;
     }
     return false;
-  }
-
-  private markAsApproved(payment: Payment): void {
-    if (!payment) {
-      return;
-    }
-
-    const updatedPayment = { ...payment, status: 'Approved' };
-    this.apiService
-      .put<
-        WebApiResponse<Payment>
-      >(`${this.baseEndPoint}/update`, updatedPayment)
-      .subscribe((response: WebApiResponse<Payment>) => {
-        this.getPayment(() => this.applyFilters());
-        this.refreshParent.emit();
-        this.paymentService.markPaymentAsChanged();
-        this.modalService.hideModal();
-        this.modalService.showSweetNotification(
-          '',
-          response.message,
-          response.status,
-        );
-      });
   }
 
   private formatDateBR(date: string | Date): string {

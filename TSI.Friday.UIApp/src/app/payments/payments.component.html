@@ -18,7 +18,7 @@
     [refresh]="refreshOrders.bind(this)"
     [update]="updatePaymentStatus.bind(this)"
     [delete]="deleteOrder.bind(this)"
-    (openModal)="onOpenModal($event)"
+    (openModal)="openModal($event)"
     [filtersTemplate]="filtersTpl"
     [showFilters]="showFiltersOnInit"
   ></app-grid>

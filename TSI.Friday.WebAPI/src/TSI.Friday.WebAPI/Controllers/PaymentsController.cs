@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models.DTOs;
-using TSI.Friday.Services;
 
 namespace TSI.Friday.WebAPI.Controllers
 {
@@ -31,46 +30,46 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <summary>
         /// Add transaction on database
         /// </summary>
-        /// <param name="transactionDto">Object to be added</param>
+        /// <param name="paymentDto">Object to be added</param>
         [HttpPost]
         [Route("Add")]
-        public async Task<IActionResult> Add([FromBody] PaymentDto transactionDto)
+        public async Task<IActionResult> Add([FromBody] PaymentDto paymentDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var webApiResponse = await _paymentService.Add(transactionDto);
+            var webApiResponse = await _paymentService.Add(paymentDto);
             return Ok(webApiResponse);
         }
 
         /// <summary>
         /// Update transaction available on database
         /// </summary>
-        /// <param name="transactionDto">Object to be updated</param>
+        /// <param name="paymentDto">Object to be updated</param>
         [HttpPut]
         [Route("Update")]
-        public async Task<IActionResult> Update([FromBody] PaymentDto transactionDto)
+        public async Task<IActionResult> Update([FromBody] PaymentDto paymentDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var webApiResponse = await _paymentService.Update(transactionDto);
+            var webApiResponse = await _paymentService.Update(paymentDto);
             return Ok(webApiResponse);
         }
 
         /// <summary>
         /// Remove transaction when it is identified on database
         /// </summary>
-        /// <param name="transactionDto">Object to be removed</param>
+        /// <param name="paymentDto">Object to be removed</param>
         [HttpDelete]
         [Route("Remove")]
-        public async Task<IActionResult> Remove([FromBody] PaymentDto transactionDto)
+        public async Task<IActionResult> Remove([FromBody] PaymentDto paymentDto)
         {
-            var webApiResponse = await _paymentService.Remove(transactionDto);
+            var webApiResponse = await _paymentService.Remove(paymentDto);
             return Ok(webApiResponse);
         }
 

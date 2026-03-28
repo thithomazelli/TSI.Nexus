@@ -1,12 +1,13 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 import {
-  ApiService,
   ApiType,
   ModalService,
   Transaction,
   ResponseStatus,
   WebApiResponse,
+  TransactionService,
+  NotificationService,
 } from '@friday/core';
 import {
   ColDef,
@@ -15,14 +16,15 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community';
 import { TransactionDetailsModalComponent } from './components/transaction-details-modal/transaction-details-modal.component';
+import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-transactions',
-  standalone: false,
   templateUrl: './transactions.component.html',
   styleUrl: './transactions.component.scss',
+  standalone: false,
 })
-export class TransactionsComponent {
+export class TransactionsComponent implements OnInit, OnDestroy {
   @Input()
   compact: boolean = false;
 
@@ -67,31 +69,50 @@ export class TransactionsComponent {
   filterType = { Incoming: false, Outgoing: false };
   showFiltersOnInit = false;
 
+  private _transactionChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
+    private transactionService: TransactionService,
   ) {}
 
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
-    this.getTransactions(() => this.applyFilters());
     this.initializeGrid();
+    this._transactionChangedSub = this.transactionService.transactionChanged$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => {
+        this.getTransactions(() => this.applyFilters());
+      });
   }
 
-  refreshTransactions(): void {
-    this.getTransactions(() => this.applyFilters());
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._transactionChangedSub) {
+      this._transactionChangedSub.unsubscribe();
+    }
   }
 
-  deleteOrder(order: Transaction): void {
-    this.apiService
-      .delete<WebApiResponse<Transaction>>(`${this.baseEndPoint}/remove`, order)
+  openModal(initialState: any) {
+    this.modalService.showTemplateModal(
+      TransactionDetailsModalComponent,
+      initialState,
+    );
+  }
+
+  deleteTransaction(transaction: Transaction): void {
+    this.transactionService
+      .delete(transaction)
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Transaction>) => {
         if (response.status === ResponseStatus.Success) {
           this.filteredRowData = this.filteredRowData.filter(
-            (p) => p.id !== order.id,
+            (p) => p.id !== transaction.id,
           );
         }
-
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
           '',
@@ -101,17 +122,8 @@ export class TransactionsComponent {
       });
   }
 
-  onOpenModal(initialState: any) {
-    const ref = this.modalService.showTemplateModal(
-      TransactionDetailsModalComponent,
-      initialState,
-    );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.getTransactions(() => this.applyFilters());
-        ref.close();
-      });
-    }
+  refreshTransactions(): void {
+    this.getTransactions(() => this.applyFilters(), true);
   }
 
   applyFilters(): void {
@@ -315,17 +327,27 @@ export class TransactionsComponent {
     ];
   }
 
-  private getTransactions(callback?: () => void): void {
-    const endpoint =
-      this.entity != ''
-        ? `${this.baseEndPoint}/getBy${this.entity}Id/${this.parentData?.id}`
-        : `${this.baseEndPoint}/getAll`;
+  private getTransactions(callback?: () => void, isRefresh = false): void {
+    let transactions$: Observable<WebApiResponse<Transaction[]>> =
+      this.entity != '' && this.parentData?.id != null
+        ? this.transactionService.getByBusinessPartnerId(this.parentData.id)
+        : this.transactionService.getAll();
 
-    this.apiService
-      .get<WebApiResponse<Transaction[]>>(endpoint)
+    transactions$
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Transaction[]>) => {
         this.rowData = response.data ?? [];
-        if (callback) callback();
+
+        if (callback) {
+          callback();
+        }
+
+        if (isRefresh) {
+          this.notificationService.showMessage(
+            ResponseStatus.Success,
+            'Transações atualizadas com sucesso',
+          );
+        }
       });
   }
 

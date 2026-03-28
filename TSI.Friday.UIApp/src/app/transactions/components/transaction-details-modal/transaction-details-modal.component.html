@@ -7,10 +7,10 @@
 
 <div class="modal-body">
   <app-transaction-form
+    [isModal]="true"
     [isEdit]="isEdit"
     [data]="data"
-    (save)="save($event)"
-    (cancel)="close()"
+    [dialogRef]="dialogRef"
     [compact]="false"
   ></app-transaction-form>
 </div>

@@ -1,14 +1,14 @@
 import {
   Component,
-  EventEmitter,
   Input,
   OnInit,
-  Output,
   OnChanges,
   SimpleChanges,
+  OnDestroy,
 } from '@angular/core';
 
 import { FormBuilder, Validators } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
 
 import {
   BusinessPartner,
@@ -21,9 +21,14 @@ import {
   PaymentMethod,
   PaymentType,
   PaymentCondition,
+  WebApiResponse,
+  NotificationService,
+  PaymentService,
+  ModalService,
 } from '@friday/core';
 
-import { Observable } from 'rxjs';
+import { Observable, of, Subscription, tap } from 'rxjs';
+import { PaymentDetailsModalComponent } from '../payment-details-modal/payment-details-modal.component';
 
 @Component({
   selector: 'app-payment-form',
@@ -33,8 +38,11 @@ import { Observable } from 'rxjs';
 })
 export class PaymentFormComponent
   extends FormBaseComponent
-  implements OnInit, OnChanges
+  implements OnInit, OnChanges, OnDestroy
 {
+  @Input()
+  isModal = false;
+
   @Input()
   isEdit = false;
 
@@ -42,7 +50,7 @@ export class PaymentFormComponent
   parentId: string | null = null;
 
   @Input()
-  parentData: Transaction | undefined;
+  parentData: Transaction | Order | null = null;
 
   @Input()
   data?: Payment | null;
@@ -50,11 +58,8 @@ export class PaymentFormComponent
   @Input()
   compact = false;
 
-  @Output()
-  save = new EventEmitter<Payment>();
-
-  @Output()
-  cancel = new EventEmitter<void>();
+  @Input()
+  dialogRef?: MatDialogRef<PaymentDetailsModalComponent>;
 
   isInstallment = false;
   showClientAndOrder = false;
@@ -97,9 +102,14 @@ export class PaymentFormComponent
   orders$!: Observable<Order[]>;
   filteredOrders$!: Observable<Order[]>;
 
+  private _subscriptions: Subscription[] = [];
+
   constructor(
-    private formBuilder: FormBuilder,
     private currencyService: CurrencyService,
+    private formBuilder: FormBuilder,
+    private modalService: ModalService,
+    private notificationService: NotificationService,
+    private paymentService: PaymentService,
   ) {
     super();
   }
@@ -110,15 +120,17 @@ export class PaymentFormComponent
     this.disableEditFields();
 
     // Subscription para price
-    this.form.get('price')?.valueChanges.subscribe((price: number) => {
-      const payments = this.form.get('totalOfPayments')?.value || 1;
-      const validInstallments = payments > 0 ? payments : 1;
-      const perInstallment = price / validInstallments;
-      this.form.get('pricePerInstallment')?.setValue(perInstallment);
-      this.form
-        .get('pricePerInstallmentFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
-    });
+    this._subscriptions.push(
+      this.form.get('price')!.valueChanges.subscribe((price: number) => {
+        const payments = this.form.get('totalOfPayments')?.value || 1;
+        const validInstallments = payments > 0 ? payments : 1;
+        const perInstallment = price / validInstallments;
+        this.form.get('pricePerInstallment')?.setValue(perInstallment);
+        this.form
+          .get('pricePerInstallmentFormatted')
+          ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
+      }),
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -130,7 +142,9 @@ export class PaymentFormComponent
     }
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this._subscriptions.forEach((sub) => sub.unsubscribe());
+  }
 
   onCurrencyBlur(formControlName: string): void {
     const priceControl = this.form.get(`${formControlName}Formatted`);
@@ -143,23 +157,55 @@ export class PaymentFormComponent
     this.form.get(formControlName)?.setValue(value);
   }
 
-  submit(): void {
+  submit(): Observable<WebApiResponse<Payment> | null> {
     this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      return;
+      return of(null);
     }
 
     const rawValue = this.form.getRawValue();
 
-    this.save.emit(rawValue);
+    return this.save(rawValue as Payment).pipe(
+      tap({
+        next: (response: WebApiResponse<Payment>) => {
+          this.dialogRef?.close(response);
+          this.modalService.showSweetNotification(
+            '',
+            response.message,
+            response.status,
+          );
+        },
+        error: (err) => {
+          this.notificationService.showMessage('Error', 'Erro ao salvar');
+        },
+      }),
+    );
   }
 
-  doCancel(): void {
-    this.cancel.emit();
+  cancel(): void {
+    this.modalService.hideModal(this.dialogRef);
   }
 
   private initForm(): void {
+    let transactionDescription = '';
+    let orderId = '';
+    let transactionId = '';
+
+    // Is Order
+    if (this.parentData && 'transactionId' in this.parentData) {
+      transactionDescription = this.parentData.transaction?.description || '';
+      orderId = this.parentData?.id || '';
+      transactionId = this.parentData?.transactionId || '';
+    }
+
+    // Is Transaction
+    if (this.parentData && 'orderId' in this.parentData) {
+      transactionDescription = this.parentData.description || '';
+      orderId = this.parentData?.orderId || '';
+      transactionId = this.parentId ?? '';
+    }
+
     const commonControls = {
       type: ['', Validators.required],
       status: ['', Validators.required],
@@ -171,11 +217,11 @@ export class PaymentFormComponent
       installmentNumber: [0],
       price: [0, [Validators.required, Validators.min(0)]],
       priceFormatted: [{ value: 0 }],
-      transactionId: [this.parentId],
-      transactionDescription: [this.parentData?.description],
+      transactionId: [transactionId],
+      transactionDescription: [transactionDescription],
       businessPartnerId: [this.parentData?.businessPartnerId],
       businessPartnerName: [this.parentData?.businessPartnerName],
-      orderId: [this.parentData?.orderId],
+      orderId: [orderId],
       orderNumber: [this.parentData?.orderNumber],
     };
 
@@ -208,8 +254,14 @@ export class PaymentFormComponent
   }
 
   private disableEditFields(): void {
-    // if (this.data?.status === PaymentStatus.Approved) {
-    //   this.form.disable();
-    // }
+    if (this.data?.status === PaymentStatus.Approved) {
+      this.form.disable();
+    }
+  }
+
+  private save(payment: Payment): Observable<WebApiResponse<Payment>> {
+    return this.isEdit && this.data
+      ? this.paymentService.update(payment)
+      : this.paymentService.add(payment);
   }
 }

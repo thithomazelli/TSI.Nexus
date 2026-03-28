@@ -10,8 +10,6 @@ import { ApiService, WebApiResponse } from '@friday/core';
 export class OrderProductService {
   private _baseEndPoint = ApiType.OrderProducts;
   private _orderProducts$ = new BehaviorSubject<OrderProduct[]>([]);
-  private _loaded = false;
-
   private _orderProductChangedSubject = new BehaviorSubject<void>(undefined);
   private _orderProductAdded$ = new Subject<OrderProduct>();
 
@@ -20,68 +18,29 @@ export class OrderProductService {
 
   constructor(private apiService: ApiService) {}
 
-  getAll(forceRefresh = true): Observable<WebApiResponse<OrderProduct[]>> {
-    if (!this._loaded || forceRefresh) {
-      return this.apiService
-        .get<WebApiResponse<OrderProduct[]>>(`${this._baseEndPoint}/getAll`)
-        .pipe(
-          tap((response) => {
-            this._orderProducts$.next(response.data);
-            this._loaded = true;
-          }),
-        );
-    }
-    return of({
-      data: this._orderProducts$.value,
-      message: 'Itens de pedido carregados do cache',
-      status: ResponseStatus.Success,
-    });
+  getAll(): Observable<WebApiResponse<OrderProduct[]>> {
+    return this.apiService
+      .get<WebApiResponse<OrderProduct[]>>(`${this._baseEndPoint}/getAll`)
+      .pipe(
+        tap((response) => {
+          this._orderProducts$.next(response.data);
+        }),
+      );
   }
 
-  getByProductId(
-    productId: string,
-    forceRefresh = true,
+  getByEntityId(
+    id: string,
+    entity: string,
   ): Observable<WebApiResponse<OrderProduct[]>> {
-    if (!this._loaded || forceRefresh) {
-      return this.apiService
-        .get<
-          WebApiResponse<OrderProduct[]>
-        >(`${this._baseEndPoint}/getByProductId/${productId}`)
-        .pipe(
-          tap((response) => {
-            this._orderProducts$.next(response.data);
-            this._loaded = true;
-          }),
-        );
-    }
-    return of({
-      data: this._orderProducts$.value,
-      message: 'Itens de pedido carregados do cache',
-      status: ResponseStatus.Success,
-    });
-  }
-
-  getByOrderId(
-    orderId: string,
-    forceRefresh = true,
-  ): Observable<WebApiResponse<OrderProduct[]>> {
-    if (!this._loaded || forceRefresh) {
-      return this.apiService
-        .get<
-          WebApiResponse<OrderProduct[]>
-        >(`${this._baseEndPoint}/getByOrderId/${orderId}`)
-        .pipe(
-          tap((response) => {
-            this._orderProducts$.next(response.data);
-            this._loaded = true;
-          }),
-        );
-    }
-    return of({
-      data: this._orderProducts$.value,
-      message: 'Itens de pedido carregados do cache',
-      status: ResponseStatus.Success,
-    });
+    return this.apiService
+      .get<
+        WebApiResponse<OrderProduct[]>
+      >(`${this._baseEndPoint}/getBy${entity}Id/${id}`)
+      .pipe(
+        tap((response) => {
+          this._orderProducts$.next(response.data);
+        }),
+      );
   }
 
   getDelayed(): Observable<WebApiResponse<OrderProduct[]>> {
@@ -91,7 +50,7 @@ export class OrderProductService {
   }
 
   add(orderProduct: OrderProduct): Observable<WebApiResponse<OrderProduct>> {
-    const delayMs = 3000; // delay de 5 segundos para teste visual
+    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<
         WebApiResponse<OrderProduct>
@@ -114,7 +73,7 @@ export class OrderProductService {
   }
 
   update(orderProduct: OrderProduct): Observable<WebApiResponse<OrderProduct>> {
-    const delayMs = 3000; // delay de 5 segundos para teste visual
+    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<
         WebApiResponse<OrderProduct>
@@ -126,9 +85,10 @@ export class OrderProductService {
   }
 
   delete(orderProduct: OrderProduct): Observable<WebApiResponse<OrderProduct>> {
-    return this.apiService.delete<WebApiResponse<OrderProduct>>(
-      `${this._baseEndPoint}/remove`,
-      orderProduct,
-    );
+    return this.apiService
+      .delete<
+        WebApiResponse<OrderProduct>
+      >(`${this._baseEndPoint}/remove`, orderProduct)
+      .pipe(tap(() => this._orderProductChangedSubject.next()));
   }
 }
