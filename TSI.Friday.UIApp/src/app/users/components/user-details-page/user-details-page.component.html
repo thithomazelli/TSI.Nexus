@@ -37,11 +37,6 @@
                       </ul>
                     </div>
                   </div>
-                  <!-- <img
-              class="profile-user-img img-fluid img-circle"
-              src="assets/img/user4-128x128.jpg"
-              alt="User profile picture"
-              /> -->
                 </div>
               </div>
               <!-- /.card-body -->
@@ -65,15 +60,6 @@
                   >Detalhes</a
                 >
               </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link"
-                  [class.active]="activeTab === 'image'"
-                  (click)="activeTab = 'image'"
-                  data-toggle="tab"
-                  >Imagem</a
-                >
-              </li>
             </ul>
 
             @if (loading) {
@@ -92,15 +78,6 @@
                       (save)="save($event)"
                       (cancel)="cancel()"
                     ></app-user-form>
-                  </div>
-                }
-                @if (activeTab === "image") {
-                  <div>
-                    <app-photo
-                      [data]="data"
-                      [imageUrl]="data?.photo"
-                      [entityClass]="'User'"
-                    ></app-photo>
                   </div>
                 }
               </div>
