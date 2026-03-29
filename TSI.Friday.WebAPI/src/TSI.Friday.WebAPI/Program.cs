@@ -34,9 +34,6 @@ builder
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register HttpContext accessor and current user service
-builder.Services.AddHttpContextAccessor();
-
 // Register Services from Native Injector
 NativeInjector.RegisterServices(builder.Services);
 

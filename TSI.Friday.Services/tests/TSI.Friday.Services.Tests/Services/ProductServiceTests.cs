@@ -13,13 +13,19 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly ProductService _productService;
         private readonly Mock<IRepository<Product>> _repository;
         private readonly Mock<IRepository<OrderProduct>> _orderProductRepositoryMock;
+        private readonly Mock<ILogService> _logServiceMock;
         private readonly IList<Product> _productListMock;
 
         public ProductServiceTests()
         {
             _repository = new Mock<IRepository<Product>>();
             _orderProductRepositoryMock = new Mock<IRepository<OrderProduct>>();
-            _productService = new ProductService(_repository.Object, _orderProductRepositoryMock.Object);
+            _logServiceMock = new Mock<ILogService>();
+            _productService = new ProductService(
+                _repository.Object,
+                _orderProductRepositoryMock.Object,
+                _logServiceMock.Object
+            );
 
             _productListMock = new List<Product>
             {
