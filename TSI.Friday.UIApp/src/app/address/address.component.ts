@@ -229,7 +229,7 @@ export class AddressComponent {
 
   private getAddresses(): void {
     this.addressService
-      .getAddresses(this.parentData?.id ?? '')
+      .getAllByBusinessPartnerId(this.parentData?.id ?? '')
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Address[]>) => {
         this.rowData = response.data ?? [];

@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
-  ApiService,
   ApiType,
   ModalService,
+  NotificationService,
   ResponseStatus,
   User,
+  UserService,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -15,15 +16,15 @@ import {
 } from 'ag-grid-community';
 import { UserDetailsModalComponent } from './components/user-details-modal/user-details-modal.component';
 import { environment } from '../../environments/environment';
-import { Router } from '@angular/router';
+import { Subject, Subscription, takeUntil, tap } from 'rxjs';
 
 @Component({
   selector: 'app-users',
-  standalone: false,
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
+  standalone: false,
 })
-export class UsersComponent {
+export class UsersComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Users;
 
   rowData: User[] = [];
@@ -68,7 +69,6 @@ export class UsersComponent {
       sortable: true,
       filter: true,
       width: 200,
-      flex: 2,
       valueGetter: (params) => {
         const user = params.data ?? {};
         return `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
@@ -139,22 +139,42 @@ export class UsersComponent {
     User: 'Usuário',
   };
 
+  private _userChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   constructor(
-    private apiService: ApiService,
     private modalService: ModalService,
+    private notificationService: NotificationService,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
-    this.getUsers();
+    this._userChangedSub = this.userService.userChanged$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => {
+        this.getUsers();
+      });
   }
 
-  refreshUsers(): void {
-    this.getUsers();
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
+    if (this._userChangedSub) {
+      this._userChangedSub.unsubscribe();
+    }
+  }
+
+  openModal(initialState: any) {
+    this.modalService.showTemplateModal(
+      UserDetailsModalComponent,
+      initialState,
+    );
   }
 
   deleteUser(user: User): void {
-    this.apiService
-      .delete<WebApiResponse<User>>(`${this.baseEndPoint}/remove`, user)
+    this.userService
+      .delete(user)
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<User>) => {
         if (response.status === ResponseStatus.Success) {
           this.rowData = this.rowData.filter((p) => p.id !== user.id);
@@ -163,22 +183,32 @@ export class UsersComponent {
         this.modalService.showSweetNotification(
           '',
           response.message,
-          'success',
+          response.status,
         );
       });
   }
 
-  openModal(initialState: any) {
-    const ref = this.modalService.showTemplateModal(
-      UserDetailsModalComponent,
-      initialState,
-    );
-    if (ref.componentInstance && ref.componentInstance.saved) {
-      ref.componentInstance.saved.subscribe(() => {
-        this.getUsers();
-        ref.close();
+  refreshUsers(): void {
+    this.userService
+      .refresh()
+      .pipe(
+        tap({
+          next: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Success,
+              'Usuários atualizados com sucesso',
+            ),
+          error: () =>
+            this.notificationService.showMessage(
+              ResponseStatus.Error,
+              'Erro ao atualizar usuários',
+            ),
+        }),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((response: WebApiResponse<User[]>) => {
+        this.rowData = response.data ?? [];
       });
-    }
   }
 
   onImgError(event: Event): void {
@@ -187,8 +217,9 @@ export class UsersComponent {
   }
 
   private getUsers(): void {
-    this.apiService
-      .get<WebApiResponse<User[]>>(`${this.baseEndPoint}/getAll`)
+    this.userService
+      .getAll()
+      .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<User[]>) => {
         this.rowData = response.data ?? [];
       });

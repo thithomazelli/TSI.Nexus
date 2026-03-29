@@ -1,14 +1,16 @@
 import {
   Component,
-  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
   SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+
+import { Router } from '@angular/router';
+import { MatDialogRef } from '@angular/material/dialog';
+
 import {
   AccountService,
   ApiType,
@@ -20,15 +22,18 @@ import {
   UserService,
   WebApiResponse,
 } from '@friday/core';
-import { ResetPasswordComponent } from '../../../account/reset-password/reset-password.component';
+
+import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { Router } from '@angular/router';
+
+import { UserDetailsModalComponent } from '../user-details-modal/user-details-modal.component';
+import { ResetPasswordComponent } from '../../../account/reset-password/reset-password.component';
 
 @Component({
   selector: 'app-user-form',
-  standalone: false,
   templateUrl: './user-form.component.html',
   styleUrl: './user-form.component.scss',
+  standalone: false,
 })
 export class UserFormComponent
   extends FormBaseComponent
@@ -47,13 +52,7 @@ export class UserFormComponent
   compact = false;
 
   @Input()
-  errors: string[] | undefined;
-
-  @Output()
-  save = new EventEmitter<User>();
-
-  @Output()
-  cancel = new EventEmitter<void>();
+  dialogRef?: MatDialogRef<UserDetailsModalComponent>;
 
   roleOptions = [
     { label: 'Administrador', value: 'Admin' },
@@ -62,18 +61,19 @@ export class UserFormComponent
 
   isResendingEmail = false;
   resendEmailCountdown = 0;
-  private resendEmailTimer: any;
-  readonly RESEND_EMAIL_COOLDOWN_MS = 60000;
+
+  private _resendEmailTimer: any;
+  private _resendEmailCooldownMs = 60000;
 
   private _baseEndPoint: ApiType = ApiType.Users;
 
   constructor(
-    private formBuilder: FormBuilder,
     private accountService: AccountService,
-    private notificationService: NotificationService,
-    private userService: UserService,
+    private formBuilder: FormBuilder,
     private modalService: ModalService,
+    private notificationService: NotificationService,
     private routerService: Router,
+    private userService: UserService,
   ) {
     super();
   }
@@ -95,25 +95,43 @@ export class UserFormComponent
   }
 
   ngOnDestroy(): void {
-    if (this.resendEmailTimer) {
-      clearInterval(this.resendEmailTimer);
+    if (this._resendEmailTimer) {
+      clearInterval(this._resendEmailTimer);
     }
   }
 
-  submit(): void {
+  submit(): Observable<WebApiResponse<User> | null> {
     this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      return;
+      return of(null);
     }
-    this.save.emit(this.form.value as User);
+
+    return this.save(this.form.getRawValue() as User).pipe(
+      tap({
+        next: (response: WebApiResponse<User>) => {
+          if (this.isModal) {
+            this.saveModal(response);
+          } else {
+            this.savePage(response);
+          }
+        },
+        error: (err) => {
+          this.notificationService.showMessage('error', 'Erro ao salvar');
+        },
+      }),
+    );
   }
 
-  doCancel(): void {
-    this.cancel.emit();
+  cancel(): void {
+    if (this.isModal) {
+      this.modalService.hideModal(this.dialogRef);
+    } else {
+      this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    }
   }
 
-  deleteUser(): void {
+  delete(): void {
     this.modalService
       .showSweetConfirmation(
         '',
@@ -210,16 +228,16 @@ export class UserFormComponent
   }
 
   private resetResendEmailCooldown(): void {
-    if (this.resendEmailTimer) {
-      clearInterval(this.resendEmailTimer);
+    if (this._resendEmailTimer) {
+      clearInterval(this._resendEmailTimer);
     }
 
-    this.resendEmailCountdown = Math.ceil(this.RESEND_EMAIL_COOLDOWN_MS / 1000);
+    this.resendEmailCountdown = Math.ceil(this._resendEmailCooldownMs / 1000);
 
-    this.resendEmailTimer = setInterval(() => {
+    this._resendEmailTimer = setInterval(() => {
       this.resendEmailCountdown--;
       if (this.resendEmailCountdown <= 0) {
-        clearInterval(this.resendEmailTimer);
+        clearInterval(this._resendEmailTimer);
         this.isResendingEmail = false;
         this.resendEmailCountdown = 0;
         localStorage.removeItem(this.getResendEmailCooldownKey());
@@ -250,20 +268,20 @@ export class UserFormComponent
 
     const lastSendTime = parseInt(storedTimestamp, 10);
     const elapsedTime = Date.now() - lastSendTime;
-    const remainingTime = this.RESEND_EMAIL_COOLDOWN_MS - elapsedTime;
+    const remainingTime = this._resendEmailCooldownMs - elapsedTime;
 
     if (remainingTime > 0) {
       this.isResendingEmail = true;
       this.resendEmailCountdown = Math.ceil(remainingTime / 1000);
 
-      if (this.resendEmailTimer) {
-        clearInterval(this.resendEmailTimer);
+      if (this._resendEmailTimer) {
+        clearInterval(this._resendEmailTimer);
       }
 
-      this.resendEmailTimer = setInterval(() => {
+      this._resendEmailTimer = setInterval(() => {
         this.resendEmailCountdown--;
         if (this.resendEmailCountdown <= 0) {
-          clearInterval(this.resendEmailTimer);
+          clearInterval(this._resendEmailTimer);
           this.isResendingEmail = false;
           this.resendEmailCountdown = 0;
           localStorage.removeItem(this.getResendEmailCooldownKey());
@@ -323,6 +341,32 @@ export class UserFormComponent
 
     if (this.data) {
       this.form.patchValue(this.data);
+    }
+  }
+
+  private save(user: User): Observable<WebApiResponse<User>> {
+    return this.isEdit && this.data
+      ? this.userService.update(user)
+      : this.userService.add(user);
+  }
+
+  private saveModal(response: WebApiResponse<User>): void {
+    this.dialogRef?.close(response);
+    this.modalService.showSweetNotification(
+      '',
+      response.message,
+      response.status,
+    );
+  }
+
+  private savePage(response: WebApiResponse<User>): void {
+    if (this.isEdit && this.data) {
+      this.notificationService.showMessage(response.status, response.message);
+      this.data = response.data;
+    } else {
+      this.routerService.navigateByUrl(
+        `/${this._baseEndPoint}/${response.data.id}`,
+      );
     }
   }
 }

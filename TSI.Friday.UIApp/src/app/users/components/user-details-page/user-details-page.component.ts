@@ -1,19 +1,13 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  ApiService,
-  ApiType,
-  NotificationService,
-  PhotoService,
-  User,
-  WebApiResponse,
-} from '@friday/core';
+import { PhotoService, User, UserService } from '@friday/core';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-user-details-page',
-  standalone: false,
   templateUrl: './user-details-page.component.html',
   styleUrl: './user-details-page.component.scss',
+  standalone: false,
 })
 export class UserDetailsPageComponent {
   isEdit = false;
@@ -22,14 +16,13 @@ export class UserDetailsPageComponent {
   loading = false;
   activeTab: 'details' = 'details';
 
-  private _baseEndPoint: ApiType = ApiType.Users;
+  private _destroy$ = new Subject<void>();
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private apiService: ApiService,
     private routerService: Router,
-    private notificationService: NotificationService,
     private photoService: PhotoService,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
@@ -39,7 +32,7 @@ export class UserDetailsPageComponent {
       if (idParam && idParam !== 'new') {
         this.isEdit = true;
         this.id = idParam;
-        this.loadUser(idParam);
+        this.getUserById(idParam);
       } else {
         this.isEdit = false;
         this.data = null;
@@ -53,45 +46,23 @@ export class UserDetailsPageComponent {
     });
   }
 
-  save(User: User): void {
-    if (this.isEdit && this.id) {
-      this.apiService
-        .put<WebApiResponse<User>>(`${this._baseEndPoint}/update`, User)
-        .subscribe((response: WebApiResponse<User>) => {
-          this.notificationService.showMessage(
-            response.status,
-            response.message,
-          );
-          this.data = response.data;
-        });
-    } else {
-      this.apiService
-        .post<WebApiResponse<User>>(`${this._baseEndPoint}/add`, User)
-        .subscribe((response: WebApiResponse<User>) => {
-          this.routerService.navigateByUrl(
-            `/${this._baseEndPoint}/${response.data.id}`,
-          );
-        });
-    }
+  ngOnDestroy(): void {
+    this._destroy$.next();
+    this._destroy$.complete();
   }
 
-  cancel(): void {
-    this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
-  }
-
-  private loadUser(id: string): void {
+  private getUserById(id: string): void {
     this.loading = true;
-    this.apiService
-      .get<WebApiResponse<User>>(`${this._baseEndPoint}/getById/${id}`)
+    this.userService
+      .getById(id)
+      .pipe(takeUntil(this._destroy$))
       .subscribe({
-        next: (response: WebApiResponse<User>) => {
+        next: (response) => {
           this.loading = false;
-
           if (response.data == null) {
             this.routerService.navigateByUrl('/not-found');
             return;
           }
-
           this.data = response.data;
         },
         error: () => {

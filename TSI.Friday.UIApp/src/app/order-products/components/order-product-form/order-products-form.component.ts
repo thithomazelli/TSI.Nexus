@@ -603,7 +603,7 @@ export class OrderProductsFormComponent
   }
 
   private setupAutoComplete(): void {
-    this.products$ = this.productService.getProducts();
+    this.products$ = this.productService.getAll();
     this.productsArray$ = this.products$.pipe(
       map((response) => response.data ?? []),
     );

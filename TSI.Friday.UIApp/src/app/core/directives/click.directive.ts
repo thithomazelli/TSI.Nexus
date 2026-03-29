@@ -6,7 +6,7 @@ import {
   Renderer2,
 } from '@angular/core';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 import { WebApiResponse } from '../utilities';
 
 @Directive({
@@ -34,13 +34,7 @@ export class ClickDirective {
     this.setLoadingClass(true);
     this.addSpinner();
     this.action$()
-      .pipe(
-        tap({
-          next: () => this.finishLoading(),
-          error: () => this.finishLoading(),
-          complete: () => this.finishLoading(),
-        }),
-      )
+      .pipe(finalize(() => this.finishLoading()))
       .subscribe();
   }
 
@@ -163,7 +157,9 @@ export class ClickDirective {
   }
 
   private addSpinner() {
-    if (this.spinnerEl) return;
+    if (this.spinnerEl) {
+      return;
+    }
     this.spinnerEl = this.renderer.createElement('span');
     this.renderer.addClass(this.spinnerEl, 'app-click-spinner');
     if (this.spinnerEl) {

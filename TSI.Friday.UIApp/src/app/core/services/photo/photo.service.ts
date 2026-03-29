@@ -3,13 +3,13 @@ import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class PhotoService {
-  private photoSubject = new BehaviorSubject<{
+  private _photoSubject = new BehaviorSubject<{
     fileName: string;
     userId?: string;
   }>({ fileName: '' });
-  photo$ = this.photoSubject.asObservable();
+  photo$ = this._photoSubject.asObservable();
 
   updateUserPhoto(fileName: string, userId?: string): void {
-    this.photoSubject.next({ fileName, userId });
+    this._photoSubject.next({ fileName, userId });
   }
 }

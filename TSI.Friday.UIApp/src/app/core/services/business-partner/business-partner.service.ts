@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap, delay } from 'rxjs/operators';
+import { AbstractControl, ValidatorFn } from '@angular/forms';
+
 import {
   ApiService,
   ApiType,
@@ -8,58 +8,39 @@ import {
   BusinessPartnerType,
   Company,
   Individual,
-  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
-import { AbstractControl, ValidatorFn } from '@angular/forms';
+
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap, delay } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class BusinessPartnerService {
   private _baseEndPoint = ApiType.BusinessPartners;
   private _businessPartners$ = new BehaviorSubject<BusinessPartner[]>([]);
-  private _loaded = false;
-
   private _businessPartnerChangedSubject = new BehaviorSubject<void>(undefined);
   businessPartnerChanged$ = this._businessPartnerChangedSubject.asObservable();
 
   constructor(private apiService: ApiService) {}
 
-  getClients(
-    forceRefresh = true,
-  ): Observable<WebApiResponse<BusinessPartner[]>> {
-    return this.getAllBusinessPartnersByType(
-      BusinessPartnerType.Client,
-      forceRefresh,
-    );
+  getClients(): Observable<WebApiResponse<BusinessPartner[]>> {
+    return this.getAllBusinessPartnersByType(BusinessPartnerType.Client);
   }
 
-  getSuppliers(
-    forceRefresh = true,
-  ): Observable<WebApiResponse<BusinessPartner[]>> {
-    return this.getAllBusinessPartnersByType(
-      BusinessPartnerType.Supplier,
-      forceRefresh,
-    );
+  getSuppliers(): Observable<WebApiResponse<BusinessPartner[]>> {
+    return this.getAllBusinessPartnersByType(BusinessPartnerType.Supplier);
   }
 
   getById(id: string): Observable<WebApiResponse<BusinessPartner>> {
-    this._loaded = true;
-    return this.apiService
-      .get<
-        WebApiResponse<BusinessPartner>
-      >(`${this._baseEndPoint}/getById/${id}`)
-      .pipe(
-        tap(() => {
-          this._loaded = true;
-        }),
-      );
+    return this.apiService.get<WebApiResponse<BusinessPartner>>(
+      `${this._baseEndPoint}/getById/${id}`,
+    );
   }
 
   refresh(
     type: BusinessPartnerType,
   ): Observable<WebApiResponse<BusinessPartner[]>> {
-    this._loaded = false;
-    return this.getAllBusinessPartnersByType(type, true);
+    return this.getAllBusinessPartnersByType(type);
   }
 
   add(
@@ -177,27 +158,15 @@ export class BusinessPartnerService {
 
   private getAllBusinessPartnersByType(
     type: BusinessPartnerType,
-    forceRefresh = true,
   ): Observable<WebApiResponse<BusinessPartner[]>> {
-    if (!this._loaded || forceRefresh) {
-      return this.apiService
-        .get<
-          WebApiResponse<BusinessPartner[]>
-        >(`${this._baseEndPoint}/getAll${type === BusinessPartnerType.Client ? 'Clients' : 'Suppliers'}`)
-        .pipe(
-          tap((response) => {
-            this._businessPartners$.next(response.data);
-            this._loaded = true;
-          }),
-        );
-    }
-    return of({
-      data: this._businessPartners$.value,
-      message:
-        type === BusinessPartnerType.Client
-          ? 'Clientes carregados do cache'
-          : 'Fornecedores carregados do cache',
-      status: ResponseStatus.Success,
-    });
+    return this.apiService
+      .get<
+        WebApiResponse<BusinessPartner[]>
+      >(`${this._baseEndPoint}/getAll${type === BusinessPartnerType.Client ? 'Clients' : 'Suppliers'}`)
+      .pipe(
+        tap((response) => {
+          this._businessPartners$.next(response.data);
+        }),
+      );
   }
 }
