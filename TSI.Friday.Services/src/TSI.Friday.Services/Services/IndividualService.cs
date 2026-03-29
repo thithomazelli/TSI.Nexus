@@ -169,11 +169,6 @@ namespace TSI.Friday.Services
             BusinessPartnerDto individualDto
         )
         {
-            if (await IsNameDuplicated(individualDto))
-            {
-                return $"Já existe um {_businessPartnerMap[individualDto.Type]} cadastrado com Nome {individualDto.Name}.";
-            }
-
             if (await IsEmailDuplicated(individualDto))
             {
                 return $"Já existe um {_businessPartnerMap[individualDto.Type]} cadastrado com E-mail {individualDto.Email}.";
@@ -190,20 +185,6 @@ namespace TSI.Friday.Services
             }
 
             return string.Empty;
-        }
-
-        /// <summary>
-        /// Should verify if the Individual name is already being used by another register on the database.
-        /// </summary>
-        /// <param name="individualDto">The Individual object that is being added or updated.</param>
-        /// <returns>True when the Name is duplicated; Otherwise false.</returns>
-        private async Task<bool> IsNameDuplicated(BusinessPartnerDto individualDto)
-        {
-            return await _repository.AnyAsync(_ =>
-                _.Id != individualDto.Id
-                && _.Name == individualDto.Name
-                && _.Type == individualDto.Type
-            );
         }
 
         /// <summary>

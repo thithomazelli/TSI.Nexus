@@ -122,40 +122,6 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task IndividualService_Add_ShouldNotAddIndividualAndReturnAnErrorMessage_WhenNameIsDuplicated()
-        {
-            // Arrange
-            var businessPartnerMock = new BusinessPartnerDto
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Name = "Thiago Thomazelli Ferreira",
-            };
-            var expectedResult = new WebApiResponse<BusinessPartnerDto>
-            {
-                Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com Nome {businessPartnerMock.Name}.",
-            };
-
-            _repository
-                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
-                .ReturnsAsync(true);
-
-            // Act
-            var result = await _individualService.Add(businessPartnerMock);
-
-            // Assert
-            Assert.Equal(expectedResult.Status, result.Status);
-            Assert.Equal(expectedResult.Message, result.Message);
-
-            expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.AddAsync(It.IsAny<Individual>()), Times.Never);
-            _repository.Verify(
-                _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Once
-            );
-        }
-
-        [Fact]
         public async Task IndividualService_Add_ShouldNotAddIndividualAndReturnAnErrorMessage_WhenEmailIsDuplicated()
         {
             // Arrange
@@ -341,40 +307,6 @@ namespace TSI.Friday.Services.Tests.Services
 
             expectedResult.Should().BeEquivalentTo(result);
             _repository.Verify(_ => _.UpdateAsync(It.IsAny<Individual>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task IndividualService_Update_ShouldNotUpdateIndividualAndReturnAnErrorMessage_WhenNameIsDuplicated()
-        {
-            // Arrange
-            var businessPartnerMock = new BusinessPartnerDto
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Name = "Thiago Thomazelli Ferreira",
-            };
-            var expectedResult = new WebApiResponse<BusinessPartnerDto>
-            {
-                Status = ResponseStatus.Error,
-                Message = $"Já existe um Cliente cadastrado com Nome {businessPartnerMock.Name}.",
-            };
-
-            _repository
-                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
-                .ReturnsAsync(true);
-
-            // Act
-            var result = await _individualService.Update(businessPartnerMock);
-
-            // Assert
-            Assert.Equal(expectedResult.Status, result.Status);
-            Assert.Equal(expectedResult.Message, result.Message);
-
-            expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.UpdateAsync(It.IsAny<Individual>()), Times.Never);
-            _repository.Verify(
-                _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Once
-            );
         }
 
         [Fact]
