@@ -231,6 +231,11 @@
       <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         Cancelar
       </button>
+      @if (isEdit) {
+        <button type="button" class="btn btn-danger me-2" (click)="remove()">
+          Remover
+        </button>
+      }
       <button
         [appClick]="submit.bind(this)"
         type="submit"

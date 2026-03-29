@@ -131,7 +131,8 @@ export class UserFormComponent
     }
   }
 
-  delete(): void {
+  remove(): void {
+    this.modalService.hideModal();
     this.modalService
       .showSweetConfirmation(
         '',
@@ -174,6 +175,18 @@ export class UserFormComponent
               }),
             )
             .subscribe();
+        } else {
+          if (this.isModal) {
+            const initialState = {
+              isEdit: this.isEdit,
+              data: this.data,
+              id: this.data?.id,
+            };
+            this.modalService.showTemplateModal(
+              UserDetailsModalComponent,
+              initialState,
+            );
+          }
         }
       });
   }

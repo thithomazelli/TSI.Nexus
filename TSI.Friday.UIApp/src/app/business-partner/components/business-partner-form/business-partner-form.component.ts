@@ -59,7 +59,7 @@ export class BusinessPartnerFormComponent
   canDisplayNewAddressLink = false;
   selectedAddressIndex: number | null = null;
 
-  private _baseEndPoint: ApiType = ApiType.BusinessPartners;
+  private _baseEndPoint = '';
 
   constructor(
     private businessPartnerService: BusinessPartnerService,
@@ -72,11 +72,9 @@ export class BusinessPartnerFormComponent
   }
 
   ngOnInit(): void {
-    this.canDisplayAddressForm = this.isEdit ? false : true;
-    this.canDisplayAddressButtons =
-      this.isEdit && this.canDisplayAddressForm ? true : false;
-    this.canDisplayNewAddressLink = this.isEdit ? false : true;
-
+    this.defineBusinessPartnerType();
+    this.setCanDisplayAddressFormAndAddressLink();
+    this.setCanDisplayAddressButtons();
     this.initForm();
     this.initAddressInfo();
     this.disableEditFields();
@@ -253,6 +251,66 @@ export class BusinessPartnerFormComponent
     if (this.canDisplayAddressForm) {
       this.restoreAddressValidators();
     }
+  }
+
+  remove(): void {
+    this.modalService.hideModal();
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este registro?',
+        'question',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.businessPartnerService
+            .delete(this.data as BusinessPartner)
+            .pipe(
+              tap({
+                next: (response: WebApiResponse<BusinessPartner>) => {
+                  if (this.isModal) {
+                    this.modalService.hideModal();
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  } else {
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                    if (response.status === ResponseStatus.Success) {
+                      this.routerService.navigateByUrl(
+                        `/${this._baseEndPoint}`,
+                      );
+                    }
+                  }
+                },
+                error: (err) => {
+                  this.notificationService.showMessage(
+                    'error',
+                    'Erro ao remover',
+                  );
+                },
+              }),
+            )
+            .subscribe();
+        } else {
+          if (this.isModal) {
+            const initialState = {
+              isEdit: this.isEdit,
+              data: this.data,
+              id: this.data?.id,
+            };
+            this.modalService.showTemplateModal(
+              BusinessPartnerDetailsModalComponent,
+              initialState,
+            );
+          }
+        }
+      });
   }
 
   private initAddressInfo() {
@@ -468,6 +526,29 @@ export class BusinessPartnerFormComponent
       this.routerService.navigateByUrl(
         `/${this._baseEndPoint}/${response.data.id}`,
       );
+    }
+  }
+
+  private defineBusinessPartnerType(): void {
+    if (this.data?.type === BusinessPartnerType.Client) {
+      this._baseEndPoint = 'clients';
+    } else {
+      this._baseEndPoint = 'suppliers';
+    }
+  }
+
+  private setCanDisplayAddressFormAndAddressLink(): void {
+    if (this.isEdit) {
+      this.canDisplayAddressForm = this.canDisplayAddressForm ? false : true;
+      this.canDisplayNewAddressLink = this.canDisplayNewAddressLink
+        ? false
+        : true;
+    }
+  }
+
+  private setCanDisplayAddressButtons(): void {
+    if (this.isEdit && this.canDisplayAddressForm) {
+      this.canDisplayAddressButtons = true;
     }
   }
 }
