@@ -245,7 +245,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   private getProducts(): void {
     this.productService
-      .getProducts()
+      .getAll()
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];

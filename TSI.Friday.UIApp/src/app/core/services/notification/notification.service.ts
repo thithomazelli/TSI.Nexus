@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
   providedIn: 'root',
 })
 export class NotificationService {
-  private readonly notificationMap: {
+  private readonly _notificationMap: {
     [key: string]: (msg: string, title?: string) => void;
   } = {
     Success: this.success.bind(this),
@@ -15,7 +15,7 @@ export class NotificationService {
   };
 
   showMessage(type: string, message: string, title?: string) {
-    this.notificationMap[type](message, title);
+    this._notificationMap[type](message, title);
   }
 
   private success(message: string, title?: string) {

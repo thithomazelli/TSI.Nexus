@@ -395,7 +395,7 @@ export class TransactionFormComponent
   }
 
   private businessPartnerNameAutoComplete() {
-    this.businessPartners$ = this.businessPartnerService.getClients(true);
+    this.businessPartners$ = this.businessPartnerService.getClients();
     this.businessPartnersArray$ = this.businessPartners$.pipe(
       map((response) => response.data ?? []),
     );

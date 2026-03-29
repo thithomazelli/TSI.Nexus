@@ -147,10 +147,10 @@
         </div>
       </div>
 
-      @if (errors) {
+      @if (errorMessages) {
         <div class="form-floating">
           <app-validation-messages
-            [errorMessages]="errors"
+            [errorMessages]="errorMessages"
           ></app-validation-messages>
         </div>
       }
@@ -186,15 +186,21 @@
       </div>
 
       <div class="d-flex flex-column flex-sm-row gap-2">
-        <button type="button" class="btn btn-secondary" (click)="doCancel()">
+        <button type="button" class="btn btn-secondary" (click)="cancel()">
           Cancelar
         </button>
         @if (isEdit) {
-          <button (click)="deleteUser()" type="button" class="btn btn-danger">
+          <button (click)="delete()" type="button" class="btn btn-danger">
             Remover
           </button>
         }
-        <button type="submit" class="btn btn-success">Salvar</button>
+        <button
+          [appClick]="submit.bind(this)"
+          type="submit"
+          class="btn btn-success"
+        >
+          Salvar
+        </button>
       </div>
     </div>
   </form>

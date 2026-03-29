@@ -3,6 +3,7 @@ import {
   Input,
   OnInit,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
 } from '@angular/core';
 
@@ -24,7 +25,7 @@ import {
   WebApiResponse,
 } from '@friday/core';
 
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { ProductDetailsModalComponent } from '../product-details-modal/product-details-modal.component';
@@ -37,7 +38,7 @@ import { ProductDetailsModalComponent } from '../product-details-modal/product-d
 })
 export class ProductFormComponent
   extends FormBaseComponent
-  implements OnInit, OnChanges
+  implements OnInit, OnChanges, OnDestroy
 {
   @Input()
   isModal = false;
@@ -67,6 +68,7 @@ export class ProductFormComponent
   ];
 
   private _baseEndPoint: ApiType = ApiType.Products;
+  private _subscriptions: Subscription[] = [];
 
   constructor(
     private currencyService: CurrencyService,
@@ -94,6 +96,14 @@ export class ProductFormComponent
     if (changes['isEdit'] && !changes['isEdit'].firstChange) {
       this.initForm();
     }
+  }
+
+  ngOnDestroy(): void {
+    this._subscriptions.forEach(
+      (sub) =>
+        sub && typeof sub.unsubscribe === 'function' && sub.unsubscribe(),
+    );
+    this._subscriptions = [];
   }
 
   submit(): Observable<WebApiResponse<Product> | null> {
@@ -217,7 +227,7 @@ export class ProductFormComponent
         ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
     }
 
-    this.form.get('type')?.valueChanges.subscribe((type) => {
+    const typeSub = this.form.get('type')?.valueChanges.subscribe((type) => {
       const quantityControl = this.form.get('quantityInStock');
       if (type === ProductType.Service) {
         quantityControl?.setValue(0);
@@ -226,6 +236,9 @@ export class ProductFormComponent
         quantityControl?.enable();
       }
     });
+    if (typeSub) {
+      this._subscriptions.push(typeSub);
+    }
   }
 
   private save(product: Product): Observable<WebApiResponse<Product>> {

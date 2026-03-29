@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, delay, Observable, tap } from 'rxjs';
 import { ApiType } from '../../enums';
 import { ApiService } from '../api/api.service';
 import { WebApiResponse } from '../../utilities';
 import { Payment } from '../../models';
+import { BehaviorSubject, delay, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
