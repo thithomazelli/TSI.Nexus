@@ -18,6 +18,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<Transaction> _repository;
         private readonly IRepository<Payment> _paymentRepository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
 
         #endregion Properties
 
@@ -30,12 +31,14 @@ namespace TSI.Friday.Services
         public TransactionService(
             IRepository<Transaction> repository,
             IRepository<Payment> paymentRepository,
-            IMapper mapper
+            IMapper mapper,
+            ILogService logService
         )
         {
             _repository = repository;
             _paymentRepository = paymentRepository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -56,6 +59,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "TransactionService.Add", transactionDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível cadastrar o Transação {transactionDto?.Description} na base de dados. Erro: {ex.Message}";
@@ -78,8 +82,14 @@ namespace TSI.Friday.Services
                 );
                 if (transactionEntity == null)
                 {
+                    var message = $"Transação com Id {transactionDto.Id} não encontrado.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "TransactionService.Update",
+                        transactionDto
+                    );
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"Transação com Id {transactionDto.Id} não encontrado.";
+                    result.Message = message;
                     return result;
                 }
 
@@ -109,6 +119,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "TransactionService.Update", transactionDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do Transação {transactionDto?.Description} na base de dados. Erro: {ex.Message}";
@@ -133,8 +144,14 @@ namespace TSI.Friday.Services
                 );
                 if (transactionEntity == null)
                 {
+                    var message = $"Transação com Id {transactionDto.Id} não encontrado.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "TransactionService.UpdateOrderId",
+                        transactionDto
+                    );
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"Transação com Id {transactionDto.Id} não encontrado.";
+                    result.Message = message;
                     return result;
                 }
 
@@ -155,6 +172,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "TransactionService.UpdateOrderId", transactionDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do Transação {transactionDto?.Description} na base de dados. Erro: {ex.Message}";
@@ -174,8 +192,14 @@ namespace TSI.Friday.Services
                 var transactionEntity = await _repository.GetByIdAsync(transactionDto.Id);
                 if (transactionEntity == null)
                 {
+                    var message = $"Transação com Id {transactionDto.Id} não encontrado.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "TransactionService.Remove",
+                        transactionDto
+                    );
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"Transação com Id {transactionDto.Id} não encontrado.";
+                    result.Message = message;
                     return result;
                 }
 
@@ -187,12 +211,14 @@ namespace TSI.Friday.Services
             }
             catch (DbUpdateException ex)
             {
+                _logService.LogException(ex, "TransactionService.Remove", transactionDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o Transação {transactionDto?.Description}. Existe um pedido de vendas vinculado.";
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "TransactionService.Remove", transactionDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o Transação {transactionDto?.Description} da base de dados. Erro: {ex.Message}";
@@ -232,6 +258,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "TransactionService.FindAll", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Transaçãos na base de dados. Erro: {ex.Message}";
@@ -256,8 +283,14 @@ namespace TSI.Friday.Services
 
                 if (transaction == null)
                 {
+                    var message = $"Transação com Id {id} não encontrado.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "TransactionService.FindById",
+                        id
+                    );
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"Transação com Id {id} não encontrado.";
+                    result.Message = message;
                     return result;
                 }
 
@@ -278,6 +311,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "TransactionService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Transaçãos na base de dados. Erro: {ex.Message}";
@@ -321,6 +355,11 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(
+                    ex,
+                    "TransactionService.FindByBusinessPartnerId",
+                    businessPartnerId
+                );
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Transaçãos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";

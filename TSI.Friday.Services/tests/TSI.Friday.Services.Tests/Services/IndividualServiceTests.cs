@@ -15,18 +15,24 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly IndividualService _individualService;
         private readonly Mock<IRepository<Individual>> _repository;
+        private readonly Mock<ILogService> _logService;
         private readonly IList<BusinessPartnerDto> _businessPartnerListMock;
         private readonly IMapper _mapper;
 
         public IndividualServiceTests()
         {
             _repository = new Mock<IRepository<Individual>>();
+            _logService = new Mock<ILogService>();
 
             // Configure AutoMapper for tests
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
 
-            _individualService = new IndividualService(_repository.Object, _mapper);
+            _individualService = new IndividualService(
+                _repository.Object,
+                _mapper,
+                _logService.Object
+            );
 
             _businessPartnerListMock = new List<BusinessPartnerDto>
             {
@@ -117,7 +123,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(_ => _.AddAsync(It.IsAny<Individual>()), Times.Once);
             _repository.Verify(
                 _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Exactly(4)
+                Times.Exactly(3)
             );
         }
 
@@ -140,7 +146,6 @@ namespace TSI.Friday.Services.Tests.Services
 
             _repository
                 .SetupSequence(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
-                .ReturnsAsync(false)
                 .ReturnsAsync(true);
 
             // Act
@@ -154,7 +159,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(_ => _.AddAsync(It.IsAny<Individual>()), Times.Never);
             _repository.Verify(
                 _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Exactly(2)
+                Times.Exactly(1)
             );
         }
 
@@ -179,7 +184,6 @@ namespace TSI.Friday.Services.Tests.Services
             _repository
                 .SetupSequence(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
                 .ReturnsAsync(false)
-                .ReturnsAsync(false)
                 .ReturnsAsync(true);
 
             // Act
@@ -193,7 +197,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(_ => _.AddAsync(It.IsAny<Individual>()), Times.Never);
             _repository.Verify(
                 _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Exactly(3)
+                Times.Exactly(2)
             );
         }
 
@@ -220,7 +224,6 @@ namespace TSI.Friday.Services.Tests.Services
                 .SetupSequence(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
                 .ReturnsAsync(false)
                 .ReturnsAsync(false)
-                .ReturnsAsync(false)
                 .ReturnsAsync(true);
 
             // Act
@@ -234,7 +237,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(_ => _.AddAsync(It.IsAny<Individual>()), Times.Never);
             _repository.Verify(
                 _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Exactly(4)
+                Times.Exactly(3)
             );
         }
 
@@ -328,7 +331,6 @@ namespace TSI.Friday.Services.Tests.Services
 
             _repository
                 .SetupSequence(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
-                .ReturnsAsync(false)
                 .ReturnsAsync(true);
 
             // Act
@@ -342,7 +344,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(_ => _.UpdateAsync(It.IsAny<Individual>()), Times.Never);
             _repository.Verify(
                 _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Exactly(2)
+                Times.Exactly(1)
             );
         }
 
@@ -367,7 +369,6 @@ namespace TSI.Friday.Services.Tests.Services
             _repository
                 .SetupSequence(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
                 .ReturnsAsync(false)
-                .ReturnsAsync(false)
                 .ReturnsAsync(true);
 
             // Act
@@ -381,7 +382,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(_ => _.UpdateAsync(It.IsAny<Individual>()), Times.Never);
             _repository.Verify(
                 _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Exactly(3)
+                Times.Exactly(2)
             );
         }
 
@@ -408,7 +409,6 @@ namespace TSI.Friday.Services.Tests.Services
                 .SetupSequence(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
                 .ReturnsAsync(false)
                 .ReturnsAsync(false)
-                .ReturnsAsync(false)
                 .ReturnsAsync(true);
 
             // Act
@@ -422,7 +422,7 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(_ => _.UpdateAsync(It.IsAny<Individual>()), Times.Never);
             _repository.Verify(
                 _ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()),
-                Times.Exactly(4)
+                Times.Exactly(3)
             );
         }
 

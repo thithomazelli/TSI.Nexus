@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
@@ -10,7 +8,6 @@ using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 using TSI.Friday.IoC;
-using TSI.Friday.Repository;
 
 namespace TSI.Friday.Services.Tests.Services
 {
@@ -18,15 +15,17 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly PaymentService _paymentService;
         private readonly Mock<IRepository<Payment>> _repository;
+        private readonly Mock<ILogService> _logService;
         private readonly IList<Payment> _paymentsMock;
         private readonly IMapper _mapper;
 
         public PaymentServiceTests()
         {
             _repository = new Mock<IRepository<Payment>>();
+            _logService = new Mock<ILogService>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
-            _paymentService = new PaymentService(_repository.Object, _mapper);
+            _paymentService = new PaymentService(_repository.Object, _mapper, _logService.Object);
 
             _paymentsMock = new List<Payment>
             {

@@ -16,6 +16,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly TransactionService _transactionService;
         private readonly Mock<IRepository<Transaction>> _repository;
         private readonly Mock<IRepository<Payment>> _paymentRepository;
+        private readonly Mock<ILogService> _logService;
         private readonly IList<TransactionDto> _transactionsMock;
         private readonly IMapper _mapper;
 
@@ -23,12 +24,14 @@ namespace TSI.Friday.Services.Tests.Services
         {
             _repository = new Mock<IRepository<Transaction>>();
             _paymentRepository = new Mock<IRepository<Payment>>();
+            _logService = new Mock<ILogService>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
             _mapper = config.CreateMapper();
             _transactionService = new TransactionService(
                 _repository.Object,
                 _paymentRepository.Object,
-                _mapper
+                _mapper,
+                _logService.Object
             );
 
             _transactionsMock = new List<TransactionDto>

@@ -17,6 +17,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<OrderProduct> _repository;
         private readonly IRepository<Order> _orderRepository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
 
         #endregion Properties
 
@@ -29,12 +30,14 @@ namespace TSI.Friday.Services
         public OrderProductService(
             IRepository<OrderProduct> repository,
             IRepository<Order> orderRepository,
-            IMapper mapper
+            IMapper mapper,
+            ILogService logService
         )
         {
             _repository = repository;
             _orderRepository = orderRepository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -60,6 +63,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.Add", orderProductDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível cadastrar o Item do Pedido {orderProductDto?.Description} na base de dados. Erro: {ex.Message}";
@@ -91,6 +95,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.Update", orderProductDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do Item do Pedido {orderProductDto?.Description} na base de dados. Erro: {ex.Message}";
@@ -120,6 +125,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.Remove", orderProductDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o Item do Pedido {orderProductDto?.Description} da base de dados. Erro: {ex.Message}";
@@ -148,6 +154,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.FindAll", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de itens do pedido. Erro: {ex.Message}";
@@ -175,6 +182,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.FindByOrderId", orderId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Itens do Pedido {orderId}. Erro: {ex.Message}";
@@ -206,6 +214,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.FindByProductId", productId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Itens do Pedido para o Produto {productId}. Erro: {ex.Message}";
@@ -231,6 +240,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Itens do Pedido na base de dados. Erro: {ex.Message}";
@@ -270,6 +280,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderProductService.FindDelayed", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Itens do Pedido. Erro: {ex.Message}";

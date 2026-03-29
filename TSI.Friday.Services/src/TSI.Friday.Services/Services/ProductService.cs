@@ -61,7 +61,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
-                _logService?.LogException(ex, "ProductService.Add", product);
+                _logService.LogException(ex, "ProductService.Add", product);
 
                 result.Status = ResponseStatus.Error;
                 result.Message =
@@ -85,7 +85,7 @@ namespace TSI.Friday.Services
                 if (!string.IsNullOrEmpty(productDuplicatedMessage))
                 {
                     var ex = new Exception(productDuplicatedMessage);
-                    _logService?.LogException(ex, "ProductService.Update", product);
+                    _logService.LogException(ex, "ProductService.Update", product);
 
                     result.Status = ResponseStatus.Error;
                     result.Message = productDuplicatedMessage;
@@ -100,7 +100,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
-                _logService?.LogException(ex, "ProductService.Update", product);
+                _logService.LogException(ex, "ProductService.Update", product);
 
                 result.Status = ResponseStatus.Error;
                 result.Message =
@@ -122,7 +122,7 @@ namespace TSI.Friday.Services
                     var message =
                         $"Produto {product.Name} não pode ser removido pois está vinculado à um ou mais pedidos.";
                     var ex = new Exception(message);
-                    _logService?.LogException(ex, "ProductService.Remove", product);
+                    _logService.LogException(ex, "ProductService.Remove", product);
 
                     result.Data = product;
                     result.Status = ResponseStatus.Warning;
@@ -139,7 +139,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
-                _logService?.LogException(ex, "ProductService.Remove", product);
+                _logService.LogException(ex, "ProductService.Remove", product);
 
                 result.Status = ResponseStatus.Error;
                 result.Message =
@@ -162,7 +162,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
-                _logService?.LogException(ex, "ProductService.FindAll", null);
+                _logService.LogException(ex, "ProductService.FindAll", null);
 
                 result.Status = ResponseStatus.Error;
                 result.Message =
@@ -188,7 +188,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
-                _logService?.LogException(ex, "ProductService.FindById", id);
+                _logService.LogException(ex, "ProductService.FindById", id);
 
                 result.Status = ResponseStatus.Error;
                 result.Message =
@@ -214,7 +214,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
-                _logService?.LogException(ex, "ProductService.FindBySku", sku);
+                _logService.LogException(ex, "ProductService.FindBySku", sku);
 
                 result.Status = ResponseStatus.Error;
                 result.Message =

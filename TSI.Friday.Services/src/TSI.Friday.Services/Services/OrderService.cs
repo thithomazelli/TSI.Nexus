@@ -20,6 +20,7 @@ namespace TSI.Friday.Services
         private readonly ITransactionService _transactionService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
 
         #endregion Properties
 
@@ -34,7 +35,8 @@ namespace TSI.Friday.Services
             IRepository<OrderProduct> orderProductRepository,
             ITransactionService transactionService,
             ISequenceService sequenceService,
-            IMapper mapper
+            IMapper mapper,
+            ILogService logService
         )
         {
             _repository = repository;
@@ -42,6 +44,7 @@ namespace TSI.Friday.Services
             _transactionService = transactionService;
             _sequenceService = sequenceService;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -105,6 +108,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderService.Add", orderDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível cadastrar o Pedido {orderDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
@@ -156,6 +160,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderService.Update", orderDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do Pedido {orderDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
@@ -179,6 +184,11 @@ namespace TSI.Friday.Services
 
                 if (orderEntity == null)
                 {
+                    _logService.LogException(
+                        new Exception($"Pedido {orderDto.OrderNumber} não encontrado."),
+                        "OrderService.Remove",
+                        orderDto
+                    );
                     result.Data = null;
                     result.Status = ResponseStatus.Error;
                     result.Message = $"Pedido {orderDto.OrderNumber} não encontrado.";
@@ -196,6 +206,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderService.Remove", orderDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o Pedido {orderDto?.OrderNumber} da base de dados. Erro: {ex.Message}";
@@ -224,6 +235,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderService.FindAll", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Pedidos na base de dados. Erro: {ex.Message}";
@@ -256,6 +268,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Pedidos na base de dados. Erro: {ex.Message}";
@@ -286,6 +299,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderService.FindByOrderNumber", orderNumber);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível buscar o Pedido pelo número {orderNumber}. Erro: {ex.Message}";
@@ -313,6 +327,11 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(
+                    ex,
+                    "OrderService.FindByBusinessPartnerId",
+                    businessPartnerId
+                );
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Pedidos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
@@ -337,6 +356,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "OrderService.FindByProductId", productId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Pedidos relacionados ao Produto {productId}. Erro: {ex.Message}";

@@ -22,7 +22,7 @@ namespace TSI.Friday.Services
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _config;
-        private readonly IMapper _mapper;
+        private readonly ILogService _logService;
 
         /// <summary>
         /// Repository object created to access the Users registers on database using EntityFramework.
@@ -39,8 +39,8 @@ namespace TSI.Friday.Services
             UserManager<User> userManager,
             IEmailService emailService,
             IConfiguration config,
-            IMapper mapper,
-            IRepository<User> repository
+            IRepository<User> repository,
+            ILogService logService
         )
         {
             _jwtService = jwtService;
@@ -48,313 +48,404 @@ namespace TSI.Friday.Services
             _userManager = userManager;
             _emailService = emailService;
             _config = config;
-            _mapper = mapper;
             _repository = repository;
+            _logService = logService;
         }
 
         /// <inheritdoc />
         public async Task<ActionResult<UserDto>> Login(LoginDto model)
         {
-            var user = await _userManager.FindByNameAsync(model.UserName);
-
-            if (user == null)
+            try
             {
-                return Unauthorized("E-mail ou senha inválidos.");
-            }
+                var user = await _userManager.FindByNameAsync(model.UserName);
 
-            if (user.EmailConfirmed == false)
+                if (user == null)
+                {
+                    return Unauthorized("E-mail ou senha inválidos.");
+                }
+
+                if (user.EmailConfirmed == false)
+                {
+                    return Unauthorized("Por favor, confirme o seu e-mail.");
+                }
+
+                var result = await _signInManager.CheckPasswordSignInAsync(
+                    user,
+                    model.Password,
+                    false
+                );
+                if (!result.Succeeded)
+                {
+                    return Unauthorized("E-mail ou senha inválidos.");
+                }
+
+                return await CreateApplicationUserDto(user);
+            }
+            catch (Exception ex)
             {
-                return Unauthorized("Por favor, confirme o seu e-mail.");
+                _logService.LogException(ex, "UserManagerService.Login", model);
+                throw;
             }
-
-            var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
-            if (!result.Succeeded)
-            {
-                return Unauthorized("E-mail ou senha inválidos.");
-            }
-
-            return await CreateApplicationUserDto(user);
         }
 
         /// <inheritdoc />
         public async Task<ActionResult<UserDto>> RefreshUserToken(string userName)
         {
-            var user = await _userManager.FindByNameAsync(userName);
-
-            if (user == null)
+            try
             {
-                return Unauthorized("Usuário não foi encontrado.");
-            }
+                var user = await _userManager.FindByNameAsync(userName);
 
-            return await CreateApplicationUserDto(user);
+                if (user == null)
+                {
+                    return Unauthorized("Usuário não foi encontrado.");
+                }
+
+                return await CreateApplicationUserDto(user);
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "UserManagerService.RefreshUserToken", userName);
+                throw;
+            }
         }
 
         /// <inheritdoc />
         public async Task<ActionResult<WebApiResponse<User>>> Register(RegisterDto model)
         {
-            if (await CheckEmailExistisAsync(model.Email))
-            {
-                return BadRequest(
-                    $"Já existe uma conta com o e-mail {model.Email}. Por favor, tente com outro endereço."
-                );
-            }
-
-            var userToAdd = new User
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                UserName = model.Email,
-                Email = model.Email,
-            };
-
-            var result = await _userManager.CreateAsync(userToAdd, model.Password);
-
-            if (!result.Succeeded)
-            {
-                return BadRequest(result.Errors);
-            }
-
-            // assign role if provided
-            if (!string.IsNullOrEmpty(model.Role))
-            {
-                try
-                {
-                    var roleResult = await _userManager.AddToRoleAsync(userToAdd, model.Role);
-                    if (!roleResult.Succeeded)
-                    {
-                        // log but don't fail the entire registration
-                        // consider removing the user if role assignment is critical
-                    }
-                }
-                catch
-                {
-                    // swallow role assignment errors to avoid breaking registration
-                }
-            }
-
             try
             {
-                if (!(await SendConfirmEmailAsync(userToAdd)))
+                if (await CheckEmailExistisAsync(model.Email))
                 {
-                    throw new Exception();
+                    var message =
+                        $"Já existe uma conta com o e-mail {model.Email}. Por favor, tente com outro endereço.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "UserManagerService.Register",
+                        model
+                    );
+                    return BadRequest(message);
                 }
 
-                return Ok(
-                    new WebApiResponse<User>
+                var userToAdd = new User
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    UserName = model.Email,
+                    Email = model.Email,
+                };
+
+                var result = await _userManager.CreateAsync(userToAdd, model.Password);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+
+                // assign role if provided
+                if (!string.IsNullOrEmpty(model.Role))
+                {
+                    try
                     {
-                        Data = userToAdd,
-                        Status = ResponseStatus.Success,
-                        Message = "Usuário cadastrado com sucesso.",
+                        var roleResult = await _userManager.AddToRoleAsync(userToAdd, model.Role);
+                        if (!roleResult.Succeeded)
+                        {
+                            // log but don't fail the entire registration
+                        }
                     }
-                );
+                    catch (Exception ex)
+                    {
+                        _logService.LogException(ex, "UserManagerService.Register.AddRole", model);
+                    }
+                }
+
+                try
+                {
+                    if (!(await SendConfirmEmailAsync(userToAdd)))
+                    {
+                        throw new Exception();
+                    }
+
+                    return Ok(
+                        new WebApiResponse<User>
+                        {
+                            Data = userToAdd,
+                            Status = ResponseStatus.Success,
+                            Message = "Usuário cadastrado com sucesso.",
+                        }
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logService.LogException(
+                        ex,
+                        "UserManagerService.Register.SendConfirmEmail",
+                        userToAdd
+                    );
+                    return BadRequest(
+                        $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
+                    );
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(
-                    $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
-                );
+                _logService.LogException(ex, "UserManagerService.Register", model);
+                throw;
             }
         }
 
         /// <inheritdoc />
         public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-
-            if (user == null)
-            {
-                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
-            }
-
-            if (user.EmailConfirmed)
-            {
-                return Ok(
-                    new JsonResult(
-                        new
-                        {
-                            title = "E-mail confirmado",
-                            message = "Seu e-mail foi confirmado com sucesso. Você pode entrar agora.",
-                        }
-                    )
-                );
-            }
-
             try
             {
-                var decodedTokenBytes = WebEncoders.Base64UrlDecode(model.Token);
-                var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+                var user = await _userManager.FindByEmailAsync(model.Email);
 
-                var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
-
-                if (!result.Succeeded)
+                if (user == null)
                 {
-                    throw new Exception("Token inválido. Por favor, tente novamente.");
+                    return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
                 }
 
-                return Ok(
-                    new JsonResult(
-                        new
-                        {
-                            title = "E-mail confirmado",
-                            message = "Seu e-mail foi confirmado com sucesso. Você pode entrar agora.",
-                        }
-                    )
-                );
+                if (user.EmailConfirmed)
+                {
+                    return Ok(
+                        new JsonResult(
+                            new
+                            {
+                                title = "E-mail confirmado",
+                                message = "Seu e-mail foi confirmado com sucesso. Você pode entrar agora.",
+                            }
+                        )
+                    );
+                }
+
+                try
+                {
+                    var decodedTokenBytes = WebEncoders.Base64UrlDecode(model.Token);
+                    var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+
+                    var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception("Token inválido. Por favor, tente novamente.");
+                    }
+
+                    return Ok(
+                        new JsonResult(
+                            new
+                            {
+                                title = "E-mail confirmado",
+                                message = "Seu e-mail foi confirmado com sucesso. Você pode entrar agora.",
+                            }
+                        )
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logService.LogException(ex, "UserManagerService.ConfirmEmail", model);
+                    return BadRequest(
+                        $"Falha ao confirmar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
+                    );
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(
-                    $"Falha ao confirmar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
-                );
+                _logService.LogException(ex, "UserManagerService.ConfirmEmail", model);
+                throw;
             }
         }
 
         /// <inheritdoc />
         public async Task<IActionResult> ResendEmailConfirmation(string email)
         {
-            if (string.IsNullOrEmpty(email))
-            {
-                return BadRequest("E-mail inválido.");
-            }
-
-            var user = await _userManager.FindByEmailAsync(email);
-
-            if (user == null)
-            {
-                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
-            }
-
-            if (user.EmailConfirmed)
-            {
-                return BadRequest(
-                    "Seu endereço de e-mail foi já está confirmado. Por favor, entre na sua conta."
-                );
-            }
-
             try
             {
-                if (!(await SendConfirmEmailAsync(user)))
+                if (string.IsNullOrEmpty(email))
                 {
-                    throw new Exception();
+                    return BadRequest("E-mail inválido.");
                 }
 
-                return Ok(
-                    new JsonResult(
-                        new
-                        {
-                            title = "Confirmação enviada",
-                            message = "Por favor, confirme seu endereço de e-mail",
-                        }
-                    )
-                );
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                {
+                    return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
+                }
+
+                if (user.EmailConfirmed)
+                {
+                    return BadRequest(
+                        "Seu endereço de e-mail foi já está confirmado. Por favor, entre na sua conta."
+                    );
+                }
+
+                try
+                {
+                    if (!(await SendConfirmEmailAsync(user)))
+                    {
+                        throw new Exception();
+                    }
+
+                    return Ok(
+                        new JsonResult(
+                            new
+                            {
+                                title = "Confirmação enviada",
+                                message = "Por favor, confirme seu endereço de e-mail",
+                            }
+                        )
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logService.LogException(
+                        ex,
+                        "UserManagerService.ResendEmailConfirmation.Send",
+                        email
+                    );
+                    return BadRequest(
+                        $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
+                    );
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(
-                    $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
-                );
+                _logService.LogException(ex, "UserManagerService.ResendEmailConfirmation", email);
+                throw;
             }
         }
 
         /// <inheritdoc />
         public async Task<IActionResult> ForgotUsernameOrPassword(string email)
         {
-            if (string.IsNullOrEmpty(email))
-            {
-                return BadRequest("E-mail inválido.");
-            }
-
-            var user = await _userManager.FindByEmailAsync(email);
-
-            if (user == null)
-            {
-                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
-            }
-
-            if (!user.EmailConfirmed)
-            {
-                return BadRequest("Por favor, confirme seu endereço de e-mail primeiro.");
-            }
-
             try
             {
-                if (!(await SendForgotUsernameOrPasswordEmail(user)))
+                if (string.IsNullOrEmpty(email))
                 {
-                    throw new Exception();
+                    return BadRequest("E-mail inválido.");
                 }
 
-                return Ok(
-                    new JsonResult(
-                        new
-                        {
-                            title = "E-mail de redefinição enviado",
-                            message = "Por favor, verifique o seu endereço de e-mail.",
-                        }
-                    )
-                );
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                {
+                    return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
+                }
+
+                if (!user.EmailConfirmed)
+                {
+                    return BadRequest("Por favor, confirme o seu endereço de e-mail primeiro.");
+                }
+
+                try
+                {
+                    if (!(await SendForgotUsernameOrPasswordEmail(user)))
+                    {
+                        throw new Exception();
+                    }
+
+                    return Ok(
+                        new JsonResult(
+                            new
+                            {
+                                title = "E-mail de redefinição enviado",
+                                message = "Por favor, verifique o seu endereço de e-mail.",
+                            }
+                        )
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logService.LogException(
+                        ex,
+                        "UserManagerService.ForgotUsernameOrPassword.Send",
+                        email
+                    );
+                    return BadRequest(
+                        $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
+                    );
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(
-                    $"Falha ao enviar o e-mail. Por favor, contate o administrador. Erro: {ex.Message}"
-                );
+                _logService.LogException(ex, "UserManagerService.ForgotUsernameOrPassword", email);
+                throw;
             }
         }
 
         /// <inheritdoc />
         public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-
-            if (user == null)
-            {
-                return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
-            }
-
-            if (!user.EmailConfirmed)
-            {
-                return BadRequest("Por favor, confirme seu endereço de e-mail primeiro.");
-            }
-
             try
             {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+                var user = await _userManager.FindByEmailAsync(model.Email);
 
-                if (!result.Succeeded)
+                if (user == null)
                 {
-                    throw new Exception("Token inválido. Por favor, tente novamente.");
+                    return Unauthorized("Este endereço de e-mail ainda não foi cadastrado.");
                 }
 
-                return Ok(
-                    new JsonResult(
-                        new
-                        {
-                            title = "Senha redefinida",
-                            message = "Sua senha foi redefinida com sucesso.",
-                        }
-                    )
-                );
+                if (!user.EmailConfirmed)
+                {
+                    return BadRequest("Por favor, confirme seu endereço de e-mail primeiro.");
+                }
+
+                try
+                {
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var result = await _userManager.ResetPasswordAsync(
+                        user,
+                        token,
+                        model.NewPassword
+                    );
+
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception("Token inválido. Por favor, tente novamente.");
+                    }
+
+                    return Ok(
+                        new JsonResult(
+                            new
+                            {
+                                title = "Senha redefinida",
+                                message = "Sua senha foi redefinida com sucesso.",
+                            }
+                        )
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logService.LogException(ex, "UserManagerService.ResetPassword", model);
+                    return BadRequest(
+                        $"Falha ao redefinir senha. Por favor, contate o administrador. Erro: {ex.Message}"
+                    );
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(
-                    $"Falha ao redefinir senha. Por favor, contate o administrador. Erro: {ex.Message}"
-                );
+                _logService.LogException(ex, "UserManagerService.ResetPassword", model);
+                throw;
             }
         }
 
         /// <inheritdoc />
         public async Task<WebApiResponse<UserDto>> Update(User user)
         {
-            WebApiResponse<UserDto> result = new();
+            var result = new WebApiResponse<UserDto>();
 
             try
             {
                 if (string.IsNullOrEmpty(user.Email))
                 {
+                    var message = "Email inválido";
+                    _logService.LogException(
+                        new Exception(message),
+                        "UserManagerService.Update",
+                        user
+                    );
                     result.Status = ResponseStatus.Error;
-                    result.Message = "Email inválido";
+                    result.Message = message;
                     return result;
                 }
 
@@ -364,8 +455,14 @@ namespace TSI.Friday.Services
 
                 if (userDuplicatedMessage)
                 {
+                    var message = "Já existe um usuário cadastrado com o email informado";
+                    _logService.LogException(
+                        new Exception(message),
+                        "UserManagerService.Update",
+                        user
+                    );
                     result.Status = ResponseStatus.Error;
-                    result.Message = "Já existe um usuário cadastrado com o email informado";
+                    result.Message = message;
                     return result;
                 }
 
@@ -393,7 +490,6 @@ namespace TSI.Friday.Services
                             if (!addRoleResult.Succeeded)
                             {
                                 // Log or aggregate errors as needed; do not fail the whole update
-                                // You could set result as warning here if desired
                             }
                         }
 
@@ -413,9 +509,13 @@ namespace TSI.Friday.Services
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignore role assignment errors to avoid breaking update; consider logging
+                        _logService.LogException(
+                            ex,
+                            "UserManagerService.Update.RoleHandling",
+                            user
+                        );
                     }
                 }
 
@@ -425,6 +525,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "UserManagerService.Update", user);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do usuário {user.UserName} na base de dados. Erro: {ex.Message}";
@@ -436,7 +537,7 @@ namespace TSI.Friday.Services
         /// <inheritdoc />
         public async Task<WebApiResponse<UserDto>> Remove(User user)
         {
-            WebApiResponse<UserDto> result = new();
+            var result = new WebApiResponse<UserDto>();
 
             try
             {
@@ -444,10 +545,16 @@ namespace TSI.Friday.Services
                 var userToRemove = await _userManager.FindByIdAsync(user.Id);
                 if (userToRemove == null)
                 {
+                    var message = "Usuário não encontrado.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "UserManagerService.Remove",
+                        user
+                    );
                     return new WebApiResponse<UserDto>
                     {
                         Status = ResponseStatus.Error,
-                        Message = "Usuário não encontrado.",
+                        Message = message,
                     };
                 }
 
@@ -459,6 +566,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "UserManagerService.Remove", user);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o usuário {user.UserName} da base de dados. Erro: {ex.Message}";
@@ -470,7 +578,7 @@ namespace TSI.Friday.Services
         /// <inheritdoc />
         public async Task<WebApiResponse<IEnumerable<UserDto>>> FindAll()
         {
-            WebApiResponse<IEnumerable<UserDto>> result = new();
+            var result = new WebApiResponse<IEnumerable<UserDto>>();
 
             try
             {
@@ -490,6 +598,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "UserManagerService.FindAll", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de usuários na base de dados. Erro: {ex.Message}";
@@ -501,7 +610,7 @@ namespace TSI.Friday.Services
         /// <inheritdoc />
         public async Task<WebApiResponse<UserDto>> FindById(string id)
         {
-            WebApiResponse<UserDto> result = new();
+            var result = new WebApiResponse<UserDto>();
 
             try
             {
@@ -515,6 +624,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "UserManagerService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de usuários na base de dados. Erro: {ex.Message}";
