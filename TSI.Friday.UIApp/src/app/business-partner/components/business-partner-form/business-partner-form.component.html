@@ -212,7 +212,7 @@
                 id="newAddressLinkButton"
                 href="#"
                 class="address-link"
-                [class.disabled]="!addressFormGroup.valid || submitted"
+                [class.disabled]="!canAddAddress || submitted"
                 (click)="
                   $event.preventDefault(); saveAddress(addressFormGroup.value)
                 "
