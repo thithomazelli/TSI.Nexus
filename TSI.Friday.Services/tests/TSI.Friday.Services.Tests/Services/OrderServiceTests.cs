@@ -20,6 +20,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly Mock<IRepository<OrderProduct>> _orderProductRepository;
         private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<ISequenceService> _sequenceService;
+        private readonly Mock<ILogService> _logService;
         private readonly IList<OrderDto> _orderListMock;
         private readonly IMapper _mapper;
 
@@ -30,13 +31,15 @@ namespace TSI.Friday.Services.Tests.Services
             _orderProductRepository = new Mock<IRepository<OrderProduct>>();
             _transactionService = new Mock<ITransactionService>();
             _sequenceService = new Mock<ISequenceService>();
+            _logService = new Mock<ILogService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
                 _repository.Object,
                 _orderProductRepository.Object,
                 _transactionService.Object,
                 _sequenceService.Object,
-                _mapper
+                _mapper,
+                _logService.Object
             );
 
             _orderListMock = new List<OrderDto>

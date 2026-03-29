@@ -17,6 +17,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Payment> _repository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
         private readonly string[] _monthNamesAbbr =
         {
             "Jan",
@@ -56,10 +57,15 @@ namespace TSI.Friday.Services
         /// PaymentService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Payment> object used to initialize the internal variable using Dependency Injection.</param>
-        public PaymentService(IRepository<Payment> repository, IMapper mapper)
+        public PaymentService(
+            IRepository<Payment> repository,
+            IMapper mapper,
+            ILogService logService
+        )
         {
             _repository = repository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -80,6 +86,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.Add", paymentDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível cadastrar a Pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
@@ -106,6 +113,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.Update", paymentDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do pagamento {paymentDto?.Description} na base de dados. Erro: {ex.Message}";
@@ -130,6 +138,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.Remove", paymentDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover a Pagamento {paymentDto?.Description} da base de dados. Erro: {ex.Message}";
@@ -156,6 +165,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.FindAll", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Pagamentos de Transação na base de dados. Erro: {ex.Message}";
@@ -181,6 +191,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Pagamentos de Transação na base de dados. Erro: {ex.Message}";
@@ -210,6 +221,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.FindByTransactionId", transactionId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Pagamentos do Transação baseado no Transação {transactionId}. Erro: {ex.Message}";
@@ -239,6 +251,11 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(
+                    ex,
+                    "PaymentService.FindByBusinessPartnerId",
+                    businessPartnerId
+                );
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Pagamentos do Transação baseado no BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
@@ -266,6 +283,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.FindByOrderId", orderId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os Pagamentos do Transação baseado no Pedido {orderId}. Erro: {ex.Message}";
@@ -303,6 +321,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "PaymentService.FindDelayed", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Pagamentos de Transação na base de dados. Erro: {ex.Message}";

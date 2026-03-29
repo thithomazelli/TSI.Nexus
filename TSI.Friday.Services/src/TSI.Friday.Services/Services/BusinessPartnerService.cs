@@ -17,6 +17,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<BusinessPartner> _repository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
         private readonly IDictionary<BusinessPartnerType, string> _businessPartnerMap =
             new Dictionary<BusinessPartnerType, string>
             {
@@ -33,10 +34,15 @@ namespace TSI.Friday.Services
         /// </summary>
         /// <param name="repository">IRepository<BusinessPartner> object used to initialize the internal variable using Dependency Injection.</param>
         /// <param name="mapper">Mapper object used to initialize the internal variable using Dependency Injection.</param>
-        public BusinessPartnerService(IRepository<BusinessPartner> repository, IMapper mapper)
+        public BusinessPartnerService(
+            IRepository<BusinessPartner> repository,
+            IMapper mapper,
+            ILogService logService
+        )
         {
             _repository = repository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -65,14 +71,16 @@ namespace TSI.Friday.Services
             }
             catch (DbUpdateException ex)
             {
+                _logService.LogException(ex, "BusinessPartnerService.Remove", businessPartnerDto);
                 result.Status = ResponseStatus.Warning;
-                result.Message = 
+                result.Message =
                     ex.InnerException?.Message.Contains("foreign key constraint fails") == true
-                    ? $"Não é possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} pois ele está vinculado à um ou mais pedidos."
-                    : $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
+                        ? $"Não é possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} pois ele está vinculado à um ou mais pedidos."
+                        : $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "BusinessPartnerService.Remove", businessPartnerDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
@@ -101,6 +109,11 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(
+                    ex,
+                    "BusinessPartnerService.FindAllByType",
+                    businessPartnerType
+                );
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de {_businessPartnerMap[businessPartnerType]} na base de dados. Erro: {ex.Message}";
@@ -126,6 +139,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "BusinessPartnerService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros na base de dados. Erro: {ex.Message}";
@@ -153,6 +167,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "BusinessPartnerService.FindByEmail", email);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros na base de dados. Erro: {ex.Message}";

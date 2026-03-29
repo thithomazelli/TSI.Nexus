@@ -15,6 +15,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly AddressService _addressService;
         private readonly Mock<IRepository<Address>> _repository;
+        private readonly Mock<ILogService> _logService;
         private readonly IList<AddressDto> _addressListMock;
         private readonly IMapper _mapper;
 
@@ -28,7 +29,8 @@ namespace TSI.Friday.Services.Tests.Services
             _mapper = config.CreateMapper();
 
             _repository = new Mock<IRepository<Address>>();
-            _addressService = new AddressService(_repository.Object, _mapper);
+            _logService = new Mock<ILogService>();
+            _addressService = new AddressService(_repository.Object, _mapper, _logService.Object);
             _addressListMock = new List<AddressDto>
             {
                 new AddressDto

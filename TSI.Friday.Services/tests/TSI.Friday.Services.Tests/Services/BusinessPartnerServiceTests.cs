@@ -15,6 +15,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly BusinessPartnerService _businessPartnerService;
         private readonly Mock<IRepository<BusinessPartner>> _repository;
+        private readonly Mock<ILogService> _logService;
         private readonly IList<BusinessPartner> _businessPartnerListMock;
         private readonly IMapper _mapper;
 
@@ -29,7 +30,12 @@ namespace TSI.Friday.Services.Tests.Services
             });
             _mapper = config.CreateMapper();
 
-            _businessPartnerService = new BusinessPartnerService(_repository.Object, _mapper);
+            _logService = new Mock<ILogService>();
+            _businessPartnerService = new BusinessPartnerService(
+                _repository.Object,
+                _mapper,
+                _logService.Object
+            );
 
             _businessPartnerListMock = new List<BusinessPartner>
             {

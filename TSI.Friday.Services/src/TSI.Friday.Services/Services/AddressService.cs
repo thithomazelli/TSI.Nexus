@@ -16,6 +16,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Address> _repository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
 
         #endregion Properties
 
@@ -25,10 +26,15 @@ namespace TSI.Friday.Services
         /// AddressService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<StudentFrequentView> object used to initialize the internal variable using Dependency Injection.</param>
-        public AddressService(IRepository<Address> repository, IMapper mapper)
+        public AddressService(
+            IRepository<Address> repository,
+            IMapper mapper,
+            ILogService logService
+        )
         {
             _repository = repository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -50,6 +56,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "AddressService.Add", addressDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível cadastrar o Endereço na base de dados. Erro: {ex.Message}";
@@ -77,6 +84,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "AddressService.Update", addressDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar o Endereço na base de dados. Erro: {ex.Message}";
@@ -101,6 +109,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "AddressService.Remove", addressDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o Endereço na base de dados. Erro: {ex.Message}";
@@ -127,6 +136,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "AddressService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {ex.Message}";
@@ -155,6 +165,11 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(
+                    ex,
+                    "AddressService.FindByBusinessPartnerId",
+                    businessPartnerId
+                );
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Endereço na base de dados. Erro: {ex.Message}";

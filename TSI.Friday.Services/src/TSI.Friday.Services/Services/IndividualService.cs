@@ -7,7 +7,7 @@ using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Services
 {
-    public sealed class IndividualService : IIndividualService
+    public class IndividualService : IIndividualService
     {
         #region Properties
 
@@ -16,6 +16,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Individual> _repository;
         private readonly IMapper _mapper;
+        private readonly ILogService _logService;
         private readonly IDictionary<BusinessPartnerType, string> _businessPartnerMap =
             new Dictionary<BusinessPartnerType, string>
             {
@@ -31,10 +32,15 @@ namespace TSI.Friday.Services
         /// IndividualService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Individual> object used to initialize the internal variable using Dependency Injection.</param>
-        public IndividualService(IRepository<Individual> repository, IMapper mapper)
+        public IndividualService(
+            IRepository<Individual> repository,
+            IMapper mapper,
+            ILogService logService
+        )
         {
             _repository = repository;
             _mapper = mapper;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -51,6 +57,11 @@ namespace TSI.Friday.Services
 
                 if (!string.IsNullOrEmpty(individualDuplicatedMessage))
                 {
+                    _logService.LogException(
+                        new Exception(individualDuplicatedMessage),
+                        "IndividualService.Add",
+                        businessPartnerDto
+                    );
                     result.Status = ResponseStatus.Error;
                     result.Message = individualDuplicatedMessage;
                     return result;
@@ -66,6 +77,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "IndividualService.Add", businessPartnerDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível cadastrar o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
@@ -88,6 +100,11 @@ namespace TSI.Friday.Services
 
                 if (!string.IsNullOrEmpty(individualDuplicatedMessage))
                 {
+                    _logService.LogException(
+                        new Exception(individualDuplicatedMessage),
+                        "IndividualService.Update",
+                        businessPartnerDto
+                    );
                     result.Status = ResponseStatus.Error;
                     result.Message = individualDuplicatedMessage;
                     return result;
@@ -101,9 +118,15 @@ namespace TSI.Friday.Services
 
                 if (existing == null)
                 {
-                    result.Status = ResponseStatus.Error;
-                    result.Message =
+                    var message =
                         $"{_businessPartnerMap[businessPartnerDto.Type]} com Id {businessPartnerDto.Id} não encontrado.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "IndividualService.Update",
+                        businessPartnerDto
+                    );
+                    result.Status = ResponseStatus.Error;
+                    result.Message = message;
                     return result;
                 }
 
@@ -119,6 +142,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(ex, "IndividualService.Update", businessPartnerDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} na base de dados. Erro: {ex.Message}";
@@ -148,6 +172,11 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService.LogException(
+                    ex,
+                    "IndividualService.FindBySocialSecurityCard",
+                    socialSecurityCard
+                );
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros na base de dados. Erro: {ex.Message}";

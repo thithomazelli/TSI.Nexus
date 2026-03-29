@@ -14,16 +14,18 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly CompanyService _companyService;
         private readonly Mock<IRepository<Company>> _repository;
+        private readonly Mock<ILogService> _logService;
         private readonly IList<Company> _companyListMock;
         private readonly IMapper _mapper;
 
         public CompanyServiceTests()
         {
             _repository = new Mock<IRepository<Company>>();
+            _logService = new Mock<ILogService>();
             _mapper = new MapperConfiguration(cfg =>
                 cfg.AddProfile(new TSI.Friday.IoC.MappingProfile())
             ).CreateMapper();
-            _companyService = new CompanyService(_repository.Object, _mapper);
+            _companyService = new CompanyService(_repository.Object, _mapper, _logService.Object);
 
             _companyListMock = new List<Company>
             {
