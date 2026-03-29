@@ -113,6 +113,33 @@ export class BusinessPartnerFormComponent
     return null;
   }
 
+  get canAddAddress(): boolean {
+    // Se for Client, usa a validação normal do form
+    if (this.data?.type === BusinessPartnerType.Client) {
+      return this.addressFormGroup.valid;
+    }
+    // Para Supplier, exige apenas os campos essenciais preenchidos
+    const controls = this.addressFormGroup.controls;
+    const requiredFields = [
+      'type',
+      'zipCode',
+      'street',
+      'number',
+      'state',
+      'city',
+      'name',
+    ];
+    return requiredFields.every((field) => {
+      const ctrl = controls[field];
+      return (
+        ctrl &&
+        ctrl.value !== null &&
+        ctrl.value !== undefined &&
+        String(ctrl.value).trim() !== ''
+      );
+    });
+  }
+
   submit(): Observable<WebApiResponse<BusinessPartner> | null> {
     this.submitted = true;
     if (this.form.invalid) {
@@ -122,7 +149,7 @@ export class BusinessPartnerFormComponent
 
     const raw = this.form.getRawValue();
     if (!raw.birthday || raw.birthday === '') {
-      delete this.data!.birthday;
+      this.data!.birthday = undefined;
     }
 
     if (this.compact && raw.address && raw.address.zipCode != null) {

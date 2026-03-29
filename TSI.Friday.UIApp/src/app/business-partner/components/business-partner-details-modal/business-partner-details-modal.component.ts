@@ -1,6 +1,11 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Individual, Company, BusinessPartner } from '@friday/core';
+import {
+  Individual,
+  Company,
+  BusinessPartner,
+  BusinessPartnerType,
+} from '@friday/core';
 
 @Component({
   selector: 'app-business-partner-details-modal',
@@ -8,10 +13,12 @@ import { Individual, Company, BusinessPartner } from '@friday/core';
   styleUrl: './business-partner-details-modal.component.scss',
   standalone: false,
 })
-export class BusinessPartnerDetailsModalComponent {
+export class BusinessPartnerDetailsModalComponent implements OnInit {
   isEdit = false;
   data?: Individual | Company | null = <BusinessPartner>{};
   id: string | null = null;
+
+  title: string = '';
 
   constructor(
     public dialogRef: MatDialogRef<BusinessPartnerDetailsModalComponent>,
@@ -24,7 +31,18 @@ export class BusinessPartnerDetailsModalComponent {
     }
   }
 
+  ngOnInit(): void {
+    this.initializeTitle();
+  }
+
   close(): void {
     this.dialogRef.close(null);
+  }
+
+  initializeTitle(): void {
+    const type =
+      this.data?.type === BusinessPartnerType.Client ? 'Cliente' : 'Fornecedor';
+
+    this.title = this.isEdit ? `Editar ${type}` : `Adicionar ${type}`;
   }
 }
