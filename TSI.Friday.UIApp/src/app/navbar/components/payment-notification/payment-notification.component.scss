@@ -15,6 +15,7 @@
   white-space: nowrap;
   display: block;
 }
+
 .notification-date-col {
   min-width: 60px;
   max-width: 80px;
@@ -22,6 +23,7 @@
   margin-left: 0;
   text-align: right;
 }
+
 .dropdown-item {
   min-width: 260px;
   padding-top: 8px !important;
@@ -30,4 +32,13 @@
 
 .dropdown-item {
   min-width: 260px;
+}
+
+@media (max-width: 575.98px) {
+  .dropdown-menu {
+    min-width: 320px !important; // ou 90vw
+    left: 50% !important;
+    transform: translateX(-70%) !important;
+    right: auto !important;
+  }
 }
