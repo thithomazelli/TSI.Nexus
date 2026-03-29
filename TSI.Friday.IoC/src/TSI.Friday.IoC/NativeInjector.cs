@@ -23,13 +23,21 @@ namespace TSI.Friday.IoC
 
             #endregion
 
-            #region Singleton Services
+            #region Infrastructure Services
 
+            // IHttpContextAccessor is needed by CurrentUserService
+            services.AddHttpContextAccessor();
+
+            // CurrentUserService depends only on IHttpContextAccessor and can be registered as singleton
+            // so interceptors (registered as singleton) can consume it when DbContext is being configured.
             services.AddSingleton<ICurrentUserService, CurrentUserService>();
+
+            // Register EF interceptors as singletons so they can be requested from the root provider
+            // during AddDbContextPool configuration without causing scoped->singleton captive dependency.
             services.AddSingleton<AuditingSaveChangesInterceptor>();
             services.AddSingleton<StockAdjustingSaveChangesInterceptor>();
 
-            #endregion Singleton Services
+            #endregion
 
             #region Services
             // register repository and service for overdue
@@ -50,6 +58,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IProductPhotoService, ProductPhotoService>();
+            // register log service and product service with logger
+            services.AddScoped<ILogService, LogService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IUserManagerService, UserManagerService>();
             services.AddScoped<ISequenceService, SequenceService>();

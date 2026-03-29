@@ -14,6 +14,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Product> _repository;
         private readonly IRepository<OrderProduct> _orderProductRepository;
+        private readonly ILogService _logService;
 
         #endregion Properties
 
@@ -23,10 +24,15 @@ namespace TSI.Friday.Services
         /// ProductService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<Product> object used to initialize the internal variable using Dependency Injection.</param>
-        public ProductService(IRepository<Product> repository, IRepository<OrderProduct> orderProductRepository)
+        public ProductService(
+            IRepository<Product> repository,
+            IRepository<OrderProduct> orderProductRepository,
+            ILogService logService
+        )
         {
             _repository = repository;
             _orderProductRepository = orderProductRepository;
+            _logService = logService;
         }
 
         /// <inheritdoc />
@@ -55,6 +61,8 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService?.LogException(ex, "ProductService.Add", product);
+
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível cadastrar o Produto {product.Name} na base de dados. Erro: {ex.Message}";
@@ -76,6 +84,9 @@ namespace TSI.Friday.Services
 
                 if (!string.IsNullOrEmpty(productDuplicatedMessage))
                 {
+                    var ex = new Exception(productDuplicatedMessage);
+                    _logService?.LogException(ex, "ProductService.Update", product);
+
                     result.Status = ResponseStatus.Error;
                     result.Message = productDuplicatedMessage;
                     return result;
@@ -89,6 +100,8 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService?.LogException(ex, "ProductService.Update", product);
+
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível atualizar os dados do Produto {product.Name} na base de dados. Erro: {ex.Message}";
@@ -105,10 +118,16 @@ namespace TSI.Friday.Services
             try
             {
                 if (await _orderProductRepository.AnyAsync(_ => _.ProductId == product.Id))
-                    {
+                {
+                    var message =
+                        $"Produto {product.Name} não pode ser removido pois está vinculado à um ou mais pedidos.";
+                    var ex = new Exception(message);
+                    _logService?.LogException(ex, "ProductService.Remove", product);
+
                     result.Data = product;
                     result.Status = ResponseStatus.Warning;
-                    result.Message = $"Produto {product.Name} não pode ser removido pois está vinculado à um ou mais pedidos.";
+                    result.Message = message;
+                    ;
                     return result;
                 }
 
@@ -120,6 +139,8 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService?.LogException(ex, "ProductService.Remove", product);
+
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível remover o Produto {product.Name} da base de dados. Erro: {ex.Message}";
@@ -141,6 +162,8 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService?.LogException(ex, "ProductService.FindAll", null);
+
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
@@ -165,6 +188,8 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService?.LogException(ex, "ProductService.FindById", id);
+
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
@@ -189,6 +214,8 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
+                _logService?.LogException(ex, "ProductService.FindBySku", sku);
+
                 result.Status = ResponseStatus.Error;
                 result.Message =
                     $"Não foi possível acessar os registros de Produtos na base de dados. Erro: {ex.Message}";
