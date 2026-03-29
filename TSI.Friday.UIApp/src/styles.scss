@@ -206,6 +206,18 @@ mat-calendar {
   overflow-x: hidden;
 }
 
+@media (max-width: 991.98px) {
+  .modal-scrollable-area {
+    max-height: 70vh;
+  }
+}
+
+@media (max-width: 599.98px) {
+  .modal-scrollable-area {
+    max-height: 55dvh;
+  }
+}
+
 :focus-visible {
   outline: none;
 }
