@@ -13,7 +13,7 @@ export interface BusinessPartner extends BaseModel {
   type: BusinessPartnerType;
   socialSecurityCard?: string | null;
   nationalRegistry: string;
-  birthday: Date;
+  birthday?: Date;
   addresses: Address[];
   nextEmptyTransactionId?: string;
 }

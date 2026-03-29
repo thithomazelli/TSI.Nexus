@@ -122,7 +122,7 @@ export class BusinessPartnerFormComponent
 
     const raw = this.form.getRawValue();
     if (!raw.birthday || raw.birthday === '') {
-      delete raw.birthday;
+      delete this.data!.birthday;
     }
 
     if (this.compact && raw.address && raw.address.zipCode != null) {
@@ -170,7 +170,7 @@ export class BusinessPartnerFormComponent
       Object.assign(this.data!, raw);
     }
 
-    return this.save(raw as BusinessPartner).pipe(
+    return this.save(this.data!).pipe(
       tap({
         next: (response: WebApiResponse<BusinessPartner>) => {
           if (this.isModal) {
