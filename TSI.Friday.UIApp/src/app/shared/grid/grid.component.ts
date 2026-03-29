@@ -99,6 +99,30 @@ export class GridComponent<T> implements OnInit {
     this.gridApi = params.api;
   }
 
+  onFirstDataRendered(params: any): void {
+    if (
+      !params ||
+      !params.columnApi ||
+      typeof params.columnApi.getAllColumns !== 'function'
+    ) {
+      return;
+    }
+    const allColumnIds: string[] = [];
+    params.columnApi.getAllColumns()?.forEach((column: any) => {
+      if (column.getColId) {
+        allColumnIds.push(column.getColId());
+      } else if (typeof column.colId === 'string') {
+        allColumnIds.push(column.colId);
+      }
+    });
+    if (
+      allColumnIds.length &&
+      typeof params.columnApi.autoSizeColumns === 'function'
+    ) {
+      params.columnApi.autoSizeColumns(allColumnIds, false);
+    }
+  }
+
   toggleFilters() {
     this.showFilters = !this.showFilters;
   }
@@ -168,17 +192,5 @@ export class GridComponent<T> implements OnInit {
     }
 
     this.delete(data);
-  }
-
-  private updateNoRowsOverlay(): void {
-    if (!this.gridApi) {
-      return;
-    }
-
-    if (!this.rowData || this.rowData.length === 0) {
-      this.gridApi.showNoRowsOverlay();
-    } else {
-      this.gridApi.hideOverlay();
-    }
   }
 }
