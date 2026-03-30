@@ -44,9 +44,8 @@ export class AddressService {
   }
 
   delete(address: Address): Observable<WebApiResponse<Address>> {
-    return this.apiService.delete<WebApiResponse<Address>>(
-      `${this._baseEndPoint}/remove`,
-      address,
-    );
+    return this.apiService
+      .delete<WebApiResponse<Address>>(`${this._baseEndPoint}/remove`, address)
+      .pipe(tap(() => this._addressChangedSubject.next()));
   }
 }
