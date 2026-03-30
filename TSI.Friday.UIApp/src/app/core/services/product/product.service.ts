@@ -54,9 +54,8 @@ export class ProductService {
   }
 
   delete(product: Product): Observable<WebApiResponse<Product>> {
-    return this.apiService.delete<WebApiResponse<Product>>(
-      `${this._baseEndPoint}/remove`,
-      product,
-    );
+    return this.apiService
+      .delete<WebApiResponse<Product>>(`${this._baseEndPoint}/remove`, product)
+      .pipe(tap(() => this._productChangedSubject.next()));
   }
 }

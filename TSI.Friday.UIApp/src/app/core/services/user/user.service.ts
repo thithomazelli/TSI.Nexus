@@ -58,9 +58,8 @@ export class UserService {
   }
 
   delete(user: User): Observable<WebApiResponse<User>> {
-    return this.apiService.delete<WebApiResponse<User>>(
-      `${this._baseEndPoint}/remove`,
-      user,
-    );
+    return this.apiService
+      .delete<WebApiResponse<User>>(`${this._baseEndPoint}/remove`, user)
+      .pipe(tap(() => this._userChangedSubject.next()));
   }
 }

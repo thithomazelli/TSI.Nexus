@@ -136,7 +136,8 @@ export class ProductFormComponent
     }
   }
 
-  delete(): void {
+  remove(): void {
+    this.modalService.hideModal();
     this.modalService
       .showSweetConfirmation(
         '',
@@ -163,11 +164,6 @@ export class ProductFormComponent
                       response.message,
                       response.status,
                     );
-                    if (response.status === ResponseStatus.Success) {
-                      this.routerService.navigateByUrl(
-                        `/${this._baseEndPoint}`,
-                      );
-                    }
                   }
                 },
                 error: (err) => {
@@ -179,6 +175,18 @@ export class ProductFormComponent
               }),
             )
             .subscribe();
+        } else {
+          if (this.isModal) {
+            const initialState = {
+              isEdit: this.isEdit,
+              data: this.data,
+              id: this.data?.id,
+            };
+            this.modalService.showTemplateModal(
+              ProductDetailsModalComponent,
+              initialState,
+            );
+          }
         }
       });
   }
