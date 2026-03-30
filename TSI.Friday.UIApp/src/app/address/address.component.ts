@@ -122,10 +122,10 @@ export class AddressComponent {
       cellRenderer: () => {
         return `
           <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit data-action="edit""></i>
+            <i class="fas fa-edit" data-action="edit"></i>
           </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash data-action="delete"></i>
+            <i class="fas fa-trash" data-action="delete"></i>
           </button>
         `;
       },
