@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiType } from '../../enums';
-import { BehaviorSubject, delay, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Transaction } from '../../models';
 import { ApiService, WebApiResponse } from '@friday/core';
 
@@ -50,27 +50,19 @@ export class TransactionService {
   }
 
   add(transaction: Transaction): Observable<WebApiResponse<Transaction>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<
         WebApiResponse<Transaction>
       >(`${this._baseEndPoint}/add`, transaction)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._transactionChangedSubject.next()),
-      );
+      .pipe(tap(() => this._transactionChangedSubject.next()));
   }
 
   update(transaction: Transaction): Observable<WebApiResponse<Transaction>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<
         WebApiResponse<Transaction>
       >(`${this._baseEndPoint}/update`, transaction)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._transactionChangedSubject.next()),
-      );
+      .pipe(tap(() => this._transactionChangedSubject.next()));
   }
 
   delete(transaction: Transaction): Observable<WebApiResponse<Transaction>> {

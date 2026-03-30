@@ -3,7 +3,7 @@ import { ApiType } from '../../enums';
 import { ApiService } from '../api/api.service';
 import { WebApiResponse } from '../../utilities';
 import { Payment } from '../../models';
-import { BehaviorSubject, delay, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -49,23 +49,15 @@ export class PaymentService {
   }
 
   add(payment: Payment): Observable<WebApiResponse<Payment>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<WebApiResponse<Payment>>(`${this._baseEndPoint}/add`, payment)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._paymentChangedSubject.next()),
-      );
+      .pipe(tap(() => this._paymentChangedSubject.next()));
   }
 
   update(payment: Payment): Observable<WebApiResponse<Payment>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<WebApiResponse<Payment>>(`${this._baseEndPoint}/update`, payment)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._paymentChangedSubject.next()),
-      );
+      .pipe(tap(() => this._paymentChangedSubject.next()));
   }
 
   delete(payment: Payment): Observable<WebApiResponse<Payment>> {

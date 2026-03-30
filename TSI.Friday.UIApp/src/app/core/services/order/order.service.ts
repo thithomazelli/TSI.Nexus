@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { ApiService, ApiType, WebApiResponse, Order } from '@friday/core';
 
 @Injectable({
@@ -49,23 +49,15 @@ export class OrderService {
   }
 
   add(order: Order): Observable<WebApiResponse<Order>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<WebApiResponse<Order>>(`${this._baseEndPoint}/add`, order)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._orderChangedSubject.next()),
-      );
+      .pipe(tap(() => this._orderChangedSubject.next()));
   }
 
   update(order: Order): Observable<WebApiResponse<Order>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<WebApiResponse<Order>>(`${this._baseEndPoint}/update`, order)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._orderChangedSubject.next()),
-      );
+      .pipe(tap(() => this._orderChangedSubject.next()));
   }
 
   delete(order: Order): Observable<WebApiResponse<Order>> {
