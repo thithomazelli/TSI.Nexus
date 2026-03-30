@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ApiType, ResponseStatus } from '../../enums';
 import { OrderProduct } from '../../models';
 import { ApiService, WebApiResponse } from '@friday/core';
-import { BehaviorSubject, delay, Observable, of, Subject, tap } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -50,15 +50,11 @@ export class OrderProductService {
   }
 
   add(orderProduct: OrderProduct): Observable<WebApiResponse<OrderProduct>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<
         WebApiResponse<OrderProduct>
       >(`${this._baseEndPoint}/add`, orderProduct)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._orderProductChangedSubject.next()),
-      );
+      .pipe(tap(() => this._orderProductChangedSubject.next()));
   }
 
   addTemporary(
@@ -73,15 +69,11 @@ export class OrderProductService {
   }
 
   update(orderProduct: OrderProduct): Observable<WebApiResponse<OrderProduct>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<
         WebApiResponse<OrderProduct>
       >(`${this._baseEndPoint}/update`, orderProduct)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._orderProductChangedSubject.next()),
-      );
+      .pipe(tap(() => this._orderProductChangedSubject.next()));
   }
 
   delete(orderProduct: OrderProduct): Observable<WebApiResponse<OrderProduct>> {

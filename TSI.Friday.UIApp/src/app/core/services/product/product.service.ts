@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ApiService, ApiType, WebApiResponse } from '@friday/core';
 import { Product } from '@friday/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { tap, delay } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -34,23 +34,15 @@ export class ProductService {
   }
 
   add(product: Product): Observable<WebApiResponse<Product>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<WebApiResponse<Product>>(`${this._baseEndPoint}/add`, product)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._productChangedSubject.next()),
-      );
+      .pipe(tap(() => this._productChangedSubject.next()));
   }
 
   update(product: Product): Observable<WebApiResponse<Product>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<WebApiResponse<Product>>(`${this._baseEndPoint}/update`, product)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._productChangedSubject.next()),
-      );
+      .pipe(tap(() => this._productChangedSubject.next()));
   }
 
   delete(product: Product): Observable<WebApiResponse<Product>> {
