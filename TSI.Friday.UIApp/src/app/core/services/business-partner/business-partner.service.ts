@@ -87,10 +87,11 @@ export class BusinessPartnerService {
   delete(
     businessPartner: BusinessPartner,
   ): Observable<WebApiResponse<BusinessPartner>> {
-    return this.apiService.delete<WebApiResponse<BusinessPartner>>(
-      `${this._baseEndPoint}/remove`,
-      businessPartner,
-    );
+    return this.apiService
+      .delete<
+        WebApiResponse<BusinessPartner>
+      >(`${this._baseEndPoint}/remove`, businessPartner)
+      .pipe(tap(() => this._businessPartnerChangedSubject.next()));
   }
 
   cpfValidator(): ValidatorFn {
