@@ -12,7 +12,7 @@ import {
 } from '@friday/core';
 
 import { BehaviorSubject, Observable } from 'rxjs';
-import { tap, delay } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class BusinessPartnerService {
@@ -46,7 +46,6 @@ export class BusinessPartnerService {
   add(
     businessPartner: Company | Individual,
   ): Observable<WebApiResponse<Company | Individual>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     const endPointUrl =
       businessPartner.documentType === 'Física'
         ? ApiType.Individuals
@@ -56,10 +55,7 @@ export class BusinessPartnerService {
       .post<
         WebApiResponse<Company | Individual>
       >(`${endPointUrl}/add`, businessPartner)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._businessPartnerChangedSubject.next()),
-      );
+      .pipe(tap(() => this._businessPartnerChangedSubject.next()));
   }
 
   addOrUpdateBusinessPartner(businessPartner: BusinessPartner): void {
@@ -76,7 +72,6 @@ export class BusinessPartnerService {
   update(
     businessPartner: Company | Individual,
   ): Observable<WebApiResponse<Company | Individual>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     const endPointUrl =
       businessPartner.documentType === 'Física'
         ? ApiType.Individuals
@@ -86,19 +81,17 @@ export class BusinessPartnerService {
       .put<
         WebApiResponse<Company | Individual>
       >(`${endPointUrl}/update`, businessPartner)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._businessPartnerChangedSubject.next()),
-      );
+      .pipe(tap(() => this._businessPartnerChangedSubject.next()));
   }
 
   delete(
     businessPartner: BusinessPartner,
   ): Observable<WebApiResponse<BusinessPartner>> {
-    return this.apiService.delete<WebApiResponse<BusinessPartner>>(
-      `${this._baseEndPoint}/remove`,
-      businessPartner,
-    );
+    return this.apiService
+      .delete<
+        WebApiResponse<BusinessPartner>
+      >(`${this._baseEndPoint}/remove`, businessPartner)
+      .pipe(tap(() => this._businessPartnerChangedSubject.next()));
   }
 
   cpfValidator(): ValidatorFn {

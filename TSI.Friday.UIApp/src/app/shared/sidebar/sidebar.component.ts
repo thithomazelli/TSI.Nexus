@@ -242,4 +242,15 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
       this.userSub = null;
     }
   }
+
+  onSidebarMenuClick(event: MouseEvent) {
+    // Só fecha se for mobile e se clicou em um link
+    if (window.innerWidth <= 991) {
+      const target = event.target as HTMLElement;
+      if (target.closest('a.nav-link')) {
+        document.body.classList.remove('sidebar-open');
+        // Se usar ngIf/ngClass, pode setar uma variável para esconder
+      }
+    }
+  }
 }

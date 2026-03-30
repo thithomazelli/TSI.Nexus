@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 using TSI.Friday.Contracts.Interfaces;
 
 namespace TSI.Friday.Services
@@ -8,6 +9,7 @@ namespace TSI.Friday.Services
     {
         #region Properties
 
+        private readonly IWebHostEnvironment _env;
         private static readonly object _lock = new();
         private readonly ICurrentUserService _currentUserService;
 
@@ -15,8 +17,9 @@ namespace TSI.Friday.Services
 
         #region Public methods
 
-        public LogService(ICurrentUserService currentUserService)
+        public LogService(IWebHostEnvironment env, ICurrentUserService currentUserService)
         {
+            _env = env ?? throw new ArgumentNullException(nameof(env));
             _currentUserService = currentUserService;
         }
 
@@ -28,29 +31,35 @@ namespace TSI.Friday.Services
                 var yyyyMM = now.ToString("yyyyMM");
                 var yyyyMMdd = now.ToString("yyyyMMdd");
 
-                var workspaceRoot =
-                    FindWorkspaceRoot(AppContext.BaseDirectory) ?? Directory.GetCurrentDirectory();
-                var logsDir = Path.Combine(workspaceRoot, "logs", yyyyMM);
+                var configuredLogs = "Logs";
+                string logsRoot;
+
+                logsRoot = Path.IsPathRooted(configuredLogs)
+                    ? Path.GetFullPath(configuredLogs)
+                    : Path.GetFullPath(Path.Combine(_env.ContentRootPath, configuredLogs));
+
+                var logsDir = Path.Combine(logsRoot, yyyyMM);
                 Directory.CreateDirectory(logsDir);
 
-                var filePath = Path.Combine(logsDir, yyyyMMdd); // file name without extension per requirement
+                // file name should have .log extension
+                var filePath = Path.Combine(logsDir, yyyyMMdd + ".log");
 
                 var sb = new StringBuilder();
                 sb.AppendLine("----------------------------------------------------------------");
                 sb.AppendLine($"TimestampUtc: {now:yyyy-MM-dd HH:mm:ss.fff}Z");
                 sb.AppendLine($"Operation: {operation}");
 
-                string? user = null;
+                string? userName = null;
                 try
                 {
-                    user = _currentUserService?.GetUserId();
+                    userName = _currentUserService?.GetUserName();
                 }
                 catch
                 {
                     // ignore
                 }
 
-                sb.AppendLine($"User: {user ?? "(unknown)"}");
+                sb.AppendLine($"User: {userName ?? "(unknown)"}");
                 sb.AppendLine($"ExceptionType: {ex.GetType().FullName}");
                 sb.AppendLine($"Message: {ex.Message}");
                 sb.AppendLine("StackTrace:");
@@ -60,7 +69,10 @@ namespace TSI.Friday.Services
                 {
                     try
                     {
-                        var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+                        var json = JsonSerializer.Serialize(
+                            payload,
+                            new JsonSerializerOptions { WriteIndented = true }
+                        );
                         sb.AppendLine("Payload:");
                         sb.AppendLine(json);
                     }
@@ -96,33 +108,6 @@ namespace TSI.Friday.Services
         #endregion Public methods
 
         #region Private methods
-
-        private static string? FindWorkspaceRoot(string startPath)
-        {
-            try
-            {
-                var dir = new DirectoryInfo(startPath);
-                while (dir != null && dir.FullName != dir.Root.FullName)
-                {
-                    if (
-                        Directory.Exists(Path.Combine(dir.FullName, ".git"))
-                        || dir.GetFiles("*.sln").Any()
-                        || string.Equals(dir.Name, "TSI.Friday", StringComparison.OrdinalIgnoreCase)
-                    )
-                    {
-                        return dir.FullName;
-                    }
-
-                    dir = dir.Parent;
-                }
-            }
-            catch
-            {
-                // ignore
-            }
-
-            return null;
-        }
 
         #endregion Private methods
     }
