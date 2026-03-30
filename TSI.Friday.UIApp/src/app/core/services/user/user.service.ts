@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { User } from '../../models';
 import { WebApiResponse } from '../../utilities';
 import { ApiService } from '@friday/core';
-import { tap, delay } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -38,23 +38,15 @@ export class UserService {
   }
 
   add(user: User): Observable<WebApiResponse<User>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .post<WebApiResponse<User>>(`${this._baseEndPoint}/add`, user)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._userChangedSubject.next()),
-      );
+      .pipe(tap(() => this._userChangedSubject.next()));
   }
 
   update(user: User): Observable<WebApiResponse<User>> {
-    const delayMs = 1000; // delay de 1 segundo para teste visual
     return this.apiService
       .put<WebApiResponse<User>>(`${this._baseEndPoint}/update`, user)
-      .pipe(
-        delay(delayMs),
-        tap(() => this._userChangedSubject.next()),
-      );
+      .pipe(tap(() => this._userChangedSubject.next()));
   }
 
   delete(user: User): Observable<WebApiResponse<User>> {
