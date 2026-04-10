@@ -556,8 +556,10 @@ namespace TSI.Friday.Services
         /// <param name="paymentDto"></param>
         private static void UpdatePaymentStatusByDate(PaymentDto paymentDto)
         {
-            if (paymentDto == null)
+            if (paymentDto == null || paymentDto.Status == PaymentStatus.Approved)
+            {
                 return;
+            }
 
             var paymentDateUtc = paymentDto.Date;
             if (paymentDto.Date != DateTime.UtcNow)

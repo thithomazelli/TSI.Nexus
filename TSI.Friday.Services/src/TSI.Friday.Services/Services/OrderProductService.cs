@@ -320,8 +320,10 @@ namespace TSI.Friday.Services
         /// <param name="orderProductDto"></param>
         private static void UpdateOrderProductStatusByDate(OrderProductDto orderProductDto)
         {
-            if (orderProductDto == null)
+            if (orderProductDto == null || orderProductDto.Status == OrderProductStatus.Returned)
+            {
                 return;
+            }
 
             var endDateUtc = orderProductDto.EndDate;
             if (orderProductDto.EndDate != DateTime.UtcNow)
