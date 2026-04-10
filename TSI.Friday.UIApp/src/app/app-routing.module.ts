@@ -25,12 +25,12 @@ const routes: Routes = [
   },
   {
     path: 'home',
-    canActivateChild: [AuthorizationGuard],
+    canActivate: [AuthorizationGuard],
     component: HomeComponent,
   },
   {
     path: 'not-found',
-    canActivateChild: [AuthorizationGuard],
+    canActivate: [AuthorizationGuard],
     component: NotFoundComponent,
   },
   {
@@ -89,6 +89,7 @@ const routes: Routes = [
   },
   {
     path: '**',
+    runGuardsAndResolvers: 'always',
     redirectTo: 'not-found',
   },
 ];
