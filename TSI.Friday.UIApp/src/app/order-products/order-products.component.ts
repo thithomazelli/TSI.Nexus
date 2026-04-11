@@ -372,6 +372,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         headerName: 'Ações',
+        flex: 1,
         minWidth: 150,
         sortable: false,
         filter: false,

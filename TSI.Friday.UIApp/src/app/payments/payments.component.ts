@@ -374,11 +374,11 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         headerName: 'Ações',
+        flex: 1,
         minWidth: 150,
         sortable: false,
         filter: false,
         resizable: false,
-        maxWidth: 150,
         cellRenderer: () => {
           return `
             <button class="btn btn-info btn-sm" data-action="edit">

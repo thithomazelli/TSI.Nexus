@@ -113,10 +113,10 @@ export class AddressComponent {
     },
     {
       headerName: 'Ações',
+      flex: 1,
       minWidth: 150,
       sortable: false,
       filter: false,
-      maxWidth: 400,
       resizable: true,
       width: 190,
       cellRenderer: () => {
