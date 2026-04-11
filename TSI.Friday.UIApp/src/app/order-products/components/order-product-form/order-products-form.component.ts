@@ -192,11 +192,13 @@ export class OrderProductsFormComponent
       tap({
         next: (response: WebApiResponse<OrderProduct>) => {
           this.dialogRef?.close(response);
-          this.modalService.showSweetNotification(
-            '',
-            response.message,
-            response.status,
-          );
+          if (this.parentId) {
+            this.modalService.showSweetNotification(
+              '',
+              response.message,
+              response.status,
+            );
+          }
         },
         error: (err) => {
           this.notificationService.showMessage('Error', 'Erro ao salvar');
@@ -207,6 +209,61 @@ export class OrderProductsFormComponent
 
   cancel(): void {
     this.modalService.hideModal(this.dialogRef);
+  }
+
+  remove(): void {
+    this.modalService.hideModal();
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este registro?',
+        'question',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.orderProductService
+            .delete(this.data as OrderProduct)
+            .pipe(
+              tap({
+                next: (response: WebApiResponse<OrderProduct>) => {
+                  if (this.isModal) {
+                    this.modalService.hideModal(this.dialogRef);
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  } else {
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  }
+                },
+                error: (err) => {
+                  this.notificationService.showMessage(
+                    'error',
+                    'Erro ao remover',
+                  );
+                },
+              }),
+            )
+            .subscribe();
+        } else {
+          if (this.isModal) {
+            const initialState = {
+              isEdit: this.isEdit,
+              data: this.data,
+              id: this.data?.id,
+            };
+            this.modalService.showTemplateModal(
+              OrderProductsDetailsModalComponent,
+              initialState,
+            );
+          }
+        }
+      });
   }
 
   async initParentInfo() {

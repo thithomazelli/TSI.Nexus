@@ -125,6 +125,61 @@ export class AddressFormComponent
     this.modalService.hideModal(this.dialogRef);
   }
 
+  remove(): void {
+    this.modalService.hideModal();
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este registro?',
+        'question',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.addressService
+            .delete(this.data as Address)
+            .pipe(
+              tap({
+                next: (response: WebApiResponse<Address>) => {
+                  if (this.isModal) {
+                    this.modalService.hideModal(this.dialogRef);
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  } else {
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  }
+                },
+                error: (err) => {
+                  this.notificationService.showMessage(
+                    'error',
+                    'Erro ao remover',
+                  );
+                },
+              }),
+            )
+            .subscribe();
+        } else {
+          if (this.isModal) {
+            const initialState = {
+              isEdit: this.isEdit,
+              data: this.data,
+              id: this.data?.id,
+            };
+            this.modalService.showTemplateModal(
+              AddressDetailsModalComponent,
+              initialState,
+            );
+          }
+        }
+      });
+  }
+
   trackByEstadoId(
     index: number,
     estado: { id?: number; sigla: string; nome: string },
