@@ -68,6 +68,14 @@
                   >Pagamentos</a
                 >
               </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  >Anexos</a
+                >
+              </li>
             </ul>
             <div *ngIf="activeTab === 'details'">
               <app-order-form
@@ -91,6 +99,12 @@
                 [entity]="'Order'"
                 [parentData]="data"
               ></app-payments>
+            </div>
+            <div *ngIf="activeTab === 'attachments'">
+              <app-attachments
+                [entity]="'order'"
+                [entityId]="data!.id!"
+              ></app-attachments>
             </div>
           </div>
         </div>

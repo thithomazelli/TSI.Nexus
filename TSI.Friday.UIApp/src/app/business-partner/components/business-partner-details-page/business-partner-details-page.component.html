@@ -16,7 +16,7 @@
             <div class="text-center">
               <app-photo
                 [data]="data"
-                [entityClass]="'BusinessPartner'"
+                [entityClass]="'BusinessPartners'"
                 [imageUrl]="data?.photo"
               ></app-photo>
               <div class="box-profile" hidden="true">
@@ -90,6 +90,15 @@
                   >Pagamentos</a
                 >
               </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  data-toggle="tab"
+                  >Anexos</a
+                >
+              </li>
             </ul>
 
             @if (loading) {
@@ -133,7 +142,14 @@
                     [compact]="true"
                     [canAdd]="false"
                     [entity]="'BusinessPartner'"
+                    [parentData]="data"
                   ></app-payments>
+                }
+                @if (activeTab === "attachments") {
+                  <app-attachments
+                    [entity]="'businessPartner'"
+                    [entityId]="data!.id"
+                  ></app-attachments>
                 }
               </div>
             }

@@ -7,6 +7,9 @@ import {
   withInterceptorsFromDi,
 } from '@angular/common/http';
 
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura';
+
 import { BrowserModule } from '@angular/platform-browser';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 
@@ -50,6 +53,11 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     }),
   ],
   providers: [
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+      },
+    }),
     provideNgxMask(),
     provideHttpClient(withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },

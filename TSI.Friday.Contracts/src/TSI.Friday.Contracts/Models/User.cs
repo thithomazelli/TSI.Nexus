@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
@@ -28,5 +29,7 @@ namespace TSI.Friday.Contracts.Models
         public DateTime ModifyDate { get; set; }
 
         public string ModifyUserId { get; set; }
+
+        public ICollection<Attachment> Attachments { get; set; }
     }
 }

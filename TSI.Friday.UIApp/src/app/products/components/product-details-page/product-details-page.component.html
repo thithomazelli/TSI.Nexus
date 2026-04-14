@@ -17,7 +17,7 @@
               <app-photo
                 [data]="data"
                 [imageUrl]="data?.photo"
-                [entityClass]="'Product'"
+                [entityClass]="'Products'"
               ></app-photo>
               <div class="box-profile">
                 <div class="text-center">
@@ -76,6 +76,15 @@
                   >Histórico</a
                 >
               </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  data-toggle="tab"
+                  >Anexos</a
+                >
+              </li>
             </ul>
 
             @if (loading) {
@@ -99,7 +108,7 @@
                     <app-photo
                       [data]="data"
                       [imageUrl]="data?.photo"
-                      [entityClass]="'Product'"
+                      [entityClass]="'Products'"
                     ></app-photo>
                   </div>
                 }
@@ -111,6 +120,12 @@
                       [isFromProductsView]="true"
                     ></app-order-products>
                   </div>
+                }
+                @if (activeTab === "attachments") {
+                  <app-attachments
+                    [entity]="'product'"
+                    [entityId]="data!.id"
+                  ></app-attachments>
                 }
               </div>
             }

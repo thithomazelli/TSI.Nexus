@@ -23,7 +23,7 @@ namespace TSI.Friday.Services
             _currentUserService = currentUserService;
         }
 
-        public void LogException(Exception ex, string? operation, object? payload = null)
+        public void LogException(Exception ex, string operation, object? payload = null)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace TSI.Friday.Services
                 sb.AppendLine($"TimestampUtc: {now:yyyy-MM-dd HH:mm:ss.fff}Z");
                 sb.AppendLine($"Operation: {operation}");
 
-                string? userName = null;
+                string userName = null;
                 try
                 {
                     userName = _currentUserService?.GetUserName();

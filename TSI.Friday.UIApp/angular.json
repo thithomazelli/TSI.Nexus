@@ -41,6 +41,7 @@
             "styles": [
               "node_modules/@fontsource/source-sans-3/index.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "node_modules/primeicons/primeicons.css",
               "node_modules/overlayscrollbars/styles/overlayscrollbars.min.css",
               "node_modules/jsvectormap/dist/jsvectormap.min.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",

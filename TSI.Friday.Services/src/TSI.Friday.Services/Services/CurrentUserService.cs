@@ -24,7 +24,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public string? GetUserId()
+        public string GetUserId()
         {
             var user = _httpContextAccessor.HttpContext?.User;
             if (user == null)
@@ -44,7 +44,7 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public string? GetUserName()
+        public string GetUserName()
         {
             var user = _httpContextAccessor.HttpContext?.User;
             if (user == null)

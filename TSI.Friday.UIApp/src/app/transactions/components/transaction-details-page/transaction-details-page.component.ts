@@ -21,7 +21,7 @@ export class TransactionDetailsPageComponent {
   data?: Transaction | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'payments' = 'details';
+  activeTab: 'details' | 'payments' | 'attachments' = 'details';
 
   paymentTypeOptions: Record<PaymentType, string> = {
     [PaymentType.Incoming]: 'Entrada',

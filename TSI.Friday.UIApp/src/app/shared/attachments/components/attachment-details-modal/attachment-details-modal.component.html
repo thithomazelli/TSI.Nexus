@@ -1,0 +1,41 @@
+<div class="attachment-details" *ngIf="attachment">
+  <!-- Preview de imagem -->
+  <div *ngIf="isImage()" class="text-center mb-3">
+    <img
+      [src]="attachment.downloadUrl"
+      [alt]="attachment.fileName"
+      class="img-fluid rounded"
+      style="max-height: 200px"
+    />
+  </div>
+
+  <table class="table table-sm table-borderless">
+    <tbody>
+      <tr>
+        <th class="text-muted" style="width: 120px">Nome</th>
+        <td>{{ attachment.fileName }}</td>
+      </tr>
+      <tr>
+        <th class="text-muted">Pasta</th>
+        <td>{{ currentPath || "-" }}</td>
+      </tr>
+      <tr>
+        <th class="text-muted">Ação</th>
+        <td>
+          <button
+            class="btn btn-sm btn-outline-primary"
+            (click)="download.emit(attachment)"
+          >
+            <i class="pi pi-download me-1"></i> Baixar
+          </button>
+          <button
+            class="btn btn-sm btn-outline-danger ms-2"
+            (click)="remove.emit(attachment)"
+          >
+            <i class="pi pi-trash me-1"></i> Remover
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

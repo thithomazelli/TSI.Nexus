@@ -43,9 +43,23 @@ import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-tre
 import { AlertBannerComponentComponent } from './alert-banner-component/alert-banner-component.component';
 import { InfoCardsComponent } from './info-cards/info-cards.component';
 import { ClickDirective } from '@friday/core';
+import { AttachmentsComponent } from './attachments/attachments.component';
+import { AttachmentDetailsModalComponent } from './attachments/components/attachment-details-modal/attachment-details-modal.component';
+
+import { Tree } from 'primeng/tree';
+import { ContextMenu } from 'primeng/contextmenu';
+import { Dialog } from 'primeng/dialog';
+import { Button } from 'primeng/button';
+import { InputText } from 'primeng/inputtext';
+import { FileUpload } from 'primeng/fileupload';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { Tooltip } from 'primeng/tooltip';
+import { ConfirmationService } from 'primeng/api';
 
 @NgModule({
   declarations: [
+    AttachmentsComponent,
+    AttachmentDetailsModalComponent,
     DateFieldComponent,
     NotFoundComponent,
     ValidationMessagesComponent,
@@ -68,6 +82,7 @@ import { ClickDirective } from '@friday/core';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    FormsModule,
     AgGridModule,
     MatDialogModule,
     MatAutocompleteModule,
@@ -78,8 +93,18 @@ import { ClickDirective } from '@friday/core';
     MatNativeDateModule,
     MatMomentDateModule,
     NgApexchartsModule,
+    Tree,
+    ContextMenu,
+    Dialog,
+    Button,
+    InputText,
+    FileUpload,
+    ConfirmDialog,
+    Tooltip,
   ],
   exports: [
+    AttachmentsComponent,
+    AttachmentDetailsModalComponent,
     ClickDirective,
     DateFieldComponent,
     LinkFieldComponent,
@@ -107,8 +132,17 @@ import { ClickDirective } from '@friday/core';
     MatNativeDateModule,
     NgApexchartsModule,
     FormsModule,
+    Tree,
+    ContextMenu,
+    Dialog,
+    Button,
+    InputText,
+    FileUpload,
+    ConfirmDialog,
+    Tooltip,
   ],
   providers: [
+    ConfirmationService,
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ],

@@ -47,6 +47,7 @@ namespace TSI.Friday.IoC
             services.AddHostedService<OverdueStatusBackgroundService>();
 
             services.AddScoped<IAddressService, AddressService>();
+            services.AddScoped<IAttachmentService, AttachmentService>();
             services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
             services.AddScoped<ICompanyService, CompanyService>();
             services.AddScoped<IEmailService, EmailService>();
@@ -58,9 +59,10 @@ namespace TSI.Friday.IoC
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IProductPhotoService, ProductPhotoService>();
-            // register log service and product service with logger
             services.AddScoped<ILogService, LogService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IQuoteService, QuoteService>();
+            services.AddScoped<IQuoteProductService, QuoteProductService>();
             services.AddScoped<IUserManagerService, UserManagerService>();
             services.AddScoped<ISequenceService, SequenceService>();
             services.AddScoped<IDashboardService, DashboardService>();
@@ -70,6 +72,7 @@ namespace TSI.Friday.IoC
             #region Repositories
 
             services.AddScoped<IRepository<Address>, Repository<Address>>();
+            services.AddScoped<IRepository<Attachment>, Repository<Attachment>>();
             services.AddScoped<IRepository<BusinessPartner>, Repository<BusinessPartner>>();
             services.AddScoped<IRepository<Company>, Repository<Company>>();
             services.AddScoped<IRepository<Individual>, Repository<Individual>>();
@@ -79,6 +82,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<Payment>, Repository<Payment>>();
             services.AddScoped<IRepository<Product>, Repository<Product>>();
             services.AddScoped<IRepository<ProductPhoto>, Repository<ProductPhoto>>();
+            services.AddScoped<IRepository<Quote>, Repository<Quote>>();
+            services.AddScoped<IRepository<QuoteProduct>, Repository<QuoteProduct>>();
             services.AddScoped<IRepository<User>, Repository<User>>();
             services.AddScoped<IRepository<Sequence>, Repository<Sequence>>();
 

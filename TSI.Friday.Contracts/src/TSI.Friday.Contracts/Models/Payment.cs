@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using TSI.Friday.Contracts.Enums;
 
@@ -38,5 +39,7 @@ namespace TSI.Friday.Contracts.Models
         public Guid? OrderId { get; set; }
 
         public Order Order { get; set; }
+
+        public ICollection<Attachment> Attachments { get; set; }
     }
 }

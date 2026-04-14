@@ -8,7 +8,7 @@ import { BusinessPartnerRoutingModule } from './business-partner-routing.module'
 import { BusinessPartnerSharedModule } from './business-partner-shared.module';
 import { AddressModule } from '../address/address.module';
 
-import { OrdersSharedModule } from '../orders/components/orders-shared.module';
+import { OrdersSharedModule } from '../orders/orders-shared.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { TransactionsSharedModule } from '../transactions/transactions-shared.module';
 

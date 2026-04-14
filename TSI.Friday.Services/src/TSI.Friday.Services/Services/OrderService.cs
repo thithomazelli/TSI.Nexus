@@ -369,7 +369,7 @@ namespace TSI.Friday.Services
 
         #region Private methods
 
-        private static string BuildPrefixFromBusinessPartnerName(string? businessPartnerName)
+        private static string BuildPrefixFromBusinessPartnerName(string businessPartnerName)
         {
             // Remove non-letter characters and whitespace, keep only A-Z letters
             var cleaned = string.Empty;

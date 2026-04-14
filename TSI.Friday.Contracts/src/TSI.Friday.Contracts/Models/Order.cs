@@ -8,6 +8,7 @@ namespace TSI.Friday.Contracts.Models
     public class Order : BaseModel
     {
         public string OrderNumber { get; set; } = string.Empty;
+
         public DateTime Date { get; set; }
 
         public OrderStatus Status { get; set; }
@@ -33,5 +34,7 @@ namespace TSI.Friday.Contracts.Models
         public ICollection<Payment>? Payments { get; set; } = [];
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = [];
+
+        public ICollection<Attachment> Attachments { get; set; }
     }
 }

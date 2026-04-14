@@ -14,7 +14,7 @@ export class UserDetailsPageComponent {
   data?: User | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' = 'details';
+  activeTab: 'details' | 'attachments' = 'details';
 
   private _destroy$ = new Subject<void>();
 
@@ -40,8 +40,8 @@ export class UserDetailsPageComponent {
     });
 
     this.photoService.photo$.subscribe((response) => {
-      if (response.fileName) {
-        this.data!.photo = response.fileName;
+      if (response.photoPath) {
+        this.data!.photo = response.photoPath;
       }
     });
   }

@@ -338,6 +338,69 @@ namespace TSI.Friday.IoC
                 );
             CreateMap<PaymentDto, Payment>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // Quote mappings
+            CreateMap<Quote, QuoteDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.QuoteProducts,
+                    opt => opt.MapFrom(src => src.QuoteProducts)
+                );
+
+            CreateMap<QuoteDto, Quote>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // QuoteProduct mappings
+            CreateMap<QuoteProduct, QuoteProductDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.QuoteId))
+                .ForMember(
+                    dest => dest.OrderNumber,
+                    opt => opt.MapFrom(src => src.Quote != null ? src.Quote.OrderNumber : null)
+                )
+                .ForMember(
+                    dest => dest.ProductSku,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.Sku : null)
+                )
+                .ForMember(
+                    dest => dest.ProductName,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : null)
+                )
+                .ForMember(
+                    dest => dest.ProductType,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Product != null ? src.Product.Type : ProductType.Sale
+                        )
+                )
+                .ForMember(
+                    dest => dest.BusinessPartnerId,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Quote != null ? src.Quote.BusinessPartnerId : Guid.Empty
+                        )
+                )
+                .ForMember(
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Quote != null && src.Quote.BusinessPartner != null
+                                ? src.Quote.BusinessPartner.Name
+                                : null
+                        )
+                )
+                .ForMember(dest => dest.PreviousQuantity, opt => opt.MapFrom(src => src.Quantity));
+
+            CreateMap<QuoteProductDto, QuoteProduct>()
+                .ForMember(dest => dest.QuoteId, opt => opt.MapFrom(src => src.OrderId))
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }
