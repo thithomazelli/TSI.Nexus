@@ -11,7 +11,6 @@ import { Router } from '@angular/router';
 
 import {
   Address,
-  ApiType,
   BusinessPartner,
   BusinessPartnerService,
   BusinessPartnerType,
@@ -22,6 +21,8 @@ import {
   NotificationService,
   ResponseStatus,
   WebApiResponse,
+  formatCPF,
+  formatCNPJ,
 } from '@friday/core';
 
 import { Observable, of, tap } from 'rxjs';
@@ -146,8 +147,10 @@ export class BusinessPartnerFormComponent
     }
 
     const raw = this.form.getRawValue();
+
     if (!raw.birthday || raw.birthday === '') {
       this.data!.birthday = undefined;
+      delete raw.birthday;
     }
 
     if (this.compact && raw.address && raw.address.zipCode != null) {
@@ -209,6 +212,26 @@ export class BusinessPartnerFormComponent
         },
       }),
     );
+  }
+
+  private parseBirthday(value: string): Date | undefined {
+    const parts = value.split('/').map((part) => Number(part));
+    if (parts.length !== 3) {
+      return undefined;
+    }
+
+    const [day, month, year] = parts;
+    const parsedDate = new Date(year, month - 1, day);
+    if (
+      Number.isNaN(parsedDate.getTime()) ||
+      parsedDate.getDate() !== day ||
+      parsedDate.getMonth() !== month - 1 ||
+      parsedDate.getFullYear() !== year
+    ) {
+      return undefined;
+    }
+
+    return parsedDate;
   }
 
   cancel(): void {
@@ -542,18 +565,34 @@ export class BusinessPartnerFormComponent
       return;
     }
 
-    this.modalService.showNotification(false, '', response.message);
+    const formattedMessage = this.formatErrorMessage(response.message);
+    this.modalService.showNotification(false, '', formattedMessage);
   }
 
   private savePage(response: WebApiResponse<BusinessPartner>): any {
     if (this.isEdit && this.data) {
-      this.notificationService.showMessage(response.status, response.message);
+      const formattedMessage = this.formatErrorMessage(response.message);
+      this.notificationService.showMessage(response.status, formattedMessage);
       this.data = response.data;
     } else {
       this.routerService.navigateByUrl(
         `/${this._baseEndPoint}/${response.data.id}`,
       );
     }
+  }
+
+  private formatErrorMessage(message: string): string {
+    if (!message) return message;
+
+    let formatted = message.replace(/\b(\d{11})\b/g, (match: string) => {
+      return formatCPF(match);
+    });
+
+    formatted = formatted.replace(/\b(\d{14})\b/g, (match: string) => {
+      return formatCNPJ(match);
+    });
+
+    return formatted;
   }
 
   private defineBusinessPartnerType(): void {

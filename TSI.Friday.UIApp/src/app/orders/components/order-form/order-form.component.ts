@@ -138,10 +138,6 @@ export class OrderFormComponent
     this._subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
-  get transactionFormGroup(): FormGroup {
-    return this.form.get('transaction') as FormGroup;
-  }
-
   submit(): Observable<WebApiResponse<Order> | null> {
     this.submitted = true;
     if (this.form.invalid) {
@@ -209,6 +205,104 @@ export class OrderFormComponent
     }
   }
 
+  remove(): void {
+    this.modalService.hideModal();
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este registro?',
+        'question',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.orderService
+            .delete(this.data as Order)
+            .pipe(
+              tap({
+                next: (response: WebApiResponse<Order>) => {
+                  if (this.isModal) {
+                    this.modalService.hideModal(this.dialogRef);
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  } else {
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                    if (response.status === ResponseStatus.Success) {
+                      this.routerService.navigateByUrl(
+                        `/${this._baseEndPoint}`,
+                      );
+                    }
+                  }
+                },
+                error: (err) => {
+                  this.notificationService.showMessage(
+                    'error',
+                    'Erro ao remover',
+                  );
+                },
+              }),
+            )
+            .subscribe();
+        } else {
+          if (this.isModal) {
+            const initialState = {
+              isEdit: this.isEdit,
+              data: this.data,
+              id: this.data?.id,
+            };
+            this.modalService.showTemplateModal(
+              OrderDetailsModalComponent,
+              initialState,
+            );
+          }
+        }
+      });
+  }
+
+  removeProduct(index: number): void {
+    if (!this.data?.orderProducts) {
+      return;
+    }
+    this.data.orderProducts.splice(index, 1);
+    this.updatePriceFields();
+    this.updateTotalPriceFields();
+  }
+
+  openOrderProductsModal() {
+    const data = { ...this.data, ...this.form.getRawValue() };
+
+    const initialState = {
+      isEdit: false,
+      id: null,
+      parentId: null,
+      parentData: data,
+    };
+
+    if (!this.form.get('businessPartnerId')?.value) {
+      this.modalService.showNotification(
+        false,
+        '',
+        'Por favor, selecione um cliente antes de adicionar produtos ao pedido.',
+      );
+      return;
+    }
+
+    this.modalService.showTemplateModal(
+      OrderProductsDetailsModalComponent,
+      initialState,
+    );
+  }
+
+  get transactionFormGroup(): FormGroup {
+    return this.form.get('transaction') as FormGroup;
+  }
+
   async onClientBlur(): Promise<void> {
     setTimeout(() => {
       const businessPartnerName = this.form
@@ -269,40 +363,6 @@ export class OrderFormComponent
     }, 200);
   }
 
-  removeProduct(index: number): void {
-    if (!this.data?.orderProducts) {
-      return;
-    }
-    this.data.orderProducts.splice(index, 1);
-    this.updatePriceFields();
-    this.updateTotalPriceFields();
-  }
-
-  openOrderProductsModal() {
-    const data = { ...this.data, ...this.form.getRawValue() };
-
-    const initialState = {
-      isEdit: false,
-      id: null,
-      parentId: null,
-      parentData: data,
-    };
-
-    if (!this.form.get('businessPartnerId')?.value) {
-      this.modalService.showNotification(
-        false,
-        '',
-        'Por favor, selecione um cliente antes de adicionar produtos ao pedido.',
-      );
-      return;
-    }
-
-    this.modalService.showTemplateModal(
-      OrderProductsDetailsModalComponent,
-      initialState,
-    );
-  }
-
   private initForm(): void {
     this.form = this.formBuilder.group({
       orderNumber: [''],
@@ -347,9 +407,6 @@ export class OrderFormComponent
     }
   }
 
-  /**
-   * Adiciona o transaction form ao form principal se não existir
-   */
   private addTransactionForm(): void {
     if (!this.form.contains('transaction')) {
       const transactionGroup = this.formBuilder.group({
