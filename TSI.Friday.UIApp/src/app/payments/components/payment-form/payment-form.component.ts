@@ -187,6 +187,61 @@ export class PaymentFormComponent
     this.modalService.hideModal(this.dialogRef);
   }
 
+  remove(): void {
+    this.modalService.hideModal();
+    this.modalService
+      .showSweetConfirmation(
+        '',
+        'Deseja realmente excluir este registro?',
+        'question',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.paymentService
+            .delete(this.data as Payment)
+            .pipe(
+              tap({
+                next: (response: WebApiResponse<Payment>) => {
+                  if (this.isModal) {
+                    this.modalService.hideModal(this.dialogRef);
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  } else {
+                    this.modalService.showSweetNotification(
+                      '',
+                      response.message,
+                      response.status,
+                    );
+                  }
+                },
+                error: (err) => {
+                  this.notificationService.showMessage(
+                    'error',
+                    'Erro ao remover',
+                  );
+                },
+              }),
+            )
+            .subscribe();
+        } else {
+          if (this.isModal) {
+            const initialState = {
+              isEdit: this.isEdit,
+              data: this.data,
+              id: this.data?.id,
+            };
+            this.modalService.showTemplateModal(
+              PaymentDetailsModalComponent,
+              initialState,
+            );
+          }
+        }
+      });
+  }
+
   private initForm(): void {
     let transactionDescription = '';
     let orderId = '';

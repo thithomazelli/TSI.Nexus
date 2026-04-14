@@ -164,6 +164,11 @@ export class ProductFormComponent
                       response.message,
                       response.status,
                     );
+                    if (response.status === ResponseStatus.Success) {
+                      this.routerService.navigateByUrl(
+                        `/${this._baseEndPoint}`,
+                      );
+                    }
                   }
                 },
                 error: (err) => {

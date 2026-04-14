@@ -137,12 +137,11 @@ export class ProductsComponent implements OnInit, OnDestroy {
     },
     {
       headerName: 'Ações',
+      flex: 1,
+      minWidth: 150,
       sortable: false,
       filter: false,
-      minWidth: 150,
       resizable: true,
-      flex: 1,
-      width: 280,
       cellRenderer: (params: ICellRendererParams) => {
         return `
           <button class="btn btn-primary btn-sm" data-action="view">
