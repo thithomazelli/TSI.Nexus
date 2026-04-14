@@ -14,4 +14,5 @@ export interface Product extends BaseModel {
   quantityInStock: number;
   disabled?: boolean;
   alreadyUsed?: boolean;
+  category: string;
 }

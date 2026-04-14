@@ -15,6 +15,8 @@ namespace TSI.Friday.Contracts.Models
 
         public decimal Price { get; set; }
 
+        public string Category { get; set; }
+
         public ProductUnit Unit { get; set; }
 
         public ProductType Type { get; set; }
