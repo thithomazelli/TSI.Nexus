@@ -46,9 +46,6 @@ out/
 publish/
 wwwroot/
 
-# Entity Framework
-Migrations/
-
 # Rider IDE
 .idea/
 
