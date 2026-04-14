@@ -75,7 +75,7 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Warning;
                 result.Message =
                     ex.InnerException?.Message.Contains("foreign key constraint fails") == true
-                        ? $"Não é possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} pois ele está vinculado à um ou mais pedidos."
+                        ? $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} pois ele está vinculado à um ou mais pedidos e/ou transações."
                         : $"Não foi possível remover o {_businessPartnerMap[businessPartnerDto.Type]} {businessPartnerDto.Name} da base de dados. Erro: {ex.Message}";
             }
             catch (Exception ex)
