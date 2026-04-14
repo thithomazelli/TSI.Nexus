@@ -1,4 +1,4 @@
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import {
   ChangeDetectorRef,
   Component,
@@ -12,9 +12,13 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { ApiService, ApiType, ModalService, PhotoService } from '@friday/core';
+import {
+  Attachment,
+  AttachmentService,
+  ModalService,
+  PhotoService,
+} from '@friday/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-photo',
@@ -23,9 +27,6 @@ import { environment } from '../../../environments/environment';
   standalone: false,
 })
 export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
-  @Input()
-  baseEndPoint: ApiType = ApiType.Photos;
-
   @Input()
   data: any;
 
@@ -55,6 +56,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
 
   cameraActive = false;
   pendingFile: File | null = null;
+  pendingRemoval = false;
 
   private mediaStream?: MediaStream;
   private lastObjectUrl?: string;
@@ -64,7 +66,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   constructor(
     private cd: ChangeDetectorRef,
     private modalService: ModalService,
-    private apiService: ApiService,
+    private attachmentService: AttachmentService,
     private photoService: PhotoService,
     @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any,
   ) {
@@ -78,12 +80,12 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnInit(): void {
-    this.imageUrl = this.getPhotoUrl();
+    this.loadPhoto();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['imageUrl'] && this.data && this.data.photo) {
-      this.imageUrl = this.getPhotoUrl();
+      this.loadPhoto();
     }
   }
 
@@ -94,13 +96,26 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
     this.imageUrl = this.getNoImage();
   }
 
-  getPhotoUrl(): string {
-    const apiBase = environment.appUrl;
-    if (this.data && this.data.photo && this.entityClass) {
-      return `${apiBase}/uploads/${this.entityClass}/${this.data.photo}`;
+  loadPhoto(): void {
+    if (this.data && this.data.photo && this.entityClass && this.data.id) {
+      this.imageUrl = this.getNoImage();
+      this.photoService
+        .getPhoto(this.entityClass, this.data.id, this.data.photo)
+        .subscribe({
+          next: (blob) => {
+            this.revokeLastObjectUrl();
+            const url = URL.createObjectURL(blob);
+            this.lastObjectUrl = url;
+            this.imageUrl = url;
+            this.cd.detectChanges();
+          },
+          error: () => {
+            this.imageUrl = this.getNoImage();
+          },
+        });
+      return;
     }
-
-    return this.getNoImage();
+    this.imageUrl = this.getNoImage();
   }
 
   onImgError(event: Event): void {
@@ -212,50 +227,144 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
       event.preventDefault();
     }
 
-    if (!this.baseEndPoint || !this.data?.id || !this.entityClass) {
+    if (!this.data?.id || !this.entityClass) {
       return;
     }
 
-    const ext = this.pendingFile?.type.split('/').pop() ?? 'png';
-    const fileName = `${this.data.id}.${ext}`;
-    const formData = new FormData();
-    formData.append('entity', this.entityClass);
-    formData.append('entityId', String(this.data.id));
+    // Remoção da foto
+    if (this.pendingRemoval) {
+      // Remove o anexo correspondente
+      this.deletePhotoAttachment();
 
-    if (this.pendingFile) {
-      formData.append('file', this.pendingFile, fileName);
+      // Limpa o campo photo na entidade
+      this.photoService.removePhoto(this.entityClass, this.data.id).subscribe({
+        next: () => {
+          this.data.photo = '';
+          this.pendingRemoval = false;
+          this.imageUrl = this.getNoImage();
+
+          this.modalService.showSweetNotification(
+            'Foto removida',
+            'Foto removida com sucesso!',
+            'success',
+          );
+
+          if (this.entityClass === 'Users') {
+            this.photoService.updateUserPhoto('', this.data.id);
+          }
+
+          this.close({ photoPath: '' });
+        },
+        error: () => {
+          this.modalService.showSweetNotification(
+            '',
+            'Erro ao remover foto.',
+            'error',
+          );
+        },
+      });
+      return;
     }
 
-    this.apiService
-      .post<any>(`${this.baseEndPoint}/uploadPhoto`, formData)
-      .subscribe((response) => {
-        // fallback para fileName local caso a API não retorne
-        const fileName =
-          response?.fileName ||
-          (this.pendingFile ? this.pendingFile.name : undefined);
-        this.data.photo = fileName;
-        this.imageUrl = this.getPhotoUrl();
-        this.pendingFile = null;
-        this.close({ fileName });
+    if (!this.pendingFile) return;
 
-        this.modalService.showSweetNotification(
-          'Foto atualizada',
-          'Upload realizado com sucesso!',
-          'success',
-        );
+    const file = this.pendingFile;
 
-        if (this.entityClass === 'User') {
-          this.photoService.updateUserPhoto(
-            response?.fileName != '' ? response.fileName : 'no_profile.png',
-            this.data.id,
-          );
-        }
+    // 1) Anexa o arquivo primeiro
+    this.addPhotoAsAttachment(file, () => {
+      // 2) Depois atualiza o atributo photo na entidade
+      this.photoService
+        .uploadPhoto(this.entityClass, this.data.id, file)
+        .subscribe({
+          next: (uploadRes) => {
+            const photoPath = uploadRes?.fileName ?? uploadRes?.path ?? '';
+            this.data.photo = photoPath;
+            this.loadPhoto();
+            this.pendingFile = null;
+
+            this.modalService.showSweetNotification(
+              'Foto atualizada',
+              'Upload realizado com sucesso!',
+              'success',
+            );
+
+            if (this.entityClass === 'Users') {
+              this.photoService.updateUserPhoto(photoPath, this.data.id);
+            }
+
+            this.close({ photoPath });
+          },
+          error: () => {
+            this.modalService.showSweetNotification(
+              '',
+              'Erro ao salvar foto.',
+              'error',
+            );
+          },
+        });
+    });
+  }
+
+  private addPhotoAsAttachment(file: File, onSuccess?: () => void): void {
+    const entityIdField = this.getEntityIdField();
+    const attachment: Partial<Attachment> = {
+      file,
+      [entityIdField]: this.data.id,
+    };
+    const overridePath = `photos/${this.entityClass}`;
+    this.attachmentService
+      .add(attachment as Attachment, overridePath)
+      .subscribe({
+        next: () => onSuccess?.(),
+        error: () => onSuccess?.(),
       });
+  }
+
+  private deletePhotoAttachment(): void {
+    if (!this.data?.photo || !this.data?.id) return;
+
+    const photoFileName = this.data.photo;
+    const entityIdField = this.getEntityIdField();
+    const entityMap: Record<string, (id: string) => Observable<any>> = {
+      userId: (id) => this.attachmentService.getByUserId(id),
+      businessPartnerId: (id) =>
+        this.attachmentService.getByBusinessPartnerId(id),
+      productId: (id) => this.attachmentService.getByProductId(id),
+      orderId: (id) => this.attachmentService.getByOrderId(id),
+      transactionId: (id) => this.attachmentService.getByTransactionId(id),
+      paymentId: (id) => this.attachmentService.getByPaymentId(id),
+    };
+
+    const fetchFn = entityMap[entityIdField];
+    if (!fetchFn) return;
+
+    fetchFn(this.data.id).subscribe({
+      next: (res: any) => {
+        const attachments: Attachment[] = res?.data ?? [];
+        const match = attachments.find((a) => a.fileName === photoFileName);
+        if (match) {
+          this.attachmentService.delete(match.id).subscribe();
+        }
+      },
+    });
+  }
+
+  private getEntityIdField(): string {
+    const map: Record<string, string> = {
+      Users: 'userId',
+      BusinessPartners: 'businessPartnerId',
+      Products: 'productId',
+      Orders: 'orderId',
+      Transactions: 'transactionId',
+      Payments: 'paymentId',
+    };
+    return map[this.entityClass] ?? 'userId';
   }
 
   removePhoto(): void {
     this.imageUrl = this.getNoImage();
     this.pendingFile = null;
+    this.pendingRemoval = true;
     this.revokeLastObjectUrl();
     this.stopCamera();
   }

@@ -1,0 +1,17 @@
+export interface Attachment {
+  id: string;
+  fileName: string;
+  path: string;
+  downloadUrl: string;
+  businessPartnerId?: string | null;
+  businessPartnerName: string;
+  orderId?: string | null;
+  orderNumber: string;
+  transactionId?: string | null;
+  paymentId?: string | null;
+  productId?: string | null;
+  userId?: string | null;
+  createDate?: Date;
+  modifyDate?: Date;
+  file?: File;
+}

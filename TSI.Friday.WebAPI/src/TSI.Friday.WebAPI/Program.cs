@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using TSI.Friday.Contracts.Models;
@@ -133,77 +131,22 @@ catch
     // swallow to not break startup
 }
 
-// Resolve uploads path: configuration > workspace-root (dev) > ContentRoot (server)
-string? configuredUploads = builder.Configuration["Uploads:Path"];
-string uploadsPath;
-if (!string.IsNullOrWhiteSpace(configuredUploads))
+// Ensure attachments directory exists (files served only via authenticated API endpoints)
+string configuredAttachments = builder.Configuration["Attachments:BasePath"];
+string attachmentsPath;
+if (!string.IsNullOrWhiteSpace(configuredAttachments))
 {
-    // if relative path provided, resolve against content root
-    if (Path.IsPathRooted(configuredUploads))
-    {
-        uploadsPath = Path.GetFullPath(configuredUploads);
-    }
-    else
-    {
-        uploadsPath = Path.GetFullPath(
-            Path.Combine(app.Environment.ContentRootPath, configuredUploads)
-        );
-    }
+    attachmentsPath = Path.IsPathRooted(configuredAttachments)
+        ? Path.GetFullPath(configuredAttachments)
+        : Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, configuredAttachments));
 }
 else
 {
-    // detect workspace root for dev
-    static string? FindWorkspaceRoot(string startPath)
-    {
-        try
-        {
-            var dir = new DirectoryInfo(startPath);
-            while (dir != null && dir.FullName != dir.Root.FullName)
-            {
-                if (
-                    Directory.Exists(Path.Combine(dir.FullName, ".git"))
-                    || dir.GetFiles("*.sln").Any()
-                    || string.Equals(dir.Name, "TSI.Friday", StringComparison.OrdinalIgnoreCase)
-                )
-                {
-                    return dir.FullName;
-                }
-                dir = dir.Parent;
-            }
-        }
-        catch
-        {
-            // ignore and fallback
-        }
-
-        return null;
-    }
-
-    var workspaceRoot = FindWorkspaceRoot(app.Environment.ContentRootPath);
-    if (!string.IsNullOrWhiteSpace(workspaceRoot))
-    {
-        uploadsPath = Path.GetFullPath(Path.Combine(workspaceRoot, "uploads"));
-    }
-    else
-    {
-        // if workspace root not found, create uploads folder under ContentRootPath (app root)
-        uploadsPath = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "uploads"));
-    }
-}
-
-Directory.CreateDirectory(uploadsPath);
-var uploadsProvider = new PhysicalFileProvider(uploadsPath);
-app.UseStaticFiles(
-    new StaticFileOptions { FileProvider = uploadsProvider, RequestPath = "/uploads" }
-);
-
-// Optionally enable directory browsing in development
-if (app.Environment.IsDevelopment())
-{
-    app.UseDirectoryBrowser(
-        new DirectoryBrowserOptions { FileProvider = uploadsProvider, RequestPath = "/uploads" }
+    attachmentsPath = Path.GetFullPath(
+        Path.Combine(app.Environment.ContentRootPath, "attachments")
     );
 }
+Directory.CreateDirectory(attachmentsPath);
 
 // Configure the HTTP request pipeline.
 app.UseCors(opt =>

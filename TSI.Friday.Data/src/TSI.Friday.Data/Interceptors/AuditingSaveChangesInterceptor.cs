@@ -40,7 +40,7 @@ namespace TSI.Friday.Data.Interceptors
                 return await base.SavingChangesAsync(eventData, result, cancellationToken);
             }
 
-            string? userId = _currentUserService?.GetUserId();
+            string userId = _currentUserService?.GetUserId();
             var userIdNonNull = userId ?? string.Empty;
 
             var entries = context

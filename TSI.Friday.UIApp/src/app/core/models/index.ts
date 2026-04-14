@@ -4,6 +4,10 @@ export * from './account/user';
 export * from './account/confirm-email';
 export * from './account/reset-password';
 
+export * from './attachments/attachment.model';
+export * from './attachments/bread-crumb-item';
+export * from './attachments/folder-node.model';
+
 export * from './address.model';
 export * from './base.model';
 export * from './business-partner.model';

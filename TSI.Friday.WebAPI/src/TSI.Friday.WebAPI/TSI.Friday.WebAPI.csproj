@@ -10,6 +10,12 @@
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
+  <!-- Exclude runtime-generated directories from build -->
+  <ItemGroup>
+    <Content Remove="attachments\**" />
+    <None Remove="attachments\**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">

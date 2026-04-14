@@ -1,15 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
+using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
+using TSI.Friday.Contracts.Utilities;
 
 namespace TSI.Friday.Services.Services
 {
+    /// <summary>
+    /// Handles entity profile photos: saves the file to a dedicated _photos folder
+    /// and updates the Photo field on the entity.
+    /// Attachments (general files) are managed by AttachmentService.
+    /// </summary>
     public class PhotoService : IPhotoService
     {
         #region Properties
@@ -20,15 +24,12 @@ namespace TSI.Friday.Services.Services
         private readonly IRepository<User> _userRepository;
         private readonly IConfiguration _configuration;
 
+        private static readonly string[] AllowedExts = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+        private const long MaxBytes = 5 * 1024 * 1024; // 5 MB
         #endregion Properties
 
         #region Public methods
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="repository"></param>
-        /// <param name="env"></param>
         public PhotoService(
             IWebHostEnvironment env,
             IRepository<BusinessPartner> businessPartnerRepository,
@@ -49,254 +50,248 @@ namespace TSI.Friday.Services.Services
                 configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        private static string? FindWorkspaceRoot(string startPath)
-        {
-            try
-            {
-                var dir = new DirectoryInfo(startPath);
-                while (dir != null && dir.FullName != dir.Root.FullName)
-                {
-                    if (
-                        Directory.Exists(Path.Combine(dir.FullName, ".git"))
-                        || dir.GetFiles("*.sln").Any()
-                        || string.Equals(dir.Name, "TSI.Friday", StringComparison.OrdinalIgnoreCase)
-                    )
-                    {
-                        return dir.FullName;
-                    }
-
-                    dir = dir.Parent;
-                }
-            }
-            catch
-            {
-                // ignore and fallback
-            }
-
-            return null;
-        }
-
         /// <inheritdoc />
         public async Task<string> UploadImageAsync(
             string entityFolder,
             Guid entityId,
-            IFormFile? file
+            IFormFile file
         )
         {
-            // Basic validations
-            var allowedExts = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-            const long maxBytes = 5 * 1024 * 1024; // 5 MB
-
-            // Resolve uploads root: configuration > workspace-root (dev) > ContentRoot (server)
-            var configuredUploads = _configuration["Uploads:Path"]; // may be null or empty
-            string uploadsRoot;
-
-            if (!string.IsNullOrWhiteSpace(configuredUploads))
-            {
-                uploadsRoot = Path.IsPathRooted(configuredUploads)
-                    ? Path.GetFullPath(configuredUploads)
-                    : Path.GetFullPath(Path.Combine(_env.ContentRootPath, configuredUploads));
-            }
-            else
-            {
-                var workspaceRoot = FindWorkspaceRoot(_env.ContentRootPath);
-                if (!string.IsNullOrWhiteSpace(workspaceRoot))
-                {
-                    uploadsRoot = Path.GetFullPath(Path.Combine(workspaceRoot, "uploads"));
-                }
-                else
-                {
-                    // fallback to ContentRootPath/uploads for server when workspace not found
-                    uploadsRoot = Path.GetFullPath(Path.Combine(_env.ContentRootPath, "uploads"));
-                }
-            }
-
-            Directory.CreateDirectory(uploadsRoot);
-            var dirPath = Path.Combine(uploadsRoot, entityFolder);
+            var dirPath = await BuildPhotoPathAsync(entityFolder, entityId);
             Directory.CreateDirectory(dirPath);
 
-            // If file == null -> remove existing photo for entity
+            // Retrieve the current photo name from the entity before any changes
+            var previousFileName = await GetCurrentPhotoAsync(entityFolder, entityId);
+
             if (file == null)
             {
-                string? previousFileName = null;
-                switch (entityFolder)
-                {
-                    case "BusinessPartner":
-                    {
-                        var bp = await _businessPartnerRepository.GetByIdAsync(entityId);
-                        previousFileName = bp?.Photo ?? string.Empty;
-                        if (bp != null)
-                        {
-                            bp.Photo = null;
-                            await _businessPartnerRepository.UpdateAsync(bp);
-                        }
-
-                        break;
-                    }
-                    case "User":
-                    {
-                        var user = await _userRepository.GetByIdAsync(entityId.ToString());
-                        previousFileName = user?.Photo ?? string.Empty;
-                        if (user != null)
-                        {
-                            user.Photo = null;
-                            await _userRepository.UpdateAsync(user);
-                        }
-
-                        break;
-                    }
-                    case "Product":
-                    {
-                        var product = await _productRepository.GetByIdAsync(entityId);
-                        previousFileName = product?.Photo ?? string.Empty;
-                        if (product != null)
-                        {
-                            product.Photo = null;
-                            await _productRepository.UpdateAsync(product);
-                        }
-
-                        break;
-                    }
-                    default:
-                        throw new ArgumentException("Unknown entity folder", nameof(entityFolder));
-                }
-
-                if (!string.IsNullOrWhiteSpace(previousFileName))
-                {
-                    var previousPath = Path.Combine(dirPath, previousFileName);
-                    if (File.Exists(previousPath))
-                    {
-                        try
-                        {
-                            File.Delete(previousPath);
-                        }
-                        catch
-                        { /* ignore */
-                        }
-                    }
-                }
-
+                DeletePhoto(dirPath, previousFileName);
+                await UpdateEntityPhotoAsync(entityFolder, entityId, null);
                 return string.Empty;
             }
 
-            // Validate provided file
             var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
-            if (string.IsNullOrWhiteSpace(ext) || !allowedExts.Contains(ext))
+            if (string.IsNullOrWhiteSpace(ext) || !AllowedExts.Contains(ext))
                 throw new ArgumentException("Unsupported file extension");
 
-            if (file.Length > maxBytes)
+            if (file.Length > MaxBytes)
                 throw new ArgumentException("File too large");
 
-            // Prepare names and paths
-            var fileName = $"{Guid.NewGuid()}{ext}";
-            var tempFileName = fileName + ".tmp";
-            var tempPath = Path.Combine(dirPath, tempFileName);
+            var fileName = SanitizeFileName(file.FileName);
+
+            // Delete previous photo if it exists and is different from the new one
+            DeletePhoto(dirPath, previousFileName);
+
             var finalPath = Path.Combine(dirPath, fileName);
 
-            // Save to temp
-            using (var stream = new FileStream(tempPath, FileMode.Create))
+            using (var stream = new FileStream(finalPath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // Update entity in DB and capture previous file
-            string? previousFile = null;
-            switch (entityFolder)
-            {
-                case "BusinessPartner":
-                {
-                    var bp = await _businessPartnerRepository.GetByIdAsync(entityId);
-                    previousFile = bp?.Photo ?? string.Empty;
-                    if (bp != null)
-                    {
-                        bp.Photo = fileName;
-                        await _businessPartnerRepository.UpdateAsync(bp);
-                    }
-
-                    break;
-                }
-                case "User":
-                {
-                    var user = await _userRepository.GetByIdAsync(entityId.ToString());
-                    previousFile = user?.Photo ?? string.Empty;
-                    if (user != null)
-                    {
-                        user.Photo = fileName;
-                        await _userRepository.UpdateAsync(user);
-                    }
-
-                    break;
-                }
-                case "Product":
-                {
-                    var product = await _productRepository.GetByIdAsync(entityId);
-                    previousFile = product?.Photo ?? string.Empty;
-                    if (product != null)
-                    {
-                        product.Photo = fileName;
-                        await _productRepository.UpdateAsync(product);
-                    }
-
-                    break;
-                }
-                default:
-                    throw new ArgumentException("Unknown entity folder", nameof(entityFolder));
-            }
-
-            // Move temp to final (atomic on same volume)
-            File.Move(tempPath, finalPath);
-
-            // Delete previous file if exists and different
-            if (
-                !string.IsNullOrWhiteSpace(previousFile)
-                && !string.Equals(previousFile, fileName, StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                var previousPath = Path.Combine(dirPath, previousFile);
-                if (File.Exists(previousPath))
-                {
-                    try
-                    {
-                        File.Delete(previousPath);
-                    }
-                    catch
-                    { /* ignore */
-                    }
-                }
-            }
+            await UpdateEntityPhotoAsync(entityFolder, entityId, fileName);
 
             return fileName;
+        }
+
+        /// <inheritdoc />
+        public WebApiResponse<AttachmentFileResult> GetPhotoFile(
+            string entity,
+            Guid entityId,
+            string fileName
+        )
+        {
+            var response = new WebApiResponse<AttachmentFileResult>();
+
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                response.Status = ResponseStatus.Error;
+                response.Message = "File name is required";
+                return response;
+            }
+
+            var dirPath = BuildPhotoPathAsync(entity, entityId).GetAwaiter().GetResult();
+            var fullPath = Path.Combine(dirPath, SanitizeFileName(fileName));
+
+            if (!File.Exists(fullPath))
+            {
+                response.Status = ResponseStatus.Error;
+                response.Message = "Photo not found";
+                return response;
+            }
+
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(fullPath, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            response.Data = new AttachmentFileResult
+            {
+                Stream = stream,
+                ContentType = contentType,
+                FileName = Path.GetFileName(fullPath),
+            };
+            response.Status = ResponseStatus.Success;
+            response.Message = "Photo found";
+
+            return response;
         }
 
         #endregion Public methods
 
         #region Private methods
 
-        // kept for compatibility with previous behavior (not used now)
-        private static void RemovePhotoWhenFileIsEmpty(
-            IFormFile? file,
-            string uploadsRoot,
-            string entityFolder,
-            string previousFileName
-        )
+        /// <summary>
+        /// Builds the photo storage path resolving entity name when applicable:
+        ///   BusinessPartner(s) → {basePath}/BusinessPartners/{Name}
+        ///   Product(s)  → {basePath}/Products/{entityId}
+        ///   User(s)            → {basePath}/Users/{entityId}
+        /// </summary>
+        private async Task<string> BuildPhotoPathAsync(string entityFolder, Guid entityId)
         {
-            if (file == null)
+            var basePath = ResolveBasePath();
+
+            switch (entityFolder)
             {
-                var previousPath = Path.Combine(uploadsRoot, entityFolder, previousFileName);
-                if (File.Exists(previousPath))
+                case "BusinessPartner":
+                case "BusinessPartners":
                 {
-                    try
-                    {
-                        File.Delete(previousPath);
-                    }
-                    catch
-                    {
-                        // ignore deletion errors to avoid breaking the upload process
-                    }
+                    var bp = await _businessPartnerRepository.GetByIdAsync(entityId);
+                    var folderName = bp != null ? SanitizeFileName(bp.Name) : entityId.ToString();
+                    return Path.Combine(basePath, "BusinessPartners", folderName);
                 }
+                case "Product":
+                case "Products":
+                    return Path.Combine(basePath, "Products", entityId.ToString());
+                case "User":
+                case "Users":
+                    return Path.Combine(basePath, "Users", entityId.ToString());
+                default:
+                    return Path.Combine(basePath, entityFolder, entityId.ToString());
             }
         }
 
-        #endregion Private methos
+        private string ResolveBasePath()
+        {
+            var configuredPath = _configuration["Attachments:BasePath"] ?? "attachments";
+
+            if (!string.IsNullOrWhiteSpace(configuredPath))
+            {
+                return Path.IsPathRooted(configuredPath)
+                    ? Path.GetFullPath(configuredPath)
+                    : Path.GetFullPath(Path.Combine(_env.ContentRootPath, configuredPath));
+            }
+
+            return Path.GetFullPath(Path.Combine(_env.ContentRootPath, "attachments"));
+        }
+
+        private static string SanitizeFileName(string input)
+        {
+            foreach (var c in Path.GetInvalidFileNameChars())
+            {
+                input = input.Replace(c, '_');
+            }
+            return input;
+        }
+
+        /// <summary>
+        /// Deletes a specific photo file from the directory.
+        /// </summary>
+        private void DeletePhoto(string dirPath, string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                return;
+
+            var fullPath = Path.Combine(dirPath, SanitizeFileName(fileName));
+            try
+            {
+                if (File.Exists(fullPath))
+                    File.Delete(fullPath);
+            }
+            catch
+            { /* ignore */
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the current Photo value from the entity.
+        /// </summary>
+        private async Task<string> GetCurrentPhotoAsync(string entityFolder, Guid entityId)
+        {
+            switch (entityFolder)
+            {
+                case "BusinessPartner":
+                case "BusinessPartners":
+                {
+                    var bp = await _businessPartnerRepository.GetByIdAsync(entityId);
+                    return bp.Photo;
+                }
+                case "User":
+                case "Users":
+                {
+                    var user = await _userRepository.GetByIdAsync(entityId.ToString());
+                    return user.Photo;
+                }
+                case "Product":
+                case "Products":
+                {
+                    var product = await _productRepository.GetByIdAsync(entityId);
+                    return product.Photo;
+                }
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private async Task UpdateEntityPhotoAsync(
+            string entityFolder,
+            Guid entityId,
+            string fileName
+        )
+        {
+            switch (entityFolder)
+            {
+                case "BusinessPartner":
+                case "BusinessPartners":
+                {
+                    var bp = await _businessPartnerRepository.GetByIdAsync(entityId);
+                    if (bp != null)
+                    {
+                        bp.Photo = fileName;
+                        await _businessPartnerRepository.UpdateAsync(bp);
+                    }
+                    break;
+                }
+                case "User":
+                case "Users":
+                {
+                    var user = await _userRepository.GetByIdAsync(entityId.ToString());
+                    if (user != null)
+                    {
+                        user.Photo = fileName;
+                        await _userRepository.UpdateAsync(user);
+                    }
+                    break;
+                }
+                case "Product":
+                case "Products":
+                {
+                    var product = await _productRepository.GetByIdAsync(entityId);
+                    if (product != null)
+                    {
+                        product.Photo = fileName;
+                        await _productRepository.UpdateAsync(product);
+                    }
+                    break;
+                }
+                default:
+                    throw new ArgumentException("Unknown entity folder", nameof(entityFolder));
+            }
+        }
+
+        #endregion Private methods
     }
 }

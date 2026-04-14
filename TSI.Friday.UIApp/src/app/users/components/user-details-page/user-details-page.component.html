@@ -18,7 +18,7 @@
               <app-photo
                 [data]="data"
                 [imageUrl]="data?.photo"
-                [entityClass]="'User'"
+                [entityClass]="'Users'"
               ></app-photo>
               <div class="box-profile" hidden="true">
                 <div class="text-center">
@@ -60,6 +60,15 @@
                   >Detalhes</a
                 >
               </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  data-toggle="tab"
+                  >Anexos</a
+                >
+              </li>
             </ul>
 
             @if (loading) {
@@ -77,6 +86,12 @@
                       [compact]="true"
                     ></app-user-form>
                   </div>
+                }
+                @if (activeTab === "attachments") {
+                  <app-attachments
+                    [entity]="'user'"
+                    [entityId]="data!.id"
+                  ></app-attachments>
                 }
               </div>
             }

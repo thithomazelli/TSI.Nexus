@@ -1,0 +1,374 @@
+<div
+  class="attachments-container"
+  [class.drag-over]="isDraggingOver"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave($event)"
+  (drop)="onDropOnContainer($event)"
+>
+  <!-- Toolbar -->
+  <div class="attachments-toolbar mb-3">
+    <p-button
+      *ngIf="!isAtRoot()"
+      icon="pi pi-arrow-left"
+      label="Voltar"
+      severity="secondary"
+      [outlined]="true"
+      size="small"
+      (onClick)="navigateUp()"
+      pTooltip="Voltar para pasta anterior"
+    />
+    <p-button
+      icon="pi pi-upload"
+      label="Adicionar Anexo"
+      severity="secondary"
+      [outlined]="true"
+      size="small"
+      (onClick)="openAddDialog()"
+      pTooltip="Adicionar arquivo nesta pasta"
+      class="ms-2"
+    />
+    <p-button
+      icon="pi pi-folder-plus"
+      label="Nova Pasta"
+      severity="secondary"
+      [outlined]="true"
+      size="small"
+      (onClick)="openFolderDialog()"
+      pTooltip="Criar nova pasta"
+      class="ms-2"
+    />
+    <p-button
+      icon="pi pi-refresh"
+      label="Atualizar"
+      severity="secondary"
+      [outlined]="true"
+      size="small"
+      (onClick)="refresh()"
+      pTooltip="Atualizar anexos"
+      class="ms-2"
+    />
+    <p-button
+      *ngIf="selectedFile"
+      icon="pi pi-info-circle"
+      label="Detalhes"
+      severity="info"
+      [outlined]="true"
+      size="small"
+      (onClick)="openDetailsDialog()"
+      pTooltip="Ver detalhes do arquivo"
+      class="ms-2"
+    />
+    <p-button
+      *ngIf="selectedFile"
+      icon="pi pi-trash"
+      label="Remover"
+      severity="danger"
+      [outlined]="true"
+      size="small"
+      (onClick)="removeFile()"
+      pTooltip="Remover arquivo selecionado"
+      class="ms-2"
+    />
+
+    <span class="ms-auto d-inline-flex gap-1">
+      <p-button
+        icon="pi pi-list"
+        [severity]="viewMode === 'list' ? 'primary' : 'secondary'"
+        [outlined]="viewMode !== 'list'"
+        size="small"
+        (onClick)="viewMode = 'list'"
+        pTooltip="Exibir em lista"
+        tooltipPosition="top"
+      />
+      <p-button
+        icon="pi pi-th-large"
+        [severity]="viewMode === 'grid' ? 'primary' : 'secondary'"
+        [outlined]="viewMode !== 'grid'"
+        size="small"
+        (onClick)="viewMode = 'grid'"
+        pTooltip="Exibir em grade"
+        tooltipPosition="left"
+      />
+    </span>
+  </div>
+
+  <!-- Breadcrumbs -->
+  <nav class="breadcrumb-nav mb-2">
+    <ol class="breadcrumb mb-0">
+      <li
+        *ngFor="let crumb of breadcrumbs; let last = last"
+        class="breadcrumb-item"
+        [class.active]="last"
+      >
+        <a
+          *ngIf="!last"
+          href="javascript:void(0)"
+          (click)="navigateToPath(crumb.path)"
+        >
+          <i class="pi pi-folder me-1"></i>{{ crumb.label }}
+        </a>
+        <span *ngIf="last">
+          <i class="pi pi-folder-open me-1"></i>{{ crumb.label }}
+        </span>
+      </li>
+    </ol>
+  </nav>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-4">
+    <i
+      class="pi pi-spin pi-spinner"
+      style="font-size: 2rem; color: #6c757d"
+    ></i>
+    <p class="text-muted mt-2 mb-0">Carregando...</p>
+  </div>
+
+  <!-- Folder cards -->
+  <div
+    *ngIf="!loading && currentFolder.children.length > 0"
+    class="folder-grid mb-3"
+  >
+    <div
+      *ngFor="let folder of currentFolder.children"
+      class="folder-card"
+      [class.folder-drag-over]="dragOverFolder === folder"
+      (click)="navigateToPath(folder.path)"
+      (keyup.enter)="navigateToPath(folder.path)"
+      (dragover)="onFolderDragOver($event, folder)"
+      (dragleave)="onFolderDragLeave($event)"
+      (drop)="onDropOnFolder($event, folder)"
+      tabindex="0"
+    >
+      <i class="pi pi-folder folder-icon"></i>
+      <span class="folder-label">{{ folder.name }}</span>
+    </div>
+  </div>
+
+  <!-- Separator -->
+  <hr
+    *ngIf="
+      !loading &&
+      currentFolder.children.length > 0 &&
+      currentFolder.files.length > 0
+    "
+    class="my-2"
+  />
+
+  <!-- Files list -->
+  <div *ngIf="!loading" class="files-section">
+    <h6 *ngIf="currentFolder.files.length > 0" class="text-muted mb-2">
+      <i class="pi pi-file me-1"></i> Arquivos ({{
+        currentFolder.files.length
+      }})
+    </h6>
+
+    <div
+      *ngIf="
+        currentFolder.files.length === 0 && currentFolder.children.length === 0
+      "
+      class="empty-state text-center py-4"
+    >
+      <i class="pi pi-inbox" style="font-size: 2.5rem; color: #ccc"></i>
+      <p class="text-muted mt-2 mb-0">Nenhum arquivo nesta pasta</p>
+    </div>
+
+    <!-- List view -->
+    <div *ngIf="viewMode === 'list'" class="file-list">
+      <div
+        *ngFor="let file of currentFolder.files"
+        class="file-row"
+        [class.file-row-selected]="selectedFile?.id === file.id"
+        (click)="selectFile(file)"
+        (contextmenu)="onFileContextMenu($event, file)"
+      >
+        <div class="file-info">
+          <i [class]="getFileIcon(file.fileName)" class="file-icon me-2"></i>
+          <span class="file-name">{{ file.fileName }}</span>
+        </div>
+        <div class="file-meta">
+          <span class="file-actions">
+            <button
+              class="btn btn-sm btn-link p-0"
+              pTooltip="Detalhes"
+              tooltipPosition="top"
+              (click)="
+                selectFile(file); openDetailsDialog(); $event.stopPropagation()
+              "
+            >
+              <i class="pi pi-info-circle"></i>
+            </button>
+            <button
+              class="btn btn-sm btn-link p-0 ms-1"
+              pTooltip="Baixar"
+              tooltipPosition="top"
+              (click)="downloadFile(file); $event.stopPropagation()"
+            >
+              <i class="pi pi-download"></i>
+            </button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid view -->
+    <div *ngIf="viewMode === 'grid'" class="file-grid">
+      <div
+        *ngFor="let file of currentFolder.files"
+        class="file-card"
+        [class.file-card-selected]="selectedFile?.id === file.id"
+        (click)="selectFile(file)"
+        (dblclick)="selectFile(file); openDetailsDialog()"
+        (contextmenu)="onFileContextMenu($event, file)"
+        tabindex="0"
+      >
+        <i [class]="getFileIcon(file.fileName)" class="file-card-icon"></i>
+        <span class="file-card-name" [pTooltip]="file.fileName">{{
+          file.fileName
+        }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drop zone overlay -->
+  <div *ngIf="isDraggingOver && !dragOverFolder" class="drop-zone-hint">
+    <i class="pi pi-cloud-upload"></i>
+    <span>Solte o arquivo aqui para adicionar nesta pasta</span>
+  </div>
+
+  <!-- Context Menu -->
+  <p-contextmenu #cm [model]="contextMenuItems" />
+
+  <!-- Dialog: Detalhes do Arquivo -->
+  <p-dialog
+    header="Detalhes do Arquivo"
+    [(visible)]="showDetailsDialog"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+  >
+    <app-attachment-details-modal
+      *ngIf="selectedFile"
+      [attachment]="selectedFile!"
+      [currentPath]="currentFolder.path"
+      (remove)="showDetailsDialog = false; removeFile()"
+      (download)="downloadFile($event)"
+    />
+  </p-dialog>
+
+  <!-- Dialog: Adicionar Anexo -->
+  <p-dialog
+    header="Adicionar Anexo"
+    [(visible)]="showAddDialog"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    (onHide)="addFile = null"
+  >
+    <div class="mb-3">
+      <label class="form-label">Arquivo</label>
+      <div class="d-flex align-items-center gap-2">
+        <label class="btn btn-sm btn-outline-secondary mb-0" for="addFile">
+          <i class="pi pi-upload me-1"></i> Escolher arquivo
+        </label>
+        <span class="text-muted small">{{
+          addFile?.name || "Nenhum arquivo selecionado"
+        }}</span>
+      </div>
+      <input
+        #fileInput
+        id="addFile"
+        type="file"
+        class="d-none"
+        (change)="onAddFileSelected($event)"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="addPath" class="form-label">Diretório</label>
+      <input
+        id="addPath"
+        type="text"
+        pInputText
+        [(ngModel)]="addPath"
+        class="w-100"
+        placeholder="Ex: BusinessPartners/ClienteX/Orders"
+      />
+      <small class="text-muted">Pasta onde o arquivo será salvo</small>
+    </div>
+    <ng-template #footer>
+      <div class="d-flex justify-content-end mt-3">
+        <!-- <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="showAddDialog = false"
+          class="me-2"
+        />
+        <p-button
+          label="Remover"
+          severity="danger"
+          [outlined]="true"
+          (onClick)="removeFile()"
+          [disabled]="!selectedFile"
+          class="me-2"
+        />
+        <p-button
+          label="Adicionar"
+          icon="pi pi-check"
+          (onClick)="addAttachment()"
+          [disabled]="!addFile"
+        /> -->
+
+        <button
+          class="btn btn-secondary me-2"
+          type="button"
+          (click)="showAddDialog = false"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn btn-success"
+          type="button"
+          (click)="addAttachment()"
+          [disabled]="!addFile"
+        >
+          Salvar
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Dialog: Nova Pasta -->
+  <p-dialog
+    header="Nova Pasta"
+    [(visible)]="showFolderDialog"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+  >
+    <div class="mb-3">
+      <label for="folderName" class="form-label">Nome da pasta</label>
+      <input
+        id="folderName"
+        type="text"
+        pInputText
+        [(ngModel)]="newFolderName"
+        class="w-100"
+        (keyup.enter)="addFolder()"
+      />
+    </div>
+    <ng-template #footer>
+      <div class="d-flex justify-content-end">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="showFolderDialog = false"
+          class="me-2"
+        />
+        <p-button
+          label="Criar"
+          icon="pi pi-check"
+          (onClick)="addFolder()"
+          [disabled]="!newFolderName.trim()"
+        />
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -1,6 +1,7 @@
 export * from './account/account.service';
 export * from './address/address.service';
 export * from './api/api.service';
+export * from './attachment/attachment.service';
 export * from './business-partner/business-partner.service';
 export * from './currency/currency.service';
 export * from './modal/modal.service';

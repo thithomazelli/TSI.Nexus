@@ -26,5 +26,7 @@ namespace TSI.Friday.Contracts.Models
         public Guid? BusinessPartnerId { get; set; }
 
         public BusinessPartner BusinessPartner { get; set; }
+
+        public ICollection<Attachment> Attachments { get; set; }
     }
 }

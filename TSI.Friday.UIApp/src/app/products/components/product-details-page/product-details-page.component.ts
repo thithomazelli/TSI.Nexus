@@ -14,7 +14,7 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
   data?: Product | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'image' | 'history' = 'details';
+  activeTab: 'details' | 'image' | 'history' | 'attachments' = 'details';
 
   productTypeOptions: Record<ProductType, string> = {
     [ProductType.Rental]: 'Aluguel',

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,8 @@ namespace TSI.Friday.Data
 
         #region DbSets
 
+        public DbSet<Attachment> Attachment { get; set; }
+
         public DbSet<Address> Address { get; set; }
 
         public DbSet<BusinessPartner> BusinessPartner { get; set; }
@@ -38,7 +41,13 @@ namespace TSI.Friday.Data
 
         public DbSet<ProductPhoto> ProductPhoto { get; set; }
 
+        public DbSet<Quote> Quote { get; set; }
+
+        public DbSet<QuoteProduct> QuoteProduct { get; set; }
+
         public DbSet<Sequence> Sequence { get; set; }
+
+        public DbSet<Attachment> Attachments { get; set; }
 
         #endregion DbSets
 
@@ -88,6 +97,21 @@ namespace TSI.Friday.Data
                     stored: true
                 );
 
+            modelBuilder.Entity<Quote>().HasIndex(q => q.OrderNumber).IsUnique();
+
+            modelBuilder
+                .Entity<Quote>()
+                .Property(q => q.TotalPrice)
+                .HasComputedColumnSql("(Price - (Price * Discount / 100.0))", stored: true);
+
+            modelBuilder
+                .Entity<QuoteProduct>()
+                .Property(qp => qp.TotalPrice)
+                .HasComputedColumnSql(
+                    "((Price * Quantity) - ((Price * Quantity) * Discount / 100.0))",
+                    stored: true
+                );
+
             AddIndexByCreateDateForDataTables(modelBuilder);
 
             modelBuilder
@@ -111,6 +135,48 @@ namespace TSI.Friday.Data
                 .WithMany(o => o.Payments)
                 .HasForeignKey(pi => pi.OrderId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.BusinessPartner)
+                .WithMany(b => (ICollection<Attachment>)b.Attachments)
+                .HasForeignKey(a => a.BusinessPartnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.Order)
+                .WithMany(o => (ICollection<Attachment>)o.Attachments)
+                .HasForeignKey(a => a.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.Transaction)
+                .WithMany(t => (ICollection<Attachment>)t.Attachments)
+                .HasForeignKey(a => a.TransactionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.Payment)
+                .WithMany(p => (ICollection<Attachment>)p.Attachments)
+                .HasForeignKey(a => a.PaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.Product)
+                .WithMany(p => (ICollection<Attachment>)p.Attachments)
+                .HasForeignKey(a => a.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.User)
+                .WithMany(u => (ICollection<Attachment>)u.Attachments)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }

@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AccountService, PhotoService, User } from '@friday/core';
-import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-navbar',
@@ -21,6 +20,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   imageUrl: string = '';
   data: User | null = null;
 
+  private lastBlobUrl?: string;
   private mobileBreakpoint = 992;
   private resizeUnlisten: (() => void) | null = null;
 
@@ -55,10 +55,9 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.photoService.photo$.subscribe((response) => {
-      if (response.fileName && this.data?.id == response.userId) {
-        const apiBase = environment.appUrl; // ajuste conforme seu ambiente
-        this.imageUrl = `${apiBase}/uploads/User/${response.fileName}`;
-        this.data!.photo = response.fileName;
+      if (response.photoPath && this.data?.id == response.userId) {
+        this.data!.photo = response.photoPath;
+        this.loadUserPhoto(response.photoPath);
       }
     });
 
@@ -66,8 +65,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       this.data = user;
 
       if (user?.photo) {
-        const apiBase = environment.appUrl; // ajuste conforme seu ambiente
-        this.imageUrl = `${apiBase}/uploads/User/${user.photo}`;
+        this.loadUserPhoto(user.photo);
         return;
       }
 
@@ -86,6 +84,9 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.lastBlobUrl) {
+      URL.revokeObjectURL(this.lastBlobUrl);
+    }
     if (this.resizeUnlisten) {
       try {
         this.resizeUnlisten();
@@ -142,6 +143,21 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   logout(): void {
     this.accountService.logout();
+  }
+
+  private loadUserPhoto(photoPath: string): void {
+    this.photoService.getPhoto('Users', this.data!.id, photoPath).subscribe({
+      next: (blob) => {
+        if (this.lastBlobUrl) {
+          URL.revokeObjectURL(this.lastBlobUrl);
+        }
+        this.lastBlobUrl = URL.createObjectURL(blob);
+        this.imageUrl = this.lastBlobUrl;
+      },
+      error: () => {
+        this.imageUrl = 'assets/img/no_profile.png';
+      },
+    });
   }
 
   private applyResponsiveState(width: number): void {

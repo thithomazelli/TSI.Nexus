@@ -3,6 +3,7 @@ import {
   ApiType,
   ModalService,
   NotificationService,
+  PhotoService,
   ResponseStatus,
   User,
   UserService,
@@ -15,7 +16,6 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community';
 import { UserDetailsModalComponent } from './components/user-details-modal/user-details-modal.component';
-import { environment } from '../../environments/environment';
 import { Subject, Subscription, takeUntil, tap } from 'rxjs';
 
 @Component({
@@ -45,22 +45,44 @@ export class UsersComponent implements OnInit, OnDestroy {
       filter: false,
       width: 70,
       resizable: true,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const apiBase = environment.appUrl;
-        const imageUrl = params.value
-          ? `${apiBase}/uploads/user/${params.value}`
-          : '';
+      cellRenderer: (params: ICellRendererParams) => {
+        const attachmentId = params.value;
         const userId = params.data?.id;
-        // Fallback: se a imagem não carregar, exibe ícone FontAwesome user
-        return `<div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
-          <a 
-            class="ag-link"
-            data-action="view"
-            routerLink="/${this.baseEndPoint}/${userId}">
-            ${imageUrl ? `<img src='${imageUrl}' alt='User Photo' style='width: 35px; height: 35px; border-radius: 50%; object-fit: cover;' onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block';">` : ''}
-            <span style="display:${imageUrl ? 'none' : 'inline-block'};width:35px;height:35px;line-height:35px;text-align:center;font-size:22px;color:#adb5bd;background:#f1f3f4;border-radius:50%;"><i class='fas fa-user'></i></span>
-          </a>
-        </div>`;
+        const container = document.createElement('div');
+        container.style.cssText =
+          'display:flex;justify-content:center;align-items:center;width:100%;height:100%';
+
+        const link = document.createElement('a');
+        link.className = 'ag-link';
+        link.setAttribute('data-action', 'view');
+        container.appendChild(link);
+
+        const fallback = document.createElement('span');
+        fallback.style.cssText =
+          'width:35px;height:35px;line-height:35px;text-align:center;font-size:22px;color:#adb5bd;background:#f1f3f4;border-radius:50%;display:inline-block';
+        fallback.innerHTML = "<i class='fas fa-user'></i>";
+        link.appendChild(fallback);
+
+        if (attachmentId) {
+          const img = document.createElement('img');
+          img.alt = 'User Photo';
+          img.style.cssText =
+            'width:35px;height:35px;border-radius:50%;object-fit:cover;display:none';
+          link.insertBefore(img, fallback);
+
+          this.photoService.getPhoto('Users', userId, attachmentId).subscribe({
+            next: (blob) => {
+              img.src = URL.createObjectURL(blob);
+              img.style.display = '';
+              fallback.style.display = 'none';
+            },
+            error: () => {
+              /* keep fallback visible */
+            },
+          });
+        }
+
+        return container;
       },
     },
     {
@@ -146,6 +168,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private userService: UserService,
+    private photoService: PhotoService,
   ) {}
 
   ngOnInit(): void {

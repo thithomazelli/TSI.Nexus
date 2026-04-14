@@ -9,11 +9,11 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <summary>
         /// Returns the current authenticated user's id as string (could be GUID or numeric) if available, otherwise null.
         /// </summary>
-        string? GetUserId();
+        string GetUserId();
 
         /// <summary>
         /// Returns the current authenticated user's user name if available, otherwise null.
         /// </summary>
-        string? GetUserName();
+        string GetUserName();
     }
 }
