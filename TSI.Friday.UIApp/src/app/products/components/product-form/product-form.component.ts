@@ -55,6 +55,19 @@ export class ProductFormComponent
   @Input()
   dialogRef?: MatDialogRef<ProductDetailsModalComponent>;
 
+  categories = [
+    { label: 'Elétrica', value: 'electric' },
+    { label: 'Hidráulica', value: 'hydraulics' },
+    { label: 'Estrutura', value: 'structure' },
+    { label: 'Drywall', value: 'drywall' },
+    { label: 'Pintura', value: 'painting' },
+    { label: 'Acabamento', value: 'finishing' },
+    { label: 'Sanitário', value: 'sanitary' },
+    { label: 'Equipamento', value: 'equipment' },
+    { label: 'Fixação', value: 'fixing' },
+    { label: 'Acabamento final', value: 'final_finish' },
+  ];
+
   unitOptions = [
     { label: 'Unidade', value: ProductUnit.Unit },
     { label: 'Quilograma', value: ProductUnit.Kilogram },
@@ -217,6 +230,7 @@ export class ProductFormComponent
       type: [ProductType.Rental, Validators.required],
       quantityInStock: [1, [Validators.required, Validators.min(0)]],
       photo: [''],
+      category: ['', Validators.required],
     };
 
     this.form = !this.isEdit
