@@ -242,7 +242,7 @@
         class="btn btn-success"
         [disabled]="canDisplayAddressButtons"
       >
-        Salvar Cliente
+        {{ isEdit ? "Salvar" : "Adicionar" }}
       </button>
     </div>
   </form>

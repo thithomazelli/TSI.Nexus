@@ -183,6 +183,8 @@ export class TransactionFormComponent
             businessPartnerNameCtrl.clearValidators();
           }
           businessPartnerNameCtrl.updateValueAndValidity();
+          this.resetBusinessPartnerSelection();
+          this.setupAutoComplete();
         }),
       );
       // Initialize value when creating the form
@@ -314,13 +316,17 @@ export class TransactionFormComponent
         this.cleanClientSelection();
         return;
       }
-      // Sempre checa a lista de clientes, mesmo se businessPartnerId estiver vazio
-      const sub = this.businessPartnersArray$.subscribe((clients) => {
-        const found = clients.find((c) => c.name === businessPartnerName);
+      const isClient = this.form.get('type')?.value === PaymentType.Incoming;
+      const entityLabel = isClient ? 'Cliente' : 'Fornecedor';
+      // Sempre checa a lista de clientes ou fornecedores, mesmo se businessPartnerId estiver vazio
+      const sub = this.businessPartnersArray$.subscribe((businessPartners) => {
+        const found = businessPartners.find(
+          (c) => c.name === businessPartnerName,
+        );
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Cliente não encontrado',
-            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
+            title: `${entityLabel} não encontrado`,
+            message: `O ${entityLabel.toLowerCase()} "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
             cancelButtonText: 'Cancelar',
             confirmButtonText: 'Sim',
           });
@@ -365,15 +371,24 @@ export class TransactionFormComponent
     }, 200);
   }
 
-  private cleanClientSelection(): void {
-    this.form.get('businessPartnerId')!.setValue('');
-    this.markAsTouched('businessPartnerId');
-    this.form.get('businessPartnerId')!.setErrors({ required: true });
+  private resetBusinessPartnerSelection(clearValidation = false): void {
+    this.form.get('businessPartnerId')!.setValue(null);
     this.form.get('businessPartnerName')!.setValue('');
-    this.markAsTouched('businessPartnerName');
-    this.form.get('businessPartnerName')!.setErrors({ required: true });
     this.form.get('orderId')!.setValue(null);
     this.form.get('orderNumber')!.setValue('');
+    if (clearValidation) {
+      this.form.get('businessPartnerId')!.setErrors({ required: true });
+      this.form.get('businessPartnerName')!.setErrors({ required: true });
+      this.markAsTouched('businessPartnerId');
+      this.markAsTouched('businessPartnerName');
+    } else {
+      this.form.get('businessPartnerId')!.setErrors(null);
+      this.form.get('businessPartnerName')!.setErrors(null);
+    }
+  }
+
+  private cleanClientSelection(): void {
+    this.resetBusinessPartnerSelection(true);
   }
 
   private initForm(): void {
@@ -481,8 +496,17 @@ export class TransactionFormComponent
     this.businessPartnerNameAutoComplete();
   }
 
+  private getBusinessPartnersByType(
+    type: PaymentType,
+  ): Observable<WebApiResponse<BusinessPartner[]>> {
+    return type === PaymentType.Incoming
+      ? this.businessPartnerService.getClients()
+      : this.businessPartnerService.getSuppliers();
+  }
+
   private businessPartnerNameAutoComplete() {
-    this.businessPartners$ = this.businessPartnerService.getClients();
+    const type = this.form.get('type')?.value ?? PaymentType.Incoming;
+    this.businessPartners$ = this.getBusinessPartnersByType(type);
     this.businessPartnersArray$ = this.businessPartners$.pipe(
       map((response) => response.data ?? []),
     );
