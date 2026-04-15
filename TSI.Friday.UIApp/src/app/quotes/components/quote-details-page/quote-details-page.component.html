@@ -1,0 +1,98 @@
+<app-header
+  [title]="isEdit ? 'Editar Orçamento' : 'Adicionar Orçamento'"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Orçamentos', link: '/quotes' },
+    { label: isEdit ? 'Editar Orçamento' : 'Adicionar Orçamento', link: '' },
+  ]"
+></app-header>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Coluna de informações do orçamento -->
+      <div class="col-md-3">
+        <div class="card card-secondary card-outline mb-2">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <i class="bi bi-receipt" style="font-size: 4rem"></i>
+              <div class="box-profile">
+                <div class="text-center">
+                  <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                      <b>Número do Orçamento: </b>
+                      <span class="float-right">{{ data?.orderNumber }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Cliente: </b>
+                      <span class="float-right">{{
+                        data?.businessPartnerName
+                      }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Status: </b>
+                      <span class="float-right">{{ getStatusLabel() }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+        <div class="card card-secondary card-outline">
+          <div class="card-body">
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
+                  >Detalhes</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'products'"
+                  (click)="activeTab = 'products'"
+                  >Produtos</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  >Anexos</a
+                >
+              </li>
+            </ul>
+            <div *ngIf="activeTab === 'details'">
+              <app-quote-form
+                [isEdit]="isEdit"
+                [data]="data"
+                [compact]="false"
+              ></app-quote-form>
+            </div>
+
+            <div *ngIf="activeTab === 'products'">
+              <app-quote-products
+                [compact]="true"
+                [isFullList]="false"
+                [parentId]="data?.id"
+              ></app-quote-products>
+            </div>
+            <div *ngIf="activeTab === 'attachments'">
+              <app-attachments
+                [entity]="'quote'"
+                [entityId]="data!.id!"
+              ></app-attachments>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

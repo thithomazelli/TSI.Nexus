@@ -1,0 +1,22 @@
+<app-header
+  *ngIf="!compact"
+  title="Produtos do Orçamento"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Produtos do Orçamento', link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [compactView]="compact"
+    [className]="'Produtos do Orçamento'"
+    [rowData]="filteredRowData"
+    [columnDefs]="columnDefs"
+    [baseEndPoint]="baseEndPoint"
+    [refresh]="refreshQuoteProducts.bind(this)"
+    [delete]="deleteQuoteProduct.bind(this)"
+    (openModal)="openModal($event)"
+    [canAdd]="!isFullList"
+  ></app-grid>
+</div>
