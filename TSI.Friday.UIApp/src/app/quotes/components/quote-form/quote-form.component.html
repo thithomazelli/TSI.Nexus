@@ -1,8 +1,8 @@
-<div class="order-form-wrapper custom-modal">
+<div class="quote-form-wrapper custom-modal">
   @if (isEdit) {
     <app-alert-banner-component
       [status]="data?.status"
-      [entity]="'Pedido'"
+      [entity]="'Orçamento'"
     ></app-alert-banner-component>
   }
   <form [formGroup]="form" (ngSubmit)="submit()">
@@ -15,12 +15,12 @@
                 <input
                   formControlName="orderNumber"
                   type="text"
-                  placeholder="Order Number"
+                  placeholder="Número do Orçamento"
                   class="form-control"
                   [class.is-invalid]="isInvalid('orderNumber')"
                   [class.is-valid]="isValid('orderNumber')"
                 />
-                <label for="orderNumber">Order Number</label>
+                <label for="orderNumber">Número do Orçamento</label>
               </div>
               <div class="input-group-text"><i class="bi bi-hash"></i></div>
             </div>
@@ -89,7 +89,7 @@
           <div class="col-12 col-md-4">
             <app-date-field
               formControlName="date"
-              [label]="'Data do Pedido'"
+              [label]="'Data do Orçamento'"
             ></app-date-field>
           </div>
 
@@ -103,7 +103,7 @@
                   [class.is-valid]="isValid('status')"
                 >
                   <option
-                    *ngFor="let s of orderStatusOptions"
+                    *ngFor="let s of quoteStatusOptions"
                     [value]="s.value"
                   >
                     {{ s.label }}
@@ -176,11 +176,144 @@
         </div>
       </section>
 
-      <!-- Tabela de produtos do pedido -->
-      <section *ngIf="!isEdit" class="order-products-table mt-2">
-        <h5 class="">Produtos</h5>
-        <!-- <h5>Produtos</h5>
-      <hr /> -->
+      <!-- Dados do Pagamento -->
+      <section>
+        <h5 class="mt-3 mb-2">Dados do Pagamento</h5>
+        <div class="row g-1 mb-1">
+          @if (!isEdit) {
+            <div class="col-6">
+              <div class="input-group">
+                <div class="form-floating flex-fill select-floating">
+                  <select
+                    formControlName="condition"
+                    class="form-select"
+                    id="condition"
+                    [class.is-invalid]="isInvalid('condition')"
+                    [class.is-valid]="isValid('condition')"
+                  >
+                    <option value="" disabled selected>Condição</option>
+                    @for (option of conditionOptions; track option) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                  <label for="condition">Condição</label>
+                </div>
+                <div class="input-group-text">
+                  <i class="bi bi-calendar2-week"></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="input-group">
+                <div class="form-floating flex-fill select-floating">
+                  <select
+                    formControlName="method"
+                    class="form-select"
+                    id="method"
+                    [class.is-invalid]="isInvalid('method')"
+                    [class.is-valid]="isValid('method')"
+                  >
+                    <option value="" disabled selected>Método</option>
+                    @for (option of methodOptions; track option) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                  <label for="method">Método</label>
+                </div>
+                <div class="input-group-text">
+                  <i class="bi bi-credit-card"></i>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="totalOfPayments"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Total de Pagamentos"
+                  class="form-control"
+                  id="totalOfPayments"
+                  [class.is-invalid]="isInvalid('totalOfPayments')"
+                  [class.is-valid]="isValid('totalOfPayments')"
+                />
+                <label for="totalOfPayments">Total de Pagamentos</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-list-ol"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="paymentTotalPriceFormatted"
+                  type="text"
+                  placeholder="Preço Total Pagamentos"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('paymentTotalPriceFormatted')"
+                  [class.is-valid]="isValid('paymentTotalPriceFormatted')"
+                  (blur)="onCurrencyBlur('paymentTotalPrice')"
+                />
+                <label for="paymentTotalPrice">Preço Total Pagamentos</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="totalOfExpenses"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="Total de Despesas"
+                  class="form-control"
+                  id="totalOfExpenses"
+                  [class.is-invalid]="isInvalid('totalOfExpenses')"
+                  [class.is-valid]="isValid('totalOfExpenses')"
+                />
+                <label for="totalOfExpenses">Total de Despesas</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-list-ol"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="expenseTotalPriceFormatted"
+                  type="text"
+                  placeholder="Preço Total Despesas"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('expenseTotalPriceFormatted')"
+                  [class.is-valid]="isValid('expenseTotalPriceFormatted')"
+                  (blur)="onCurrencyBlur('expenseTotalPrice')"
+                />
+                <label for="expenseTotalPrice">Preço Total Despesas</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-cash"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabela de produtos do orçamento -->
+      <section *ngIf="!isEdit" class="quote-products-table mt-2">
+        <h5>Produtos</h5>
         <table class="table">
           <thead>
             <tr>
@@ -189,14 +322,14 @@
               <th class="table-header-title" scope="col">Preço Total</th>
               <th class="table-header-title" scope="col">Quantidade</th>
               <th class="" scope="col" style="width: 40px">
-                <button class="address-link" (click)="openOrderProductsModal()">
+                <button class="address-link" (click)="openQuoteProductsModal()">
                   Adicionar
                 </button>
               </th>
             </tr>
           </thead>
           <tbody class="table-group-divider table-body">
-            <tr *ngFor="let item of data?.orderProducts; let i = index">
+            <tr *ngFor="let item of data?.quoteProducts; let i = index">
               <td class="table-cell-info">{{ item.productSku }}</td>
               <td class="table-cell-info">{{ item.productName }}</td>
               <td class="table-cell-info">
@@ -211,12 +344,11 @@
                   (click)="removeProduct(i)"
                 >
                   <i class="bi bi-trash"></i>
-                  <!-- Remover -->
                 </button>
               </td>
             </tr>
             <tr
-              *ngIf="!data?.orderProducts || data?.orderProducts?.length === 0"
+              *ngIf="!data?.quoteProducts || data?.quoteProducts?.length === 0"
             >
               <td colspan="5" class="text-center text-muted small py-3">
                 Nenhum produto adicionado
@@ -225,40 +357,18 @@
           </tbody>
         </table>
       </section>
-
-      <section>
-        @if (canDisplayTransactionForm) {
-          <app-transaction-form
-            [isEdit]="isEdit"
-            [formGroup]="transactionFormGroup"
-            [compact]="true"
-            [data]="data?.transaction"
-            [parentData]="data"
-          ></app-transaction-form>
-        } @else {
-          <div [ngClass]="'callout callout-success mb-2'">
-            <i class="fas fa-check"></i>
-            Excelente! Cliente informado já tem pagamento antecipado!
-          </div>
-        }
-      </section>
     </div>
 
     <div class="d-flex justify-content-end mt-3">
       <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         Cancelar
       </button>
-      @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger me-2">
-          Remover
-        </button>
-      }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
       >
-        {{ isEdit ? "Salvar" : "Adicionar" }}
+        Salvar
       </button>
     </div>
   </form>

@@ -519,7 +519,7 @@ export class OrderFormComponent
 
   private updatePriceFields(): void {
     const total = this.data?.orderProducts?.reduce(
-      (sum, p) => sum + (p?.totalPrice || 0) * (p?.quantity || 0),
+      (sum, p) => sum + (p?.totalPrice || 0),
       0,
     );
     this.data!.price = total;

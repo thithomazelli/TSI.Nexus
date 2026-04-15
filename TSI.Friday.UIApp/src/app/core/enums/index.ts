@@ -9,6 +9,7 @@ export * from './payment-status.enum';
 export * from './payment-type.enum';
 export * from './photo-type.enum';
 export * from './product-unit.enum';
+export * from './quote-status.enum';
 export * from './response-status.enum';
 export * from './transaction-type.enum';
 export * from './user-type.enum';

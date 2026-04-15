@@ -1,0 +1,42 @@
+.table-header-title {
+  font-weight: 700;
+  color: #343a40;
+  font-size: 0.9rem;
+}
+
+.table-cell-info {
+  font-weight: 400;
+  color: #343a40;
+  font-size: 0.9rem;
+}
+
+.table-body {
+  border-top: 0;
+}
+
+.address-link {
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+  text-decoration: underline;
+}
+
+.address-link:hover {
+  color: #f55252;
+  --bs-link-color-rgb: var(--bs-link-hover-color-rgb);
+}
+
+/* Fonte menor para todo o formulário */
+.quote-form-wrapper form {
+  font-size: 0.92rem;
+}
+
+/* Títulos das sessões */
+.quote-form-wrapper h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 1.2rem;
+}

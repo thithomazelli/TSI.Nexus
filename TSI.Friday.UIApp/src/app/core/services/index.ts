@@ -11,5 +11,7 @@ export * from './order-product/order-product.service';
 export * from './payment/payment.service';
 export * from './photo/photo.service';
 export * from './product/product.service';
+export * from './quote/quote.service';
+export * from './quote-product/quote-product.service';
 export * from './transaction/transaction.service';
 export * from './user/user.service';

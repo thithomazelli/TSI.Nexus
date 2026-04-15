@@ -1,0 +1,16 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ isEdit ? "Editar Orçamento" : "Adicionar Orçamento" }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-quote-form
+    [isModal]="true"
+    [isEdit]="isEdit"
+    [data]="data"
+    [dialogRef]="dialogRef"
+    [compact]="true"
+  ></app-quote-form>
+</div>

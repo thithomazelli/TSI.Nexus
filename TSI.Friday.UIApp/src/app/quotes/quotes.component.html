@@ -1,0 +1,83 @@
+<app-header
+  *ngIf="!compact"
+  title="Orçamentos"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Orçamentos', link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [compactView]="compact"
+    [className]="'Orçamentos'"
+    [rowData]="filteredRowData"
+    [columnDefs]="columnDefs"
+    [baseEndPoint]="baseEndPoint"
+    [refresh]="refreshQuotes.bind(this)"
+    [delete]="deleteQuote.bind(this)"
+    (openModal)="openModal($event)"
+    [filtersTemplate]="filtersTpl"
+    [showFilters]="showFiltersOnInit"
+  ></app-grid>
+
+  <ng-template #filtersTpl>
+    <div class="row g-2 mb-2 flex-column flex-md-row">
+      <div class="date-filter-area col-12 col-md-auto">
+        <app-date-field
+          [(ngModel)]="filterStartDate"
+          (ngModelChange)="applyFilters()"
+          label="Início"
+          class="w-100 p-0"
+        ></app-date-field>
+      </div>
+      <div class="date-filter-area col-12 col-md-auto mb-1 mb-md-0">
+        <app-date-field
+          [(ngModel)]="filterEndDate"
+          (ngModelChange)="applyFilters()"
+          label="Fim"
+          class="w-100 p-0"
+        ></app-date-field>
+      </div>
+      <div class="col-12 col-md-auto ms-md-2">
+        <div class="filter-group-box position-relative mb-2 mb-md-0">
+          <span class="filter-group-label">Status</span>
+          <div class="d-flex flex-wrap align-items-center pt-2 gap-2">
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Open"
+                (change)="applyFilters()"
+              />
+              Em Aberto
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.WaitingPayment"
+                (change)="applyFilters()"
+              />
+              Aguardando Pagamento
+            </label>
+            <label class="form-check-label ms-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="filterStatus.Closed"
+                (change)="applyFilters()"
+              />
+              Fechado
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-auto d-flex align-items-end">
+        <button class="btn btn-secondary w-100" (click)="clearFilters()">
+          Limpar
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</div>

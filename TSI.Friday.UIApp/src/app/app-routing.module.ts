@@ -60,6 +60,12 @@ const routes: Routes = [
       import('./products/products.module').then((m) => m.ProductsModule),
   },
   {
+    path: 'quotes',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./quotes/quotes.module').then((m) => m.QuotesModule),
+  },
+  {
     path: 'reports',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
