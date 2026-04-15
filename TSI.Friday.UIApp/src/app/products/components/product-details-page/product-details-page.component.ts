@@ -31,16 +31,20 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const idParam = this.activatedRoute.snapshot.paramMap.get('id');
+    this.activatedRoute.paramMap
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((paramMap) => {
+        const idParam = paramMap.get('id');
 
-    if (idParam && idParam !== 'new') {
-      this.isEdit = true;
-      this.id = idParam;
-      this.getProductById(idParam);
-    } else {
-      this.isEdit = false;
-      this.data = null;
-    }
+        if (idParam && idParam !== 'new') {
+          this.isEdit = true;
+          this.id = idParam;
+          this.getProductById(idParam);
+        } else {
+          this.isEdit = false;
+          this.data = null;
+        }
+      });
   }
 
   ngOnDestroy(): void {

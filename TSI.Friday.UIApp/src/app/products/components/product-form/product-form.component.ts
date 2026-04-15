@@ -1,9 +1,11 @@
 import {
   Component,
+  EventEmitter,
   Input,
   OnInit,
   OnChanges,
   OnDestroy,
+  Output,
   SimpleChanges,
 } from '@angular/core';
 
@@ -52,20 +54,23 @@ export class ProductFormComponent
   @Input()
   compact = false;
 
+  @Output()
+  dataChange = new EventEmitter<Product>();
+
   @Input()
   dialogRef?: MatDialogRef<ProductDetailsModalComponent>;
 
   categories = [
-    { label: 'Elétrica', value: 'electric' },
-    { label: 'Hidráulica', value: 'hydraulics' },
-    { label: 'Estrutura', value: 'structure' },
-    { label: 'Drywall', value: 'drywall' },
-    { label: 'Pintura', value: 'painting' },
-    { label: 'Acabamento', value: 'finishing' },
-    { label: 'Sanitário', value: 'sanitary' },
-    { label: 'Equipamento', value: 'equipment' },
-    { label: 'Fixação', value: 'fixing' },
-    { label: 'Acabamento final', value: 'final_finish' },
+    { label: 'Elétrica', value: 'Electric' },
+    { label: 'Hidráulica', value: 'Hydraulics' },
+    { label: 'Estrutura', value: 'Structure' },
+    { label: 'Drywall', value: 'Drywall' },
+    { label: 'Pintura', value: 'Painting' },
+    { label: 'Acabamento', value: 'Finishing' },
+    { label: 'Sanitário', value: 'Sanitary' },
+    { label: 'Equipamento', value: 'Equipment' },
+    { label: 'Fixação', value: 'Fixing' },
+    { label: 'Acabamento', value: 'Finish' },
   ];
 
   unitOptions = [
@@ -287,6 +292,7 @@ export class ProductFormComponent
     if (this.isEdit && this.data) {
       this.notificationService.showMessage(response.status, response.message);
       this.data = response.data;
+      this.dataChange.emit(response.data);
     } else {
       this.routerService.navigateByUrl(
         `/${this._baseEndPoint}/${response.data.id}`,
