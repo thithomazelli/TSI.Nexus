@@ -535,6 +535,9 @@ namespace TSI.Friday.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("Category")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime(6)");
 
