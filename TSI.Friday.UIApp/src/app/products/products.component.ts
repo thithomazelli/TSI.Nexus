@@ -23,7 +23,35 @@ import { ProductDetailsModalComponent } from './components/product-details-modal
   standalone: false,
 })
 export class ProductsComponent implements OnInit, OnDestroy {
+  private _productChangedSub?: Subscription;
+  private _destroy$ = new Subject<void>();
+
   baseEndPoint = 'products';
+
+  categoryMap: { [key: string]: string } = {
+    Electric: 'Elétrica',
+    Hydraulics: 'Hidráulica',
+    Structure: 'Estrutura',
+    Drywall: 'Drywall',
+    Painting: 'Pintura',
+    Finishing: 'Acabamento',
+    Sanitary: 'Sanitário',
+    Equipment: 'Equipamento',
+    Fixing: 'Fixação',
+    Finish: 'Acabamento',
+  };
+
+  unitMap: { [key: string]: string } = {
+    Unit: 'Unidade',
+    Kilogram: 'Quilograma',
+    Gram: 'Grama',
+  };
+
+  typeMap: { [key: string]: string } = {
+    Sale: 'Venda',
+    Rental: 'Aluguel',
+    Service: 'Serviço',
+  };
 
   rowData: Product[] = [];
   columnDefs: ColDef[] = [
@@ -110,6 +138,21 @@ export class ProductsComponent implements OnInit, OnDestroy {
       },
     },
     {
+      field: 'category',
+      headerName: 'Categoria',
+      sortable: true,
+      filter: true,
+      maxWidth: 120,
+      filterValueGetter: (params: ValueGetterParams) => {
+        return (
+          this.categoryMap[params.data?.category] ?? params.data?.category ?? ''
+        );
+      },
+      valueFormatter: (params: ValueFormatterParams) => {
+        return this.getCategoryLabel(params.value);
+      },
+    },
+    {
       field: 'unit',
       headerName: 'Unidade',
       sortable: true,
@@ -157,21 +200,6 @@ export class ProductsComponent implements OnInit, OnDestroy {
       },
     },
   ];
-
-  unitMap: { [key: string]: string } = {
-    Unit: 'Unidade',
-    Kilogram: 'Quilograma',
-    Gram: 'Grama',
-  };
-
-  typeMap: { [key: string]: string } = {
-    Sale: 'Venda',
-    Rental: 'Aluguel',
-    Service: 'Serviço',
-  };
-
-  private _productChangedSub?: Subscription;
-  private _destroy$ = new Subject<void>();
 
   constructor(
     private modalService: ModalService,
@@ -257,5 +285,9 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   private getTypeLabel(type: string): string {
     return this.typeMap[type] ?? type ?? '';
+  }
+
+  private getCategoryLabel(category: string): string {
+    return this.categoryMap[category] ?? category ?? '';
   }
 }
