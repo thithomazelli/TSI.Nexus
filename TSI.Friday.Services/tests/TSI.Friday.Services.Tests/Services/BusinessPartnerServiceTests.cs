@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
@@ -24,10 +25,14 @@ namespace TSI.Friday.Services.Tests.Services
             _repository = new Mock<IRepository<BusinessPartner>>();
 
             // Configure AutoMapper for tests (map BusinessPartner -> BusinessPartnerDto, including derived-type fields)
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile<MappingProfile>();
-            });
+            var config = new MapperConfiguration(
+                cfg =>
+                {
+                    cfg.ConstructServicesUsing(type => null);
+                    cfg.AddMaps(typeof(MappingProfile).Assembly);
+                },
+                new LoggerFactory()
+            );
             _mapper = config.CreateMapper();
 
             _logService = new Mock<ILogService>();
@@ -342,7 +347,9 @@ namespace TSI.Friday.Services.Tests.Services
                 Message = $"Cliente {businessPartnerMock.Name} encontrado com sucesso",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(businessPartnerMock);
+            _repository
+                .Setup(_ => _.GetByIdAsync(idMock, a => a.Addresses))
+                .ReturnsAsync(businessPartnerMock);
 
             // Act
             var result = await _businessPartnerService.FindById(idMock);
@@ -352,7 +359,7 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 
-            _repository.Verify(_ => _.GetByIdAsync(idMock), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(idMock, a => a.Addresses), Times.Once);
         }
 
         [Fact]
@@ -367,7 +374,9 @@ namespace TSI.Friday.Services.Tests.Services
                 Message = $"Nenhum registro com o ID {idMock} foi encontrado",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock)).ReturnsAsync(value: null);
+            _repository
+                .Setup(_ => _.GetByIdAsync(idMock, a => a.Addresses))
+                .ReturnsAsync(value: null);
 
             // Act
             var result = await _businessPartnerService.FindById(idMock);
@@ -378,7 +387,7 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetByIdAsync(idMock), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(idMock, a => a.Addresses), Times.Once);
         }
 
         [Fact]
@@ -394,7 +403,7 @@ namespace TSI.Friday.Services.Tests.Services
                     $"Não foi possível acessar os registros na base de dados. Erro: {exception.Message}",
             };
 
-            _repository.Setup(_ => _.GetByIdAsync(idMock)).ThrowsAsync(exception);
+            _repository.Setup(_ => _.GetByIdAsync(idMock, a => a.Addresses)).ThrowsAsync(exception);
 
             // Act
             var result = await _businessPartnerService.FindById(idMock);
@@ -404,7 +413,7 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(expectedResult.Message, result.Message);
 
             expectedResult.Should().BeEquivalentTo(result);
-            _repository.Verify(_ => _.GetByIdAsync(idMock), Times.Once);
+            _repository.Verify(_ => _.GetByIdAsync(idMock, a => a.Addresses), Times.Once);
         }
 
         [Fact]

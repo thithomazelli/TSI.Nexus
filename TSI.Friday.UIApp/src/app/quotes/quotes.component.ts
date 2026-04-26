@@ -173,7 +173,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
         hide: true,
       },
       {
-        field: 'orderNumber',
+        field: 'quoteNumber',
         headerName: 'Número do Orçamento',
         sortable: true,
         filter: true,

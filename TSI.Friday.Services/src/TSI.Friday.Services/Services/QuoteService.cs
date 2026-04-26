@@ -16,8 +16,9 @@ namespace TSI.Friday.Services
         private readonly IRepository<QuoteProduct> _quoteProductRepository;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
-        private readonly ILogService _logService;
-
+        private readonly ILogService _logService; // keep original name matched with other files
+        private readonly IRepository<Product> _productRepository;
+        private readonly IOrderService _orderService; // keep original name matched with other files
         #endregion Properties
 
         #region Public methods
@@ -27,14 +28,18 @@ namespace TSI.Friday.Services
             IRepository<QuoteProduct> quoteProductRepository,
             ISequenceService sequenceService,
             IMapper mapper,
-            ILogService logService
+            ILogService logService,
+            IRepository<Product> productRepository,
+            IOrderService orderService
         )
         {
             _repository = repository;
             _quoteProductRepository = quoteProductRepository;
             _sequenceService = sequenceService;
             _mapper = mapper;
-            _logService = logService;
+            _logService = logService; // keep original name matched with other files
+            _productRepository = productRepository;
+            _orderService = orderService; // keep original name matched with other files
         }
 
         /// <inheritdoc />
@@ -194,14 +199,14 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<QuoteDto>> FindByOrderNumber(string orderNumber)
+        public async Task<WebApiResponse<QuoteDto>> FindByQuoteNumber(string quoteNumber)
         {
             WebApiResponse<QuoteDto> result = new();
 
             try
             {
                 var quote = await _repository.FirstOrDefaultAsync(
-                    q => q.OrderNumber == orderNumber,
+                    q => q.QuoteNumber == quoteNumber,
                     q => q.BusinessPartner
                 );
 
@@ -210,14 +215,14 @@ namespace TSI.Friday.Services
                 result.Message =
                     result.Data != null
                         ? $"Orçamento {result.Data.OrderNumber} encontrado com sucesso"
-                        : $"Nenhum Orçamento com o número {orderNumber} foi encontrado";
+                        : $"Nenhum Orçamento com o número {quoteNumber} foi encontrado";
             }
             catch (Exception ex)
             {
-                _logService.LogException(ex, "QuoteService.FindByOrderNumber", orderNumber);
+                _logService.LogException(ex, "QuoteService.FindByQuoteNumber", quoteNumber);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível buscar o Orçamento pelo número {orderNumber}. Erro: {ex.Message}";
+                    $"Não foi possível buscar o Orçamento pelo número {quoteNumber}. Erro: {ex.Message}";
             }
 
             return result;
@@ -277,6 +282,150 @@ namespace TSI.Friday.Services
             }
 
             return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<OrderDto>> ConvertToOrder(QuoteDto quoteDto)
+        {
+            var result = new WebApiResponse<OrderDto>();
+
+            try
+            {
+                if (quoteDto == null)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = "Quote inválido.";
+                    return result;
+                }
+
+                var outOfStock = new List<string>();
+                var outOfStockIds = new HashSet<Guid>();
+
+                foreach (var item in quoteDto.QuoteProducts ?? Enumerable.Empty<QuoteProductDto>())
+                {
+                    if (
+                        item.ProductType == ProductType.Sale
+                        || item.ProductType == ProductType.Rental
+                    )
+                    {
+                        var product = await _productRepository.GetByIdAsync(item.ProductId);
+                        var available = product?.QuantityInStock ?? 0;
+                        if (item.Quantity > available)
+                        {
+                            outOfStock.Add(
+                                $"{item.ProductName ?? item.ProductSku} (necessário {item.Quantity}, disponível {available})"
+                            );
+                            outOfStockIds.Add(item.ProductId);
+                        }
+                    }
+                }
+
+                // Map all QuoteProducts -> OrderProductDtos
+                var allOrderProducts =
+                    quoteDto
+                        .QuoteProducts?.Select(qp => new OrderProductDto
+                        {
+                            Id = qp.Id,
+                            ProductId = qp.ProductId,
+                            ProductName = qp.ProductName,
+                            ProductSku = qp.ProductSku,
+                            Quantity = qp.Quantity,
+                            PreviousQuantity = qp.PreviousQuantity,
+                            Discount = qp.Discount,
+                            Price = qp.Price,
+                            TotalPrice = qp.TotalPrice,
+                            ProductType = qp.ProductType,
+                            Status = qp.Status,
+                            BusinessPartnerId = quoteDto.BusinessPartnerId,
+                            BusinessPartnerName = quoteDto.BusinessPartnerName,
+                        })
+                        .ToList()
+                    ?? new List<OrderProductDto>();
+
+                // Build filtered list excluding out-of-stock items
+                var filteredOrderProducts = allOrderProducts
+                    .Where(op => !outOfStockIds.Contains(op.ProductId))
+                    .ToList();
+
+                // Map QuoteDto -> OrderDto (use filtered products)
+                var orderDto = new OrderDto
+                {
+                    BusinessPartnerId = quoteDto.BusinessPartnerId,
+                    BusinessPartnerName = quoteDto.BusinessPartnerName,
+                    Date = DateTime.UtcNow,
+                    Description = quoteDto.Description,
+                    Discount = quoteDto.Discount,
+                    Price = quoteDto.Price,
+                    TotalPrice = quoteDto.TotalPrice,
+                    QuoteId = quoteDto.Id,
+                    QuoteNumber = quoteDto.OrderNumber,
+                    OrderProducts = filteredOrderProducts,
+                };
+
+                // If there are out of stock items, return a warning and include the filtered DTO in Data (unless none remain)
+                if (outOfStock.Any())
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message =
+                        "Alguns produtos não possuem quantidade suficiente em estoque: "
+                        + string.Join(", ", outOfStock)
+                        + ". Deseja prosseguir sem eles?";
+                    result.Data = filteredOrderProducts.Any() ? orderDto : null;
+
+                    return result;
+                }
+
+                // If quote exists in DB, try to build a TransactionDto from its payment fields
+                if (quoteDto.Id != Guid.Empty)
+                {
+                    var quoteEntity = await _repository.GetByIdAsync(quoteDto.Id);
+                    if (quoteEntity != null)
+                    {
+                        // Only create transaction when there is some payment/expense info
+                        if (
+                            quoteEntity.TotalOfPayments > 0
+                            || quoteEntity.PaymentTotalPrice > 0m
+                            || quoteEntity.TotalOfExpenses > 0
+                            || quoteEntity.ExpenseTotalPrice > 0m
+                        )
+                        {
+                            var transactionDto = new TransactionDto
+                            {
+                                Date = DateTime.UtcNow,
+                                Description =
+                                    $"Transação do Pedido a partir do Orçamento {quoteEntity.QuoteNumber}",
+                                TotalOfPayments = quoteEntity.TotalOfPayments,
+                                PaymentTotalPrice = quoteEntity.PaymentTotalPrice,
+                                TotalOfExpenses = quoteEntity.TotalOfExpenses,
+                                ExpenseTotalPrice = quoteEntity.ExpenseTotalPrice,
+                                Condition = quoteEntity.Condition,
+                                Method = quoteEntity.Method,
+                                BusinessPartnerId = quoteEntity.BusinessPartnerId,
+                                BusinessPartnerName = quoteEntity.BusinessPartner?.Name,
+                                OrderNumber = orderDto.OrderNumber,
+                                // set Type based on presence of payments/expenses
+                                Type =
+                                    quoteEntity.PaymentTotalPrice > 0m
+                                        ? PaymentType.Incoming
+                                        : PaymentType.Outgoing,
+                            };
+
+                            orderDto.Transaction = transactionDto;
+                        }
+                    }
+                }
+
+                // Call OrderService.Add
+                var addResult = await _orderService.Add(orderDto);
+                return addResult;
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "QuoteService.ConvertToOrder", quoteDto);
+                result.Status = ResponseStatus.Error;
+                result.Message = "Erro ao converter orçamento para pedido. " + ex.Message;
+                return result;
+            }
         }
 
         #endregion Public methods

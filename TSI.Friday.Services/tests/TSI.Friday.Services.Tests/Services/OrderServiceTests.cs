@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
@@ -26,7 +27,14 @@ namespace TSI.Friday.Services.Tests.Services
 
         public OrderServiceTests()
         {
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
+            var config = new MapperConfiguration(
+                cfg =>
+                {
+                    cfg.ConstructServicesUsing(type => null);
+                    cfg.AddMaps(typeof(MappingProfile).Assembly);
+                },
+                new LoggerFactory()
+            );
             _repository = new Mock<IRepository<Order>>();
             _orderProductRepository = new Mock<IRepository<OrderProduct>>();
             _transactionService = new Mock<ITransactionService>();
@@ -53,6 +61,7 @@ namespace TSI.Friday.Services.Tests.Services
                     BusinessPartnerName = "ORD",
                     Transaction = new TransactionDto(),
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                    QuoteNumber = string.Empty,
                 },
                 new OrderDto
                 {
@@ -63,6 +72,7 @@ namespace TSI.Friday.Services.Tests.Services
                     BusinessPartnerName = "THG",
                     Transaction = new TransactionDto(),
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000000"),
+                    QuoteNumber = string.Empty,
                 },
             };
         }
@@ -78,6 +88,7 @@ namespace TSI.Friday.Services.Tests.Services
                 Description = "Novo Pedido",
                 BusinessPartnerName = "ORD",
                 Transaction = new TransactionDto(),
+                QuoteNumber = string.Empty,
             };
 
             var transactionDto = new TransactionDto
@@ -101,6 +112,7 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Novo Pedido",
                     Transaction = new TransactionDto(),
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                    QuoteNumber = string.Empty,
                 },
                 Status = ResponseStatus.Success,
                 Message = $"Pedido {orderDto.OrderNumber} cadastrado com sucesso.",

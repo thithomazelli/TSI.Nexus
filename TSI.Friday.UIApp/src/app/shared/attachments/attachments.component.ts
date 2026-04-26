@@ -18,12 +18,15 @@ import { NotificationService } from '../../core/services/notification/notificati
 })
 export class AttachmentsComponent implements OnInit {
   @Input()
+  orderNumber = '';
+  @Input()
   entity = 'businessPartner';
 
   @Input()
   entityId = '';
 
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('fileInput')
+  fileInput!: ElementRef<HTMLInputElement>;
 
   attachments: Attachment[] = [];
   rootFolder: FolderNode = {
@@ -444,18 +447,81 @@ export class AttachmentsComponent implements OnInit {
    * Resultado: a raiz da árvore começa no contexto da entidade acessada.
    */
   private detect_pathPrefix(): { prefix: string; rootName: string } {
-    const folderKey = this.entityFolderKey;
-    if (!folderKey) return { prefix: '', rootName: 'Anexos' };
+    // Lista de possíveis entidades para cortar o prefixo
+    const entityFolders = [
+      'BusinessPartners',
+      'Orders',
+      'Transactions',
+      'Payments',
+      'Products',
+      'Users',
+    ];
 
+    // Para pedido, corta até attachments/BusinessPartners/{NomeCliente}/Orders/{OrderNumber}
+    if (this.entity === 'order' && this.orderNumber && this.entityId) {
+      // entityId = BusinessPartnerId, orderNumber = OrderNumber
+      // Busca um path que contenha Orders/{orderNumber}
+      for (const att of this.attachments) {
+        if (att.path && att.path.includes(`/Orders/${this.orderNumber}/`)) {
+          const prefix =
+            att.path.split(`/Orders/${this.orderNumber}`)[0] +
+            `/Orders/${this.orderNumber}`;
+          return { prefix, rootName: 'Anexos' };
+        }
+      }
+    }
+    // Para transação, corta até attachments/BusinessPartners/{NomeCliente}/Transactions/{TransactionId}
+    if (this.entity === 'transaction' && this.entityId) {
+      for (const att of this.attachments) {
+        if (att.path && att.path.includes(`/Transactions/${this.entityId}/`)) {
+          const prefix =
+            att.path.split(`/Transactions/${this.entityId}`)[0] +
+            `/Transactions/${this.entityId}`;
+          return { prefix, rootName: 'Anexos' };
+        }
+      }
+    }
+    // Para cliente, corta até attachments/BusinessPartners/{NomeCliente}
+    if (this.entity === 'businessPartner' && this.entityId) {
+      for (const att of this.attachments) {
+        if (att.path && att.path.includes('attachments/BusinessPartners/')) {
+          // Pega até o nome do cliente
+          const parts = att.path.split('/');
+          const idx = parts.indexOf('BusinessPartners');
+          if (idx >= 0 && parts.length > idx + 1) {
+            const prefix = parts.slice(0, idx + 2).join('/');
+            return { prefix, rootName: 'Anexos' };
+          }
+        }
+      }
+    }
+    // Para outras entidades, mantém lógica anterior
+    const folderKey = this.entityFolderKey;
+    if (folderKey) {
+      for (const att of this.attachments) {
+        if (att.path) {
+          const parts = att.path.split('/').filter(Boolean);
+          const keyIndex = parts.findIndex((p) => p === folderKey);
+          if (keyIndex >= 0 && keyIndex + 1 < parts.length) {
+            if (this.entityId && parts[keyIndex + 1] === this.entityId) {
+              return {
+                prefix: parts.slice(0, keyIndex + 2).join('/'),
+                rootName: 'Anexos',
+              };
+            }
+          }
+        }
+      }
+    }
+    // Senão, mantém lógica anterior para entidades relacionadas
     for (const att of this.attachments) {
       if (att.path) {
         const parts = att.path.split('/').filter(Boolean);
-        const keyIndex = parts.indexOf(folderKey);
+        const keyIndex = parts.findIndex((p) => entityFolders.includes(p));
         if (keyIndex >= 0 && keyIndex + 1 < parts.length) {
-          const depth = keyIndex + 2;
           return {
-            prefix: parts.slice(0, depth).join('/'),
-            rootName: parts[keyIndex + 1],
+            prefix: parts.slice(0, keyIndex + 2).join('/'),
+            rootName: parts[keyIndex],
           };
         }
       }
@@ -470,25 +536,52 @@ export class AttachmentsComponent implements OnInit {
 
     for (const att of this.attachments) {
       const rawPath = att.path ?? '';
+      // Remove prefix
       const stripped =
         prefix && rawPath.startsWith(prefix)
           ? rawPath.slice(prefix.length).replace(/^\//, '')
           : rawPath;
+      let parts = stripped.split('/').filter(Boolean);
 
-      const parts = stripped.split('/').filter(Boolean);
-      let current = this.rootFolder;
-
-      for (const part of parts) {
-        const childPath = current.path ? `${current.path}/${part}` : part;
-        let child = current.children.find((c) => c.name === part);
-        if (!child) {
-          child = { name: part, path: childPath, children: [], files: [] };
-          current.children.push(child);
-        }
-        current = child;
+      // Se o primeiro segmento for 'attachments', ignora
+      if (parts[0] === 'attachments') {
+        parts = parts.slice(1);
       }
 
-      current.files.push(att);
+      // Se não há partes, é arquivo da entidade principal, vai direto na raiz
+      if (parts.length === 0) {
+        this.rootFolder.files.push(att);
+        continue;
+      }
+
+      // Só cria pasta se o segmento for entidade relacionada conhecida
+      let relatedEntities = [
+        'BusinessPartners',
+        'Transactions',
+        'Payments',
+        'Products',
+        'Users',
+      ];
+      // Orders só é relatedEntity fora do contexto de pedido
+      if (this.entity !== 'order') {
+        relatedEntities.push('Orders');
+      }
+      if (relatedEntities.includes(parts[0])) {
+        let current = this.rootFolder;
+        for (const part of parts) {
+          const childPath = current.path ? `${current.path}/${part}` : part;
+          let child = current.children.find((c) => c.name === part);
+          if (!child) {
+            child = { name: part, path: childPath, children: [], files: [] };
+            current.children.push(child);
+          }
+          current = child;
+        }
+        current.files.push(att);
+        continue;
+      }
+      // Se não for entidade relacionada, ou for 'Orders' no contexto de pedido, joga arquivo na raiz
+      this.rootFolder.files.push(att);
     }
   }
 

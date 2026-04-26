@@ -6,6 +6,11 @@
     ></app-alert-banner-component>
   }
   <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="d-flex justify-content-end mb-2" *ngIf="isEdit">
+      <button type="button" class="btn btn-primary" (click)="convertToOrder()">
+        Converter em Pedido
+      </button>
+    </div>
     <div class="modal-scrollable-area">
       <section>
         <div class="row g-1 mb-1">
@@ -13,14 +18,14 @@
             <div class="input-group">
               <div class="form-floating">
                 <input
-                  formControlName="orderNumber"
+                  formControlName="quoteNumber"
                   type="text"
                   placeholder="Número do Orçamento"
                   class="form-control"
-                  [class.is-invalid]="isInvalid('orderNumber')"
-                  [class.is-valid]="isValid('orderNumber')"
+                  [class.is-invalid]="isInvalid('quoteNumber')"
+                  [class.is-valid]="isValid('quoteNumber')"
                 />
-                <label for="orderNumber">Número do Orçamento</label>
+                <label for="quoteNumber">Número do Orçamento</label>
               </div>
               <div class="input-group-text"><i class="bi bi-hash"></i></div>
             </div>
@@ -176,141 +181,6 @@
         </div>
       </section>
 
-      <!-- Dados do Pagamento -->
-      <section>
-        <h5 class="mt-3 mb-2">Dados do Pagamento</h5>
-        <div class="row g-1 mb-1">
-          @if (!isEdit) {
-            <div class="col-6">
-              <div class="input-group">
-                <div class="form-floating flex-fill select-floating">
-                  <select
-                    formControlName="condition"
-                    class="form-select"
-                    id="condition"
-                    [class.is-invalid]="isInvalid('condition')"
-                    [class.is-valid]="isValid('condition')"
-                  >
-                    <option value="" disabled selected>Condição</option>
-                    @for (option of conditionOptions; track option) {
-                      <option [value]="option.value">{{ option.label }}</option>
-                    }
-                  </select>
-                  <label for="condition">Condição</label>
-                </div>
-                <div class="input-group-text">
-                  <i class="bi bi-calendar2-week"></i>
-                </div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="input-group">
-                <div class="form-floating flex-fill select-floating">
-                  <select
-                    formControlName="method"
-                    class="form-select"
-                    id="method"
-                    [class.is-invalid]="isInvalid('method')"
-                    [class.is-valid]="isValid('method')"
-                  >
-                    <option value="" disabled selected>Método</option>
-                    @for (option of methodOptions; track option) {
-                      <option [value]="option.value">{{ option.label }}</option>
-                    }
-                  </select>
-                  <label for="method">Método</label>
-                </div>
-                <div class="input-group-text">
-                  <i class="bi bi-credit-card"></i>
-                </div>
-              </div>
-            </div>
-          }
-
-          <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="totalOfPayments"
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="Total de Pagamentos"
-                  class="form-control"
-                  id="totalOfPayments"
-                  [class.is-invalid]="isInvalid('totalOfPayments')"
-                  [class.is-valid]="isValid('totalOfPayments')"
-                />
-                <label for="totalOfPayments">Total de Pagamentos</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-list-ol"></i>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <input
-                  formControlName="paymentTotalPriceFormatted"
-                  type="text"
-                  placeholder="Preço Total Pagamentos"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('paymentTotalPriceFormatted')"
-                  [class.is-valid]="isValid('paymentTotalPriceFormatted')"
-                  (blur)="onCurrencyBlur('paymentTotalPrice')"
-                />
-                <label for="paymentTotalPrice">Preço Total Pagamentos</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="totalOfExpenses"
-                  type="number"
-                  min="0"
-                  step="1"
-                  placeholder="Total de Despesas"
-                  class="form-control"
-                  id="totalOfExpenses"
-                  [class.is-invalid]="isInvalid('totalOfExpenses')"
-                  [class.is-valid]="isValid('totalOfExpenses')"
-                />
-                <label for="totalOfExpenses">Total de Despesas</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-list-ol"></i>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <input
-                  formControlName="expenseTotalPriceFormatted"
-                  type="text"
-                  placeholder="Preço Total Despesas"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('expenseTotalPriceFormatted')"
-                  [class.is-valid]="isValid('expenseTotalPriceFormatted')"
-                  (blur)="onCurrencyBlur('expenseTotalPrice')"
-                />
-                <label for="expenseTotalPrice">Preço Total Despesas</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-cash"></i></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Tabela de produtos do orçamento -->
       <section *ngIf="!isEdit" class="quote-products-table mt-2">
         <h5>Produtos</h5>
@@ -358,6 +228,139 @@
         </table>
       </section>
     </div>
+
+    <!-- Dados do Pagamento -->
+    <section>
+      <h5 class="mt-3 mb-2">Dados do Pagamento</h5>
+      <div class="row g-1 mb-1">
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select
+                formControlName="condition"
+                class="form-select"
+                id="condition"
+                [class.is-invalid]="isInvalid('condition')"
+                [class.is-valid]="isValid('condition')"
+              >
+                <option value="" disabled selected>Condição</option>
+                @for (option of conditionOptions; track option) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              <label for="condition">Condição</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-calendar2-week"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select
+                formControlName="method"
+                class="form-select"
+                id="method"
+                [class.is-invalid]="isInvalid('method')"
+                [class.is-valid]="isValid('method')"
+              >
+                <option value="" disabled selected>Método</option>
+                @for (option of methodOptions; track option) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              <label for="method">Método</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-credit-card"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="totalOfPayments"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Total de Pagamentos"
+                class="form-control"
+                id="totalOfPayments"
+                [class.is-invalid]="isInvalid('totalOfPayments')"
+                [class.is-valid]="isValid('totalOfPayments')"
+              />
+              <label for="totalOfPayments">Total de Pagamentos</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-list-ol"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="paymentTotalPriceFormatted"
+                type="text"
+                placeholder="Preço Total Pagamentos"
+                class="form-control"
+                [class.is-invalid]="isInvalid('paymentTotalPriceFormatted')"
+                [class.is-valid]="isValid('paymentTotalPriceFormatted')"
+                (blur)="onCurrencyBlur('paymentTotalPrice')"
+              />
+              <label for="paymentTotalPrice">Preço Total Pagamentos</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-cash-coin"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="totalOfExpenses"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Total de Despesas"
+                class="form-control"
+                id="totalOfExpenses"
+                [class.is-invalid]="isInvalid('totalOfExpenses')"
+                [class.is-valid]="isValid('totalOfExpenses')"
+              />
+              <label for="totalOfExpenses">Total de Despesas</label>
+            </div>
+            <div class="input-group-text">
+              <i class="bi bi-list-ol"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="input-group">
+            <div class="form-floating flex-grow-1">
+              <input
+                formControlName="expenseTotalPriceFormatted"
+                type="text"
+                placeholder="Preço Total Despesas"
+                class="form-control"
+                [class.is-invalid]="isInvalid('expenseTotalPriceFormatted')"
+                [class.is-valid]="isValid('expenseTotalPriceFormatted')"
+                (blur)="onCurrencyBlur('expenseTotalPrice')"
+              />
+              <label for="expenseTotalPrice">Preço Total Despesas</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-cash"></i></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="d-flex justify-content-end mt-3">
       <button type="button" class="btn btn-secondary me-2" (click)="cancel()">

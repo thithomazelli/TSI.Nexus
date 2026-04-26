@@ -14,6 +14,8 @@ export interface Order extends BaseModel {
   discount?: number;
   price?: number;
   totalPrice?: number;
+  quoteId?: string;
+  quoteNumber?: string;
   transaction?: Transaction;
   transactionId?: string;
   orderProducts?: OrderProduct[];

@@ -143,15 +143,13 @@ export class QuoteFormComponent
       return of(null);
     }
 
-    const formValue = this.form.getRawValue();
+    const rawValue = this.form.getRawValue();
 
-    Object.assign(this.data!, formValue);
-
-    if (this.data == null) {
-      return of(null);
+    if (this.data) {
+      Object.assign(this.data!, rawValue);
     }
 
-    return this.save(this.data).pipe(
+    return this.save(rawValue as Quote).pipe(
       tap({
         next: (response: WebApiResponse<Quote>) => {
           if (this.isModal) {
@@ -173,6 +171,75 @@ export class QuoteFormComponent
     } else {
       this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
     }
+  }
+
+  convertToOrder(): void {
+    if (!this.data) {
+      this.notificationService?.showMessage(
+        'Error',
+        'Orçamento não encontrado.',
+      );
+      return;
+    }
+
+    this.quoteService.convertToOrder(this.data).subscribe({
+      next: (response: WebApiResponse<any>) => {
+        // Se status for Warning, exibe confirmação
+        if (response.status === 'Warning') {
+          const confirmRef = this.modalService.showConfirmation({
+            title: 'Atenção',
+            message: response.message,
+            confirmButtonText: 'Confirmar',
+            cancelButtonText: 'Cancelar',
+          });
+          confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+            if (confirmed) {
+              // Chama novamente com response.data
+              this.quoteService.convertToOrder(response.data).subscribe({
+                next: (resp: WebApiResponse<any>) => {
+                  if (resp.status === ResponseStatus.Success) {
+                    this.notificationService?.showMessage(
+                      'Sucesso',
+                      'Orçamento convertido em pedido com sucesso!',
+                    );
+                  } else {
+                    this.notificationService?.showMessage(
+                      'Erro',
+                      resp.message || 'Falha ao converter orçamento.',
+                    );
+                  }
+                },
+                error: () => {
+                  this.notificationService?.showMessage(
+                    'Erro',
+                    'Erro ao converter orçamento.',
+                  );
+                },
+              });
+            }
+          });
+          return;
+        }
+        // Sucesso normal
+        if (response.status === ResponseStatus.Success) {
+          this.notificationService?.showMessage(
+            'Sucesso',
+            'Orçamento convertido em pedido com sucesso!',
+          );
+        } else {
+          this.notificationService?.showMessage(
+            'Erro',
+            response.message || 'Falha ao converter orçamento.',
+          );
+        }
+      },
+      error: () => {
+        this.notificationService?.showMessage(
+          'Erro',
+          'Erro ao converter orçamento.',
+        );
+      },
+    });
   }
 
   async onClientBlur(): Promise<void> {
@@ -258,9 +325,20 @@ export class QuoteFormComponent
     );
   }
 
+  onCurrencyBlur(formControlName: string): void {
+    const priceControl = this.form.get(`${formControlName}Formatted`);
+    if (!priceControl) {
+      return;
+    }
+
+    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
+    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
+    this.form.get(formControlName)?.setValue(value);
+  }
+
   private initForm(): void {
     this.form = this.formBuilder.group({
-      orderNumber: [''],
+      quoteNumber: [''],
       businessPartnerId: [null, Validators.required],
       businessPartnerName: [
         { value: '', disabled: this.data?.businessPartnerId != null },
@@ -369,21 +447,10 @@ export class QuoteFormComponent
       );
   }
 
-  onCurrencyBlur(formControlName: string): void {
-    const priceControl = this.form.get(`${formControlName}Formatted`);
-    if (!priceControl) {
-      return;
-    }
-
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get(formControlName)?.setValue(value);
-  }
-
   private disableEditFields(): void {
     if (this.isEdit && this.form) {
       this.form.get('businessPartnerName')?.disable();
-      this.form.get('orderNumber')?.disable();
+      this.form.get('quoteNumber')?.disable();
       this.form.get('totalOfPayments')?.disable();
       this.form.get('totalOfExpenses')?.disable();
     }
