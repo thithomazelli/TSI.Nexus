@@ -313,7 +313,7 @@ namespace TSI.Friday.Services
                         if (item.Quantity > available)
                         {
                             outOfStock.Add(
-                                $"{item.ProductName ?? item.ProductSku} (necessário {item.Quantity}, disponível {available})"
+                                $"{product?.Name ?? product?.Sku} (necessário {item.Quantity}, disponível {available})"
                             );
                             outOfStockIds.Add(item.ProductId);
                         }
