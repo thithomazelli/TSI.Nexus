@@ -51,9 +51,9 @@ namespace TSI.Friday.Services
             {
                 var prefix = BuildPrefixFromBusinessPartnerName(quoteDto.BusinessPartnerName);
                 var next = await _sequenceService.GetNextValue("QuoteNumberSeq");
-                quoteDto.OrderNumber = $"{prefix}-Q{next:D5}";
+                quoteDto.QuoteNumber = $"{prefix}-Q{next:D5}";
                 quoteDto.Description = string.IsNullOrEmpty(quoteDto.Description)
-                    ? $"Orçamento - {quoteDto.OrderNumber}"
+                    ? $"Orçamento - {quoteDto.QuoteNumber}"
                     : quoteDto.Description;
 
                 var entity = _mapper.Map<Quote>(quoteDto);
@@ -63,14 +63,14 @@ namespace TSI.Friday.Services
 
                 result.Data = responseDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Orçamento {quoteDto.OrderNumber} cadastrado com sucesso.";
+                result.Message = $"Orçamento {quoteDto.QuoteNumber} cadastrado com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.Add", quoteDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível cadastrar o Orçamento {quoteDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível cadastrar o Orçamento {quoteDto?.QuoteNumber} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -88,14 +88,14 @@ namespace TSI.Friday.Services
 
                 result.Data = _mapper.Map<QuoteDto>(entity);
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Orçamento {quoteDto.OrderNumber} atualizado com sucesso.";
+                result.Message = $"Orçamento {quoteDto.QuoteNumber} atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.Update", quoteDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível atualizar os dados do Orçamento {quoteDto?.OrderNumber} na base de dados. Erro: {ex.Message}";
+                    $"Não foi possível atualizar os dados do Orçamento {quoteDto?.QuoteNumber} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -113,13 +113,13 @@ namespace TSI.Friday.Services
                 if (entity == null)
                 {
                     _logService.LogException(
-                        new Exception($"Orçamento {quoteDto.OrderNumber} não encontrado."),
+                        new Exception($"Orçamento {quoteDto.QuoteNumber} não encontrado."),
                         "QuoteService.Remove",
                         quoteDto
                     );
                     result.Data = null;
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"Orçamento {quoteDto.OrderNumber} não encontrado.";
+                    result.Message = $"Orçamento {quoteDto.QuoteNumber} não encontrado.";
                     return result;
                 }
 
@@ -127,14 +127,14 @@ namespace TSI.Friday.Services
 
                 result.Data = quoteDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Orçamento {quoteDto.OrderNumber} removido com sucesso.";
+                result.Message = $"Orçamento {quoteDto.QuoteNumber} removido com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.Remove", quoteDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível remover o Orçamento {quoteDto?.OrderNumber} da base de dados. Erro: {ex.Message}";
+                    $"Não foi possível remover o Orçamento {quoteDto?.QuoteNumber} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -184,7 +184,7 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"Orçamento {result.Data.OrderNumber} encontrado com sucesso"
+                        ? $"Orçamento {result.Data.QuoteNumber} encontrado com sucesso"
                         : $"Nenhum Orçamento com o ID {id} foi encontrado";
             }
             catch (Exception ex)
@@ -214,7 +214,7 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"Orçamento {result.Data.OrderNumber} encontrado com sucesso"
+                        ? $"Orçamento {result.Data.QuoteNumber} encontrado com sucesso"
                         : $"Nenhum Orçamento com o número {quoteNumber} foi encontrado";
             }
             catch (Exception ex)
@@ -358,7 +358,7 @@ namespace TSI.Friday.Services
                     Price = quoteDto.Price,
                     TotalPrice = quoteDto.TotalPrice,
                     QuoteId = quoteDto.Id,
-                    QuoteNumber = quoteDto.OrderNumber,
+                    QuoteNumber = quoteDto.QuoteNumber,
                     OrderProducts = filteredOrderProducts,
                 };
 
@@ -402,7 +402,7 @@ namespace TSI.Friday.Services
                                 Method = quoteEntity.Method,
                                 BusinessPartnerId = quoteEntity.BusinessPartnerId,
                                 BusinessPartnerName = quoteEntity.BusinessPartner?.Name,
-                                OrderNumber = orderDto.OrderNumber,
+                                OrderNumber = orderDto.QuoteNumber,
                                 // set Type based on presence of payments/expenses
                                 Type =
                                     quoteEntity.PaymentTotalPrice > 0m

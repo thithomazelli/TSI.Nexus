@@ -350,7 +350,7 @@ namespace TSI.Friday.IoC
                         )
                 )
                 // map entity QuoteNumber -> dto OrderNumber
-                .ForMember(dest => dest.OrderNumber, opt => opt.MapFrom(src => src.QuoteNumber))
+                .ForMember(dest => dest.QuoteNumber, opt => opt.MapFrom(src => src.QuoteNumber))
                 .ForMember(
                     dest => dest.QuoteProducts,
                     opt => opt.MapFrom(src => src.QuoteProducts)
@@ -358,7 +358,7 @@ namespace TSI.Friday.IoC
 
             CreateMap<QuoteDto, Quote>()
                 // map dto OrderNumber -> entity QuoteNumber
-                .ForMember(dest => dest.QuoteNumber, opt => opt.MapFrom(src => src.OrderNumber))
+                .ForMember(dest => dest.QuoteNumber, opt => opt.MapFrom(src => src.QuoteNumber))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // QuoteProduct mappings

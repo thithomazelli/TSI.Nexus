@@ -11,7 +11,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
     {
         public Guid Id { get; set; }
 
-        public string OrderNumber { get; set; }
+        public string QuoteNumber { get; set; }
 
         public DateTime Date { get; set; }
 
