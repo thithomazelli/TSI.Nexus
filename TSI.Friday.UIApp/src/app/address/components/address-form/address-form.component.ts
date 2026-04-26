@@ -104,7 +104,13 @@ export class AddressFormComponent
       return of(null);
     }
 
-    return this.save(this.form.getRawValue() as Address).pipe(
+    const rawValue = this.form.getRawValue();
+
+    if (this.data) {
+      Object.assign(this.data!, rawValue);
+    }
+
+    return this.save(rawValue as Address).pipe(
       tap({
         next: (response: WebApiResponse<Address>) => {
           this.dialogRef?.close(response);

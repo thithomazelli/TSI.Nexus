@@ -145,29 +145,30 @@ export class OrderFormComponent
       return of(null);
     }
 
-    const formValue = this.form.getRawValue();
+    const rawValue = this.form.getRawValue();
 
     // Ensure transactionGroup has the updated client fields
     if (this.canDisplayTransactionForm) {
-      if (formValue.transaction) {
-        formValue.transaction.businessPartnerId = formValue.businessPartnerId;
-        formValue.transaction.businessPartnerName =
-          formValue.businessPartnerName;
+      if (rawValue.transaction) {
+        rawValue.transaction.businessPartnerId = rawValue.businessPartnerId;
+        rawValue.transaction.businessPartnerName = rawValue.businessPartnerName;
       }
 
       // Ensure markAllOrderProductsAsReturned is sent
-      if (formValue.markAllOrderProductsAsReturned !== undefined) {
+      if (rawValue.markAllOrderProductsAsReturned !== undefined) {
         this.data!.markAllProductsAsReturned =
-          formValue.markAllOrderProductsAsReturned;
+          rawValue.markAllOrderProductsAsReturned;
       }
     }
 
     // Garante que o id da transação seja preservado
-    if (formValue.transaction && this.data?.transaction?.id) {
-      formValue.transaction.id = this.data.transaction.id;
+    if (rawValue.transaction && this.data?.transaction?.id) {
+      rawValue.transaction.id = this.data.transaction.id;
     }
 
-    Object.assign(this.data!, formValue);
+    if (this.data) {
+      Object.assign(this.data!, rawValue);
+    }
 
     if (
       this.canDisplayTransactionForm &&
@@ -177,11 +178,7 @@ export class OrderFormComponent
       delete this.data.transaction.id;
     }
 
-    if (this.data == null) {
-      return of(null);
-    }
-
-    return this.save(this.data).pipe(
+    return this.save(rawValue).pipe(
       tap({
         next: (response: WebApiResponse<Order>) => {
           if (this.isModal) {

@@ -61,6 +61,24 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
+        /// Convert a quote into an order. Validates product availability and delegates creation to OrderService.
+        /// Returns warning if some products lack stock so UI can prompt user.
+        /// </summary>
+        /// <param name="quoteDto">Quote DTO with QuoteItems to convert</param>
+        [HttpPost]
+        [Route("ConvertToOrder")]
+        public async Task<IActionResult> ConvertToOrder([FromBody] QuoteDto quoteDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var webApiResponse = await _quoteService.ConvertToOrder(quoteDto);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
         /// Remove quote when it is identified on database
         /// </summary>
         /// <param name="quoteDto">Object to be removed</param>
@@ -96,14 +114,14 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get quote by order number
+        /// Get quote by quote number
         /// </summary>
-        /// <param name="orderNumber">Order number to be used in the search</param>
+        /// <param name="quoteNumber">Quote number to be used in the search</param>
         [HttpGet]
-        [Route("GetByOrderNumber/{orderNumber}")]
-        public async Task<IActionResult> GetByOrderNumber(string orderNumber)
+        [Route("GetByQuoteNumber/{quoteNumber}")]
+        public async Task<IActionResult> GetByQuoteNumber(string quoteNumber)
         {
-            var webApiResponse = await _quoteService.FindByOrderNumber(orderNumber);
+            var webApiResponse = await _quoteService.FindByQuoteNumber(quoteNumber);
             return Ok(webApiResponse);
         }
 

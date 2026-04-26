@@ -4,7 +4,7 @@ import { QuoteProduct } from './quote-product.model';
 
 export interface Quote {
   id?: string;
-  orderNumber?: string;
+  quoteNumber?: string;
   date?: Date;
   businessPartnerId?: string;
   businessPartnerName?: string;

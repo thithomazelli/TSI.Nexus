@@ -30,9 +30,9 @@ export class QuoteService {
     );
   }
 
-  getByOrderNumber(orderNumber: string): Observable<WebApiResponse<Quote>> {
+  getByQuoteNumber(quoteNumber: string): Observable<WebApiResponse<Quote>> {
     return this.apiService.get<WebApiResponse<Quote>>(
-      `${this._baseEndPoint}/getByOrderNumber/${orderNumber}`,
+      `${this._baseEndPoint}/getByQuoteNumber/${quoteNumber}`,
     );
   }
 
@@ -81,6 +81,12 @@ export class QuoteService {
   delete(quote: Quote): Observable<WebApiResponse<Quote>> {
     return this.apiService
       .delete<WebApiResponse<Quote>>(`${this._baseEndPoint}/remove`, quote)
+      .pipe(tap(() => this._quoteChangedSubject.next()));
+  }
+
+  convertToOrder(quote: Quote): Observable<WebApiResponse<any>> {
+    return this.apiService
+      .post<WebApiResponse<any>>(`${this._baseEndPoint}/convertToOrder`, quote)
       .pipe(tap(() => this._quoteChangedSubject.next()));
   }
 }

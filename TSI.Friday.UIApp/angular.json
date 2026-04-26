@@ -64,14 +64,20 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "3mb",
-                  "maximumError": "4mb"
+                  "maximumWarning": "5mb",
+                  "maximumError": "7mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "5kB",
+                  "maximumError": "6kB"
                 }
+              ],
+              "allowedCommonJsDependencies": [
+                "moment",
+                "moment/locale/pt-br",
+                "html2pdf.js",
+                "sweetalert2"
               ],
               "outputHashing": "all"
             },

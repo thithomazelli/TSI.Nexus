@@ -7,7 +7,7 @@ namespace TSI.Friday.Contracts.Models
 {
     public class Quote : BaseModel
     {
-        public string OrderNumber { get; set; } = string.Empty;
+        public string QuoteNumber { get; set; } = string.Empty;
 
         public DateTime Date { get; set; }
 

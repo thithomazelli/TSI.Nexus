@@ -165,6 +165,9 @@ export class PaymentFormComponent
     }
 
     const rawValue = this.form.getRawValue();
+    if (this.data) {
+      Object.assign(this.data!, rawValue);
+    }
 
     return this.save(rawValue as Payment).pipe(
       tap({

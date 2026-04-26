@@ -129,7 +129,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                var businessPartnerEntity = await _repository.GetByIdAsync(id);
+                var businessPartnerEntity = await _repository.GetByIdAsync(id, a => a.Addresses);
                 result.Data = _mapper.Map<BusinessPartnerDto>(businessPartnerEntity);
                 result.Status = ResponseStatus.Success;
                 result.Message =

@@ -349,12 +349,16 @@ namespace TSI.Friday.IoC
                             src.BusinessPartner != null ? src.BusinessPartner.Name : null
                         )
                 )
+                // map entity QuoteNumber -> dto OrderNumber
+                .ForMember(dest => dest.OrderNumber, opt => opt.MapFrom(src => src.QuoteNumber))
                 .ForMember(
                     dest => dest.QuoteProducts,
                     opt => opt.MapFrom(src => src.QuoteProducts)
                 );
 
             CreateMap<QuoteDto, Quote>()
+                // map dto OrderNumber -> entity QuoteNumber
+                .ForMember(dest => dest.QuoteNumber, opt => opt.MapFrom(src => src.OrderNumber))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // QuoteProduct mappings
@@ -363,7 +367,7 @@ namespace TSI.Friday.IoC
                 .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.QuoteId))
                 .ForMember(
                     dest => dest.OrderNumber,
-                    opt => opt.MapFrom(src => src.Quote != null ? src.Quote.OrderNumber : null)
+                    opt => opt.MapFrom(src => src.Quote != null ? src.Quote.QuoteNumber : null)
                 )
                 .ForMember(
                     dest => dest.ProductSku,

@@ -28,6 +28,10 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal TotalPrice { get; set; }
 
+        public Guid? QuoteId { get; set; }
+
+        public string? QuoteNumber { get; set; }
+
         public Guid? TransactionId { get; set; }
 
         public TransactionDto? Transaction { get; set; }

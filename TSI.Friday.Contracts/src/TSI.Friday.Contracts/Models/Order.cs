@@ -9,6 +9,8 @@ namespace TSI.Friday.Contracts.Models
     {
         public string OrderNumber { get; set; } = string.Empty;
 
+        public string QuoteNumber { get; set; } = string.Empty;
+
         public DateTime Date { get; set; }
 
         public OrderStatus Status { get; set; }

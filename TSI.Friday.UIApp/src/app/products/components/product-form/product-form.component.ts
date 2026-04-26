@@ -1,11 +1,9 @@
 import {
   Component,
-  EventEmitter,
   Input,
   OnInit,
   OnChanges,
   OnDestroy,
-  Output,
   SimpleChanges,
 } from '@angular/core';
 
@@ -53,9 +51,6 @@ export class ProductFormComponent
 
   @Input()
   compact = false;
-
-  @Output()
-  dataChange = new EventEmitter<Product>();
 
   @Input()
   dialogRef?: MatDialogRef<ProductDetailsModalComponent>;
@@ -130,7 +125,13 @@ export class ProductFormComponent
       return of(null);
     }
 
-    return this.save(this.form.getRawValue() as Product).pipe(
+    const rawValue = this.form.getRawValue();
+
+    if (this.data) {
+      Object.assign(this.data!, rawValue);
+    }
+
+    return this.save(rawValue as Product).pipe(
       tap({
         next: (response: WebApiResponse<Product>) => {
           if (this.isModal) {
@@ -292,7 +293,6 @@ export class ProductFormComponent
     if (this.isEdit && this.data) {
       this.notificationService.showMessage(response.status, response.message);
       this.data = response.data;
-      this.dataChange.emit(response.data);
     } else {
       this.routerService.navigateByUrl(
         `/${this._baseEndPoint}/${response.data.id}`,

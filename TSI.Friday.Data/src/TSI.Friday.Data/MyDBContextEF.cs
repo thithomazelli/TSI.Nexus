@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TSI.Friday.Contracts.Models;
@@ -87,22 +86,23 @@ namespace TSI.Friday.Data
             modelBuilder
                 .Entity<Order>()
                 .Property(op => op.TotalPrice)
-                .HasComputedColumnSql("(Price - (Price * Discount / 100.0))", stored: true);
+                .HasComputedColumnSql("(Price - (Price * Discount /100.0))", stored: true);
 
             modelBuilder
                 .Entity<OrderProduct>()
                 .Property(op => op.TotalPrice)
                 .HasComputedColumnSql(
-                    "((Price * Quantity) - ((Price * Quantity) * Discount / 100.0))",
+                    "((Price * Quantity) - ((Price * Quantity) * Discount /100.0))",
                     stored: true
                 );
 
-            modelBuilder.Entity<Quote>().HasIndex(q => q.OrderNumber).IsUnique();
+            // Quote entity uses QuoteNumber property
+            modelBuilder.Entity<Quote>().HasIndex(q => q.QuoteNumber).IsUnique();
 
             modelBuilder
                 .Entity<Quote>()
                 .Property(q => q.TotalPrice)
-                .HasComputedColumnSql("(Price - (Price * Discount / 100.0))", stored: true);
+                .HasComputedColumnSql("(Price - (Price * Discount /100.0))", stored: true);
 
             modelBuilder
                 .Entity<QuoteProduct>()

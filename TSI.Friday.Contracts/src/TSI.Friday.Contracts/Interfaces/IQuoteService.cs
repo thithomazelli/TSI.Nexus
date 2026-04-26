@@ -43,11 +43,11 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<QuoteDto>> FindById(Guid? id);
 
         /// <summary>
-        /// Should find a Quote that based on the OrderNumber received as parameter.
+        /// Should find a Quote that based on the QuoteNumber received as parameter.
         /// </summary>
-        /// <param name="orderNumber">The OrderNumber to be used on the search.</param>
-        /// <returns>One Quote object according to the OrderNumber defined as parameter.</returns>
-        Task<WebApiResponse<QuoteDto>> FindByOrderNumber(string orderNumber);
+        /// <param name="quoteNumber">The QuoteNumber to be used on the search.</param>
+        /// <returns>One Quote object according to the QuoteNumber defined as parameter.</returns>
+        Task<WebApiResponse<QuoteDto>> FindByQuoteNumber(string quoteNumber);
 
         /// <summary>
         /// Method responsible to get a list of Quotes based on the BusinessPartnerID received as parameter.
@@ -64,5 +64,12 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="productId">The ID to be used on the search.</param>
         /// <returns>List of quote according to the ProductID defined as parameter.</returns>
         Task<WebApiResponse<IEnumerable<QuoteDto>>> FindByProductId(Guid? productId);
+
+        /// <summary>
+        /// Convert a Quote into an Order. Checks product availability for sale/rental products before conversion.
+        /// If some products are out of stock, returns a warning with details so the UI may prompt the user.
+        /// Otherwise calls OrderService.Add() to create the order and returns that response.
+        /// </summary>
+        Task<WebApiResponse<TSI.Friday.Contracts.Models.DTOs.OrderDto>> ConvertToOrder(QuoteDto quoteDto);
     }
 }

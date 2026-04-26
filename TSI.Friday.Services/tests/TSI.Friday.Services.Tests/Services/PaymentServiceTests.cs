@@ -8,6 +8,7 @@ using TSI.Friday.Contracts.Models;
 using TSI.Friday.Contracts.Models.DTOs;
 using TSI.Friday.Contracts.Utilities;
 using TSI.Friday.IoC;
+using Microsoft.Extensions.Logging;
 
 namespace TSI.Friday.Services.Tests.Services
 {
@@ -23,7 +24,14 @@ namespace TSI.Friday.Services.Tests.Services
         {
             _repository = new Mock<IRepository<Payment>>();
             _logService = new Mock<ILogService>();
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
+            var config = new MapperConfiguration(
+                cfg =>
+                {
+                    cfg.ConstructServicesUsing(type => null);
+                    cfg.AddMaps(typeof(MappingProfile).Assembly);
+                },
+                new LoggerFactory()
+            );
             _mapper = config.CreateMapper();
             _paymentService = new PaymentService(_repository.Object, _mapper, _logService.Object);
 

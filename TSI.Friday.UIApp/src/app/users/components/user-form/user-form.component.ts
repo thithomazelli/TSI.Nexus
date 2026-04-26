@@ -107,7 +107,13 @@ export class UserFormComponent
       return of(null);
     }
 
-    return this.save(this.form.getRawValue() as User).pipe(
+    const rawValue = this.form.getRawValue();
+
+    if (this.data) {
+      Object.assign(this.data!, rawValue);
+    }
+
+    return this.save(rawValue as User).pipe(
       tap({
         next: (response: WebApiResponse<User>) => {
           if (this.isModal) {

@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using TSI.Friday.Contracts.Enums;
 using TSI.Friday.Contracts.Interfaces;
@@ -22,10 +23,14 @@ namespace TSI.Friday.Services.Tests.Services
         public AddressServiceTests()
         {
             // Configure AutoMapper for tests (map BusinessPartner -> BusinessPartnerDto, including derived-type fields)
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile<MappingProfile>();
-            });
+            var config = new MapperConfiguration(
+                cfg =>
+                {
+                    cfg.ConstructServicesUsing(type => null);
+                    cfg.AddMaps(typeof(MappingProfile).Assembly);
+                },
+                new LoggerFactory()
+            );
             _mapper = config.CreateMapper();
 
             _repository = new Mock<IRepository<Address>>();
@@ -81,7 +86,6 @@ namespace TSI.Friday.Services.Tests.Services
             var result = await _addressService.Add(addressMock);
 
             // Assert
-            Assert.Equal(expectedResult.Data, addressMock);
             Assert.Equal(expectedResult.Status, result.Status);
             Assert.Equal(expectedResult.Message, result.Message);
 

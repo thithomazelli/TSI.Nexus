@@ -57,7 +57,7 @@ namespace TSI.Friday.Services
                 if (dto.File == null)
                 {
                     response.Status = ResponseStatus.Error;
-                    response.Message = "File is required";
+                    response.Message = "Arquivo obrigatório. Por favor envie um arquivo.";
                     return response;
                 }
 
@@ -106,13 +106,13 @@ namespace TSI.Friday.Services
 
                 response.Data = MapToResponseDto(attachment);
                 response.Status = ResponseStatus.Success;
-                response.Message = "Attachment saved";
+                response.Message = "Arquivo salvo com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "AttachmentService.Add", dto);
                 response.Status = ResponseStatus.Error;
-                response.Message = ex.Message;
+                response.Message = $"Erro ao salvar o arquivo: {ex.Message}";
             }
 
             return response;
@@ -130,7 +130,7 @@ namespace TSI.Friday.Services
                 if (dto.Id == null || dto.Id == Guid.Empty)
                 {
                     response.Status = ResponseStatus.Error;
-                    response.Message = "Attachment Id is required for update";
+                    response.Message = "ID do anexo é obrigatório para atualização.";
                     return response;
                 }
 
@@ -138,7 +138,7 @@ namespace TSI.Friday.Services
                 if (existing == null)
                 {
                     response.Status = ResponseStatus.Error;
-                    response.Message = "Attachment not found";
+                    response.Message = "Anexo não encontrado.";
                     return response;
                 }
 
@@ -198,13 +198,13 @@ namespace TSI.Friday.Services
 
                 response.Data = MapToResponseDto(existing);
                 response.Status = ResponseStatus.Success;
-                response.Message = "Attachment updated";
+                response.Message = "Arquivo atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "AttachmentService.Update", dto);
                 response.Status = ResponseStatus.Error;
-                response.Message = ex.Message;
+                response.Message = $"Erro ao atualizar o arquivo: {ex.Message}";
             }
 
             return response;
@@ -220,7 +220,7 @@ namespace TSI.Friday.Services
                 if (existing == null)
                 {
                     response.Status = ResponseStatus.Error;
-                    response.Message = "Attachment not found";
+                    response.Message = "Anexo não encontrado.";
                     return response;
                 }
 
@@ -240,13 +240,13 @@ namespace TSI.Friday.Services
 
                 response.Data = responseDto;
                 response.Status = ResponseStatus.Success;
-                response.Message = "Attachment deleted";
+                response.Message = "Arquivo removido com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "AttachmentService.Delete", id);
                 response.Status = ResponseStatus.Error;
-                response.Message = ex.Message;
+                response.Message = $"Erro ao remover o arquivo: {ex.Message}";
             }
 
             return response;
@@ -262,19 +262,19 @@ namespace TSI.Friday.Services
                 if (data == null)
                 {
                     response.Status = ResponseStatus.Success;
-                    response.Message = "Not found";
+                    response.Message = "Não encontrado";
                     return response;
                 }
 
                 response.Data = MapToResponseDto(data);
                 response.Status = ResponseStatus.Success;
-                response.Message = "Found";
+                response.Message = "Encontrado";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "AttachmentService.GetById", id);
                 response.Status = ResponseStatus.Error;
-                response.Message = ex.Message;
+                response.Message = $"Erro ao buscar o anexo: {ex.Message}";
             }
             return response;
         }
@@ -289,7 +289,7 @@ namespace TSI.Friday.Services
                 if (attachment == null)
                 {
                     response.Status = ResponseStatus.Error;
-                    response.Message = "Attachment not found";
+                    response.Message = "Anexo não encontrado.";
                     return response;
                 }
 
@@ -300,7 +300,7 @@ namespace TSI.Friday.Services
                 if (!File.Exists(fullPath))
                 {
                     response.Status = ResponseStatus.Error;
-                    response.Message = "File not found on disk";
+                    response.Message = "Arquivo não encontrado no disco.";
                     return response;
                 }
 
@@ -324,13 +324,13 @@ namespace TSI.Friday.Services
                     FileName = attachment.FileName,
                 };
                 response.Status = ResponseStatus.Success;
-                response.Message = "File found";
+                response.Message = "Arquivo localizado.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "AttachmentService.GetFileById", id);
                 response.Status = ResponseStatus.Error;
-                response.Message = ex.Message;
+                response.Message = $"Erro ao obter o arquivo: {ex.Message}";
             }
 
             return response;
@@ -613,13 +613,13 @@ namespace TSI.Friday.Services
                 var q = query(_db.Attachments.AsQueryable());
                 response.Data = q.ToList().Select(MapToResponseDto);
                 response.Status = ResponseStatus.Success;
-                response.Message = "Found";
+                response.Message = "Encontrado";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "AttachmentService.Query", null);
                 response.Status = ResponseStatus.Error;
-                response.Message = ex.Message;
+                response.Message = $"Erro ao consultar anexos: {ex.Message}";
             }
             return Task.FromResult(response);
         }

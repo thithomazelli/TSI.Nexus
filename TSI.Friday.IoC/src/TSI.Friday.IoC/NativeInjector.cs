@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using TSI.Friday.Contracts.Interfaces;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Data.Interceptors;
@@ -19,7 +21,22 @@ namespace TSI.Friday.IoC
         {
             #region Mapping Profiles
 
-            services.AddAutoMapper(typeof(MappingProfile).Assembly);
+            // Manual registration of AutoMapper without relying on AutoMapper.Extensions.Microsoft.DependencyInjection
+            services.AddSingleton(sp =>
+            {
+                var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                var config = new MapperConfiguration(
+                    cfg =>
+                    {
+                        cfg.ConstructServicesUsing(type => sp.GetService(type));
+                        cfg.AddMaps(typeof(MappingProfile).Assembly); // escaneia todos os Profiles do assembly
+                    },
+                    loggerFactory
+                );
+
+                // opcional em ambiente de dev: config.AssertConfigurationIsValid();
+                return config.CreateMapper(sp.GetService);
+            });
 
             #endregion
 

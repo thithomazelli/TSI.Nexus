@@ -506,7 +506,11 @@ export class BusinessPartnerFormComponent
       this.form.patchValue(patch);
     }
 
-    if (this.data?.addresses && this.data.addresses.length > 0) {
+    if (
+      this.isModal &&
+      this.data?.addresses &&
+      this.data.addresses.length > 0
+    ) {
       this.canDisplayAddressForm = false;
       this.resetAddressForm();
     }
