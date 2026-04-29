@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
@@ -13,23 +10,35 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public string QuoteNumber { get; set; }
 
-        public DateTime Date { get; set; }
-
-        public Guid BusinessPartnerId { get; set; }
-
-        public string BusinessPartnerName { get; set; }
-
-        public OrderStatus Status { get; set; }
-
         public DateTime CreateDate { get; set; }
 
-        public string Description { get; set; }
+        public DateTime Date { get; set; }
 
-        public decimal Discount { get; set; }
+        public QuoteStatus Status { get; set; }
+
+        public string Description { get; set; }
 
         public decimal Price { get; set; }
 
         public decimal TotalPrice { get; set; }
+
+        public decimal Discount { get; set; }
+
+        public PaymentCondition Condition { get; set; }
+
+        public PaymentMethod Method { get; set; }
+
+        public int TotalOfPayments { get; set; }
+
+        public decimal PaymentTotalPrice { get; set; }
+
+        public int TotalOfExpenses { get; set; }
+
+        public decimal ExpenseTotalPrice { get; set; }
+
+        public Guid BusinessPartnerId { get; set; }
+
+        public string BusinessPartnerName { get; set; }
 
         public ICollection<QuoteProductDto> QuoteProducts { get; set; } = [];
     }

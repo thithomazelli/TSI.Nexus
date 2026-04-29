@@ -68,8 +68,8 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <summary>
         /// Convert a Quote into an Order. Checks product availability for sale/rental products before conversion.
         /// If some products are out of stock, returns a warning with details so the UI may prompt the user.
-        /// Otherwise calls OrderService.Add() to create the order and returns that response.
+        /// Otherwise calls OrderService.Add() to create the order and returns the converted Quote (status updated to Converted).
         /// </summary>
-        Task<WebApiResponse<TSI.Friday.Contracts.Models.DTOs.OrderDto>> ConvertToOrder(QuoteDto quoteDto);
+        Task<WebApiResponse<QuoteDto>> ConvertToOrder(QuoteDto quoteDto);
     }
 }

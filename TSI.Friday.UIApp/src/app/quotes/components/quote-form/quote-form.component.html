@@ -6,11 +6,6 @@
     ></app-alert-banner-component>
   }
   <form [formGroup]="form" (ngSubmit)="submit()">
-    <div class="d-flex justify-content-end mb-2" *ngIf="isEdit">
-      <button type="button" class="btn btn-primary" (click)="convertToOrder()">
-        Converter em Pedido
-      </button>
-    </div>
     <div class="modal-scrollable-area">
       <section>
         <div class="row g-1 mb-1">
@@ -95,6 +90,7 @@
             <app-date-field
               formControlName="date"
               [label]="'Data do Orçamento'"
+              [isDisabled]="data?.status === 'Converted'"
             ></app-date-field>
           </div>
 
@@ -284,7 +280,7 @@
               <input
                 formControlName="totalOfPayments"
                 type="number"
-                min="0"
+                min="1"
                 step="1"
                 placeholder="Total de Pagamentos"
                 class="form-control"
@@ -362,17 +358,31 @@
       </div>
     </section>
 
-    <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
-        Cancelar
-      </button>
-      <button
-        [appClick]="submit.bind(this)"
-        type="submit"
-        class="btn btn-success"
-      >
-        Salvar
-      </button>
+    <div class="row mt-3">
+      <div class="col-6 d-flex justify-content-start align-items-center">
+        <ng-container *ngIf="canDisplayConvertButton()">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="convertToOrder()"
+          >
+            Converter em Pedido
+          </button>
+        </ng-container>
+      </div>
+      <div class="col-6 d-flex justify-content-end align-items-center">
+        <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="btn btn-success"
+          [appClick]="submit.bind(this)"
+          [disabled]="data?.status === 'Converted'"
+        >
+          Salvar
+        </button>
+      </div>
     </div>
   </form>
 </div>
