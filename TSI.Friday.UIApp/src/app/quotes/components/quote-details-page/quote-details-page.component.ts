@@ -41,11 +41,16 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const idParam = this.activatedRoute.snapshot.paramMap.get('id');
-    if (idParam && idParam !== 'new') {
+    const idOrNumber = this.activatedRoute.snapshot.paramMap.get('id');
+
+    if (idOrNumber && idOrNumber !== 'new') {
       this.isEdit = true;
-      this.id = idParam;
-      this.getQuoteById(idParam);
+      this.id = idOrNumber;
+      if (this.isGuid(idOrNumber)) {
+        this.getQuoteById(idOrNumber);
+      } else {
+        this.getQuoteByQuoteNumber(idOrNumber);
+      }
     } else {
       this.isEdit = false;
       this.data = null;
@@ -92,5 +97,37 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
           this.routerService.navigateByUrl('/not-found');
         },
       });
+  }
+
+  private getQuoteByQuoteNumber(quoteNumber: string): void {
+    this.loading = true;
+    this._quoteChangedSub = merge(
+      this.quoteService.quoteChanged$,
+      this.quoteProductService.quoteProductChanged$,
+    )
+      .pipe(
+        switchMap(() => this.quoteService.getByQuoteNumber(quoteNumber)),
+        takeUntil(this._destroy$),
+      )
+      .subscribe({
+        next: (response: WebApiResponse<Quote>) => {
+          this.loading = false;
+          if (response.data == null) {
+            this.routerService.navigateByUrl('/not-found');
+            return;
+          }
+          this.data = response.data;
+        },
+        error: () => {
+          this.loading = false;
+          this.routerService.navigateByUrl('/not-found');
+        },
+      });
+  }
+
+  private isGuid(value: string): boolean {
+    return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+      value,
+    );
   }
 }

@@ -2,9 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-alert-banner-component',
-  standalone: false,
   templateUrl: './alert-banner-component.component.html',
   styleUrl: './alert-banner-component.component.scss',
+  standalone: false,
 })
 export class AlertBannerComponentComponent implements OnInit {
   @Input()
@@ -19,6 +19,7 @@ export class AlertBannerComponentComponent implements OnInit {
     WaitingPayment: 'info',
     InProgress: 'info',
     Approved: 'check',
+    Converted: 'check',
     Closed: 'check',
     Returned: 'check',
     Delayed: 'exclamation',
@@ -33,6 +34,7 @@ export class AlertBannerComponentComponent implements OnInit {
     Open: 'info',
     InProgress: 'info',
     Approved: 'success',
+    Converted: 'success',
     Closed: 'success',
     Returned: 'success',
     Delayed: 'danger',
@@ -64,6 +66,7 @@ export class AlertBannerComponentComponent implements OnInit {
   private initializeMessages(): void {
     this._statusMessageMap = {
       Approved: `Excelente! ${this.entity} concluído`,
+      Converted: `Excelente! ${this.entity} concluído`,
       Closed: `Excelente! ${this.entity} concluído`,
       Returned: `Excelente! ${this.entity} concluído`,
       Pending: `Atenção: ${this.entity} em aberto`,
@@ -79,6 +82,7 @@ export class AlertBannerComponentComponent implements OnInit {
         ...this._statusMessageMap,
         Approved: `Excelente! ${this.entity} concluída`,
         Closed: `Excelente! ${this.entity} concluída`,
+        Converted: `Excelente! ${this.entity} concluída`,
         Returned: `Excelente! ${this.entity} concluída`,
         Delayed: `Urgente: ${this.entity} atrasada`,
       };

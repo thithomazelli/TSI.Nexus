@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using TSI.Friday.Contracts.Enums;
@@ -13,33 +15,33 @@ namespace TSI.Friday.Services
         #region Properties
 
         private readonly IRepository<Quote> _repository;
-        private readonly IRepository<QuoteProduct> _quoteProductRepository;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
-        private readonly ILogService _logService; // keep original name matched with other files
+        private readonly ILogService _logService;
         private readonly IRepository<Product> _productRepository;
-        private readonly IOrderService _orderService; // keep original name matched with other files
+        private readonly IOrderService _orderService;
+        private readonly IRepository<Address> _addressRepository;
         #endregion Properties
 
         #region Public methods
 
         public QuoteService(
             IRepository<Quote> repository,
-            IRepository<QuoteProduct> quoteProductRepository,
             ISequenceService sequenceService,
             IMapper mapper,
             ILogService logService,
             IRepository<Product> productRepository,
-            IOrderService orderService
+            IOrderService orderService,
+            IRepository<Address> addressRepository
         )
         {
             _repository = repository;
-            _quoteProductRepository = quoteProductRepository;
             _sequenceService = sequenceService;
             _mapper = mapper;
-            _logService = logService; // keep original name matched with other files
+            _logService = logService;
             _productRepository = productRepository;
-            _orderService = orderService; // keep original name matched with other files
+            _orderService = orderService;
+            _addressRepository = addressRepository;
         }
 
         /// <inheritdoc />
@@ -285,9 +287,9 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<OrderDto>> ConvertToOrder(QuoteDto quoteDto)
+        public async Task<WebApiResponse<QuoteDto>> ConvertToOrder(QuoteDto quoteDto)
         {
-            var result = new WebApiResponse<OrderDto>();
+            var result = new WebApiResponse<QuoteDto>();
 
             try
             {
@@ -320,12 +322,35 @@ namespace TSI.Friday.Services
                     }
                 }
 
+                // fetch default address for the business partner used in the conversion
+                Address defaultAddress = null;
+                if (quoteDto.BusinessPartnerId != Guid.Empty)
+                {
+                    defaultAddress = await _addressRepository.FirstOrDefaultAsync(a =>
+                        a.BusinessPartnerId == quoteDto.BusinessPartnerId && a.IsDefault
+                    );
+
+                    if (defaultAddress == null)
+                    {
+                        // fallback to first address if no default marked
+                        defaultAddress = await _addressRepository.FirstOrDefaultAsync(a =>
+                            a.BusinessPartnerId == quoteDto.BusinessPartnerId
+                        );
+                    }
+                }
+
+                // Prepare filtered quote products for possible warning response
+                var filteredQuoteProducts =
+                    quoteDto
+                        .QuoteProducts?.Where(qp => !outOfStockIds.Contains(qp.ProductId))
+                        .ToList()
+                    ?? new List<QuoteProductDto>();
+
                 // Map all QuoteProducts -> OrderProductDtos
                 var allOrderProducts =
                     quoteDto
                         .QuoteProducts?.Select(qp => new OrderProductDto
                         {
-                            Id = qp.Id,
                             ProductId = qp.ProductId,
                             ProductName = qp.ProductName,
                             ProductSku = qp.ProductSku,
@@ -338,6 +363,7 @@ namespace TSI.Friday.Services
                             Status = qp.Status,
                             BusinessPartnerId = quoteDto.BusinessPartnerId,
                             BusinessPartnerName = quoteDto.BusinessPartnerName,
+                            AddressId = defaultAddress?.Id ?? Guid.Empty, // populate with default address id
                         })
                         .ToList()
                     ?? new List<OrderProductDto>();
@@ -362,7 +388,34 @@ namespace TSI.Friday.Services
                     OrderProducts = filteredOrderProducts,
                 };
 
-                // If there are out of stock items, return a warning and include the filtered DTO in Data (unless none remain)
+                if (
+                    quoteDto.TotalOfPayments > 0
+                    || quoteDto.PaymentTotalPrice > 0m
+                    || quoteDto.TotalOfExpenses > 0
+                    || quoteDto.ExpenseTotalPrice > 0m
+                )
+                {
+                    var transactionDto = new TransactionDto
+                    {
+                        Date = DateTime.UtcNow,
+                        Description =
+                            $"Transação do Pedido a partir do Orçamento {quoteDto.QuoteNumber}",
+                        Status = PaymentStatus.Pending,
+                        TotalOfPayments = quoteDto.TotalOfPayments,
+                        PaymentTotalPrice = quoteDto.PaymentTotalPrice,
+                        TotalOfExpenses = quoteDto.TotalOfExpenses,
+                        ExpenseTotalPrice = quoteDto.ExpenseTotalPrice,
+                        Condition = quoteDto.Condition,
+                        Method = quoteDto.Method,
+                        BusinessPartnerId = quoteDto.BusinessPartnerId,
+                        OrderNumber = orderDto.QuoteNumber,
+                        Type = PaymentType.Incoming,
+                    };
+
+                    orderDto.Transaction = transactionDto;
+                }
+
+                // If there are out of stock items, return a warning and include the filtered QuoteDto in Data (unless none remain)
                 if (outOfStock.Any())
                 {
                     result.Status = ResponseStatus.Warning;
@@ -370,54 +423,41 @@ namespace TSI.Friday.Services
                         "Alguns produtos não possuem quantidade suficiente em estoque: "
                         + string.Join(", ", outOfStock)
                         + ". Deseja prosseguir sem eles?";
-                    result.Data = filteredOrderProducts.Any() ? orderDto : null;
+
+                    if (filteredQuoteProducts.Any())
+                    {
+                        var quoteForResponse = _mapper.Map<QuoteDto>(quoteDto);
+                        quoteForResponse.QuoteProducts = filteredQuoteProducts;
+                        result.Data = quoteForResponse;
+                    }
+                    else
+                    {
+                        result.Data = null;
+                    }
 
                     return result;
                 }
 
-                // If quote exists in DB, try to build a TransactionDto from its payment fields
-                if (quoteDto.Id != Guid.Empty)
-                {
-                    var quoteEntity = await _repository.GetByIdAsync(quoteDto.Id);
-                    if (quoteEntity != null)
-                    {
-                        // Only create transaction when there is some payment/expense info
-                        if (
-                            quoteEntity.TotalOfPayments > 0
-                            || quoteEntity.PaymentTotalPrice > 0m
-                            || quoteEntity.TotalOfExpenses > 0
-                            || quoteEntity.ExpenseTotalPrice > 0m
-                        )
-                        {
-                            var transactionDto = new TransactionDto
-                            {
-                                Date = DateTime.UtcNow,
-                                Description =
-                                    $"Transação do Pedido a partir do Orçamento {quoteEntity.QuoteNumber}",
-                                TotalOfPayments = quoteEntity.TotalOfPayments,
-                                PaymentTotalPrice = quoteEntity.PaymentTotalPrice,
-                                TotalOfExpenses = quoteEntity.TotalOfExpenses,
-                                ExpenseTotalPrice = quoteEntity.ExpenseTotalPrice,
-                                Condition = quoteEntity.Condition,
-                                Method = quoteEntity.Method,
-                                BusinessPartnerId = quoteEntity.BusinessPartnerId,
-                                BusinessPartnerName = quoteEntity.BusinessPartner?.Name,
-                                OrderNumber = orderDto.QuoteNumber,
-                                // set Type based on presence of payments/expenses
-                                Type =
-                                    quoteEntity.PaymentTotalPrice > 0m
-                                        ? PaymentType.Incoming
-                                        : PaymentType.Outgoing,
-                            };
-
-                            orderDto.Transaction = transactionDto;
-                        }
-                    }
-                }
-
                 // Call OrderService.Add
                 var addResult = await _orderService.Add(orderDto);
-                return addResult;
+
+                // set quote status to Converted and update repository
+                var quoteEntity = await _repository.GetByIdAsync(quoteDto.Id, q => q.QuoteProducts);
+                if (quoteEntity != null)
+                {
+                    quoteEntity.Status = QuoteStatus.Converted;
+                    await _repository.UpdateAsync(quoteEntity);
+                }
+
+                // Prepare response using the updated quote entity
+                var response = new WebApiResponse<QuoteDto>
+                {
+                    Data = _mapper.Map<QuoteDto>(quoteEntity ?? _mapper.Map<Quote>(quoteDto)),
+                    Status = ResponseStatus.Success,
+                    Message = "Orçamento convertido com sucesso",
+                };
+
+                return response;
             }
             catch (Exception ex)
             {

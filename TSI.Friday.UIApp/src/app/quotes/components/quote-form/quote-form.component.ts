@@ -110,6 +110,10 @@ export class QuoteFormComponent
     this.totalPriceChange();
     this.setupPaymentPriceWatcher();
 
+    if (this.isQuoteConverted && this.isQuoteConverted()) {
+      this.form.disable();
+    }
+
     this._subscriptions.push(
       this.quoteProductService.quoteProductAdded$.subscribe((quoteProduct) => {
         if (quoteProduct) {
@@ -130,6 +134,9 @@ export class QuoteFormComponent
     if (changes['data'] && this.data && this.form) {
       this.patchFormWithData();
     }
+    if (this.isQuoteConverted && this.isQuoteConverted() && this.form) {
+      this.form.disable();
+    }
   }
 
   ngOnDestroy(): void {
@@ -149,7 +156,7 @@ export class QuoteFormComponent
       Object.assign(this.data!, rawValue);
     }
 
-    return this.save(rawValue as Quote).pipe(
+    return this.save(this.data as Quote).pipe(
       tap({
         next: (response: WebApiResponse<Quote>) => {
           if (this.isModal) {
@@ -196,22 +203,22 @@ export class QuoteFormComponent
             if (confirmed) {
               // Chama novamente com response.data
               this.quoteService.convertToOrder(response.data).subscribe({
-                next: (resp: WebApiResponse<any>) => {
-                  if (resp.status === ResponseStatus.Success) {
+                next: (response: WebApiResponse<any>) => {
+                  if (response.status === ResponseStatus.Success) {
                     this.notificationService?.showMessage(
-                      'Sucesso',
-                      'Orçamento convertido em pedido com sucesso!',
+                      response.status,
+                      response.message,
                     );
                   } else {
                     this.notificationService?.showMessage(
-                      'Erro',
-                      resp.message || 'Falha ao converter orçamento.',
+                      response.status,
+                      response.message || 'Falha ao converter orçamento.',
                     );
                   }
                 },
                 error: () => {
                   this.notificationService?.showMessage(
-                    'Erro',
+                    ResponseStatus.Error,
                     'Erro ao converter orçamento.',
                   );
                 },
@@ -223,19 +230,19 @@ export class QuoteFormComponent
         // Sucesso normal
         if (response.status === ResponseStatus.Success) {
           this.notificationService?.showMessage(
-            'Sucesso',
-            'Orçamento convertido em pedido com sucesso!',
+            response.status,
+            response.message,
           );
         } else {
           this.notificationService?.showMessage(
-            'Erro',
+            ResponseStatus.Error,
             response.message || 'Falha ao converter orçamento.',
           );
         }
       },
       error: () => {
         this.notificationService?.showMessage(
-          'Erro',
+          ResponseStatus.Error,
           'Erro ao converter orçamento.',
         );
       },
@@ -336,6 +343,14 @@ export class QuoteFormComponent
     this.form.get(formControlName)?.setValue(value);
   }
 
+  canDisplayConvertButton(): boolean {
+    return this.isEdit && this.data?.status === QuoteStatus.Open;
+  }
+
+  isQuoteConverted(): boolean {
+    return this.data?.status === QuoteStatus.Converted;
+  }
+
   private initForm(): void {
     this.form = this.formBuilder.group({
       quoteNumber: [''],
@@ -354,7 +369,7 @@ export class QuoteFormComponent
       totalPriceFormatted: [{ value: 0, disabled: true }],
       condition: [PaymentCondition.FullPayment],
       method: [PaymentMethod.Cash],
-      totalOfPayments: [0, [Validators.min(0)]],
+      totalOfPayments: [1, [Validators.min(1)]],
       paymentTotalPrice: [0, [Validators.min(0)]],
       paymentTotalPriceFormatted: [{ value: 0, disabled: this.isEdit }],
       totalOfExpenses: [0, [Validators.min(0)]],
@@ -387,10 +402,10 @@ export class QuoteFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      const totalOfPayments = this.data.totalOfPayments || 0;
-      const paymentTotalPrice = this.data.paymentTotalPrice || 0;
-      const totalOfExpenses = this.data.totalOfExpenses || 0;
-      const expenseTotalPrice = this.data.expenseTotalPrice || 0;
+      const totalOfPayments = this.data.totalOfPayments ?? 1;
+      const paymentTotalPrice = this.data.paymentTotalPrice ?? 0;
+      const totalOfExpenses = this.data.totalOfExpenses ?? 0;
+      const expenseTotalPrice = this.data.expenseTotalPrice ?? 0;
 
       const patch = {
         ...this.data,
@@ -400,8 +415,9 @@ export class QuoteFormComponent
         ),
         totalOfPayments,
         paymentTotalPrice,
-        paymentTotalPriceFormatted:
-          this.currencyService.formatCurrencyBRL(paymentTotalPrice),
+        paymentTotalPriceFormatted: this.currencyService.formatCurrencyBRL(
+          this.data.totalPrice,
+        ),
         totalOfExpenses,
         expenseTotalPrice,
         expenseTotalPriceFormatted:
@@ -451,8 +467,6 @@ export class QuoteFormComponent
     if (this.isEdit && this.form) {
       this.form.get('businessPartnerName')?.disable();
       this.form.get('quoteNumber')?.disable();
-      this.form.get('totalOfPayments')?.disable();
-      this.form.get('totalOfExpenses')?.disable();
     }
   }
 

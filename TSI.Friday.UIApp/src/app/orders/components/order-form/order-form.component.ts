@@ -178,7 +178,7 @@ export class OrderFormComponent
       delete this.data.transaction.id;
     }
 
-    return this.save(rawValue).pipe(
+    return this.save(this.data as Order).pipe(
       tap({
         next: (response: WebApiResponse<Order>) => {
           if (this.isModal) {
@@ -363,6 +363,7 @@ export class OrderFormComponent
   private initForm(): void {
     this.form = this.formBuilder.group({
       orderNumber: [''],
+      quoteNumber: [''],
       businessPartnerId: [null, Validators.required],
       businessPartnerName: [
         { value: '', disabled: this.data?.businessPartnerId != null },

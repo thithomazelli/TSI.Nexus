@@ -68,6 +68,20 @@
             </div>
           </div>
 
+          <div *ngIf="data?.quoteNumber != null" class="col-md-12">
+            <div class="input-group">
+              <div class="form-floating">
+                <app-link-field
+                  [placeHolder]="'Orçamento'"
+                  [text]="form.get('quoteNumber')?.value || 'Orçamento'"
+                  [linkUrl]="['/quotes', form.get('quoteNumber')?.value]"
+                >
+                </app-link-field>
+              </div>
+              <div class="input-group-text"><i class="bi bi-building"></i></div>
+            </div>
+          </div>
+
           <div *ngIf="!compact" class="col-12">
             <div class="input-group">
               <div class="form-floating">
