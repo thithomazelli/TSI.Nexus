@@ -1,45 +1,72 @@
-**Edit a file, create a new file, and clone from Bitbucket in under 2 minutes**
+# TSI.Friday
 
-When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
+Sistema de gestão comercial (ERP enxuto) desenvolvido para uma empresa de locação/venda de produtos (caçambas e serviços de descarte/reciclagem). Cobre o fluxo completo de **orçamento → pedido → transação → pagamento**, além de cadastro de clientes/fornecedores, catálogo de produtos, controle de inadimplência e relatórios.
 
-*We recommend that you open this README in another tab as you perform the tasks below. You can [watch our video](https://youtu.be/0ocf7u76WSo) for a full demo of all the steps in this tutorial. Open the video in a new tab to avoid leaving Bitbucket.*
+## Stack
 
----
+**Backend** — .NET 8 / ASP.NET Core Web API, Entity Framework Core (MySQL), ASP.NET Identity + JWT, AutoMapper.
 
-## Edit a file
+**Frontend** — Angular 21, RxJS para estado, Bootstrap + PrimeNG + Angular Material + AdminLTE, ag-Grid, ApexCharts.
 
-You’ll start by editing this README file to learn how to edit a file in Bitbucket.
+## Arquitetura
 
-1. Click **Source** on the left side.
-2. Click the README.md link from the list of files.
-3. Click the **Edit** button.
-4. Delete the following text: *Delete this line to make a change to the README from Bitbucket.*
-5. After making your change, click **Commit** and then **Commit** again in the dialog. The commit page will open and you’ll see the change you just made.
-6. Go back to the **Source** page.
+O backend é organizado em camadas, cada uma como um projeto .NET separado:
 
----
+```
+WebAPI  → IoC → Services → Repository → Data → Contracts
+```
 
-## Create a file
+- **Contracts** — modelos, DTOs, enums e interfaces (camada pura, sem dependências).
+- **Data** — `DbContext` (EF Core), interceptors (auditoria, ajuste automático de estoque), migrations e seed de dados.
+- **Repository** — repositório genérico (`Repository<T>`) sobre o `DbContext`.
+- **Services** — regras de negócio, um serviço por domínio (produtos, pedidos, orçamentos, pagamentos, usuários, etc.).
+- **IoC** — configuração de injeção de dependência e AutoMapper.
+- **WebAPI** — 18 controllers REST, autenticação JWT, Swagger (dev).
 
-Next, you’ll add a new file to this repository.
+O frontend (`TSI.Friday.UIApp`) é um app Angular modular, com um módulo lazy-loaded por feature (contas, parceiros de negócio, pedidos, orçamentos, pagamentos, produtos, transações, usuários, relatórios) e uma camada `core/` com guards, interceptors, serviços de API e modelos compartilhados.
 
-1. Click the **New file** button at the top of the **Source** page.
-2. Give the file a filename of **contributors.txt**.
-3. Enter your name in the empty file space.
-4. Click **Commit** and then **Commit** again in the dialog.
-5. Go back to the **Source** page.
+## Funcionalidades principais
 
-Before you move on, go ahead and explore the repository. You've already seen the **Source** page, but check out the **Commits**, **Branches**, and **Settings** pages.
+- Cadastro de parceiros de negócio (pessoa física ou jurídica), com endereços e anexos
+- Catálogo de produtos (venda/locação) com fotos
+- Orçamentos (quotes) convertíveis em pedidos
+- Pedidos, transações e pagamentos, com cálculo de descontos/totais
+- Job automático de identificação de itens/pagamentos em atraso
+- Dashboard com indicadores e relatórios
+- Autenticação com JWT, papéis de usuário (Admin/User), confirmação de e-mail e reset de senha por e-mail (Mailjet)
 
----
+## Rodando o projeto
 
-## Clone a repository
+**Backend:**
+```bash
+cd TSI.Friday.WebAPI/src/TSI.Friday.WebAPI
+dotnet restore
+dotnet ef database update   # aplica as migrations no MySQL configurado
+dotnet run
+```
 
-Use these steps to clone from SourceTree, our client for using the repository command-line free. Cloning allows you to work on your files locally. If you don't yet have SourceTree, [download and install first](https://www.sourcetreeapp.com/). If you prefer to clone from the command line, see [Clone a repository](https://confluence.atlassian.com/x/4whODQ).
+**Frontend:**
+```bash
+cd TSI.Friday.UIApp
+npm install
+npm start
+```
 
-1. You’ll see the clone button under the **Source** heading. Click that button.
-2. Now click **Check out in SourceTree**. You may need to create a SourceTree account or log in.
-3. When you see the **Clone New** dialog in SourceTree, update the destination path and name if you’d like to and then click **Clone**.
-4. Open the directory you just created to see your repository’s files.
+> As connection strings e chaves (MySQL, JWT, Mailjet) ficam em `appsettings.json` / `appsettings.Development.json`. **Essas credenciais não devem ficar commitadas em texto puro** — mover para variáveis de ambiente, user-secrets ou um cofre de segredos é um item pendente prioritário (ver seção abaixo).
 
-Now that you're more familiar with your Bitbucket repository, go ahead and add a new file locally. You can [push your change back to Bitbucket with SourceTree](https://confluence.atlassian.com/x/iqyBMg), or you can [add, commit,](https://confluence.atlassian.com/x/8QhODQ) and [push from the command line](https://confluence.atlassian.com/x/NQ0zDQ).
+## Testes
+
+```bash
+dotnet test          # backend (xUnit/Moq/FluentAssertions)
+cd TSI.Friday.UIApp && npm test   # frontend (Karma/Jasmine)
+```
+
+## Status e débito técnico conhecido
+
+Projeto ativo, migrado do Bitbucket para o GitHub preservando todo o histórico de commits. Pontos conhecidos a endereçar:
+
+- **Segurança**: credenciais reais (banco, JWT, Mailjet) estão commitadas em `appsettings*.json` — precisam ser rotacionadas e movidas para fora do controle de versão.
+- **Cobertura de testes**: sólida no backend para os módulos mais antigos, mas ausente no módulo de Orçamentos (o mais recente) e nos serviços de autenticação/anexos. No frontend, os specs existentes são boilerplate do Angular CLI, sem cobertura real.
+- **Serviço em segundo plano duplicado**: há implementações duplicadas de `OverdueStatusBackgroundService` registradas simultaneamente, rodando a verificação de atraso em agendas diferentes e sobrepostas.
+- **Stack de UI**: Bootstrap, PrimeNG, Angular Material e AdminLTE convivem no mesmo frontend — candidato a consolidação.
+- **CI/CD**: não há pipeline automatizado (build, testes ou deploy) configurado no repositório.
