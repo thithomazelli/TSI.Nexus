@@ -52,7 +52,15 @@ npm install
 npm start
 ```
 
-> As connection strings e chaves (MySQL, JWT, Mailjet) ficam em `appsettings.json` / `appsettings.Development.json`. **Essas credenciais não devem ficar commitadas em texto puro** — mover para variáveis de ambiente, user-secrets ou um cofre de segredos é um item pendente prioritário (ver seção abaixo).
+> `appsettings.json` / `appsettings.Development.json` não contêm mais credenciais reais — os valores devem ser fornecidos via variáveis de ambiente (o ASP.NET Core sobrescreve a configuração automaticamente) ou via `dotnet user-secrets` em desenvolvimento local:
+>
+> | Variável | Corresponde a |
+> |---|---|
+> | `ConnectionStrings__DefaultConnection` | Connection string do MySQL de produção |
+> | `ConnectionStrings__HomologConnection` | Connection string do MySQL de homologação |
+> | `JWT__Key` | Chave de assinatura dos tokens JWT |
+> | `MailJet__ApiKey` | API Key do Mailjet |
+> | `MailJet__SecretKey` | Secret Key do Mailjet |
 
 ## Testes
 
@@ -65,7 +73,7 @@ cd TSI.Friday.UIApp && npm test   # frontend (Karma/Jasmine)
 
 Projeto ativo, migrado do Bitbucket para o GitHub preservando todo o histórico de commits. Pontos conhecidos a endereçar:
 
-- **Segurança**: credenciais reais (banco, JWT, Mailjet) estão commitadas em `appsettings*.json` — precisam ser rotacionadas e movidas para fora do controle de versão.
+- **Segurança**: credenciais antigas (banco, JWT, Mailjet) foram removidas dos arquivos e do histórico de commits — mas por terem sido expostas em algum momento, precisam ser **rotacionadas** (senha do MySQL, chave JWT, chaves do Mailjet) caso ainda não tenha sido feito.
 - **Cobertura de testes**: sólida no backend para os módulos mais antigos, mas ausente no módulo de Orçamentos (o mais recente) e nos serviços de autenticação/anexos. No frontend, os specs existentes são boilerplate do Angular CLI, sem cobertura real.
 - **Serviço em segundo plano duplicado**: há implementações duplicadas de `OverdueStatusBackgroundService` registradas simultaneamente, rodando a verificação de atraso em agendas diferentes e sobrepostas.
 - **Stack de UI**: Bootstrap, PrimeNG, Angular Material e AdminLTE convivem no mesmo frontend — candidato a consolidação.
