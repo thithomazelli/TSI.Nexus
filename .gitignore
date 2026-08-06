@@ -72,6 +72,8 @@ Desktop.ini
 .env.local
 .env.*.local
 secrets.json
+web.config.Production.xml
+web.config.Homolog.xml
 
 # ---- Testing / Coverage ----
 coverage/
