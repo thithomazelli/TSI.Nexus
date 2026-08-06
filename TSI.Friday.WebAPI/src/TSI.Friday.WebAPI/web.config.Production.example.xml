@@ -2,13 +2,14 @@
 <!--
   Modelo de referência para o web.config publicado no servidor de produção/homolog.
 
-  Como usar:
-  1. Copie este arquivo para "web.config.Production.xml" (esse nome está no
-     .gitignore, então nunca será commitado).
-  2. Preencha os valores reais abaixo.
-  3. Depois de cada deploy via FTP, sobrescreva o web.config publicado no
-     servidor com o conteúdo deste arquivo preenchido, ao invés de subir o
-     web.config gerado pelo build (que não tem nenhum segredo).
+  Usado de duas formas:
+  1. Manualmente: copie para "web.config.Production.xml" (esse nome está no
+     .gitignore, nunca é commitado), substitua os placeholders ${...} pelos
+     valores reais, e suba esse arquivo por FTP no lugar do web.config gerado
+     pelo build a cada deploy manual.
+  2. Automaticamente: o workflow .github/workflows/deploy.yml usa `envsubst`
+     para preencher os mesmos placeholders a partir dos GitHub Actions
+     Secrets, gerando o web.config de produção a cada deploy.
 -->
 <configuration>
   <system.webServer>
@@ -31,11 +32,11 @@
     >
       <environmentVariables>
         <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
-        <environmentVariable name="ConnectionStrings__DefaultConnection" value="Server=SEU_HOST;port=3306;Database=SEU_DB;Uid=SEU_USER;Pwd=SUA_SENHA;" />
-        <environmentVariable name="ConnectionStrings__HomologConnection" value="Server=SEU_HOST;port=3306;Database=SEU_DB_HOMOLOG;Uid=SEU_USER;Pwd=SUA_SENHA;" />
-        <environmentVariable name="JWT__Key" value="SUA_CHAVE_JWT" />
-        <environmentVariable name="MailJet__ApiKey" value="SUA_MAILJET_API_KEY" />
-        <environmentVariable name="MailJet__SecretKey" value="SUA_MAILJET_SECRET_KEY" />
+        <environmentVariable name="ConnectionStrings__DefaultConnection" value="${ConnectionStrings__DefaultConnection}" />
+        <environmentVariable name="ConnectionStrings__HomologConnection" value="${ConnectionStrings__HomologConnection}" />
+        <environmentVariable name="JWT__Key" value="${JWT__Key}" />
+        <environmentVariable name="MailJet__ApiKey" value="${MailJet__ApiKey}" />
+        <environmentVariable name="MailJet__SecretKey" value="${MailJet__SecretKey}" />
       </environmentVariables>
     </aspNetCore>
   </system.webServer>

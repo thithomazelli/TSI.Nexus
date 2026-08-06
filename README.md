@@ -62,13 +62,33 @@ npm start
 > | `MailJet__ApiKey` | API Key do Mailjet |
 > | `MailJet__SecretKey` | Secret Key do Mailjet |
 
-### Deploy em produção/homolog (hospedagem via FTP, sem acesso a shell)
+### CI/CD
+
+Todo push em `main` dispara `.github/workflows/deploy.yml`, que builda e publica via FTP:
+- **Frontend**: `npm run build` → publica `TSI.Friday.UIApp/dist/tsi.friday.uiapp/browser/` em `/www/app/`.
+- **Backend**: `dotnet publish` (self-contained, win-x64) → publica em `/www/api/`. O `web.config` de produção é gerado a cada deploy a partir de `web.config.Production.example.xml`, com os segredos injetados via `envsubst` a partir dos GitHub Actions Secrets — nenhum valor real fica no repositório.
+- Os anexos enviados por usuários (`attachments/`) e os logs do processo (`stdout*`) ficam excluídos do deploy do backend, pra não serem apagados a cada publicação.
+
+Secrets necessários (`Settings → Secrets and variables → Actions` no GitHub):
+
+| Secret | Valor |
+|---|---|
+| `FTP_SERVER` | Host do FTP |
+| `FTP_USERNAME` | Usuário do FTP |
+| `FTP_PASSWORD` | Senha do FTP |
+| `CONNECTIONSTRINGS_DEFAULT` | Connection string completa do MySQL de produção |
+| `CONNECTIONSTRINGS_HOMOLOG` | Connection string completa do MySQL de homologação |
+| `JWT_KEY` | Chave de assinatura dos tokens JWT |
+| `MAILJET_API_KEY` | API Key do Mailjet |
+| `MAILJET_SECRET_KEY` | Secret Key do Mailjet |
+
+### Deploy manual (fallback, caso precise publicar sem o CI/CD)
 
 Como o backend é publicado via IIS (`hostingModel="OutOfProcess"`, veja `TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config`), as variáveis de ambiente do servidor são configuradas dentro do próprio `web.config`, no bloco `<environmentVariables>` — não é necessário acesso a shell/RDP, só FTP:
 
 1. Copie `TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.example.xml` para `web.config.Production.xml` (esse nome já está no `.gitignore` — nunca será commitado).
 2. Preencha os valores reais das variáveis (connection strings, `JWT__Key`, `MailJet__ApiKey`/`SecretKey`).
-3. Depois de cada deploy, envie esse conteúdo por FTP como o `web.config` do servidor — **não** suba o `web.config` gerado pelo build, que não tem nenhum segredo. Qualquer alteração no `web.config` já faz o IIS reciclar o processo sozinho, sem precisar reiniciar nada manualmente.
+3. Envie esse conteúdo por FTP como o `web.config` do servidor — **não** suba o `web.config` gerado pelo build, que não tem nenhum segredo. Qualquer alteração no `web.config` já faz o IIS reciclar o processo sozinho, sem precisar reiniciar nada manualmente.
 4. Guarde o `web.config.Production.xml` (com os valores reais) só localmente, fora do Git.
 
 ## Testes
@@ -86,4 +106,4 @@ Projeto ativo, migrado do Bitbucket para o GitHub preservando todo o histórico 
 - **Cobertura de testes**: sólida no backend para os módulos mais antigos, mas ausente no módulo de Orçamentos (o mais recente) e nos serviços de autenticação/anexos. No frontend, os specs existentes são boilerplate do Angular CLI, sem cobertura real.
 - **Serviço em segundo plano duplicado**: há implementações duplicadas de `OverdueStatusBackgroundService` registradas simultaneamente, rodando a verificação de atraso em agendas diferentes e sobrepostas.
 - **Stack de UI**: Bootstrap, PrimeNG, Angular Material e AdminLTE convivem no mesmo frontend — candidato a consolidação.
-- **CI/CD**: não há pipeline automatizado (build, testes ou deploy) configurado no repositório.
+- **CI/CD**: build e deploy automatizados via GitHub Actions (`.github/workflows/deploy.yml`); ainda falta rodar os testes automatizados como gate antes do deploy.
