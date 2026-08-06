@@ -62,6 +62,15 @@ npm start
 > | `MailJet__ApiKey` | API Key do Mailjet |
 > | `MailJet__SecretKey` | Secret Key do Mailjet |
 
+### Deploy em produção/homolog (hospedagem via FTP, sem acesso a shell)
+
+Como o backend é publicado via IIS (`hostingModel="OutOfProcess"`, veja `TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config`), as variáveis de ambiente do servidor são configuradas dentro do próprio `web.config`, no bloco `<environmentVariables>` — não é necessário acesso a shell/RDP, só FTP:
+
+1. Copie `TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.example.xml` para `web.config.Production.xml` (esse nome já está no `.gitignore` — nunca será commitado).
+2. Preencha os valores reais das variáveis (connection strings, `JWT__Key`, `MailJet__ApiKey`/`SecretKey`).
+3. Depois de cada deploy, envie esse conteúdo por FTP como o `web.config` do servidor — **não** suba o `web.config` gerado pelo build, que não tem nenhum segredo. Qualquer alteração no `web.config` já faz o IIS reciclar o processo sozinho, sem precisar reiniciar nada manualmente.
+4. Guarde o `web.config.Production.xml` (com os valores reais) só localmente, fora do Git.
+
 ## Testes
 
 ```bash
