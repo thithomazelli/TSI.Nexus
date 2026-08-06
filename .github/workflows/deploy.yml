@@ -1,0 +1,73 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TSI.Friday.UIApp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: TSI.Friday.UIApp/dist/tsi.friday.uiapp/browser/
+          server-dir: /www/app/
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish API (self-contained win-x64)
+        run: >
+          dotnet publish
+          TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/TSI.Friday.WebAPI.csproj
+          -c Release -r win-x64 --self-contained true
+          -o publish/backend
+
+      - name: Generate production web.config with secrets
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.CONNECTIONSTRINGS_DEFAULT }}
+          ConnectionStrings__HomologConnection: ${{ secrets.CONNECTIONSTRINGS_HOMOLOG }}
+          JWT__Key: ${{ secrets.JWT_KEY }}
+          MailJet__ApiKey: ${{ secrets.MAILJET_API_KEY }}
+          MailJet__SecretKey: ${{ secrets.MAILJET_SECRET_KEY }}
+        run: |
+          envsubst < TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.example.xml > publish/backend/web.config
+
+      - name: Deploy to FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: publish/backend/
+          server-dir: /www/api/
+          # Preserva dados gerados em runtime no servidor que não existem no build:
+          # anexos enviados pelos usuários e logs do processo.
+          exclude: |
+            **/attachments/**
+            **/stdout*
