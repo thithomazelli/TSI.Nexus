@@ -14,6 +14,6 @@
     [columnDefs]="columnDefs"
     [refresh]="refreshVehicles.bind(this)"
     [delete]="deleteVehicle.bind(this)"
-    (openModal)="openAddPage()"
+    (openModal)="openModal($event)"
   ></app-grid>
 </div>

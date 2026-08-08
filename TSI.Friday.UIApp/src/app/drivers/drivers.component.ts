@@ -1,14 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
 import {
   Driver,
   DriverService,
+  ModalService,
   NotificationService,
   ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
 import { Subscription, tap, Subject, takeUntil } from 'rxjs';
 import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
+
+import { DriverDetailsModalComponent } from './components/driver-details-modal/driver-details-modal.component';
 
 @Component({
   selector: 'app-drivers',
@@ -106,6 +108,9 @@ export class DriversComponent implements OnInit, OnDestroy {
           <button class="btn btn-primary btn-sm" data-action="view">
             <i class="fas fa-eye" data-action="view"></i>
           </button>
+          <button class="btn btn-info btn-sm" data-action="edit">
+            <i class="fas fa-edit" data-action="edit"></i>
+          </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
             <i class="fas fa-trash" data-action="delete"></i>
           </button>
@@ -115,9 +120,9 @@ export class DriversComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
+    private modalService: ModalService,
     private notificationService: NotificationService,
     private driverService: DriverService,
-    private routerService: Router,
   ) {}
 
   ngOnInit(): void {
@@ -135,8 +140,11 @@ export class DriversComponent implements OnInit, OnDestroy {
     }
   }
 
-  openAddPage(): void {
-    this.routerService.navigateByUrl('/drivers/new');
+  openModal(initialState: any): void {
+    this.modalService.showTemplateModal(
+      DriverDetailsModalComponent,
+      initialState,
+    );
   }
 
   deleteDriver(driver: Driver): void {

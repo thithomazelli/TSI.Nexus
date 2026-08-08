@@ -6,12 +6,14 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 import {
   ApiType,
   CurrencyService,
   FormBaseComponent,
+  ModalService,
   NotificationService,
   ResponseStatus,
   Vehicle,
@@ -24,6 +26,8 @@ import {
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
+import { VehicleDetailsModalComponent } from '../vehicle-details-modal/vehicle-details-modal.component';
+
 @Component({
   selector: 'app-vehicle-form',
   templateUrl: './vehicle-form.component.html',
@@ -35,10 +39,19 @@ export class VehicleFormComponent
   implements OnInit, OnChanges
 {
   @Input()
+  isModal = false;
+
+  @Input()
   isEdit = false;
 
   @Input()
   data?: Vehicle | null;
+
+  @Input()
+  compact = false;
+
+  @Input()
+  dialogRef?: MatDialogRef<VehicleDetailsModalComponent>;
 
   typeOptions = [
     { label: 'Ônibus', value: VehicleType.Bus },
@@ -60,6 +73,7 @@ export class VehicleFormComponent
   constructor(
     private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
+    private modalService: ModalService,
     private notificationService: NotificationService,
     private vehicleService: VehicleService,
     private routerService: Router,
@@ -92,7 +106,13 @@ export class VehicleFormComponent
 
     return this.save(rawValue as Vehicle).pipe(
       tap({
-        next: (response: WebApiResponse<Vehicle>) => this.savePage(response),
+        next: (response: WebApiResponse<Vehicle>) => {
+          if (this.isModal) {
+            this.saveModal(response);
+          } else {
+            this.savePage(response);
+          }
+        },
         error: () =>
           this.notificationService.showMessage(
             ResponseStatus.Error,
@@ -103,7 +123,11 @@ export class VehicleFormComponent
   }
 
   cancel(): void {
-    this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    if (this.isModal) {
+      this.modalService.hideModal(this.dialogRef);
+    } else {
+      this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    }
   }
 
   remove(): void {
@@ -116,11 +140,14 @@ export class VehicleFormComponent
       .pipe(
         tap({
           next: (response: WebApiResponse<Vehicle>) => {
+            if (this.isModal) {
+              this.modalService.hideModal(this.dialogRef);
+            }
             this.notificationService.showMessage(
               response.status,
               response.message,
             );
-            if (response.status === ResponseStatus.Success) {
+            if (response.status === ResponseStatus.Success && !this.isModal) {
               this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
             }
           },
@@ -219,5 +246,20 @@ export class VehicleFormComponent
     } else {
       this.notificationService.showMessage(response.status, response.message);
     }
+  }
+
+  private saveModal(response: WebApiResponse<Vehicle>): void {
+    this.dialogRef?.close(response);
+
+    if (response.status === ResponseStatus.Success) {
+      this.modalService.showNotification(
+        true,
+        this.isEdit ? 'Veículo atualizado' : 'Veículo adicionado',
+        response.message,
+      );
+      return;
+    }
+
+    this.modalService.showNotification(false, '', response.message);
   }
 }

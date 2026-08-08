@@ -6,6 +6,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
 import {
@@ -15,6 +16,7 @@ import {
   DriverStatus,
   EmploymentType,
   FormBaseComponent,
+  ModalService,
   NotificationService,
   ResponseStatus,
   WebApiResponse,
@@ -22,6 +24,8 @@ import {
 
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
+
+import { DriverDetailsModalComponent } from '../driver-details-modal/driver-details-modal.component';
 
 @Component({
   selector: 'app-driver-form',
@@ -34,10 +38,19 @@ export class DriverFormComponent
   implements OnInit, OnChanges
 {
   @Input()
+  isModal = false;
+
+  @Input()
   isEdit = false;
 
   @Input()
   data?: Driver | null;
+
+  @Input()
+  compact = false;
+
+  @Input()
+  dialogRef?: MatDialogRef<DriverDetailsModalComponent>;
 
   employmentTypeOptions = [
     { label: 'CLT', value: EmploymentType.CLT },
@@ -55,6 +68,7 @@ export class DriverFormComponent
 
   constructor(
     private formBuilder: FormBuilder,
+    private modalService: ModalService,
     private notificationService: NotificationService,
     private driverService: DriverService,
     private routerService: Router,
@@ -87,7 +101,13 @@ export class DriverFormComponent
 
     return this.save(rawValue as Driver).pipe(
       tap({
-        next: (response: WebApiResponse<Driver>) => this.savePage(response),
+        next: (response: WebApiResponse<Driver>) => {
+          if (this.isModal) {
+            this.saveModal(response);
+          } else {
+            this.savePage(response);
+          }
+        },
         error: () =>
           this.notificationService.showMessage(
             ResponseStatus.Error,
@@ -98,7 +118,11 @@ export class DriverFormComponent
   }
 
   cancel(): void {
-    this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    if (this.isModal) {
+      this.modalService.hideModal(this.dialogRef);
+    } else {
+      this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
+    }
   }
 
   remove(): void {
@@ -111,11 +135,14 @@ export class DriverFormComponent
       .pipe(
         tap({
           next: (response: WebApiResponse<Driver>) => {
+            if (this.isModal) {
+              this.modalService.hideModal(this.dialogRef);
+            }
             this.notificationService.showMessage(
               response.status,
               response.message,
             );
-            if (response.status === ResponseStatus.Success) {
+            if (response.status === ResponseStatus.Success && !this.isModal) {
               this.routerService.navigateByUrl(`/${this._baseEndPoint}`);
             }
           },
@@ -175,5 +202,20 @@ export class DriverFormComponent
     } else {
       this.notificationService.showMessage(response.status, response.message);
     }
+  }
+
+  private saveModal(response: WebApiResponse<Driver>): void {
+    this.dialogRef?.close(response);
+
+    if (response.status === ResponseStatus.Success) {
+      this.modalService.showNotification(
+        true,
+        this.isEdit ? 'Motorista atualizado' : 'Motorista adicionado',
+        response.message,
+      );
+      return;
+    }
+
+    this.modalService.showNotification(false, '', response.message);
   }
 }

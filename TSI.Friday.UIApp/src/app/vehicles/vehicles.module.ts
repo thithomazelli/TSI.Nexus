@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { VehiclesComponent } from './vehicles.component';
 import { VehicleFormComponent } from './components/vehicle-form/vehicle-form.component';
+import { VehicleDetailsModalComponent } from './components/vehicle-details-modal/vehicle-details-modal.component';
 import { VehicleDetailsPageComponent } from './components/vehicle-details-page/vehicle-details-page.component';
 import { VehicleMaintenanceListComponent } from './components/vehicle-maintenance-list/vehicle-maintenance-list.component';
 import { FuelLogListComponent } from './components/fuel-log-list/fuel-log-list.component';
@@ -14,6 +15,7 @@ import { SharedModule } from '../shared/shared.module';
   declarations: [
     VehiclesComponent,
     VehicleFormComponent,
+    VehicleDetailsModalComponent,
     VehicleDetailsPageComponent,
     VehicleMaintenanceListComponent,
     FuelLogListComponent,

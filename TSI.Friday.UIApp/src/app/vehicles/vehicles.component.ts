@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
 import {
+  ModalService,
   NotificationService,
   ResponseStatus,
   Vehicle,
@@ -9,6 +9,8 @@ import {
 } from '@friday/core';
 import { Subscription, tap, Subject, takeUntil } from 'rxjs';
 import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
+
+import { VehicleDetailsModalComponent } from './components/vehicle-details-modal/vehicle-details-modal.component';
 
 @Component({
   selector: 'app-vehicles',
@@ -113,6 +115,9 @@ export class VehiclesComponent implements OnInit, OnDestroy {
           <button class="btn btn-primary btn-sm" data-action="view">
             <i class="fas fa-eye" data-action="view"></i>
           </button>
+          <button class="btn btn-info btn-sm" data-action="edit">
+            <i class="fas fa-edit" data-action="edit"></i>
+          </button>
           <button class="btn btn-danger btn-sm" data-action="delete">
             <i class="fas fa-trash" data-action="delete"></i>
           </button>
@@ -122,13 +127,16 @@ export class VehiclesComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
+    private modalService: ModalService,
     private notificationService: NotificationService,
     private vehicleService: VehicleService,
-    private routerService: Router,
   ) {}
 
-  openAddPage(): void {
-    this.routerService.navigateByUrl('/vehicles/new');
+  openModal(initialState: any): void {
+    this.modalService.showTemplateModal(
+      VehicleDetailsModalComponent,
+      initialState,
+    );
   }
 
   ngOnInit(): void {
