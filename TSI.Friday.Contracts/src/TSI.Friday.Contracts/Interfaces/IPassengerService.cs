@@ -8,6 +8,11 @@ namespace TSI.Friday.Contracts.Interfaces
 {
     public interface IPassengerService
     {
+        /// <summary>
+        /// Add a new Passenger based on the object received.
+        /// </summary>
+        /// <param name="passenger">The passenger object defined.</param>
+        /// <returns>Return an WebApiResponse with the results for this operation.</returns>
         Task<WebApiResponse<Passenger>> Add(Passenger passenger);
 
         /// <summary>
@@ -20,12 +25,32 @@ namespace TSI.Friday.Contracts.Interfaces
             IEnumerable<Passenger> passengers
         );
 
+        /// <summary>
+        /// Update a Passenger based on the object received.
+        /// </summary>
+        /// <param name="passenger">The passenger object updated.</param>
+        /// <returns>Return an WebApiResponse with the results for this operation.</returns>
         Task<WebApiResponse<Passenger>> Update(Passenger passenger);
 
+        /// <summary>
+        /// Remove a Passenger based on the object received.
+        /// </summary>
+        /// <param name="passenger">The passenger object to be removed.</param>
+        /// <returns>Return an WebApiResponse with the results for this operation.</returns>
         Task<WebApiResponse<Passenger>> Remove(Passenger passenger);
 
+        /// <summary>
+        /// Method responsible to get only one Passenger based on the ID received as parameter.
+        /// </summary>
+        /// <param name="id">The ID to be used on the search.</param>
+        /// <returns>One Passenger object according to the ID defined as parameter.</returns>
         Task<WebApiResponse<Passenger>> FindById(Guid? id);
 
+        /// <summary>
+        /// Method responsible to get all Passengers registered for a given Order.
+        /// </summary>
+        /// <param name="orderId">The Order ID to be used on the search.</param>
+        /// <returns>All Passengers found for the Order.</returns>
         Task<WebApiResponse<IEnumerable<Passenger>>> FindByOrder(Guid orderId);
     }
 }

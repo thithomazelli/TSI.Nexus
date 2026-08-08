@@ -18,6 +18,7 @@ namespace TSI.Friday.Services.Services
             _systemUserId = configuration["OverdueSystemUserId"] ?? "overdue-batch";
         }
 
+        /// <inheritdoc />
         public async Task<OverdueResult> RunOverdueUpdateAsync()
         {
             var ops = await _repo.MarkOverdueOrderProductsAsync(_systemUserId);

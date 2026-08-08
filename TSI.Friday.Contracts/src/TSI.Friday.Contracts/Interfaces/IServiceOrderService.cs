@@ -8,14 +8,39 @@ namespace TSI.Friday.Contracts.Interfaces
 {
     public interface IServiceOrderService
     {
+        /// <summary>
+        /// Add a new ServiceOrder based on the object received.
+        /// </summary>
+        /// <param name="serviceOrder">The service order object defined.</param>
+        /// <returns>Return an WebApiResponse with the results for this operation.</returns>
         Task<WebApiResponse<ServiceOrder>> Add(ServiceOrder serviceOrder);
 
+        /// <summary>
+        /// Update a ServiceOrder based on the object received.
+        /// </summary>
+        /// <param name="serviceOrder">The service order object updated.</param>
+        /// <returns>Return an WebApiResponse with the results for this operation.</returns>
         Task<WebApiResponse<ServiceOrder>> Update(ServiceOrder serviceOrder);
 
+        /// <summary>
+        /// Remove a ServiceOrder based on the object received.
+        /// </summary>
+        /// <param name="serviceOrder">The service order object to be removed.</param>
+        /// <returns>Return an WebApiResponse with the results for this operation.</returns>
         Task<WebApiResponse<ServiceOrder>> Remove(ServiceOrder serviceOrder);
 
+        /// <summary>
+        /// Method responsible to get only one ServiceOrder based on the ID received as parameter.
+        /// </summary>
+        /// <param name="id">The ID to be used on the search.</param>
+        /// <returns>One ServiceOrder object according to the ID defined as parameter.</returns>
         Task<WebApiResponse<ServiceOrder>> FindById(Guid? id);
 
+        /// <summary>
+        /// Method responsible to get all ServiceOrders registered for a given Driver.
+        /// </summary>
+        /// <param name="driverId">The Driver ID to be used on the search.</param>
+        /// <returns>All ServiceOrders found for the Driver.</returns>
         Task<WebApiResponse<IEnumerable<ServiceOrder>>> FindByDriver(Guid driverId);
 
         /// <summary>
