@@ -38,13 +38,22 @@
             </div>
           </div>
           @if (isEdit) {
-            <div class="card-footer text-center">
+            <div class="card-footer text-center d-flex flex-column gap-2">
               <button
                 type="button"
                 class="btn btn-outline-primary btn-sm w-100"
+                [disabled]="emittingContract"
                 (click)="emitContract()"
               >
                 <i class="bi bi-file-earmark-pdf"></i> Emitir Contrato
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm w-100"
+                [disabled]="emittingServiceOrder"
+                (click)="emitServiceOrder()"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir OS
               </button>
             </div>
           }

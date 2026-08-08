@@ -7,10 +7,18 @@ import {
   OrderService,
   OrderProductService,
   PaymentService,
+  BusinessPartnerService,
+  VehicleService,
+  DriverService,
+  TripLegService,
+  PassengerService,
+  ServiceOrderService,
+  downloadLetterheadPdf,
 } from '@friday/core';
-import { Subject, Subscription, switchMap, takeUntil, merge } from 'rxjs';
+import { Subject, Subscription, switchMap, takeUntil, merge, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-import html2pdf from 'html2pdf.js';
+import { buildContractPages, buildServiceOrderPages } from '../../utilities/order-documents';
 
 @Component({
   selector: 'app-order-details-page',
@@ -38,6 +46,9 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     [OrderStatus.WaitingPayment]: 'Aguardando pagamento',
   };
 
+  emittingContract = false;
+  emittingServiceOrder = false;
+
   private _orderChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
@@ -47,6 +58,12 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     private orderProductService: OrderProductService,
     private paymentService: PaymentService,
     private routerService: Router,
+    private businessPartnerService: BusinessPartnerService,
+    private vehicleService: VehicleService,
+    private driverService: DriverService,
+    private tripLegService: TripLegService,
+    private passengerService: PassengerService,
+    private serviceOrderService: ServiceOrderService,
   ) {}
 
   ngOnInit(): void {
@@ -78,62 +95,89 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   emitContract(): void {
-    if (!this.data) {
+    if (!this.data || this.emittingContract) {
       return;
     }
+    const order = this.data;
+    this.emittingContract = true;
 
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'fixed';
-    tempDiv.style.left = '-9999px';
-    tempDiv.style.width = '800px';
-    tempDiv.innerHTML = this.buildContractHtml(this.data);
-    document.body.appendChild(tempDiv);
-
-    html2pdf()
-      .from(tempDiv)
-      .set({
-        margin: 0.5,
-        filename: `contrato-${this.data.orderNumber}.pdf`,
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-      })
-      .save()
-      .finally(() => {
-        document.body.removeChild(tempDiv);
-      });
+    forkJoin({
+      businessPartner: order.businessPartnerId
+        ? this.businessPartnerService
+            .getById(order.businessPartnerId)
+            .pipe(catchError(() => of({ data: null } as WebApiResponse<any>)))
+        : of({ data: null } as WebApiResponse<any>),
+      vehicle: order.vehicleId
+        ? this.vehicleService
+            .getById(order.vehicleId)
+            .pipe(catchError(() => of({ data: null } as WebApiResponse<any>)))
+        : of({ data: null } as WebApiResponse<any>),
+      tripLegs: this.tripLegService
+        .getByOrder(order.id!)
+        .pipe(catchError(() => of({ data: [] } as WebApiResponse<any>))),
+    }).subscribe({
+      next: ({ businessPartner, vehicle, tripLegs }) => {
+        this.emittingContract = false;
+        const pages = buildContractPages(
+          order,
+          businessPartner.data ?? null,
+          vehicle.data ?? null,
+          tripLegs.data ?? [],
+        );
+        downloadLetterheadPdf(pages, `contrato-${order.orderNumber}.pdf`);
+      },
+      error: () => {
+        this.emittingContract = false;
+      },
+    });
   }
 
-  private buildContractHtml(order: Order): string {
-    const today = new Date().toLocaleDateString('pt-BR');
-    const totalPrice = (order.totalPrice ?? 0).toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
+  emitServiceOrder(): void {
+    if (!this.data || this.emittingServiceOrder) {
+      return;
+    }
+    const order = this.data;
+    this.emittingServiceOrder = true;
 
-    return `
-      <div style="font-family: Arial, sans-serif; padding: 24px; font-size: 13px; color:#222;">
-        <h2 style="text-align:center;">CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE</h2>
-        <p><b>Pedido:</b> ${order.orderNumber ?? ''} &nbsp; <b>Data:</b> ${today}</p>
-        <p><b>Contratante:</b> ${order.businessPartnerName ?? '-'}</p>
-        <p><b>Veículo:</b> ${order.vehiclePlate ?? '-'} &nbsp; <b>Motorista:</b> ${order.driverName ?? '-'}</p>
-        <p><b>Roteiro:</b> ${order.route || '-'}</p>
-        <p><b>Distância:</b> ${order.distanceKm ?? 0} km &nbsp; <b>Diárias:</b> ${order.dailyCount ?? 0}</p>
-        <p><b>Valor total:</b> ${totalPrice}</p>
-        <p style="margin-top: 24px;">
-          Pelo presente instrumento particular, as partes acima identificadas ajustam a prestação
-          dos serviços de transporte descritos neste documento, nas condições e valores acima
-          informados, obrigando-se ao fiel cumprimento do presente contrato.
-        </p>
-        <div style="margin-top: 60px; display:flex; justify-content: space-between;">
-          <div style="text-align:center; width:45%; border-top:1px solid #333; padding-top:4px;">
-            Contratante
-          </div>
-          <div style="text-align:center; width:45%; border-top:1px solid #333; padding-top:4px;">
-            Serodio Turismo
-          </div>
-        </div>
-      </div>
-    `;
+    forkJoin({
+      vehicle: order.vehicleId
+        ? this.vehicleService
+            .getById(order.vehicleId)
+            .pipe(catchError(() => of({ data: null } as WebApiResponse<any>)))
+        : of({ data: null } as WebApiResponse<any>),
+      driver: order.driverId
+        ? this.driverService
+            .getById(order.driverId)
+            .pipe(catchError(() => of({ data: null } as WebApiResponse<any>)))
+        : of({ data: null } as WebApiResponse<any>),
+      passengers: this.passengerService
+        .getByOrder(order.id!)
+        .pipe(catchError(() => of({ data: [] } as WebApiResponse<any>))),
+      serviceOrders: order.driverId
+        ? this.serviceOrderService
+            .getByDriver(order.driverId)
+            .pipe(catchError(() => of({ data: [] } as WebApiResponse<any>)))
+        : of({ data: [] } as WebApiResponse<any>),
+    }).subscribe({
+      next: ({ vehicle, driver, passengers, serviceOrders }) => {
+        this.emittingServiceOrder = false;
+        const matchingServiceOrder = (serviceOrders.data ?? []).find(
+          (so: any) => so.orderId === order.id,
+        );
+        const commissionAmount = matchingServiceOrder?.commission?.amount ?? null;
+        const pages = buildServiceOrderPages(
+          order,
+          vehicle.data ?? null,
+          driver.data ?? null,
+          (passengers.data ?? []).length,
+          commissionAmount,
+        );
+        downloadLetterheadPdf(pages, `os-${order.orderNumber}.pdf`);
+      },
+      error: () => {
+        this.emittingServiceOrder = false;
+      },
+    });
   }
 
   private getOrderById(id: string): void {
