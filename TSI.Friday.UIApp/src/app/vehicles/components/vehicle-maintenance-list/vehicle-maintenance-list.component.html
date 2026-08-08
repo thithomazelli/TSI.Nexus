@@ -10,39 +10,90 @@
     <form [formGroup]="form" (ngSubmit)="addMaintenance()" class="border rounded p-3 mb-3">
       <div class="row g-2">
         <div class="col-12 col-md-3">
-          <label class="form-label">Tipo</label>
-          <select formControlName="type" class="form-select">
-            @for (option of typeOptions; track option) {
-              <option [value]="option.value">{{ option.label }}</option>
-            }
-          </select>
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select formControlName="type" class="form-select" id="maintenanceType">
+                @for (option of typeOptions; track option) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              <label for="maintenanceType">Tipo</label>
+            </div>
+          </div>
         </div>
         <div class="col-12 col-md-5">
-          <label class="form-label">Descrição</label>
-          <input formControlName="description" type="text" class="form-control" />
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="description"
+                type="text"
+                placeholder="Descrição"
+                class="form-control"
+                id="maintenanceDescription"
+              />
+              <label for="maintenanceDescription">Descrição</label>
+            </div>
+          </div>
         </div>
         <div class="col-6 col-md-2">
-          <label class="form-label">Data agendada</label>
-          <input formControlName="scheduledDate" type="date" class="form-control" />
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="scheduledDate"
+                type="date"
+                placeholder="Data agendada"
+                class="form-control"
+                id="maintenanceScheduledDate"
+              />
+              <label for="maintenanceScheduledDate">Data agendada</label>
+            </div>
+          </div>
         </div>
         <div class="col-6 col-md-2">
-          <label class="form-label">Custo</label>
-          <input formControlName="cost" type="number" min="0" class="form-control" />
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="cost"
+                type="number"
+                min="0"
+                placeholder="Custo"
+                class="form-control"
+                id="maintenanceCost"
+              />
+              <label for="maintenanceCost">Custo</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
+          </div>
         </div>
         <div class="col-12 col-md-5">
-          <label class="form-label">Peça consumida (opcional)</label>
-          <select formControlName="productId" class="form-select">
-            <option [ngValue]="null">Nenhuma</option>
-            @for (product of products; track product.id) {
-              <option [ngValue]="product.id">
-                {{ product.sku }} - {{ product.name }} (estoque: {{ product.quantityInStock }})
-              </option>
-            }
-          </select>
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select formControlName="productId" class="form-select" id="maintenanceProduct">
+                <option [ngValue]="null">Nenhuma</option>
+                @for (product of products; track product.id) {
+                  <option [ngValue]="product.id">
+                    {{ product.sku }} - {{ product.name }} (estoque: {{ product.quantityInStock }})
+                  </option>
+                }
+              </select>
+              <label for="maintenanceProduct">Peça consumida (opcional)</label>
+            </div>
+          </div>
         </div>
         <div class="col-6 col-md-2">
-          <label class="form-label">Quantidade</label>
-          <input formControlName="partQuantity" type="number" min="0" class="form-control" />
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="partQuantity"
+                type="number"
+                min="0"
+                placeholder="Quantidade"
+                class="form-control"
+                id="maintenancePartQuantity"
+              />
+              <label for="maintenancePartQuantity">Quantidade</label>
+            </div>
+          </div>
         </div>
       </div>
       <div class="d-flex justify-content-end mt-2">
