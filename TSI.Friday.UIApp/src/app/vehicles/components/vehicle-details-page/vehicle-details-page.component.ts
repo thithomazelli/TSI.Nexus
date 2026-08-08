@@ -13,6 +13,7 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data?: Vehicle | null = null;
   loading = false;
+  activeTab: 'details' | 'maintenances' = 'details';
 
   private _destroy$ = new Subject<void>();
 

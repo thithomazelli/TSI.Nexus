@@ -1,0 +1,95 @@
+<div class="vehicle-maintenance-list">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">Manutenções</h5>
+    <button type="button" class="btn btn-success btn-sm" (click)="toggleForm()">
+      <i class="bi bi-plus-lg"></i> Nova manutenção
+    </button>
+  </div>
+
+  @if (showForm) {
+    <form [formGroup]="form" (ngSubmit)="addMaintenance()" class="border rounded p-3 mb-3">
+      <div class="row g-2">
+        <div class="col-12 col-md-3">
+          <label class="form-label">Tipo</label>
+          <select formControlName="type" class="form-select">
+            @for (option of typeOptions; track option) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-12 col-md-5">
+          <label class="form-label">Descrição</label>
+          <input formControlName="description" type="text" class="form-control" />
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Data agendada</label>
+          <input formControlName="scheduledDate" type="date" class="form-control" />
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label">Custo</label>
+          <input formControlName="cost" type="number" min="0" class="form-control" />
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-2">
+        <button type="button" class="btn btn-secondary btn-sm me-2" (click)="toggleForm()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-success btn-sm">Salvar</button>
+      </div>
+    </form>
+  }
+
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Tipo</th>
+        <th>Descrição</th>
+        <th>Data agendada</th>
+        <th>Status</th>
+        <th>Custo</th>
+        <th style="width: 140px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (m of maintenances; track m.id) {
+        <tr>
+          <td>{{ m.type === 'Preventive' ? 'Preventiva' : 'Corretiva' }}</td>
+          <td>{{ m.description }}</td>
+          <td>{{ m.scheduledDate | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <span class="badge bg-{{ getStatusInfo(m.status).color }}">
+              {{ getStatusInfo(m.status).label }}
+            </span>
+          </td>
+          <td>{{ m.cost | currency: 'BRL' }}</td>
+          <td>
+            @if (m.status === 'Scheduled' || m.status === 'InProgress' || m.status === 'Overdue') {
+              <button
+                type="button"
+                class="btn btn-link btn-sm p-0 me-2"
+                title="Concluir"
+                (click)="completeMaintenance(m)"
+              >
+                <i class="bi bi-check-circle text-success"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-link btn-sm p-0"
+                title="Cancelar"
+                (click)="cancelMaintenance(m)"
+              >
+                <i class="bi bi-x-circle text-danger"></i>
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="text-center text-muted small py-3">
+            Nenhuma manutenção registrada
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
