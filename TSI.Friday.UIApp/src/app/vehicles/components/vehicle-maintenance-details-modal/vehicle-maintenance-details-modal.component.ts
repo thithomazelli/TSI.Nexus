@@ -76,7 +76,8 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
 
     const raw = this.form.getRawValue();
     const maintenance = {
-      id: this._id,
+      // O backend não converte "" para Guid, então o id só entra no payload ao editar.
+      ...(this.isEdit ? { id: this._id } : {}),
       type: raw.type,
       description: raw.description,
       scheduledDate: this.toDate(raw.scheduledDate),

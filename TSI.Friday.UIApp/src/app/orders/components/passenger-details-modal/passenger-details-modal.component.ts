@@ -53,7 +53,8 @@ export class PassengerDetailsModalComponent {
 
     const raw = this.form.getRawValue();
     const passenger = {
-      id: this._id,
+      // O backend não converte "" para Guid, então o id só entra no payload ao editar.
+      ...(this.isEdit ? { id: this._id } : {}),
       name: raw.name,
       documentNumber: raw.documentNumber,
       seat: raw.seat,

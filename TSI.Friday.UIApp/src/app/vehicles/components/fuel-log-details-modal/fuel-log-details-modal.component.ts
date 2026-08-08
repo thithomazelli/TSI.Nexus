@@ -57,7 +57,8 @@ export class FuelLogDetailsModalComponent {
 
     const raw = this.form.getRawValue();
     const fuelLog = {
-      id: this._id,
+      // O backend não converte "" para Guid, então o id só entra no payload ao editar.
+      ...(this.isEdit ? { id: this._id } : {}),
       date: this.toDate(raw.date),
       odometer: raw.odometer,
       liters: raw.liters,

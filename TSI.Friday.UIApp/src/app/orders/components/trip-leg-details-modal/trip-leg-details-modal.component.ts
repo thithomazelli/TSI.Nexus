@@ -70,7 +70,6 @@ export class TripLegDetailsModalComponent {
 
     (raw.stops ?? []).forEach((stop: any, index: number) => {
       legs.push({
-        id: '',
         sequenceNumber: this._nextSequenceNumber + index,
         origin: previousPoint,
         destination: stop.destination,

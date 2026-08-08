@@ -12,7 +12,6 @@ export function parsePassengerRows(text: string, orderId: string): Passenger[] {
     .map((line) => {
       const columns = line.includes('\t') ? line.split('\t') : line.split(',');
       return {
-        id: '',
         name: (columns[0] ?? '').trim(),
         documentNumber: (columns[1] ?? '').trim(),
         seat: (columns[2] ?? '').trim(),
