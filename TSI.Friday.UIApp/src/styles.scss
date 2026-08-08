@@ -77,15 +77,10 @@
   justify-content: space-between;
   padding-bottom: 10px;
   border-bottom: 1px solid #e0e0e0;
-  flex: 0 0 auto;
 }
 
 .modal-body {
   padding-top: 10px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex: 1 1 auto;
-  min-height: 0;
 }
 
 // Deixa o X do btn-close vermelho no hover, mantendo a espessura original
@@ -108,14 +103,11 @@ a:hover {
   padding: 24px 24px 16px 24px !important;
   min-width: 400px !important;
   max-width: 600px !important;
-  max-height: 90vh !important;
   width: 100% !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
   background: #fff !important;
   font-family: inherit !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
+  overflow-x: hidden !important;
 }
 
 /* Garante que o conteúdo do modal não tenha padding duplicado */

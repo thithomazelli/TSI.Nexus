@@ -8,6 +8,7 @@ import {
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { initialConfig } from 'ngx-mask';
 
 import {
   ApiType,
@@ -64,6 +65,14 @@ export class DriverFormComponent
     { label: 'Inativo', value: DriverStatus.Inactive },
     { label: 'Afastado', value: DriverStatus.OnLeave },
   ];
+
+  // Dígito verificador do RG varia por estado: alguns não têm, e em SP costuma ser "X" em vez
+  // de número. "C" é um placeholder customizado opcional que aceita dígito ou X/x, mesclado com
+  // os padrões padrão do ngx-mask (senão o "0" do resto da máscara para de funcionar).
+  rgMaskPatterns = {
+    ...initialConfig.patterns,
+    C: { pattern: /[0-9Xx]/, optional: true },
+  };
 
   private _baseEndPoint: ApiType = ApiType.Drivers;
 

@@ -5,6 +5,7 @@
 
 <div class="modal-body">
   <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="modal-scrollable-area">
     <div class="row g-2 mb-2">
       <div class="col-12">
         <div class="input-group">
@@ -113,6 +114,7 @@
     <button type="button" class="btn btn-outline-primary btn-sm mb-3" (click)="addStop()">
       <i class="bi bi-plus-lg"></i> Adicionar destino
     </button>
+    </div>
 
     <div class="d-flex justify-content-end mt-3">
       <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">
