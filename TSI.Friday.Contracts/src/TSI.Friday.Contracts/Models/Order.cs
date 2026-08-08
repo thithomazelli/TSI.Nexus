@@ -53,6 +53,10 @@ namespace TSI.Friday.Contracts.Models
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = [];
 
+        public ICollection<TripLeg> TripLegs { get; set; } = [];
+
+        public ICollection<Passenger> Passengers { get; set; } = [];
+
         public ICollection<Attachment> Attachments { get; set; }
     }
 }

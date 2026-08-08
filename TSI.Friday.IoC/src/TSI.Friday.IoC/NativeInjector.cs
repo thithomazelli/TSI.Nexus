@@ -90,6 +90,9 @@ namespace TSI.Friday.IoC
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
+            services.AddScoped<ITripLegService, TripLegService>();
+            services.AddScoped<IPassengerService, PassengerService>();
+            services.AddScoped<IFuelLogService, FuelLogService>();
 
             #endregion Services
 
@@ -113,6 +116,9 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<Sequence>, Repository<Sequence>>();
             services.AddScoped<IRepository<Vehicle>, Repository<Vehicle>>();
             services.AddScoped<IRepository<VehicleMaintenance>, Repository<VehicleMaintenance>>();
+            services.AddScoped<IRepository<TripLeg>, Repository<TripLeg>>();
+            services.AddScoped<IRepository<Passenger>, Repository<Passenger>>();
+            services.AddScoped<IRepository<FuelLog>, Repository<FuelLog>>();
 
             #endregion Repositories
         }

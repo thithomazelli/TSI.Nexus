@@ -54,6 +54,12 @@ namespace TSI.Friday.Data
 
         public DbSet<Driver> Driver { get; set; }
 
+        public DbSet<TripLeg> TripLeg { get; set; }
+
+        public DbSet<Passenger> Passenger { get; set; }
+
+        public DbSet<FuelLog> FuelLog { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -208,6 +214,27 @@ namespace TSI.Friday.Data
                 .WithMany(d => d.Orders)
                 .HasForeignKey(o => o.DriverId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<TripLeg>()
+                .HasOne(t => t.Order)
+                .WithMany(o => o.TripLegs)
+                .HasForeignKey(t => t.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Passenger>()
+                .HasOne(p => p.Order)
+                .WithMany(o => o.Passengers)
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<FuelLog>()
+                .HasOne(f => f.Vehicle)
+                .WithMany(v => v.FuelLogs)
+                .HasForeignKey(f => f.VehicleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }
