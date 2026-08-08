@@ -17,6 +17,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Order> _repository;
         private readonly IRepository<OrderProduct> _orderProductRepository;
+        private readonly IRepository<Vehicle> _vehicleRepository;
         private readonly ITransactionService _transactionService;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
@@ -33,6 +34,7 @@ namespace TSI.Friday.Services
         public OrderService(
             IRepository<Order> repository,
             IRepository<OrderProduct> orderProductRepository,
+            IRepository<Vehicle> vehicleRepository,
             ITransactionService transactionService,
             ISequenceService sequenceService,
             IMapper mapper,
@@ -41,6 +43,7 @@ namespace TSI.Friday.Services
         {
             _repository = repository;
             _orderProductRepository = orderProductRepository;
+            _vehicleRepository = vehicleRepository;
             _transactionService = transactionService;
             _sequenceService = sequenceService;
             _mapper = mapper;
@@ -90,6 +93,17 @@ namespace TSI.Friday.Services
                 }
 
                 var orderEntity = _mapper.Map<Order>(orderDto);
+
+                var vehicleAssignmentMessage = await ApplyVehicleAssignmentAndGetErrorMessage(
+                    orderEntity
+                );
+                if (!string.IsNullOrEmpty(vehicleAssignmentMessage))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message = vehicleAssignmentMessage;
+                    return result;
+                }
+
                 await _repository.AddAsync(orderEntity);
 
                 // Update Transaction
@@ -126,6 +140,17 @@ namespace TSI.Friday.Services
             {
                 // First update Order basic data (without handling Transaction) to ensure it exists
                 var orderEntity = _mapper.Map<Order>(orderDto);
+
+                var vehicleAssignmentMessage = await ApplyVehicleAssignmentAndGetErrorMessage(
+                    orderEntity
+                );
+                if (!string.IsNullOrEmpty(vehicleAssignmentMessage))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message = vehicleAssignmentMessage;
+                    return result;
+                }
+
                 await _repository.UpdateAsync(orderEntity);
 
                 if (orderDto.Transaction != null)
@@ -368,6 +393,46 @@ namespace TSI.Friday.Services
         #endregion Public methods
 
         #region Private methods
+
+        /// <summary>
+        /// Validates that the Vehicle assigned to an Order is available (not blocked by overdue
+        /// maintenance nor inactive) and, when a distance/daily count is informed, calculates the
+        /// trip Price from the Vehicle's price-per-km and daily rate.
+        /// </summary>
+        /// <param name="order">The Order entity being added or updated.</param>
+        /// <returns>An error message when the Vehicle cannot be assigned; otherwise an empty string.</returns>
+        private async Task<string> ApplyVehicleAssignmentAndGetErrorMessage(Order order)
+        {
+            if (order.VehicleId == null || order.VehicleId == Guid.Empty)
+            {
+                return string.Empty;
+            }
+
+            var vehicles = await _vehicleRepository.QueryAsync(v => v.Id == order.VehicleId);
+            var vehicle = vehicles.FirstOrDefault();
+
+            if (vehicle == null)
+            {
+                return "Veículo selecionado não foi encontrado.";
+            }
+
+            if (vehicle.Status == VehicleStatus.Blocked)
+            {
+                return $"O veículo {vehicle.Plate} está bloqueado por manutenção vencida e não pode ser vinculado a uma viagem.";
+            }
+
+            if (vehicle.Status == VehicleStatus.Inactive)
+            {
+                return $"O veículo {vehicle.Plate} está inativo e não pode ser vinculado a uma viagem.";
+            }
+
+            if (order.DistanceKm > 0 || order.DailyCount > 0)
+            {
+                order.Price = (vehicle.PricePerKm * order.DistanceKm) + (vehicle.DailyRate * order.DailyCount);
+            }
+
+            return string.Empty;
+        }
 
         private static string BuildPrefixFromBusinessPartnerName(string businessPartnerName)
         {

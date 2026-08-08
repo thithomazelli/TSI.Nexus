@@ -48,6 +48,12 @@ namespace TSI.Friday.Data
 
         public DbSet<Attachment> Attachments { get; set; }
 
+        public DbSet<Vehicle> Vehicle { get; set; }
+
+        public DbSet<VehicleMaintenance> VehicleMaintenance { get; set; }
+
+        public DbSet<Driver> Driver { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -177,6 +183,31 @@ namespace TSI.Friday.Data
                 .WithMany(u => (ICollection<Attachment>)u.Attachments)
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Vehicle>().HasIndex(v => v.Plate).IsUnique();
+
+            modelBuilder
+                .Entity<VehicleMaintenance>()
+                .HasOne(m => m.Vehicle)
+                .WithMany(v => v.Maintenances)
+                .HasForeignKey(m => m.VehicleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Driver>().HasIndex(d => d.SocialSecurityCard).IsUnique();
+
+            modelBuilder
+                .Entity<Order>()
+                .HasOne(o => o.Vehicle)
+                .WithMany(v => v.Orders)
+                .HasForeignKey(o => o.VehicleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<Order>()
+                .HasOne(o => o.Driver)
+                .WithMany(d => d.Orders)
+                .HasForeignKey(o => o.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

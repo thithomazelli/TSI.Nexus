@@ -35,6 +35,16 @@ namespace TSI.Friday.IoC.Tests
             services.Any(sd => sd.ServiceType == typeof(IProductService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IUserManagerService)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(ISequenceService)).Should().BeTrue();
+            services.Any(sd => sd.ServiceType == typeof(IVehicleService)).Should().BeTrue();
+            services
+                .Any(sd => sd.ServiceType == typeof(IVehicleMaintenanceService))
+                .Should()
+                .BeTrue();
+            services
+                .Any(sd => sd.ServiceType == typeof(IVehicleMaintenanceOverdueService))
+                .Should()
+                .BeTrue();
+            services.Any(sd => sd.ServiceType == typeof(IDriverService)).Should().BeTrue();
         }
 
         [Fact]
@@ -74,6 +84,12 @@ namespace TSI.Friday.IoC.Tests
                 .BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IRepository<User>)).Should().BeTrue();
             services.Any(sd => sd.ServiceType == typeof(IRepository<Sequence>)).Should().BeTrue();
+            services.Any(sd => sd.ServiceType == typeof(IRepository<Vehicle>)).Should().BeTrue();
+            services
+                .Any(sd => sd.ServiceType == typeof(IRepository<VehicleMaintenance>))
+                .Should()
+                .BeTrue();
+            services.Any(sd => sd.ServiceType == typeof(IRepository<Driver>)).Should().BeTrue();
         }
     }
 }

@@ -28,6 +28,22 @@ namespace TSI.Friday.Contracts.Models
 
         public BusinessPartner BusinessPartner { get; set; }
 
+        public string Route { get; set; } = string.Empty;
+
+        public decimal DistanceKm { get; set; }
+
+        public int DailyCount { get; set; }
+
+        [ForeignKey("Vehicle")]
+        public Guid? VehicleId { get; set; }
+
+        public Vehicle? Vehicle { get; set; }
+
+        [ForeignKey("Driver")]
+        public Guid? DriverId { get; set; }
+
+        public Driver? Driver { get; set; }
+
         [ForeignKey("Transaction")]
         public Guid TransactionId { get; set; }
 

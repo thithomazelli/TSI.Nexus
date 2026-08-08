@@ -63,10 +63,15 @@ namespace TSI.Friday.IoC
             // register hosted service
             services.AddHostedService<OverdueStatusBackgroundService>();
 
+            // register service and hosted service for vehicle maintenance overdue/auto-block
+            services.AddScoped<IVehicleMaintenanceOverdueService, VehicleMaintenanceOverdueService>();
+            services.AddHostedService<VehicleMaintenanceOverdueBackgroundService>();
+
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IAttachmentService, AttachmentService>();
             services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
             services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IDriverService, DriverService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IIndividualService, IndividualService>();
             services.AddScoped<IJwtService, JwtService>();
@@ -83,6 +88,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IUserManagerService, UserManagerService>();
             services.AddScoped<ISequenceService, SequenceService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IVehicleService, VehicleService>();
+            services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
 
             #endregion Services
 
@@ -92,6 +99,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<Attachment>, Repository<Attachment>>();
             services.AddScoped<IRepository<BusinessPartner>, Repository<BusinessPartner>>();
             services.AddScoped<IRepository<Company>, Repository<Company>>();
+            services.AddScoped<IRepository<Driver>, Repository<Driver>>();
             services.AddScoped<IRepository<Individual>, Repository<Individual>>();
             services.AddScoped<IRepository<Order>, Repository<Order>>();
             services.AddScoped<IRepository<OrderProduct>, Repository<OrderProduct>>();
@@ -103,6 +111,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<QuoteProduct>, Repository<QuoteProduct>>();
             services.AddScoped<IRepository<User>, Repository<User>>();
             services.AddScoped<IRepository<Sequence>, Repository<Sequence>>();
+            services.AddScoped<IRepository<Vehicle>, Repository<Vehicle>>();
+            services.AddScoped<IRepository<VehicleMaintenance>, Repository<VehicleMaintenance>>();
 
             #endregion Repositories
         }

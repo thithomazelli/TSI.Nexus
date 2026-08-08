@@ -107,6 +107,14 @@ namespace TSI.Friday.IoC
                         )
                 )
                 .ForMember(
+                    dest => dest.VehiclePlate,
+                    opt => opt.MapFrom(src => src.Vehicle != null ? src.Vehicle.Plate : null)
+                )
+                .ForMember(
+                    dest => dest.DriverName,
+                    opt => opt.MapFrom(src => src.Driver != null ? src.Driver.Name : null)
+                )
+                .ForMember(
                     dest => dest.HasOpenedProducts,
                     opt =>
                         opt.MapFrom(src =>

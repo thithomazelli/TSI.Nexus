@@ -19,6 +19,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly OrderService _orderService;
         private readonly Mock<IRepository<Order>> _repository;
         private readonly Mock<IRepository<OrderProduct>> _orderProductRepository;
+        private readonly Mock<IRepository<Vehicle>> _vehicleRepository;
         private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly Mock<ILogService> _logService;
@@ -37,6 +38,7 @@ namespace TSI.Friday.Services.Tests.Services
             );
             _repository = new Mock<IRepository<Order>>();
             _orderProductRepository = new Mock<IRepository<OrderProduct>>();
+            _vehicleRepository = new Mock<IRepository<Vehicle>>();
             _transactionService = new Mock<ITransactionService>();
             _sequenceService = new Mock<ISequenceService>();
             _logService = new Mock<ILogService>();
@@ -44,11 +46,16 @@ namespace TSI.Friday.Services.Tests.Services
             _orderService = new OrderService(
                 _repository.Object,
                 _orderProductRepository.Object,
+                _vehicleRepository.Object,
                 _transactionService.Object,
                 _sequenceService.Object,
                 _mapper,
                 _logService.Object
             );
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle>());
 
             _orderListMock = new List<OrderDto>
             {
@@ -124,6 +131,98 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task OrderService_Add_ShouldReturnWarningAndNotAddOrder_WhenVehicleIsBlocked()
+        {
+            // Arrange
+            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000099");
+            var orderDto = new OrderDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                OrderNumber = "ORD-00001",
+                Description = "Novo Pedido",
+                BusinessPartnerName = "ORD",
+                VehicleId = vehicleId,
+                Transaction = new TransactionDto(),
+                QuoteNumber = string.Empty,
+            };
+
+            var blockedVehicle = new Vehicle
+            {
+                Id = vehicleId,
+                Plate = "ABC1D23",
+                Status = VehicleStatus.Blocked,
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle> { blockedVehicle });
+
+            // Act
+            var result = await _orderService.Add(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            Assert.Equal(
+                $"O veículo {blockedVehicle.Plate} está bloqueado por manutenção vencida e não pode ser vinculado a uma viagem.",
+                result.Message
+            );
+            _repository.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderService_Add_ShouldCalculatePriceFromVehicleRates_WhenDistanceAndDailyCountAreInformed()
+        {
+            // Arrange
+            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000098");
+            var orderDto = new OrderDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
+                OrderNumber = "ORD-00001",
+                Description = "Novo Pedido",
+                BusinessPartnerName = "ORD",
+                VehicleId = vehicleId,
+                DistanceKm = 100,
+                DailyCount = 2,
+                Transaction = new TransactionDto(),
+                QuoteNumber = string.Empty,
+            };
+
+            var availableVehicle = new Vehicle
+            {
+                Id = vehicleId,
+                Plate = "ABC1D23",
+                Status = VehicleStatus.Available,
+                PricePerKm = 5.00M,
+                DailyRate = 300.00M,
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle> { availableVehicle });
+
+            Order capturedOrder = null;
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<Order>()))
+                .Callback<Order>(o => capturedOrder = o)
+                .Returns(Task.CompletedTask);
+            _transactionService
+                .Setup(_ => _.Add(It.IsAny<TransactionDto>()))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto> { Data = new TransactionDto { Id = Guid.NewGuid() } }
+                );
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+
+            // Act
+            var result = await _orderService.Add(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(capturedOrder);
+            // 100km * 5.00 + 2 daily * 300.00 = 500 + 600 = 1100
+            Assert.Equal(1100.00M, capturedOrder.Price);
         }
 
         [Fact]
