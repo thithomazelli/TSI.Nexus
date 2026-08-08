@@ -11,7 +11,7 @@ export const SERODIO_COMPANY = {
   site: 'www.serodioturismo.com.br',
   officeContactName: 'WARLEN',
   signatureName: 'WARLEN DA SALVA MONTEIRO',
-  logoPath: 'assets/img/serodio/logo.jpg',
+  logoPath: 'assets/img/serodio/logo.png',
   letterheadPath: 'assets/img/serodio/letterhead-a4.jpg',
   signaturePath: 'assets/img/serodio/signature-warlen.png',
 };
