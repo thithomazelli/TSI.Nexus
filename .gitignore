@@ -74,6 +74,7 @@ Desktop.ini
 secrets.json
 web.config.Production.xml
 web.config.Homolog.xml
+appsettings.Local.json
 
 # ---- Testing / Coverage ----
 coverage/
