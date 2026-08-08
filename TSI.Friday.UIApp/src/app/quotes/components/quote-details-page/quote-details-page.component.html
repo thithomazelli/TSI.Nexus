@@ -37,6 +37,18 @@
               </div>
             </div>
           </div>
+          @if (isEdit) {
+            <div class="card-footer text-center">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm w-100"
+                [disabled]="emittingQuote"
+                (click)="emitQuote()"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir Orçamento
+              </button>
+            </div>
+          }
         </div>
       </div>
       <!-- /.col -->
