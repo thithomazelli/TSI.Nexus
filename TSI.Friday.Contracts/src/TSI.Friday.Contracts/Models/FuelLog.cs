@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TSI.Friday.Contracts.Models
@@ -21,7 +20,9 @@ namespace TSI.Friday.Contracts.Models
         [ForeignKey("Vehicle")]
         public Guid VehicleId { get; set; }
 
-        [Required]
+        // Not [Required]: the API only ever receives VehicleId from the client, never a nested
+        // Vehicle object, and DataAnnotations validation would otherwise reject every request.
+        // The relationship is still enforced at the DB level since VehicleId is a non-nullable Guid.
         public virtual Vehicle Vehicle { get; set; } = null!;
 
         public FuelLog() { }

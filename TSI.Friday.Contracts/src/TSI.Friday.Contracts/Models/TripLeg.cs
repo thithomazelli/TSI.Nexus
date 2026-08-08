@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TSI.Friday.Contracts.Models
@@ -23,7 +22,9 @@ namespace TSI.Friday.Contracts.Models
         [ForeignKey("Order")]
         public Guid OrderId { get; set; }
 
-        [Required]
+        // Not [Required]: the API only ever receives OrderId from the client, never a nested
+        // Order object, and DataAnnotations validation would otherwise reject every request.
+        // The relationship is still enforced at the DB level since OrderId is a non-nullable Guid.
         public virtual Order Order { get; set; } = null!;
 
         public TripLeg() { }
