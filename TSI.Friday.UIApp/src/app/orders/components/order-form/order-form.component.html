@@ -266,6 +266,27 @@
               </div>
             </div>
           </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="transportLicenseNumber"
+                  type="text"
+                  placeholder="Licença NTT/ARTESP"
+                  class="form-control"
+                  id="transportLicenseNumber"
+                />
+                <label for="transportLicenseNumber">Licença NTT/ARTESP</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-patch-check"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <app-date-field
+              formControlName="transportLicenseExpiryDate"
+              [label]="'Validade da licença'"
+            ></app-date-field>
+          </div>
           <div class="col-12 col-md-6" *ngIf="form.get('vehicleId')?.value">
             <small class="text-muted">
               Quando km/diárias forem informados, o preço do pedido é

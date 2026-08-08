@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './navbar.component';
 import { OrderProductNotificationComponent } from './components/order-product-notification/order-product-notification.component';
 import { PaymentNotificationComponent } from './components/payment-notification/payment-notification.component';
-import { VehicleLicenseNotificationComponent } from './components/vehicle-license-notification/vehicle-license-notification.component';
 import { DriverLicenseNotificationComponent } from './components/driver-license-notification/driver-license-notification.component';
 import { VehicleBlockedNotificationComponent } from './components/vehicle-blocked-notification/vehicle-blocked-notification.component';
 import { PaymentsModule } from '../payments/payments.module';
@@ -15,7 +14,6 @@ import { SharedModule } from '../shared/shared.module';
     NavbarComponent,
     OrderProductNotificationComponent,
     PaymentNotificationComponent,
-    VehicleLicenseNotificationComponent,
     DriverLicenseNotificationComponent,
     VehicleBlockedNotificationComponent,
   ],

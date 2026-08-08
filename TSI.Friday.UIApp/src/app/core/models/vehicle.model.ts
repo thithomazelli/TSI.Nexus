@@ -16,8 +16,6 @@ export interface Vehicle extends BaseModel {
   status: VehicleStatus;
   pricePerKm: number;
   dailyRate: number;
-  transportLicenseNumber: string;
-  transportLicenseExpiryDate?: Date | null;
   odometer: number;
   photo?: string;
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using TSI.Friday.Contracts.Enums;
 
@@ -29,10 +28,6 @@ namespace TSI.Friday.Contracts.Models
         public decimal PricePerKm { get; set; }
 
         public decimal DailyRate { get; set; }
-
-        public string TransportLicenseNumber { get; set; }
-
-        public DateTime? TransportLicenseExpiryDate { get; set; }
 
         public int Odometer { get; set; }
 

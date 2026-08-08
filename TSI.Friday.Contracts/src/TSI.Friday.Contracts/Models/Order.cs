@@ -34,6 +34,10 @@ namespace TSI.Friday.Contracts.Models
 
         public int DailyCount { get; set; }
 
+        public string TransportLicenseNumber { get; set; }
+
+        public DateTime? TransportLicenseExpiryDate { get; set; }
+
         [ForeignKey("Vehicle")]
         public Guid? VehicleId { get; set; }
 

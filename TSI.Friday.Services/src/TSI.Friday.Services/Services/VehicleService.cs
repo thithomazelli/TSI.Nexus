@@ -243,36 +243,6 @@ namespace TSI.Friday.Services
             return result;
         }
 
-        /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<Vehicle>>> FindWithExpiringLicense(
-            int daysAhead
-        )
-        {
-            WebApiResponse<IEnumerable<Vehicle>> result = new();
-
-            try
-            {
-                var threshold = DateTime.UtcNow.Date.AddDays(daysAhead);
-
-                result.Data = await _repository.QueryAsync(_ =>
-                    _.TransportLicenseExpiryDate != null
-                    && _.TransportLicenseExpiryDate.Value.Date <= threshold
-                );
-                result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
-            }
-            catch (Exception ex)
-            {
-                _logService.LogException(ex, "VehicleService.FindWithExpiringLicense", daysAhead);
-
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Veículos na base de dados. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
         #endregion Public methods
 
         #region Private methods

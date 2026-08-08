@@ -197,8 +197,6 @@ export class VehicleFormComponent
       pricePerKmFormatted: ['', Validators.required],
       dailyRate: [0, [Validators.required, Validators.min(0)]],
       dailyRateFormatted: ['', Validators.required],
-      transportLicenseNumber: [''],
-      transportLicenseExpiryDate: [null as Date | null],
       odometer: [0, [Validators.min(0)]],
     };
 

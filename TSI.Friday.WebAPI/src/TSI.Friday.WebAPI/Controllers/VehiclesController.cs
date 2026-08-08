@@ -124,17 +124,5 @@ namespace TSI.Friday.WebAPI.Controllers
             var webApiResponse = await _vehicleService.FindAvailable();
             return Ok(webApiResponse);
         }
-
-        /// <summary>
-        /// Get vehicles whose transport license (NTT/ARTESP) is expired or expiring within the
-        /// given number of days (defaults to 60, the lead time recommended in the sector).
-        /// </summary>
-        [HttpGet]
-        [Route("GetExpiringLicenses")]
-        public async Task<IActionResult> GetExpiringLicenses([FromQuery] int daysAhead = 60)
-        {
-            var webApiResponse = await _vehicleService.FindWithExpiringLicense(daysAhead);
-            return Ok(webApiResponse);
-        }
     }
 }

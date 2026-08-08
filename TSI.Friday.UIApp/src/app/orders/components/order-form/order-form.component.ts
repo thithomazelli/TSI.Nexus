@@ -393,6 +393,8 @@ export class OrderFormComponent
       route: [''],
       distanceKm: [0, [Validators.min(0)]],
       dailyCount: [0, [Validators.min(0)]],
+      transportLicenseNumber: [''],
+      transportLicenseExpiryDate: [null as Date | null],
     });
 
     this.addTransactionForm();

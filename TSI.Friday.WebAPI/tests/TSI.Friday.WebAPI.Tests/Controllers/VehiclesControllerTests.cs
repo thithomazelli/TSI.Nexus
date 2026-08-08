@@ -260,42 +260,5 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             _vehicleServiceMock.Verify(_ => _.FindAvailable(), Times.Once);
         }
-
-        [Fact]
-        public async Task VehiclesController_GetExpiringLicenses_ShouldGetVehiclesWithExpiringLicense_WhenMethodIsCalled()
-        {
-            // Arrange
-            var vehicleMock = new List<Vehicle>
-            {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Plate = "ABC1D23",
-                    TransportLicenseExpiryDate = DateTime.UtcNow.AddDays(10),
-                },
-            };
-
-            var expectedResult = new WebApiResponse<IEnumerable<Vehicle>>
-            {
-                Data = vehicleMock,
-                Status = ResponseStatus.Success,
-                Message = $"{vehicleMock.Count} registro(s) encontrado(s).",
-            };
-
-            _vehicleServiceMock
-                .Setup(_ => _.FindWithExpiringLicense(It.IsAny<int>()))
-                .ReturnsAsync(expectedResult);
-
-            // Act
-            var result = await _vehiclesController.GetExpiringLicenses(60);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<WebApiResponse<IEnumerable<Vehicle>>>(okResult.Value);
-            Assert.Equal(ResponseStatus.Success, response.Status);
-            Assert.Equal(vehicleMock, response.Data);
-
-            _vehicleServiceMock.Verify(_ => _.FindWithExpiringLicense(60), Times.Once);
-        }
     }
 }
