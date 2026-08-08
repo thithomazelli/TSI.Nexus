@@ -1,0 +1,137 @@
+<app-header
+  title="Relatório de Frota"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Relatórios', link: '/reports' },
+    { label: 'Frota', link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  @if (loading) {
+    <div class="text-center py-4">Loading...</div>
+  }
+
+  @if (!loading) {
+    <div class="row g-2 mb-3">
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0">{{ totalVehicles }}</div>
+          <small class="text-muted">Veículos</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0 text-success">{{ availableVehicles }}</div>
+          <small class="text-muted">Disponíveis</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0 text-danger">{{ blockedVehicles }}</div>
+          <small class="text-muted">Bloqueados</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0">{{ activeDrivers }}/{{ totalDrivers }}</div>
+          <small class="text-muted">Motoristas ativos</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0">{{ totalTrips }}</div>
+          <small class="text-muted">Viagens com veículo</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0">{{ totalRevenue | currency: 'BRL' }}</div>
+          <small class="text-muted">Receita das viagens</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0">{{ totalMaintenanceCost | currency: 'BRL' }}</div>
+          <small class="text-muted">Custo de manutenção</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-body text-center">
+          <div class="h4 mb-0">{{ totalCommissionPending | currency: 'BRL' }}</div>
+          <small class="text-muted">Comissões pendentes</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">Por veículo</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Placa</th>
+              <th>Veículo</th>
+              <th>Status</th>
+              <th>Viagens</th>
+              <th>Receita</th>
+              <th>Custo manutenção</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of vehicleRows; track row.plate) {
+              <tr>
+                <td>{{ row.plate }}</td>
+                <td>{{ row.brandModel }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.tripCount }}</td>
+                <td>{{ row.revenue | currency: 'BRL' }}</td>
+                <td>{{ row.maintenanceCost | currency: 'BRL' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted small py-3">
+                  Nenhum veículo cadastrado
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Por motorista</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Motorista</th>
+              <th>Status</th>
+              <th>OS geradas</th>
+              <th>Comissão paga</th>
+              <th>Comissão pendente</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of driverRows; track row.name) {
+              <tr>
+                <td>{{ row.name }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.tripCount }}</td>
+                <td>{{ row.commissionPaid | currency: 'BRL' }}</td>
+                <td>{{ row.commissionPending | currency: 'BRL' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-center text-muted small py-3">
+                  Nenhum motorista cadastrado
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
