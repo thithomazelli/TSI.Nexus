@@ -2,15 +2,14 @@
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">Passageiros</h5>
     <div class="d-flex gap-2">
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="openImportModal()">
+        <i class="bi bi-upload"></i> Importar
+      </button>
       <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
         <i class="bi bi-plus-lg"></i> Novo passageiro
       </button>
     </div>
   </div>
-  <p class="text-muted small mb-2">
-    Para importar uma lista de passageiros a partir de um arquivo, use a aba
-    <b>Importar Passageiros</b>.
-  </p>
 
   <table class="table table-sm">
     <thead>

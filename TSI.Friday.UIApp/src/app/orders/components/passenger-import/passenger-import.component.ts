@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   Attachment,
   AttachmentService,
@@ -18,21 +19,25 @@ import { parsePassengerRows } from '../../utilities/passenger-import-parser';
   standalone: false,
 })
 export class PassengerImportComponent {
-  @Input()
-  orderId!: string;
-
-  @Output()
-  imported = new EventEmitter<void>();
+  orderId: string;
 
   selectedFile: File | null = null;
   previewPassengers: Passenger[] = [];
   importing = false;
 
   constructor(
+    public dialogRef: MatDialogRef<PassengerImportComponent>,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any,
     private passengerService: PassengerService,
     private attachmentService: AttachmentService,
     private notificationService: NotificationService,
-  ) {}
+  ) {
+    this.orderId = dialogData?.orderId ?? '';
+  }
+
+  close(): void {
+    this.dialogRef.close(null);
+  }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -80,8 +85,7 @@ export class PassengerImportComponent {
           passengers.message,
         );
         if (passengers.status === ResponseStatus.Success) {
-          this.clearSelection();
-          this.imported.emit();
+          this.dialogRef.close(true);
         }
       },
       error: () => {

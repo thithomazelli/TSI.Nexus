@@ -37,7 +37,6 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     | 'products'
     | 'triplegs'
     | 'passengers'
-    | 'passenger-import'
     | 'payments'
     | 'attachments' = 'details';
 

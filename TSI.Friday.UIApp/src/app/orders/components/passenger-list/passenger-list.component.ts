@@ -16,6 +16,7 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 
 import { PassengerDetailsModalComponent } from '../passenger-details-modal/passenger-details-modal.component';
+import { PassengerImportComponent } from '../passenger-import/passenger-import.component';
 
 @Component({
   selector: 'app-passenger-list',
@@ -59,6 +60,12 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
     this.modalService.showTemplateModal(PassengerDetailsModalComponent, {
       orderId: this.orderId,
       data: passenger ?? null,
+    });
+  }
+
+  openImportModal(): void {
+    this.modalService.showTemplateModal(PassengerImportComponent, {
+      orderId: this.orderId,
     });
   }
 
