@@ -20,7 +20,6 @@ namespace TSI.Friday.Services
         private readonly ILogService _logService;
         private readonly IRepository<Product> _productRepository;
         private readonly IOrderService _orderService;
-        private readonly IRepository<Address> _addressRepository;
         #endregion Properties
 
         #region Public methods
@@ -31,8 +30,7 @@ namespace TSI.Friday.Services
             IMapper mapper,
             ILogService logService,
             IRepository<Product> productRepository,
-            IOrderService orderService,
-            IRepository<Address> addressRepository
+            IOrderService orderService
         )
         {
             _repository = repository;
@@ -41,7 +39,6 @@ namespace TSI.Friday.Services
             _logService = logService;
             _productRepository = productRepository;
             _orderService = orderService;
-            _addressRepository = addressRepository;
         }
 
         /// <inheritdoc />
@@ -55,7 +52,7 @@ namespace TSI.Friday.Services
                 var next = await _sequenceService.GetNextValue("QuoteNumberSeq");
                 quoteDto.QuoteNumber = $"{prefix}-Q{next:D5}";
                 quoteDto.Description = string.IsNullOrEmpty(quoteDto.Description)
-                    ? $"OrÁamento - {quoteDto.QuoteNumber}"
+                    ? $"Or√ßamento - {quoteDto.QuoteNumber}"
                     : quoteDto.Description;
 
                 var entity = _mapper.Map<Quote>(quoteDto);
@@ -65,14 +62,14 @@ namespace TSI.Friday.Services
 
                 result.Data = responseDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"OrÁamento {quoteDto.QuoteNumber} cadastrado com sucesso.";
+                result.Message = $"Or√ßamento {quoteDto.QuoteNumber} cadastrado com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.Add", quoteDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel cadastrar o OrÁamento {quoteDto?.QuoteNumber} na base de dados. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel cadastrar o Or√ßamento {quoteDto?.QuoteNumber} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -90,14 +87,14 @@ namespace TSI.Friday.Services
 
                 result.Data = _mapper.Map<QuoteDto>(entity);
                 result.Status = ResponseStatus.Success;
-                result.Message = $"OrÁamento {quoteDto.QuoteNumber} atualizado com sucesso.";
+                result.Message = $"Or√ßamento {quoteDto.QuoteNumber} atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.Update", quoteDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel atualizar os dados do OrÁamento {quoteDto?.QuoteNumber} na base de dados. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel atualizar os dados do Or√ßamento {quoteDto?.QuoteNumber} na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -115,13 +112,13 @@ namespace TSI.Friday.Services
                 if (entity == null)
                 {
                     _logService.LogException(
-                        new Exception($"OrÁamento {quoteDto.QuoteNumber} n„o encontrado."),
+                        new Exception($"Or√ßamento {quoteDto.QuoteNumber} n√£o encontrado."),
                         "QuoteService.Remove",
                         quoteDto
                     );
                     result.Data = null;
                     result.Status = ResponseStatus.Error;
-                    result.Message = $"OrÁamento {quoteDto.QuoteNumber} n„o encontrado.";
+                    result.Message = $"Or√ßamento {quoteDto.QuoteNumber} n√£o encontrado.";
                     return result;
                 }
 
@@ -129,14 +126,14 @@ namespace TSI.Friday.Services
 
                 result.Data = quoteDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"OrÁamento {quoteDto.QuoteNumber} removido com sucesso.";
+                result.Message = $"Or√ßamento {quoteDto.QuoteNumber} removido com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.Remove", quoteDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel remover o OrÁamento {quoteDto?.QuoteNumber} da base de dados. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel remover o Or√ßamento {quoteDto?.QuoteNumber} da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -163,7 +160,7 @@ namespace TSI.Friday.Services
                 _logService.LogException(ex, "QuoteService.FindAll", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel acessar os registros de OrÁamentos na base de dados. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel acessar os registros de Or√ßamentos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -186,15 +183,15 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"OrÁamento {result.Data.QuoteNumber} encontrado com sucesso"
-                        : $"Nenhum OrÁamento com o ID {id} foi encontrado";
+                        ? $"Or√ßamento {result.Data.QuoteNumber} encontrado com sucesso"
+                        : $"Nenhum Or√ßamento com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel acessar os registros de OrÁamentos na base de dados. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel acessar os registros de Or√ßamentos na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -216,15 +213,15 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"OrÁamento {result.Data.QuoteNumber} encontrado com sucesso"
-                        : $"Nenhum OrÁamento com o n˙mero {quoteNumber} foi encontrado";
+                        ? $"Or√ßamento {result.Data.QuoteNumber} encontrado com sucesso"
+                        : $"Nenhum Or√ßamento com o n√∫mero {quoteNumber} foi encontrado";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteService.FindByQuoteNumber", quoteNumber);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel buscar o OrÁamento pelo n˙mero {quoteNumber}. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel buscar o Or√ßamento pelo n√∫mero {quoteNumber}. Erro: {ex.Message}";
             }
 
             return result;
@@ -255,7 +252,7 @@ namespace TSI.Friday.Services
                 );
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel acessar os OrÁamentos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel acessar os Or√ßamentos do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -280,7 +277,7 @@ namespace TSI.Friday.Services
                 _logService.LogException(ex, "QuoteService.FindByProductId", productId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"N„o foi possÌvel acessar os OrÁamentos relacionados ao Produto {productId}. Erro: {ex.Message}";
+                    $"N√£o foi poss√≠vel acessar os Or√ßamentos relacionados ao Produto {productId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -296,7 +293,7 @@ namespace TSI.Friday.Services
                 if (quoteDto == null)
                 {
                     result.Status = ResponseStatus.Error;
-                    result.Message = "Quote inv·lido.";
+                    result.Message = "Quote inv√°lido.";
                     return result;
                 }
 
@@ -315,27 +312,10 @@ namespace TSI.Friday.Services
                         if (item.Quantity > available)
                         {
                             outOfStock.Add(
-                                $"{product?.Name ?? product?.Sku} (necess·rio {item.Quantity}, disponÌvel {available})"
+                                $"{product?.Name ?? product?.Sku} (necess√°rio {item.Quantity}, dispon√≠vel {available})"
                             );
                             outOfStockIds.Add(item.ProductId);
                         }
-                    }
-                }
-
-                // fetch default address for the business partner used in the conversion
-                Address defaultAddress = null;
-                if (quoteDto.BusinessPartnerId != Guid.Empty)
-                {
-                    defaultAddress = await _addressRepository.FirstOrDefaultAsync(a =>
-                        a.BusinessPartnerId == quoteDto.BusinessPartnerId && a.IsDefault
-                    );
-
-                    if (defaultAddress == null)
-                    {
-                        // fallback to first address if no default marked
-                        defaultAddress = await _addressRepository.FirstOrDefaultAsync(a =>
-                            a.BusinessPartnerId == quoteDto.BusinessPartnerId
-                        );
                     }
                 }
 
@@ -363,7 +343,6 @@ namespace TSI.Friday.Services
                             Status = qp.Status,
                             BusinessPartnerId = quoteDto.BusinessPartnerId,
                             BusinessPartnerName = quoteDto.BusinessPartnerName,
-                            AddressId = defaultAddress?.Id ?? Guid.Empty, // populate with default address id
                         })
                         .ToList()
                     ?? new List<OrderProductDto>();
@@ -399,7 +378,7 @@ namespace TSI.Friday.Services
                     {
                         Date = DateTime.UtcNow,
                         Description =
-                            $"TransaÁ„o do Pedido a partir do OrÁamento {quoteDto.QuoteNumber}",
+                            $"Transa√ß√£o do Pedido a partir do Or√ßamento {quoteDto.QuoteNumber}",
                         Status = PaymentStatus.Pending,
                         TotalOfPayments = quoteDto.TotalOfPayments,
                         PaymentTotalPrice = quoteDto.PaymentTotalPrice,
@@ -420,7 +399,7 @@ namespace TSI.Friday.Services
                 {
                     result.Status = ResponseStatus.Warning;
                     result.Message =
-                        "Alguns produtos n„o possuem quantidade suficiente em estoque: "
+                        "Alguns produtos n√£o possuem quantidade suficiente em estoque: "
                         + string.Join(", ", outOfStock)
                         + ". Deseja prosseguir sem eles?";
 
@@ -454,7 +433,7 @@ namespace TSI.Friday.Services
                 {
                     Data = _mapper.Map<QuoteDto>(quoteEntity ?? _mapper.Map<Quote>(quoteDto)),
                     Status = ResponseStatus.Success,
-                    Message = "OrÁamento convertido com sucesso",
+                    Message = "Or√ßamento convertido com sucesso",
                 };
 
                 return response;
@@ -463,7 +442,7 @@ namespace TSI.Friday.Services
             {
                 _logService.LogException(ex, "QuoteService.ConvertToOrder", quoteDto);
                 result.Status = ResponseStatus.Error;
-                result.Message = "Erro ao converter orÁamento para pedido. " + ex.Message;
+                result.Message = "Erro ao converter or√ßamento para pedido. " + ex.Message;
                 return result;
             }
         }

@@ -24,11 +24,6 @@ namespace TSI.Friday.Contracts.Models
 
         public OrderProductStatus Status { get; set; }
 
-        [ForeignKey("Address")]
-        public Guid? AddressId { get; set; }
-
-        public virtual Address Address { get; set; }
-
         [ForeignKey("Order")]
         public Guid OrderId { get; set; }
 

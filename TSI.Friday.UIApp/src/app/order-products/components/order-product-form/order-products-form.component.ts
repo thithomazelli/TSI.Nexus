@@ -17,14 +17,9 @@ import {
   OrderProductStatus,
   ModalService,
   ProductType,
-  Address,
   WebApiResponse,
-  Order,
-  ResponseStatus,
   NotificationService,
   OrderProductService,
-  OrderService,
-  AddressService,
 } from '@friday/core';
 import {
   Observable,
@@ -32,14 +27,12 @@ import {
   map,
   of,
   tap,
-  firstValueFrom,
   combineLatestWith,
   Subscription,
 } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
-import { AddressDetailsModalComponent } from '../../../address/components/address-details-modal/address-details-modal.component';
 import { OrderProductsDetailsModalComponent } from '../order-product-details-modal/order-products-details-modal.component';
 
 @Component({
@@ -76,9 +69,6 @@ export class OrderProductsFormComponent
   @Input()
   dialogRef?: MatDialogRef<OrderProductsDetailsModalComponent>;
 
-  showAllAddresses = false;
-  customerAddresses: Address[] = [];
-
   products$!: Observable<WebApiResponse<Product[]>>;
   productsArray$!: Observable<Product[]>;
   filteredProductsSku$!: Observable<Product[]>;
@@ -112,15 +102,12 @@ export class OrderProductsFormComponent
   ];
 
   private _subscriptions: Subscription[] = [];
-  private _orderData: Order | null = null;
 
   constructor(
-    private addressService: AddressService,
     private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
-    private orderService: OrderService,
     private orderProductService: OrderProductService,
     private productService: ProductService,
   ) {
@@ -132,8 +119,6 @@ export class OrderProductsFormComponent
     this.patchFormWithData();
     this.setupAutoComplete();
     this.totalPriceChange();
-    await this.initParentInfo();
-    await this.initAddressInfo();
 
     // Enable/disable quantity field based on productType
     const quantityControl = this.form.get('quantity');
@@ -165,20 +150,6 @@ export class OrderProductsFormComponent
 
   ngOnDestroy(): void {
     this._subscriptions.forEach((sub) => sub.unsubscribe());
-  }
-
-  get defaultAddress(): Address | null {
-    return (
-      this.customerAddresses?.find((a) => a.isDefault) ||
-      this.customerAddresses?.[0]
-    );
-  }
-
-  get selectedAddress(): Address | null {
-    const id = this.form?.get('addressId')?.value;
-    return (
-      this.customerAddresses?.find((a) => a.id === id) || this.defaultAddress
-    );
   }
 
   submit(): Observable<WebApiResponse<OrderProduct> | null> {
@@ -270,42 +241,6 @@ export class OrderProductsFormComponent
           }
         }
       });
-  }
-
-  async initParentInfo() {
-    if (this.parentData) {
-      this._orderData = this.parentData;
-      return;
-    } else if (this.parentId == null) {
-      return;
-    }
-
-    const response = await firstValueFrom(
-      this.orderService.getById(this.parentId),
-    );
-
-    this._orderData = response.data ?? null;
-  }
-
-  async initAddressInfo() {
-    if (!this._orderData?.businessPartnerId) {
-      this.customerAddresses = [];
-      return;
-    }
-    const response = await firstValueFrom(
-      this.addressService.getAllByBusinessPartnerId(
-        this._orderData.businessPartnerId,
-      ),
-    );
-
-    this.customerAddresses = (response.data ?? []).map(
-      (addr) => new Address({ ...addr }),
-    );
-    // Seleciona o endereço padrão no form
-    const defaultId = this.isEdit
-      ? this.data?.addressId
-      : this.defaultAddress?.id || null;
-    this.form.get('addressId')?.setValue(defaultId);
   }
 
   async onProductSkuBlur(): Promise<void> {
@@ -495,18 +430,6 @@ export class OrderProductsFormComponent
     this.updateTotalPrice();
   }
 
-  onChangeAddressClick() {
-    if (this.data?.status === OrderProductStatus.Returned) {
-      return;
-    }
-
-    this.showAllAddresses = !this.showAllAddresses;
-  }
-
-  onSelectAddressRadio() {
-    this.showAllAddresses = false;
-  }
-
   validateEndDate(): void {
     const start = this.form.get('startDate')?.value;
     const end = this.form.get('endDate')?.value;
@@ -530,59 +453,6 @@ export class OrderProductsFormComponent
     }
   }
 
-  openEditAddressModal(address: Address) {
-    const initialState = {
-      isEdit: true,
-      data: address,
-      id: address.id,
-      parentId: address.businessPartnerId,
-    };
-
-    const dialogRef = this.modalService.showTemplateModal(
-      AddressDetailsModalComponent,
-      initialState,
-    );
-    dialogRef.afterClosed().subscribe((response: WebApiResponse<Address>) => {
-      if (response) {
-        // Atualiza endereço editado na lista
-        const idx = this.customerAddresses.findIndex(
-          (a) => a.id === response.data.id,
-        );
-        if (idx > -1) {
-          this.customerAddresses[idx] = new Address({ ...response.data });
-        }
-        this.modalService.showNotification(
-          response.status === ResponseStatus.Success,
-          '',
-          response.message,
-        );
-      }
-    });
-  }
-
-  openAddAddressModal() {
-    const initialState = {
-      isEdit: false,
-      parentId: this._orderData?.businessPartnerId,
-    };
-
-    const dialogRef = this.modalService.showTemplateModal(
-      AddressDetailsModalComponent,
-      initialState,
-    );
-    dialogRef.afterClosed().subscribe((response: WebApiResponse<Address>) => {
-      if (response) {
-        // Adiciona novo endereço ao fim da lista
-        this.customerAddresses.push(new Address({ ...response.data }));
-        this.modalService.showNotification(
-          response.status === ResponseStatus.Success,
-          '',
-          response.message,
-        );
-      }
-    });
-  }
-
   private initForm(): void {
     const today = new Date();
     const fiveDaysLater = new Date();
@@ -602,7 +472,6 @@ export class OrderProductsFormComponent
       startDate: [today],
       endDate: [fiveDaysLater],
       status: [OrderProductStatus.InProgress, Validators.required],
-      addressId: [null, Validators.required],
     });
 
     // Validação: endDate >= startDate
