@@ -39,37 +39,9 @@
   }
 }
 
-// Cores fixas, independentes de qualquer variável --bs-* (evita ficar refém do dark mode do
-// admin-lte, de extensões do navegador ou de qualquer outra fonte de tema escuro automático).
-.form-box {
-  color-scheme: light;
-
-  .form-control {
-    background-color: #fff;
-    color: #212529;
-    border-color: #ced4da;
-
-    &::placeholder {
-      color: #6c757d;
-    }
-  }
-
-  .input-group-text {
-    background-color: #e9ecef;
-    color: #212529;
-    border-color: #ced4da;
-  }
-
-  .btn {
-    border: 1px solid #ced4da;
-    border-left: none;
-  }
-
-  .btn-info {
-    background-color: #0dcaf0;
-    border-color: #0dcaf0;
-    color: #fff;
-  }
+.btn {
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-left: none;
 }
 
 .login-bg {
