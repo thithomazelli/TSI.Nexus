@@ -6,15 +6,16 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
 import {
+  ModalService,
   NotificationService,
   Passenger,
   PassengerService,
-  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
+
+import { PassengerDetailsModalComponent } from '../passenger-details-modal/passenger-details-modal.component';
 
 @Component({
   selector: 'app-passenger-list',
@@ -27,26 +28,20 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
   orderId!: string;
 
   passengers: Passenger[] = [];
-  showForm = false;
-  form!: ReturnType<FormBuilder['group']>;
 
   private _destroy$ = new Subject<void>();
 
   constructor(
-    private formBuilder: FormBuilder,
     private notificationService: NotificationService,
     private passengerService: PassengerService,
-  ) {
-    this.form = this.formBuilder.group({
-      name: ['', Validators.required],
-      documentNumber: [''],
-      seat: [''],
-      phone: [''],
-    });
-  }
+    private modalService: ModalService,
+  ) {}
 
   ngOnInit(): void {
     this.load();
+    this.passengerService.passengerChanged$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.load());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -60,37 +55,11 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
     this._destroy$.complete();
   }
 
-  toggleForm(): void {
-    this.showForm = !this.showForm;
-  }
-
-  addPassenger(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const raw = this.form.getRawValue();
-    const passenger = {
-      id: '',
-      name: raw.name,
-      documentNumber: raw.documentNumber,
-      seat: raw.seat,
-      phone: raw.phone,
+  openModal(passenger?: Passenger): void {
+    this.modalService.showTemplateModal(PassengerDetailsModalComponent, {
       orderId: this.orderId,
-    } as Passenger;
-
-    this.passengerService
-      .add(passenger)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Passenger>) => {
-        this.notificationService.showMessage(response.status, response.message);
-        if (response.status === ResponseStatus.Success) {
-          this.showForm = false;
-          this.form.reset({ name: '', documentNumber: '', seat: '', phone: '' });
-          this.load();
-        }
-      });
+      data: passenger ?? null,
+    });
   }
 
   removePassenger(passenger: Passenger): void {
@@ -99,7 +68,6 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Passenger>) => {
         this.notificationService.showMessage(response.status, response.message);
-        this.load();
       });
   }
 

@@ -2,7 +2,7 @@
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">Passageiros</h5>
     <div class="d-flex gap-2">
-      <button type="button" class="btn btn-success btn-sm" (click)="toggleForm()">
+      <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
         <i class="bi bi-plus-lg"></i> Novo passageiro
       </button>
     </div>
@@ -12,77 +12,6 @@
     <b>Importar Passageiros</b>.
   </p>
 
-  @if (showForm) {
-    <form [formGroup]="form" (ngSubmit)="addPassenger()" class="border rounded p-3 mb-3">
-      <div class="row g-2">
-        <div class="col-12 col-md-4">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="name"
-                type="text"
-                placeholder="Nome"
-                class="form-control"
-                id="passengerName"
-              />
-              <label for="passengerName">Nome</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-person"></i></div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="documentNumber"
-                type="text"
-                placeholder="Documento"
-                class="form-control"
-                id="passengerDocumentNumber"
-              />
-              <label for="passengerDocumentNumber">Documento</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-2">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="seat"
-                type="text"
-                placeholder="Assento"
-                class="form-control"
-                id="passengerSeat"
-              />
-              <label for="passengerSeat">Assento</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-md-3">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="phone"
-                type="text"
-                placeholder="Telefone"
-                class="form-control"
-                id="passengerPhone"
-              />
-              <label for="passengerPhone">Telefone</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-telephone"></i></div>
-          </div>
-        </div>
-      </div>
-      <div class="d-flex justify-content-end mt-2">
-        <button type="button" class="btn btn-secondary btn-sm me-2" (click)="toggleForm()">
-          Cancelar
-        </button>
-        <button type="submit" class="btn btn-success btn-sm">Salvar</button>
-      </div>
-    </form>
-  }
-
   <table class="table table-sm">
     <thead>
       <tr>
@@ -90,7 +19,7 @@
         <th>Documento</th>
         <th>Assento</th>
         <th>Telefone</th>
-        <th style="width: 60px"></th>
+        <th style="width: 80px"></th>
       </tr>
     </thead>
     <tbody>
@@ -101,6 +30,14 @@
           <td>{{ p.seat }}</td>
           <td>{{ p.phone }}</td>
           <td>
+            <button
+              type="button"
+              class="btn btn-link btn-sm p-0 me-2"
+              title="Editar"
+              (click)="openModal(p)"
+            >
+              <i class="bi bi-pencil"></i>
+            </button>
             <button
               type="button"
               class="btn btn-link btn-sm p-0 text-danger"

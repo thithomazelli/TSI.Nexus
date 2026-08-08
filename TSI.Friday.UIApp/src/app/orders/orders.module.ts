@@ -5,6 +5,7 @@ import { OrderDetailsPageComponent } from './components/order-details-page/order
 import { TripLegListComponent } from './components/trip-leg-list/trip-leg-list.component';
 import { TripLegDetailsModalComponent } from './components/trip-leg-details-modal/trip-leg-details-modal.component';
 import { PassengerListComponent } from './components/passenger-list/passenger-list.component';
+import { PassengerDetailsModalComponent } from './components/passenger-details-modal/passenger-details-modal.component';
 import { PassengerImportComponent } from './components/passenger-import/passenger-import.component';
 
 import { OrdersRoutingModule } from './orders-routing.module';
@@ -24,6 +25,7 @@ import { OrdersSharedModule } from './orders-shared.module';
     TripLegListComponent,
     TripLegDetailsModalComponent,
     PassengerListComponent,
+    PassengerDetailsModalComponent,
     PassengerImportComponent,
   ],
   imports: [

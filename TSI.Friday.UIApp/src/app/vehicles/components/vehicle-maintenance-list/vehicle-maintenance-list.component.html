@@ -1,109 +1,10 @@
 <div class="vehicle-maintenance-list">
   <div class="d-flex justify-content-between align-items-center mb-2">
     <h5 class="mb-0">Manutenções</h5>
-    <button type="button" class="btn btn-success btn-sm" (click)="toggleForm()">
+    <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
       <i class="bi bi-plus-lg"></i> Nova manutenção
     </button>
   </div>
-
-  @if (showForm) {
-    <form [formGroup]="form" (ngSubmit)="addMaintenance()" class="border rounded p-3 mb-3">
-      <div class="row g-2">
-        <div class="col-12 col-md-3">
-          <div class="input-group">
-            <div class="form-floating flex-fill select-floating">
-              <select formControlName="type" class="form-select" id="maintenanceType">
-                @for (option of typeOptions; track option) {
-                  <option [value]="option.value">{{ option.label }}</option>
-                }
-              </select>
-              <label for="maintenanceType">Tipo</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-md-5">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="description"
-                type="text"
-                placeholder="Descrição"
-                class="form-control"
-                id="maintenanceDescription"
-              />
-              <label for="maintenanceDescription">Descrição</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-2">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="scheduledDate"
-                type="date"
-                placeholder="Data agendada"
-                class="form-control"
-                id="maintenanceScheduledDate"
-              />
-              <label for="maintenanceScheduledDate">Data agendada</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-2">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="cost"
-                type="number"
-                min="0"
-                placeholder="Custo"
-                class="form-control"
-                id="maintenanceCost"
-              />
-              <label for="maintenanceCost">Custo</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
-          </div>
-        </div>
-        <div class="col-12 col-md-5">
-          <div class="input-group">
-            <div class="form-floating flex-fill select-floating">
-              <select formControlName="productId" class="form-select" id="maintenanceProduct">
-                <option [ngValue]="null">Nenhuma</option>
-                @for (product of products; track product.id) {
-                  <option [ngValue]="product.id">
-                    {{ product.sku }} - {{ product.name }} (estoque: {{ product.quantityInStock }})
-                  </option>
-                }
-              </select>
-              <label for="maintenanceProduct">Peça consumida (opcional)</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-2">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                formControlName="partQuantity"
-                type="number"
-                min="0"
-                placeholder="Quantidade"
-                class="form-control"
-                id="maintenancePartQuantity"
-              />
-              <label for="maintenancePartQuantity">Quantidade</label>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="d-flex justify-content-end mt-2">
-        <button type="button" class="btn btn-secondary btn-sm me-2" (click)="toggleForm()">
-          Cancelar
-        </button>
-        <button type="submit" class="btn btn-success btn-sm">Salvar</button>
-      </div>
-    </form>
-  }
 
   <table class="table table-sm">
     <thead>
@@ -113,7 +14,7 @@
         <th>Data agendada</th>
         <th>Status</th>
         <th>Custo</th>
-        <th style="width: 140px"></th>
+        <th style="width: 180px"></th>
       </tr>
     </thead>
     <tbody>
@@ -129,6 +30,14 @@
           </td>
           <td>{{ m.cost | currency: 'BRL' }}</td>
           <td>
+            <button
+              type="button"
+              class="btn btn-link btn-sm p-0 me-2"
+              title="Editar"
+              (click)="openModal(m)"
+            >
+              <i class="bi bi-pencil"></i>
+            </button>
             @if (m.status === 'Scheduled' || m.status === 'InProgress' || m.status === 'Overdue') {
               <button
                 type="button"

@@ -6,15 +6,16 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
 import {
   FuelLog,
   FuelLogService,
+  ModalService,
   NotificationService,
-  ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
+
+import { FuelLogDetailsModalComponent } from '../fuel-log-details-modal/fuel-log-details-modal.component';
 
 @Component({
   selector: 'app-fuel-log-list',
@@ -27,27 +28,20 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
   vehicleId!: string;
 
   fuelLogs: FuelLog[] = [];
-  showForm = false;
-  form!: ReturnType<FormBuilder['group']>;
 
   private _destroy$ = new Subject<void>();
 
   constructor(
-    private formBuilder: FormBuilder,
     private notificationService: NotificationService,
     private fuelLogService: FuelLogService,
-  ) {
-    this.form = this.formBuilder.group({
-      date: [new Date().toISOString().substring(0, 10), Validators.required],
-      odometer: [0, [Validators.required, Validators.min(0)]],
-      liters: [0, [Validators.required, Validators.min(0)]],
-      pricePerLiter: [0, [Validators.required, Validators.min(0)]],
-      gasStation: [''],
-    });
-  }
+    private modalService: ModalService,
+  ) {}
 
   ngOnInit(): void {
     this.load();
+    this.fuelLogService.fuelLogChanged$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.load());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -61,45 +55,11 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
     this._destroy$.complete();
   }
 
-  toggleForm(): void {
-    this.showForm = !this.showForm;
-  }
-
-  addFuelLog(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const raw = this.form.getRawValue();
-    const fuelLog = {
-      id: '',
-      date: raw.date,
-      odometer: raw.odometer,
-      liters: raw.liters,
-      pricePerLiter: raw.pricePerLiter,
-      totalCost: raw.liters * raw.pricePerLiter,
-      gasStation: raw.gasStation,
+  openModal(fuelLog?: FuelLog): void {
+    this.modalService.showTemplateModal(FuelLogDetailsModalComponent, {
       vehicleId: this.vehicleId,
-    } as FuelLog;
-
-    this.fuelLogService
-      .add(fuelLog)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<FuelLog>) => {
-        this.notificationService.showMessage(response.status, response.message);
-        if (response.status === ResponseStatus.Success) {
-          this.showForm = false;
-          this.form.reset({
-            date: new Date().toISOString().substring(0, 10),
-            odometer: 0,
-            liters: 0,
-            pricePerLiter: 0,
-            gasStation: '',
-          });
-          this.load();
-        }
-      });
+      data: fuelLog ?? null,
+    });
   }
 
   removeFuelLog(fuelLog: FuelLog): void {
@@ -108,7 +68,6 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<FuelLog>) => {
         this.notificationService.showMessage(response.status, response.message);
-        this.load();
       });
   }
 

@@ -6,19 +6,17 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
 import {
   MaintenanceStatus,
-  MaintenanceType,
+  ModalService,
   NotificationService,
-  Product,
-  ProductService,
-  ResponseStatus,
   VehicleMaintenance,
   VehicleMaintenanceService,
   WebApiResponse,
 } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
+
+import { VehicleMaintenanceDetailsModalComponent } from '../vehicle-maintenance-details-modal/vehicle-maintenance-details-modal.component';
 
 @Component({
   selector: 'app-vehicle-maintenance-list',
@@ -33,14 +31,6 @@ export class VehicleMaintenanceListComponent
   vehicleId!: string;
 
   maintenances: VehicleMaintenance[] = [];
-  products: Product[] = [];
-  showForm = false;
-  form!: ReturnType<FormBuilder['group']>;
-
-  typeOptions = [
-    { label: 'Preventiva', value: MaintenanceType.Preventive },
-    { label: 'Corretiva', value: MaintenanceType.Corrective },
-  ];
 
   statusMap: { [key: string]: { label: string; color: string } } = {
     Scheduled: { label: 'Agendada', color: 'info' },
@@ -53,30 +43,16 @@ export class VehicleMaintenanceListComponent
   private _destroy$ = new Subject<void>();
 
   constructor(
-    private formBuilder: FormBuilder,
     private notificationService: NotificationService,
-    private productService: ProductService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
-  ) {
-    this.form = this.formBuilder.group({
-      type: [MaintenanceType.Preventive, Validators.required],
-      description: ['', Validators.required],
-      scheduledDate: [
-        new Date().toISOString().substring(0, 10),
-        Validators.required,
-      ],
-      cost: [0, [Validators.min(0)]],
-      productId: [null as string | null],
-      partQuantity: [0, [Validators.min(0)]],
-    });
-  }
+    private modalService: ModalService,
+  ) {}
 
   ngOnInit(): void {
     this.load();
-    this.productService
-      .getAll()
+    this.vehicleMaintenanceService.maintenanceChanged$
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response) => (this.products = response.data ?? []));
+      .subscribe(() => this.load());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -94,47 +70,11 @@ export class VehicleMaintenanceListComponent
     return this.statusMap[status] ?? { label: status, color: 'secondary' };
   }
 
-  toggleForm(): void {
-    this.showForm = !this.showForm;
-  }
-
-  addMaintenance(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const raw = this.form.getRawValue();
-    const maintenance = {
-      id: '',
-      type: raw.type,
-      description: raw.description,
-      scheduledDate: raw.scheduledDate,
-      cost: raw.cost,
-      status: MaintenanceStatus.Scheduled,
+  openModal(maintenance?: VehicleMaintenance): void {
+    this.modalService.showTemplateModal(VehicleMaintenanceDetailsModalComponent, {
       vehicleId: this.vehicleId,
-      productId: raw.productId || null,
-      partQuantity: raw.productId ? raw.partQuantity : 0,
-    } as VehicleMaintenance;
-
-    this.vehicleMaintenanceService
-      .add(maintenance)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<VehicleMaintenance>) => {
-        this.notificationService.showMessage(response.status, response.message);
-        if (response.status === ResponseStatus.Success) {
-          this.showForm = false;
-          this.form.reset({
-            type: MaintenanceType.Preventive,
-            description: '',
-            scheduledDate: new Date().toISOString().substring(0, 10),
-            cost: 0,
-            productId: null,
-            partQuantity: 0,
-          });
-          this.load();
-        }
-      });
+      data: maintenance ?? null,
+    });
   }
 
   completeMaintenance(maintenance: VehicleMaintenance): void {
@@ -155,7 +95,6 @@ export class VehicleMaintenanceListComponent
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<VehicleMaintenance>) => {
         this.notificationService.showMessage(response.status, response.message);
-        this.load();
       });
   }
 
