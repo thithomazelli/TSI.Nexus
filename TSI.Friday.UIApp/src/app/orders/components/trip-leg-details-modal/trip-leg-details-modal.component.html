@@ -7,8 +7,19 @@
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="row g-2 mb-2">
       <div class="col-12">
-        <label class="form-label">Origem</label>
-        <input formControlName="origin" type="text" class="form-control" />
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="origin"
+              type="text"
+              placeholder="Origem"
+              class="form-control"
+              id="origin"
+            />
+            <label for="origin">Origem</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+        </div>
       </div>
     </div>
 
@@ -29,8 +40,19 @@
           </div>
           <div class="row g-2">
             <div class="col-12 col-md-6">
-              <label class="form-label">Destino</label>
-              <input formControlName="destination" type="text" class="form-control" />
+              <div class="input-group">
+                <div class="form-floating flex-fill">
+                  <input
+                    formControlName="destination"
+                    type="text"
+                    placeholder="Destino"
+                    class="form-control"
+                    [id]="'destination-' + i"
+                  />
+                  <label [for]="'destination-' + i">Destino</label>
+                </div>
+                <div class="input-group-text"><i class="bi bi-geo-alt-fill"></i></div>
+              </div>
             </div>
             <div class="col-12 col-md-6">
               <app-date-field
@@ -39,21 +61,49 @@
               ></app-date-field>
             </div>
             <div class="col-12 col-md-6">
-              <label class="form-label">Hora de saída</label>
-              <input formControlName="time" type="time" class="form-control" />
+              <div class="input-group">
+                <div class="form-floating flex-fill">
+                  <input
+                    formControlName="time"
+                    type="time"
+                    placeholder="Hora de saída"
+                    class="form-control"
+                    [id]="'time-' + i"
+                  />
+                  <label [for]="'time-' + i">Hora de saída</label>
+                </div>
+                <div class="input-group-text"><i class="bi bi-clock"></i></div>
+              </div>
             </div>
             <div class="col-12 col-md-6">
-              <label class="form-label">Distância deste trecho (km)</label>
-              <input
-                formControlName="distanceKm"
-                type="number"
-                min="0"
-                class="form-control"
-              />
+              <div class="input-group">
+                <div class="form-floating flex-fill">
+                  <input
+                    formControlName="distanceKm"
+                    type="number"
+                    min="0"
+                    placeholder="Distância deste trecho (km)"
+                    class="form-control"
+                    [id]="'distanceKm-' + i"
+                  />
+                  <label [for]="'distanceKm-' + i">Distância deste trecho (km)</label>
+                </div>
+                <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
+              </div>
             </div>
             <div class="col-12">
-              <label class="form-label">Observações</label>
-              <input formControlName="notes" type="text" class="form-control" />
+              <div class="input-group">
+                <div class="form-floating flex-fill">
+                  <input
+                    formControlName="notes"
+                    type="text"
+                    placeholder="Observações"
+                    class="form-control"
+                    [id]="'notes-' + i"
+                  />
+                  <label [for]="'notes-' + i">Observações</label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
