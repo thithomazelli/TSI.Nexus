@@ -20,3 +20,5 @@ export * from './maintenance-type.enum';
 export * from './maintenance-status.enum';
 export * from './driver-status.enum';
 export * from './employment-type.enum';
+export * from './service-order-status.enum';
+export * from './commission-status.enum';

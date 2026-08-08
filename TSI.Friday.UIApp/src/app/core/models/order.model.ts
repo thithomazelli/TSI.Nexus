@@ -21,4 +21,11 @@ export interface Order extends BaseModel {
   orderProducts?: OrderProduct[];
   hasOpenedProducts?: boolean;
   markAllProductsAsReturned?: boolean;
+  route?: string;
+  distanceKm?: number;
+  dailyCount?: number;
+  vehicleId?: string | null;
+  vehiclePlate?: string | null;
+  driverId?: string | null;
+  driverName?: string | null;
 }

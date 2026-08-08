@@ -18,3 +18,8 @@ export * from './user/user.service';
 export * from './vehicle/vehicle.service';
 export * from './vehicle-maintenance/vehicle-maintenance.service';
 export * from './driver/driver.service';
+export * from './trip-leg/trip-leg.service';
+export * from './passenger/passenger.service';
+export * from './fuel-log/fuel-log.service';
+export * from './service-order/service-order.service';
+export * from './commission/commission.service';

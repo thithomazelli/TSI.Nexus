@@ -37,6 +37,17 @@
               </div>
             </div>
           </div>
+          @if (isEdit) {
+            <div class="card-footer text-center">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm w-100"
+                (click)="emitContract()"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir Contrato
+              </button>
+            </div>
+          }
         </div>
       </div>
       <!-- /.col -->
@@ -58,6 +69,22 @@
                   [class.active]="activeTab === 'products'"
                   (click)="activeTab = 'products'"
                   >Produtos</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'triplegs'"
+                  (click)="activeTab = 'triplegs'"
+                  >Itinerário</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'passengers'"
+                  (click)="activeTab = 'passengers'"
+                  >Passageiros</a
                 >
               </li>
               <li class="nav-item">
@@ -91,6 +118,12 @@
                 [isFullList]="false"
                 [parentId]="data?.id"
               ></app-order-products>
+            </div>
+            <div *ngIf="activeTab === 'triplegs'">
+              <app-trip-leg-list [orderId]="data!.id!"></app-trip-leg-list>
+            </div>
+            <div *ngIf="activeTab === 'passengers'">
+              <app-passenger-list [orderId]="data!.id!"></app-passenger-list>
             </div>
             <div *ngIf="activeTab === 'payments'">
               <app-payments

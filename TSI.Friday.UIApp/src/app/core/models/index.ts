@@ -25,3 +25,7 @@ export * from './quote-product.model';
 export * from './vehicle.model';
 export * from './vehicle-maintenance.model';
 export * from './driver.model';
+export * from './trip-leg.model';
+export * from './passenger.model';
+export * from './fuel-log.model';
+export * from './service-order.model';

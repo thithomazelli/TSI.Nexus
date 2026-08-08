@@ -17,4 +17,9 @@ export enum ApiType {
   Vehicles = 'vehicles',
   VehicleMaintenances = 'vehiclemaintenances',
   Drivers = 'drivers',
+  TripLegs = 'triplegs',
+  Passengers = 'passengers',
+  FuelLogs = 'fuellogs',
+  ServiceOrders = 'serviceorders',
+  Commissions = 'commissions',
 }
