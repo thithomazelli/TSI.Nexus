@@ -17,14 +17,12 @@ import { forkJoin, Observable } from 'rxjs';
   standalone: false,
 })
 export class TripLegDetailsModalComponent {
-  mode: 'single' | 'multi' = 'single';
   saving = false;
 
   orderId: string;
   private _nextSequenceNumber: number;
 
-  singleForm: FormGroup;
-  multiForm: FormGroup;
+  form: FormGroup;
 
   constructor(
     public dialogRef: MatDialogRef<TripLegDetailsModalComponent>,
@@ -36,27 +34,14 @@ export class TripLegDetailsModalComponent {
     this.orderId = dialogData?.orderId ?? '';
     this._nextSequenceNumber = dialogData?.nextSequenceNumber ?? 1;
 
-    this.singleForm = this.formBuilder.group({
-      origin: ['', Validators.required],
-      destination: ['', Validators.required],
-      departureDateOnly: ['', Validators.required],
-      departureTime: [''],
-      distanceKm: [0, [Validators.min(0)]],
-      notes: [''],
-    });
-
-    this.multiForm = this.formBuilder.group({
+    this.form = this.formBuilder.group({
       origin: ['', Validators.required],
       stops: this.formBuilder.array([this.buildStopGroup()]),
     });
   }
 
   get stops(): FormArray {
-    return this.multiForm.get('stops') as FormArray;
-  }
-
-  setMode(mode: 'single' | 'multi'): void {
-    this.mode = mode;
+    return this.form.get('stops') as FormArray;
   }
 
   addStop(): void {
@@ -73,47 +58,13 @@ export class TripLegDetailsModalComponent {
     this.dialogRef.close(null);
   }
 
-  submitSingle(): void {
-    if (this.singleForm.invalid || this.saving) {
-      this.singleForm.markAllAsTouched();
+  submit(): void {
+    if (this.form.invalid || this.saving) {
+      this.form.markAllAsTouched();
       return;
     }
 
-    const raw = this.singleForm.getRawValue();
-    const tripLeg = {
-      id: '',
-      sequenceNumber: this._nextSequenceNumber,
-      origin: raw.origin,
-      destination: raw.destination,
-      departureDate: this.combineDateAndTime(raw.departureDateOnly!, raw.departureTime),
-      distanceKm: raw.distanceKm ?? 0,
-      notes: raw.notes ?? '',
-      orderId: this.orderId,
-    } as TripLeg;
-
-    this.saving = true;
-    this.tripLegService.add(tripLeg).subscribe({
-      next: (response: WebApiResponse<TripLeg>) => {
-        this.saving = false;
-        this.notificationService.showMessage(response.status, response.message);
-        if (response.status === ResponseStatus.Success) {
-          this.dialogRef.close(response);
-        }
-      },
-      error: () => {
-        this.saving = false;
-        this.notificationService.showMessage(ResponseStatus.Error, 'Erro ao salvar trecho.');
-      },
-    });
-  }
-
-  submitMulti(): void {
-    if (this.multiForm.invalid || this.saving) {
-      this.multiForm.markAllAsTouched();
-      return;
-    }
-
-    const raw = this.multiForm.getRawValue();
+    const raw = this.form.getRawValue();
     const legs: TripLeg[] = [];
     let previousPoint = raw.origin!;
 
@@ -150,7 +101,9 @@ export class TripLegDetailsModalComponent {
         }
         this.notificationService.showMessage(
           ResponseStatus.Success,
-          `${legs.length} trecho(s) adicionado(s) com sucesso.`,
+          legs.length === 1
+            ? 'Trecho adicionado com sucesso.'
+            : `${legs.length} trechos adicionados com sucesso.`,
         );
         this.dialogRef.close(responses);
       },
@@ -175,14 +128,26 @@ export class TripLegDetailsModalComponent {
   }
 
   /**
-   * app-date-field carries a "DD/MM/YYYY" string; combines it with an optional "HH:mm" time input
-   * into a single Date, since TripLeg.departureDate is a full datetime.
+   * app-date-field yields a "DD/MM/YYYY" string when typed manually, but a Moment/Date instance
+   * when picked from the calendar; combines either with an optional "HH:mm" time into a datetime.
    */
-  private combineDateAndTime(dateOnly: string | null, time?: string | null): Date {
+  private combineDateAndTime(dateOnly: any, time?: string | null): Date {
     if (!dateOnly) {
       return new Date();
     }
-    const [day, month, year] = dateOnly.split('/').map((part) => Number(part));
+    let day: number, month: number, year: number;
+    if (typeof dateOnly === 'object' && typeof dateOnly.toDate === 'function') {
+      const asDate: Date = dateOnly.toDate();
+      day = asDate.getDate();
+      month = asDate.getMonth() + 1;
+      year = asDate.getFullYear();
+    } else if (dateOnly instanceof Date) {
+      day = dateOnly.getDate();
+      month = dateOnly.getMonth() + 1;
+      year = dateOnly.getFullYear();
+    } else {
+      [day, month, year] = String(dateOnly).split('/').map((part) => Number(part));
+    }
     const [hours, minutes] = (time || '00:00').split(':').map((part) => Number(part));
     return new Date(year, (month || 1) - 1, day || 1, hours || 0, minutes || 0);
   }
