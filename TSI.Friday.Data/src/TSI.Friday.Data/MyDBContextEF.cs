@@ -203,6 +203,13 @@ namespace TSI.Friday.Data
                 .HasForeignKey(m => m.VehicleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder
+                .Entity<VehicleMaintenance>()
+                .HasOne(m => m.Product)
+                .WithMany()
+                .HasForeignKey(m => m.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<Driver>().HasIndex(d => d.SocialSecurityCard).IsUnique();
 
             modelBuilder

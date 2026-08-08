@@ -11,6 +11,8 @@ import {
   MaintenanceStatus,
   MaintenanceType,
   NotificationService,
+  Product,
+  ProductService,
   ResponseStatus,
   VehicleMaintenance,
   VehicleMaintenanceService,
@@ -31,6 +33,7 @@ export class VehicleMaintenanceListComponent
   vehicleId!: string;
 
   maintenances: VehicleMaintenance[] = [];
+  products: Product[] = [];
   showForm = false;
   form!: ReturnType<FormBuilder['group']>;
 
@@ -52,6 +55,7 @@ export class VehicleMaintenanceListComponent
   constructor(
     private formBuilder: FormBuilder,
     private notificationService: NotificationService,
+    private productService: ProductService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
   ) {
     this.form = this.formBuilder.group({
@@ -62,11 +66,17 @@ export class VehicleMaintenanceListComponent
         Validators.required,
       ],
       cost: [0, [Validators.min(0)]],
+      productId: [null as string | null],
+      partQuantity: [0, [Validators.min(0)]],
     });
   }
 
   ngOnInit(): void {
     this.load();
+    this.productService
+      .getAll()
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response) => (this.products = response.data ?? []));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -103,6 +113,8 @@ export class VehicleMaintenanceListComponent
       cost: raw.cost,
       status: MaintenanceStatus.Scheduled,
       vehicleId: this.vehicleId,
+      productId: raw.productId || null,
+      partQuantity: raw.productId ? raw.partQuantity : 0,
     } as VehicleMaintenance;
 
     this.vehicleMaintenanceService
@@ -117,6 +129,8 @@ export class VehicleMaintenanceListComponent
             description: '',
             scheduledDate: new Date().toISOString().substring(0, 10),
             cost: 0,
+            productId: null,
+            partQuantity: 0,
           });
           this.load();
         }

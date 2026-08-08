@@ -27,6 +27,16 @@ namespace TSI.Friday.Contracts.Models
         [Required]
         public virtual Vehicle Vehicle { get; set; } = null!;
 
+        // Optional part (Product) consumed from the almoxarifado for this maintenance. The stock
+        // adjustment reuses the same QuantityInStock field already used for client orders, just
+        // triggered by internal consumption instead of a sale/rental.
+        [ForeignKey("Product")]
+        public Guid? ProductId { get; set; }
+
+        public virtual Product? Product { get; set; }
+
+        public int PartQuantity { get; set; }
+
         public VehicleMaintenance() { }
 
         public VehicleMaintenance(Vehicle vehicle)

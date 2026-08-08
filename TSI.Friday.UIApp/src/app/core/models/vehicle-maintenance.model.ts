@@ -13,4 +13,6 @@ export interface VehicleMaintenance extends BaseModel {
   status: MaintenanceStatus;
   vehicleId: string;
   vehicle?: { id: string; plate: string } | null;
+  productId?: string | null;
+  partQuantity?: number;
 }

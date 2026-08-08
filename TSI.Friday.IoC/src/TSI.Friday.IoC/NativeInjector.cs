@@ -53,6 +53,7 @@ namespace TSI.Friday.IoC
             // during AddDbContextPool configuration without causing scoped->singleton captive dependency.
             services.AddSingleton<AuditingSaveChangesInterceptor>();
             services.AddSingleton<StockAdjustingSaveChangesInterceptor>();
+            services.AddSingleton<MaintenancePartsStockAdjustingSaveChangesInterceptor>();
 
             #endregion
 

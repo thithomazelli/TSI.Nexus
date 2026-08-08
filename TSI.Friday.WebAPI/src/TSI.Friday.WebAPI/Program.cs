@@ -46,6 +46,9 @@ builder.Services.AddDbContextPool<MyDBContextEF>(
         options.UseMySQL(mySqlConnectionStr);
         options.AddInterceptors(sp.GetRequiredService<AuditingSaveChangesInterceptor>());
         options.AddInterceptors(sp.GetRequiredService<StockAdjustingSaveChangesInterceptor>());
+        options.AddInterceptors(
+            sp.GetRequiredService<MaintenancePartsStockAdjustingSaveChangesInterceptor>()
+        );
     }
 );
 
