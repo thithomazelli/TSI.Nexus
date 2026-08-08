@@ -20,6 +20,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<Vehicle> _vehicleRepository;
         private readonly ITransactionService _transactionService;
         private readonly ISequenceService _sequenceService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
         private readonly ILogService _logService;
 
@@ -37,6 +38,7 @@ namespace TSI.Friday.Services
             IRepository<Vehicle> vehicleRepository,
             ITransactionService transactionService,
             ISequenceService sequenceService,
+            ICurrentUserService currentUserService,
             IMapper mapper,
             ILogService logService
         )
@@ -46,6 +48,7 @@ namespace TSI.Friday.Services
             _vehicleRepository = vehicleRepository;
             _transactionService = transactionService;
             _sequenceService = sequenceService;
+            _currentUserService = currentUserService;
             _mapper = mapper;
             _logService = logService;
         }
@@ -141,6 +144,14 @@ namespace TSI.Friday.Services
                 // First update Order basic data (without handling Transaction) to ensure it exists
                 var orderEntity = _mapper.Map<Order>(orderDto);
 
+                var ownershipMessage = await GetOwnershipErrorMessageByOrderId(orderEntity.Id);
+                if (!string.IsNullOrEmpty(ownershipMessage))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message = ownershipMessage;
+                    return result;
+                }
+
                 var vehicleAssignmentMessage = await ApplyVehicleAssignmentAndGetErrorMessage(
                     orderEntity
                 );
@@ -220,6 +231,14 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
+                var ownershipMessage = GetOwnershipErrorMessage(orderEntity.CreateUserId);
+                if (!string.IsNullOrEmpty(ownershipMessage))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message = ownershipMessage;
+                    return result;
+                }
+
                 await _repository.RemoveAsync(orderEntity);
 
                 var transactionDto = _mapper.Map<TransactionDto>(orderEntity.Transaction);
@@ -283,6 +302,17 @@ namespace TSI.Friday.Services
                     t => t.Transaction,
                     p => p.Transaction.Payments
                 );
+
+                if (order != null)
+                {
+                    var ownershipMessage = GetOwnershipErrorMessage(order.CreateUserId);
+                    if (!string.IsNullOrEmpty(ownershipMessage))
+                    {
+                        result.Status = ResponseStatus.Warning;
+                        result.Message = ownershipMessage;
+                        return result;
+                    }
+                }
 
                 result.Data = _mapper.Map<OrderDto>(order);
                 result.Status = ResponseStatus.Success;
@@ -393,6 +423,47 @@ namespace TSI.Friday.Services
         #endregion Public methods
 
         #region Private methods
+
+        /// <summary>
+        /// Returns an error message when the current user is neither the creator of the Order nor
+        /// an Admin. Admins and requests with no resolvable current user (e.g. system/background
+        /// jobs) always pass through.
+        /// </summary>
+        private string GetOwnershipErrorMessage(string createUserId)
+        {
+            if (_currentUserService == null || _currentUserService.IsInRole("Admin"))
+            {
+                return string.Empty;
+            }
+
+            var currentUserId = _currentUserService.GetUserId();
+
+            if (string.IsNullOrEmpty(currentUserId) || string.IsNullOrEmpty(createUserId))
+            {
+                return string.Empty;
+            }
+
+            return createUserId == currentUserId
+                ? string.Empty
+                : "Você não tem permissão para acessar este Pedido, pois foi criado por outro usuário.";
+        }
+
+        /// <summary>
+        /// Looks up the Order's original creator on the database and validates ownership. Used
+        /// before Update, where the entity mapped from the incoming DTO has no CreateUserId yet.
+        /// </summary>
+        private async Task<string> GetOwnershipErrorMessageByOrderId(Guid orderId)
+        {
+            if (_currentUserService == null || _currentUserService.IsInRole("Admin"))
+            {
+                return string.Empty;
+            }
+
+            var existingOrders = await _repository.QueryAsync(o => o.Id == orderId);
+            var existing = existingOrders.FirstOrDefault();
+
+            return existing == null ? string.Empty : GetOwnershipErrorMessage(existing.CreateUserId);
+        }
 
         /// <summary>
         /// Validates that the Vehicle assigned to an Order is available (not blocked by overdue

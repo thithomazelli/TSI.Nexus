@@ -15,5 +15,10 @@ namespace TSI.Friday.Contracts.Interfaces
         /// Returns the current authenticated user's user name if available, otherwise null.
         /// </summary>
         string GetUserName();
+
+        /// <summary>
+        /// Returns true when the current authenticated user has the role received as parameter.
+        /// </summary>
+        bool IsInRole(string role);
     }
 }

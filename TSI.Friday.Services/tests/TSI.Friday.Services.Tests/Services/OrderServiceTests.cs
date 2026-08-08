@@ -22,6 +22,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly Mock<IRepository<Vehicle>> _vehicleRepository;
         private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<ISequenceService> _sequenceService;
+        private readonly Mock<ICurrentUserService> _currentUserService;
         private readonly Mock<ILogService> _logService;
         private readonly IList<OrderDto> _orderListMock;
         private readonly IMapper _mapper;
@@ -41,6 +42,7 @@ namespace TSI.Friday.Services.Tests.Services
             _vehicleRepository = new Mock<IRepository<Vehicle>>();
             _transactionService = new Mock<ITransactionService>();
             _sequenceService = new Mock<ISequenceService>();
+            _currentUserService = new Mock<ICurrentUserService>();
             _logService = new Mock<ILogService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
@@ -49,9 +51,13 @@ namespace TSI.Friday.Services.Tests.Services
                 _vehicleRepository.Object,
                 _transactionService.Object,
                 _sequenceService.Object,
+                _currentUserService.Object,
                 _mapper,
                 _logService.Object
             );
+
+            // Default: current user is Admin, so ownership checks are bypassed unless a test overrides this.
+            _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(true);
 
             _vehicleRepository
                 .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
@@ -255,6 +261,31 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
+        public async Task OrderService_Remove_ShouldReturnWarningAndNotRemove_WhenOrderBelongsToAnotherUserAndCurrentUserIsNotAdmin()
+        {
+            // Arrange
+            var orderDto = _orderListMock.First();
+            var orderEntity = _mapper.Map<Order>(_orderListMock.First());
+            orderEntity.CreateUserId = "owner-user-id";
+
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(It.IsAny<Guid>(), o => o.OrderProducts, p => p.Transaction)
+                )
+                .ReturnsAsync(orderEntity);
+
+            _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(false);
+            _currentUserService.Setup(_ => _.GetUserId()).Returns("another-user-id");
+
+            // Act
+            var result = await _orderService.Remove(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            _repository.Verify(r => r.RemoveAsync(It.IsAny<Order>()), Times.Never);
+        }
+
+        [Fact]
         public async Task OrderService_FindById_ShouldReturnOrder_WhenIdIsValid()
         {
             // Arrange
@@ -298,6 +329,71 @@ namespace TSI.Friday.Services.Tests.Services
                     ),
                 Times.Once
             );
+        }
+
+        [Fact]
+        public async Task OrderService_FindById_ShouldReturnWarning_WhenOrderBelongsToAnotherUserAndCurrentUserIsNotAdmin()
+        {
+            // Arrange
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var orderDto = _orderListMock.First(o => o.Id == id);
+            var orderEntity = _mapper.Map<Order>(orderDto);
+            orderEntity.CreateUserId = "owner-user-id";
+
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        id,
+                        o => o.BusinessPartner,
+                        op => op.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
+                    )
+                )
+                .ReturnsAsync(orderEntity);
+
+            _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(false);
+            _currentUserService.Setup(_ => _.GetUserId()).Returns("another-user-id");
+
+            // Act
+            var result = await _orderService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task OrderService_FindById_ShouldReturnOrder_WhenOrderBelongsToCurrentUser()
+        {
+            // Arrange
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var orderDto = _orderListMock.First(o => o.Id == id);
+            var orderEntity = _mapper.Map<Order>(orderDto);
+            orderEntity.CreateUserId = "owner-user-id";
+            orderEntity.BusinessPartner = new Individual { Name = "ORD" };
+
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        id,
+                        o => o.BusinessPartner,
+                        op => op.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
+                    )
+                )
+                .ReturnsAsync(orderEntity);
+
+            _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(false);
+            _currentUserService.Setup(_ => _.GetUserId()).Returns("owner-user-id");
+
+            // Act
+            var result = await _orderService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(result.Data);
         }
 
         [Fact]
@@ -428,6 +524,35 @@ namespace TSI.Friday.Services.Tests.Services
                     ),
                 Times.Once
             );
+        }
+
+        [Fact]
+        public async Task OrderService_Update_ShouldReturnWarningAndNotUpdate_WhenOrderBelongsToAnotherUserAndCurrentUserIsNotAdmin()
+        {
+            // Arrange
+            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var orderDto = new OrderDto
+            {
+                Id = orderId,
+                OrderNumber = "ORD-00001",
+                Transaction = new TransactionDto(),
+            };
+
+            var existingOrder = new Order { Id = orderId, CreateUserId = "owner-user-id" };
+
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+                .ReturnsAsync(new List<Order> { existingOrder });
+
+            _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(false);
+            _currentUserService.Setup(_ => _.GetUserId()).Returns("another-user-id");
+
+            // Act
+            var result = await _orderService.Update(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            _repository.Verify(r => r.UpdateAsync(It.IsAny<Order>()), Times.Never);
         }
     }
 }

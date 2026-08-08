@@ -63,6 +63,13 @@ namespace TSI.Friday.Services
             return name.Trim();
         }
 
+        /// <inheritdoc />
+        public bool IsInRole(string role)
+        {
+            var user = _httpContextAccessor.HttpContext?.User;
+            return user != null && !string.IsNullOrWhiteSpace(role) && user.IsInRole(role);
+        }
+
         #endregion Public methods
     }
 }
