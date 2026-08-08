@@ -1,0 +1,147 @@
+<div class="modal-header">
+  <h5 class="modal-title">Novo Trecho</h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        [class.active]="mode === 'single'"
+        (click)="setMode('single')"
+        >Trecho único</a
+      >
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        [class.active]="mode === 'multi'"
+        (click)="setMode('multi')"
+        >Múltiplos destinos</a
+      >
+    </li>
+  </ul>
+
+  @if (mode === 'single') {
+    <form [formGroup]="singleForm" (ngSubmit)="submitSingle()">
+      <div class="row g-2">
+        <div class="col-12 col-md-6">
+          <label class="form-label">Origem</label>
+          <input formControlName="origin" type="text" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">Destino</label>
+          <input formControlName="destination" type="text" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6">
+          <app-date-field
+            formControlName="departureDateOnly"
+            [label]="'Data de saída'"
+          ></app-date-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">Hora de saída</label>
+          <input formControlName="departureTime" type="time" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">Distância (km)</label>
+          <input
+            formControlName="distanceKm"
+            type="number"
+            min="0"
+            class="form-control"
+          />
+        </div>
+        <div class="col-12">
+          <label class="form-label">Observações</label>
+          <input formControlName="notes" type="text" class="form-control" />
+        </div>
+      </div>
+      <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">
+          Salvar
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (mode === 'multi') {
+    <form [formGroup]="multiForm" (ngSubmit)="submitMulti()">
+      <p class="text-muted small">
+        Informe o ponto de partida e adicione uma parada pra cada destino da viagem, na ordem -
+        cada parada vira um trecho do itinerário, ligando ao ponto anterior.
+      </p>
+      <div class="row g-2 mb-2">
+        <div class="col-12">
+          <label class="form-label">Origem inicial</label>
+          <input formControlName="origin" type="text" class="form-control" />
+        </div>
+      </div>
+
+      <div formArrayName="stops">
+        @for (stop of stops.controls; track stop; let i = $index) {
+          <div [formGroupName]="i" class="border rounded p-2 mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <b class="small">Parada {{ i + 1 }}</b>
+              <button
+                type="button"
+                class="btn btn-link btn-sm p-0 text-danger"
+                title="Remover parada"
+                [disabled]="stops.length === 1"
+                (click)="removeStop(i)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+            <div class="row g-2">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Destino</label>
+                <input formControlName="destination" type="text" class="form-control" />
+              </div>
+              <div class="col-12 col-md-6">
+                <app-date-field
+                  formControlName="dateOnly"
+                  [label]="'Data de saída'"
+                ></app-date-field>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Hora de saída</label>
+                <input formControlName="time" type="time" class="form-control" />
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Distância deste trecho (km)</label>
+                <input
+                  formControlName="distanceKm"
+                  type="number"
+                  min="0"
+                  class="form-control"
+                />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Observações</label>
+                <input formControlName="notes" type="text" class="form-control" />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <button type="button" class="btn btn-outline-primary btn-sm mb-3" (click)="addStop()">
+        <i class="bi bi-plus-lg"></i> Adicionar parada
+      </button>
+
+      <div class="d-flex justify-content-end mt-3">
+        <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">
+          Salvar itinerário
+        </button>
+      </div>
+    </form>
+  }
+</div>

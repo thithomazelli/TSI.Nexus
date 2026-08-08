@@ -6,8 +6,8 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
 import {
+  ModalService,
   NotificationService,
   ResponseStatus,
   TripLeg,
@@ -15,6 +15,8 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
+
+import { TripLegDetailsModalComponent } from '../trip-leg-details-modal/trip-leg-details-modal.component';
 
 @Component({
   selector: 'app-trip-leg-list',
@@ -27,27 +29,20 @@ export class TripLegListComponent implements OnInit, OnChanges, OnDestroy {
   orderId!: string;
 
   tripLegs: TripLeg[] = [];
-  showForm = false;
-  form!: ReturnType<FormBuilder['group']>;
 
   private _destroy$ = new Subject<void>();
 
   constructor(
-    private formBuilder: FormBuilder,
     private notificationService: NotificationService,
     private tripLegService: TripLegService,
-  ) {
-    this.form = this.formBuilder.group({
-      origin: ['', Validators.required],
-      destination: ['', Validators.required],
-      departureDate: ['', Validators.required],
-      distanceKm: [0, [Validators.min(0)]],
-      notes: [''],
-    });
-  }
+    private modalService: ModalService,
+  ) {}
 
   ngOnInit(): void {
     this.load();
+    this.tripLegService.tripLegChanged$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.load());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -61,45 +56,11 @@ export class TripLegListComponent implements OnInit, OnChanges, OnDestroy {
     this._destroy$.complete();
   }
 
-  toggleForm(): void {
-    this.showForm = !this.showForm;
-  }
-
-  addTripLeg(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const raw = this.form.getRawValue();
-    const tripLeg = {
-      id: '',
-      sequenceNumber: this.tripLegs.length + 1,
-      origin: raw.origin,
-      destination: raw.destination,
-      departureDate: raw.departureDate,
-      distanceKm: raw.distanceKm,
-      notes: raw.notes,
+  openModal(): void {
+    this.modalService.showTemplateModal(TripLegDetailsModalComponent, {
       orderId: this.orderId,
-    } as TripLeg;
-
-    this.tripLegService
-      .add(tripLeg)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<TripLeg>) => {
-        this.notificationService.showMessage(response.status, response.message);
-        if (response.status === ResponseStatus.Success) {
-          this.showForm = false;
-          this.form.reset({
-            origin: '',
-            destination: '',
-            departureDate: '',
-            distanceKm: 0,
-            notes: '',
-          });
-          this.load();
-        }
-      });
+      nextSequenceNumber: this.tripLegs.length + 1,
+    });
   }
 
   removeTripLeg(tripLeg: TripLeg): void {
@@ -108,7 +69,6 @@ export class TripLegListComponent implements OnInit, OnChanges, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<TripLeg>) => {
         this.notificationService.showMessage(response.status, response.message);
-        this.load();
       });
   }
 
