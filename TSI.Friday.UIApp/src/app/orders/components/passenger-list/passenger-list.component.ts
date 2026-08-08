@@ -28,8 +28,6 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
 
   passengers: Passenger[] = [];
   showForm = false;
-  showImport = false;
-  importText = '';
   form!: ReturnType<FormBuilder['group']>;
 
   private _destroy$ = new Subject<void>();
@@ -66,10 +64,6 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
     this.showForm = !this.showForm;
   }
 
-  toggleImport(): void {
-    this.showImport = !this.showImport;
-  }
-
   addPassenger(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -94,46 +88,6 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
         if (response.status === ResponseStatus.Success) {
           this.showForm = false;
           this.form.reset({ name: '', documentNumber: '', seat: '', phone: '' });
-          this.load();
-        }
-      });
-  }
-
-  /**
-   * Parses pasted spreadsheet rows (tab or comma separated: Nome, Documento, Assento, Telefone)
-   * and imports the whole batch in a single request - this is the "lista de passageiros" import,
-   * fed from a copy-paste out of Excel/Sheets rather than uploading a binary file.
-   */
-  importPassengers(): void {
-    const lines = this.importText
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-
-    if (lines.length === 0) {
-      return;
-    }
-
-    const passengers = lines.map((line) => {
-      const columns = line.includes('\t') ? line.split('\t') : line.split(',');
-      return {
-        id: '',
-        name: (columns[0] ?? '').trim(),
-        documentNumber: (columns[1] ?? '').trim(),
-        seat: (columns[2] ?? '').trim(),
-        phone: (columns[3] ?? '').trim(),
-        orderId: this.orderId,
-      } as Passenger;
-    });
-
-    this.passengerService
-      .addRange(passengers)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Passenger[]>) => {
-        this.notificationService.showMessage(response.status, response.message);
-        if (response.status === ResponseStatus.Success) {
-          this.showImport = false;
-          this.importText = '';
           this.load();
         }
       });

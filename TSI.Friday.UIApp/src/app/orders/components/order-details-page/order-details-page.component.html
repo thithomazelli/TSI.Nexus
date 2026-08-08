@@ -99,6 +99,14 @@
               <li class="nav-item">
                 <a
                   class="nav-link"
+                  [class.active]="activeTab === 'passenger-import'"
+                  (click)="activeTab = 'passenger-import'"
+                  >Importar Passageiros</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
                   [class.active]="activeTab === 'payments'"
                   (click)="activeTab = 'payments'"
                   >Pagamentos</a
@@ -133,6 +141,12 @@
             </div>
             <div *ngIf="activeTab === 'passengers'">
               <app-passenger-list [orderId]="data!.id!"></app-passenger-list>
+            </div>
+            <div *ngIf="activeTab === 'passenger-import'">
+              <app-passenger-import
+                [orderId]="data!.id!"
+                (imported)="activeTab = 'passengers'"
+              ></app-passenger-import>
             </div>
             <div *ngIf="activeTab === 'payments'">
               <app-payments

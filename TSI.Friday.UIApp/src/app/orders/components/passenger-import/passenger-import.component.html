@@ -1,0 +1,82 @@
+<div class="passenger-import">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="mb-0">Importar Lista de Passageiros</h5>
+  </div>
+
+  <p class="text-muted small">
+    Envie um arquivo <b>.csv</b> ou <b>.txt</b> com uma linha por passageiro, no formato
+    <b>Nome, Documento, Assento, Telefone</b> (aceita vírgula ou tabulação como separador). O
+    arquivo enviado também fica disponível na aba <b>Anexos</b> deste pedido.
+  </p>
+
+  <div class="border rounded p-3 mb-3">
+    <div class="d-flex align-items-center gap-2">
+      <label class="btn btn-sm btn-outline-secondary mb-0" for="passengerImportFile">
+        <i class="bi bi-upload"></i> Escolher arquivo
+      </label>
+      <span class="text-muted small">{{
+        selectedFile?.name || 'Nenhum arquivo selecionado'
+      }}</span>
+    </div>
+    <input
+      id="passengerImportFile"
+      type="file"
+      class="d-none"
+      accept=".csv,.txt,text/csv,text/plain"
+      (change)="onFileSelected($event)"
+    />
+  </div>
+
+  @if (previewPassengers.length > 0) {
+    <div class="mb-3">
+      <h6 class="text-muted mb-2">
+        Pré-visualização ({{ previewPassengers.length }} passageiro{{
+          previewPassengers.length === 1 ? '' : 's'
+        }})
+      </h6>
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Documento</th>
+            <th>Assento</th>
+            <th>Telefone</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of previewPassengers; track $index) {
+            <tr>
+              <td>{{ p.name }}</td>
+              <td>{{ p.documentNumber }}</td>
+              <td>{{ p.seat }}</td>
+              <td>{{ p.phone }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="d-flex justify-content-end">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm me-2"
+          [disabled]="importing"
+          (click)="clearSelection()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success btn-sm"
+          [disabled]="importing"
+          (click)="confirmImport()"
+        >
+          Confirmar Importação
+        </button>
+      </div>
+    </div>
+  } @else if (selectedFile) {
+    <p class="text-danger small">
+      Não foi possível identificar passageiros neste arquivo. Confira o formato e tente
+      novamente.
+    </p>
+  }
+</div>

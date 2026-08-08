@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { OrderDetailsPageComponent } from './components/order-details-page/order-details-page.component';
 import { TripLegListComponent } from './components/trip-leg-list/trip-leg-list.component';
 import { PassengerListComponent } from './components/passenger-list/passenger-list.component';
+import { PassengerImportComponent } from './components/passenger-import/passenger-import.component';
 
 import { OrdersRoutingModule } from './orders-routing.module';
 import { NgxMaskDirective } from 'ngx-mask';
@@ -21,6 +22,7 @@ import { OrdersSharedModule } from './orders-shared.module';
     OrderDetailsPageComponent,
     TripLegListComponent,
     PassengerListComponent,
+    PassengerImportComponent,
   ],
   imports: [
     OrdersSharedModule,
