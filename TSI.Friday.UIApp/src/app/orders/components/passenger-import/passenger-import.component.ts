@@ -57,11 +57,6 @@ export class PassengerImportComponent {
     reader.readAsText(file);
   }
 
-  clearSelection(): void {
-    this.selectedFile = null;
-    this.previewPassengers = [];
-  }
-
   confirmImport(): void {
     if (!this.selectedFile || this.previewPassengers.length === 0 || this.importing) {
       return;
