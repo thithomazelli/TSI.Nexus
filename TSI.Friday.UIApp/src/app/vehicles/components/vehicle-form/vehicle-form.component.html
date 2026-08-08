@@ -1,7 +1,7 @@
 <div class="vehicle-form-wrapper">
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="row g-1 mb-1">
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -18,7 +18,7 @@
           <div class="input-group-text"><i class="bi bi-card-heading"></i></div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -33,7 +33,7 @@
           <div class="input-group-text"><i class="bi bi-file-text"></i></div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -82,7 +82,7 @@
           <div class="input-group-text"><i class="bi bi-truck-front"></i></div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -96,7 +96,7 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -110,7 +110,7 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -126,7 +126,7 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -226,18 +226,10 @@
         </div>
       </div>
       <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="transportLicenseExpiryDate"
-              type="date"
-              placeholder="Validade da licença"
-              class="form-control"
-              id="transportLicenseExpiryDate"
-            />
-            <label for="transportLicenseExpiryDate">Validade da licença</label>
-          </div>
-        </div>
+        <app-date-field
+          formControlName="transportLicenseExpiryDate"
+          [label]="'Validade da licença'"
+        ></app-date-field>
       </div>
     </div>
 

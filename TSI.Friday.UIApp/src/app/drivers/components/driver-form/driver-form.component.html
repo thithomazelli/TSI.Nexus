@@ -18,7 +18,7 @@
           <div class="input-group-text"><i class="bi bi-person"></i></div>
         </div>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -34,7 +34,7 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -48,7 +48,7 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -64,7 +64,7 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -78,7 +78,7 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -92,21 +92,13 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="birthday"
-              type="date"
-              placeholder="Nascimento"
-              class="form-control"
-              id="birthday"
-            />
-            <label for="birthday">Nascimento</label>
-          </div>
-        </div>
+      <div class="col-12 col-md-6">
+        <app-date-field
+          formControlName="birthday"
+          [label]="'Nascimento'"
+        ></app-date-field>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -122,7 +114,7 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-2">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -138,23 +130,13 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-3">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="licenseExpiryDate"
-              type="date"
-              placeholder="Validade da CNH"
-              class="form-control"
-              id="licenseExpiryDate"
-              [class.is-invalid]="isInvalid('licenseExpiryDate')"
-              [class.is-valid]="isValid('licenseExpiryDate')"
-            />
-            <label for="licenseExpiryDate">Validade da CNH</label>
-          </div>
-        </div>
+      <div class="col-12 col-md-6">
+        <app-date-field
+          formControlName="licenseExpiryDate"
+          [label]="'Validade da CNH'"
+        ></app-date-field>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill select-floating">
             <select
@@ -172,21 +154,13 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="admissionDate"
-              type="date"
-              placeholder="Admissão"
-              class="form-control"
-              id="admissionDate"
-            />
-            <label for="admissionDate">Data de admissão</label>
-          </div>
-        </div>
+      <div class="col-12 col-md-6">
+        <app-date-field
+          formControlName="admissionDate"
+          [label]="'Data de admissão'"
+        ></app-date-field>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -202,7 +176,7 @@
           </div>
         </div>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill select-floating">
             <select
