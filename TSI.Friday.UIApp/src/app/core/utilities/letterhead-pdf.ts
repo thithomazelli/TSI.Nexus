@@ -1,4 +1,5 @@
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { SERODIO_COMPANY } from './document-branding';
 
 /**
@@ -101,32 +102,93 @@ export function buildLetterheadDocument(pagesHtml: string[]): string {
 }
 
 /**
- * Renders the given letterhead document off-screen and downloads it as a PDF, reusing the same
- * html2pdf.js pipeline already used by the Payments report export.
+ * Preloads an image URL into the browser cache and waits for it to finish loading (or fail),
+ * so a subsequent CSS background-image paint of the same URL is guaranteed to have pixels ready.
  */
-export function downloadLetterheadPdf(pagesHtml: string[], filename: string): void {
-  const documentHtml = buildLetterheadDocument(pagesHtml);
+function preloadImage(src: string): Promise<void> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = src;
+  });
+}
 
-  const tempDiv = document.createElement('div');
-  tempDiv.style.position = 'fixed';
-  tempDiv.style.left = '-9999px';
-  tempDiv.innerHTML = documentHtml;
-  document.body.appendChild(tempDiv);
+/**
+ * Waits for every <img> inside the container to finish loading (or fail), so html2canvas doesn't
+ * capture a page before its images have decoded.
+ */
+function waitForImages(container: HTMLElement): Promise<void> {
+  const images = Array.from(container.querySelectorAll('img'));
+  return Promise.all(
+    images.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          if (img.complete) {
+            resolve();
+            return;
+          }
+          img.addEventListener('load', () => resolve(), { once: true });
+          img.addEventListener('error', () => resolve(), { once: true });
+        }),
+    ),
+  ).then(() => undefined);
+}
 
-  const options: Record<string, unknown> = {
-    margin: 0,
-    filename,
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css'] },
-  };
+/**
+ * Renders each page separately (its own html2canvas capture) and downloads the result as a PDF.
+ *
+ * Pages are captured one at a time - rather than rendering the whole multi-page document at once
+ * and letting html2pdf.js slice it into pages by CSS page-break position - because that slicing
+ * isn't pixel-precise: when a page's real content is a fraction taller than the nominal 297mm, the
+ * overflow spills into an extra, mostly-blank page instead of just making that one page slightly
+ * taller. Capturing and placing each page's canvas individually avoids that class of bug entirely:
+ * a page's content is never split, and any legitimate overflow just makes that one PDF page a bit
+ * taller than standard A4 instead of losing or duplicating content.
+ */
+export async function downloadLetterheadPdf(
+  pagesHtml: string[],
+  filename: string,
+): Promise<void> {
+  // html2canvas measures the source element's own layout size to decide what to capture. Hiding
+  // it via `position: fixed/absolute` (even off-screen) makes that measurement collapse to zero
+  // height, producing a blank PDF - so instead we clip it out of view with a zero-height wrapper
+  // and leave the actual content div with completely ordinary, unpositioned layout.
+  const hiddenWrapper = document.createElement('div');
+  hiddenWrapper.style.height = '0';
+  hiddenWrapper.style.overflow = 'hidden';
+  document.body.appendChild(hiddenWrapper);
 
-  html2pdf()
-    .from(tempDiv)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .set(options as any)
-    .save()
-    .finally(() => {
-      document.body.removeChild(tempDiv);
-    });
+  try {
+    await preloadImage(SERODIO_COMPANY.letterheadPath);
+
+    const widthMm = 210;
+    let pdf: jsPDF | null = null;
+
+    for (const pageHtml of pagesHtml) {
+      const pageContainer = document.createElement('div');
+      pageContainer.innerHTML = buildLetterheadDocument([pageHtml]);
+      hiddenWrapper.appendChild(pageContainer);
+
+      await waitForImages(pageContainer);
+
+      const pageElement = pageContainer.querySelector('.pdf-page') as HTMLElement;
+      const canvas = await html2canvas(pageElement, { scale: 2, useCORS: true });
+      const heightMm = Math.max(297, (canvas.height / canvas.width) * widthMm);
+      const imageData = canvas.toDataURL('image/jpeg', 0.92);
+
+      if (!pdf) {
+        pdf = new jsPDF({ unit: 'mm', format: [widthMm, heightMm], orientation: 'portrait' });
+      } else {
+        pdf.addPage([widthMm, heightMm], 'portrait');
+      }
+      pdf.addImage(imageData, 'JPEG', 0, 0, widthMm, heightMm);
+
+      hiddenWrapper.removeChild(pageContainer);
+    }
+
+    pdf?.save(filename);
+  } finally {
+    document.body.removeChild(hiddenWrapper);
+  }
 }
