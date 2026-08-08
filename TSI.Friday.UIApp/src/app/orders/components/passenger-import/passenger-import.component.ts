@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   Attachment,
@@ -83,13 +84,28 @@ export class PassengerImportComponent {
           this.dialogRef.close(true);
         }
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.importing = false;
         this.notificationService.showMessage(
           'Error',
-          'Erro ao importar a lista de passageiros.',
+          this.extractErrorMessage(err),
         );
       },
     });
+  }
+
+  private extractErrorMessage(err: HttpErrorResponse): string {
+    const body = err?.error;
+    const validationErrors: string[] | undefined = body?.errors ?? body?.Errors;
+    if (validationErrors?.length) {
+      return validationErrors.join(' ');
+    }
+    if (typeof body === 'string' && body.trim()) {
+      return body;
+    }
+    if (body?.message) {
+      return body.message;
+    }
+    return `Erro ao importar a lista de passageiros (HTTP ${err?.status ?? '?'}).`;
   }
 }
