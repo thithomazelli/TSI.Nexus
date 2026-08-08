@@ -3,6 +3,7 @@ import { AccountService } from './core';
 import { filter, map, Observable, Subscription } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
 import { environment } from '../environments/environment';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
 @Component({
   selector: 'app-root',
@@ -33,6 +34,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private accountService: AccountService,
     private ngZone: NgZone,
+    private swUpdate: SwUpdate,
   ) {
     this.isLoggedIn$ = this.accountService.user$.pipe(map((u) => !!u));
 
@@ -42,6 +44,20 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Ativa automaticamente uma nova versão publicada assim que o service worker a detecta,
+    // em vez de deixar o usuário preso na versão antiga em cache até fechar todas as abas.
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates
+        .pipe(
+          filter(
+            (evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY',
+          ),
+        )
+        .subscribe(() => {
+          this.swUpdate.activateUpdate().then(() => document.location.reload());
+        });
+    }
+
     // Adiciona listeners de atividade do usuário para resetar autologoff
     this.ngZone.runOutsideAngular(() => {
       this.activityEvents.forEach((event) => {
