@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 
 import {
   ApiType,
+  BusinessPartnerService,
   Driver,
   DriverService,
   DriverStatus,
@@ -71,6 +72,7 @@ export class DriverFormComponent
     private modalService: ModalService,
     private notificationService: NotificationService,
     private driverService: DriverService,
+    private businessPartnerService: BusinessPartnerService,
     private routerService: Router,
   ) {
     super();
@@ -160,12 +162,21 @@ export class DriverFormComponent
     const commonControls = {
       name: ['', Validators.required],
       email: ['', Validators.email],
-      phone: [''],
-      mobile: [''],
-      socialSecurityCard: ['', Validators.required],
+      // ngx-mask guarda só os dígitos no FormControl (sem parênteses/traço), por isso os
+      // padrões abaixo validam DDD + número em dígitos puros, não o texto mascarado exibido.
+      phone: ['', Validators.pattern(/^\d{10}$/)],
+      mobile: ['', Validators.pattern(/^\d{11}$/)],
+      socialSecurityCard: [
+        '',
+        [Validators.required, this.businessPartnerService.cpfValidator()],
+      ],
+      // RG não tem padrão nacional único (varia por estado), então só filtramos dígitos via
+      // máscara, sem validador de tamanho/checksum fixo.
       nationalIdCard: [''],
       birthday: [null as Date | null],
-      licenseNumber: ['', Validators.required],
+      // CNH: registro nacional de 11 dígitos. Não valida o dígito verificador (algoritmo módulo
+      // 11 pouco documentado/testável), só o formato de 11 números.
+      licenseNumber: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
       licenseCategory: ['', Validators.required],
       licenseExpiryDate: [null as Date | null, Validators.required],
       employmentType: [EmploymentType.CLT, Validators.required],

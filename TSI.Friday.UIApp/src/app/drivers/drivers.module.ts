@@ -9,6 +9,7 @@ import { ServiceOrderListComponent } from './components/service-order-list/servi
 
 import { DriversRoutingModule } from './drivers-routing.module';
 import { SharedModule } from '../shared/shared.module';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,6 @@ import { SharedModule } from '../shared/shared.module';
     DriverDetailsPageComponent,
     ServiceOrderListComponent,
   ],
-  imports: [CommonModule, DriversRoutingModule, SharedModule],
+  imports: [CommonModule, DriversRoutingModule, SharedModule, NgxMaskDirective],
 })
 export class DriversModule {}
