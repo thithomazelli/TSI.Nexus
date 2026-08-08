@@ -1,0 +1,19 @@
+<app-header
+  title="Motoristas"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Motoristas', link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [baseEndPoint]="baseEndPoint"
+    [className]="'Motoristas'"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [refresh]="refreshDrivers.bind(this)"
+    [delete]="deleteDriver.bind(this)"
+    (openModal)="openAddPage()"
+  ></app-grid>
+</div>

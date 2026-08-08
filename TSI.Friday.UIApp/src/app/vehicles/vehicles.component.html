@@ -1,0 +1,19 @@
+<app-header
+  title="Frota"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Frota', link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-grid
+    [baseEndPoint]="baseEndPoint"
+    [className]="'Veículos'"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [refresh]="refreshVehicles.bind(this)"
+    [delete]="deleteVehicle.bind(this)"
+    (openModal)="openAddPage()"
+  ></app-grid>
+</div>

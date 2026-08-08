@@ -1,0 +1,22 @@
+<app-header
+  [title]="isEdit ? 'Editar Veículo' : 'Adicionar Veículo'"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Frota', link: '/vehicles' },
+    { label: isEdit ? 'Editar Veículo' : 'Adicionar Veículo', link: '' },
+  ]"
+></app-header>
+<section class="content">
+  <div class="container-fluid">
+    <div class="card card-secondary card-outline">
+      <div class="card-body">
+        @if (loading) {
+          <div class="text-center py-4">Loading...</div>
+        }
+        @if (!loading) {
+          <app-vehicle-form [isEdit]="isEdit" [data]="data"></app-vehicle-form>
+        }
+      </div>
+    </div>
+  </div>
+</section>

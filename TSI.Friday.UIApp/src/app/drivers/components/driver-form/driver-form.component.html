@@ -1,0 +1,223 @@
+<div class="driver-form-wrapper">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="row g-1 mb-1">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="name"
+              type="text"
+              placeholder="Nome do Motorista"
+              class="form-control"
+              id="name"
+              [class.is-invalid]="isInvalid('name')"
+              [class.is-valid]="isValid('name')"
+            />
+            <label for="name">Nome do Motorista</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-person"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="socialSecurityCard"
+              type="text"
+              placeholder="CPF"
+              class="form-control"
+              id="socialSecurityCard"
+              [class.is-invalid]="isInvalid('socialSecurityCard')"
+              [class.is-valid]="isValid('socialSecurityCard')"
+            />
+            <label for="socialSecurityCard">CPF</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="nationalIdCard"
+              type="text"
+              placeholder="RG"
+              class="form-control"
+              id="nationalIdCard"
+            />
+            <label for="nationalIdCard">RG</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="email"
+              type="email"
+              placeholder="E-mail"
+              class="form-control"
+              id="email"
+              [class.is-invalid]="isInvalid('email')"
+              [class.is-valid]="isValid('email')"
+            />
+            <label for="email">E-mail</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="phone"
+              type="text"
+              placeholder="Telefone"
+              class="form-control"
+              id="phone"
+            />
+            <label for="phone">Telefone</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="mobile"
+              type="text"
+              placeholder="Celular"
+              class="form-control"
+              id="mobile"
+            />
+            <label for="mobile">Celular</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="birthday"
+              type="date"
+              placeholder="Nascimento"
+              class="form-control"
+              id="birthday"
+            />
+            <label for="birthday">Nascimento</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="licenseNumber"
+              type="text"
+              placeholder="Número da CNH"
+              class="form-control"
+              id="licenseNumber"
+              [class.is-invalid]="isInvalid('licenseNumber')"
+              [class.is-valid]="isValid('licenseNumber')"
+            />
+            <label for="licenseNumber">Número da CNH</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="licenseCategory"
+              type="text"
+              placeholder="Categoria"
+              class="form-control"
+              id="licenseCategory"
+              [class.is-invalid]="isInvalid('licenseCategory')"
+              [class.is-valid]="isValid('licenseCategory')"
+            />
+            <label for="licenseCategory">Categoria</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-3">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="licenseExpiryDate"
+              type="date"
+              placeholder="Validade da CNH"
+              class="form-control"
+              id="licenseExpiryDate"
+              [class.is-invalid]="isInvalid('licenseExpiryDate')"
+              [class.is-valid]="isValid('licenseExpiryDate')"
+            />
+            <label for="licenseExpiryDate">Validade da CNH</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="employmentType"
+              class="form-select"
+              id="employmentType"
+              [class.is-invalid]="isInvalid('employmentType')"
+              [class.is-valid]="isValid('employmentType')"
+            >
+              @for (option of employmentTypeOptions; track option) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="employmentType">Vínculo empregatício</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="admissionDate"
+              type="date"
+              placeholder="Admissão"
+              class="form-control"
+              id="admissionDate"
+            />
+            <label for="admissionDate">Data de admissão</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select
+              formControlName="status"
+              class="form-select"
+              id="status"
+              [class.is-invalid]="isInvalid('status')"
+              [class.is-valid]="isValid('status')"
+            >
+              @for (option of statusOptions; track option) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="status">Status</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
+        Cancelar
+      </button>
+      @if (isEdit) {
+        <button (click)="remove()" type="button" class="btn btn-danger me-2">
+          Remover
+        </button>
+      }
+      <button type="submit" class="btn btn-success">
+        {{ isEdit ? "Salvar" : "Adicionar" }}
+      </button>
+    </div>
+  </form>
+</div>

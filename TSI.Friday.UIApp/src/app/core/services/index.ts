@@ -15,3 +15,6 @@ export * from './quote/quote.service';
 export * from './quote-product/quote-product.service';
 export * from './transaction/transaction.service';
 export * from './user/user.service';
+export * from './vehicle/vehicle.service';
+export * from './vehicle-maintenance/vehicle-maintenance.service';
+export * from './driver/driver.service';

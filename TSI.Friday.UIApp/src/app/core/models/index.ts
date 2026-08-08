@@ -22,3 +22,6 @@ export * from './product.model';
 export * from './product-photo.model';
 export * from './quote.model';
 export * from './quote-product.model';
+export * from './vehicle.model';
+export * from './vehicle-maintenance.model';
+export * from './driver.model';

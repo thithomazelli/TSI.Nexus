@@ -14,4 +14,7 @@ export enum ApiType {
   Photos = 'photos',
   Products = 'products',
   Users = 'users',
+  Vehicles = 'vehicles',
+  VehicleMaintenances = 'vehiclemaintenances',
+  Drivers = 'drivers',
 }

@@ -85,6 +85,30 @@
 
         <li class="nav-item">
           <a
+            routerLink="/vehicles"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-bus-front"></i>
+            <p>Frota</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
+            routerLink="/drivers"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <i class="nav-icon bi bi-person-vcard"></i>
+            <p>Motoristas</p>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a
             routerLink="/quotes"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"

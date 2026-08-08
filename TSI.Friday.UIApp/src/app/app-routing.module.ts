@@ -24,6 +24,12 @@ const routes: Routes = [
       ),
   },
   {
+    path: 'drivers',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./drivers/drivers.module').then((m) => m.DriversModule),
+  },
+  {
     path: 'home',
     canActivate: [AuthorizationGuard],
     component: HomeComponent,
@@ -92,6 +98,12 @@ const routes: Routes = [
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./users/users.module').then((m) => m.UsersModule),
+  },
+  {
+    path: 'vehicles',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./vehicles/vehicles.module').then((m) => m.VehiclesModule),
   },
   {
     path: '**',
