@@ -30,6 +30,15 @@
                 >Manutenções</a
               >
             </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="activeTab === 'fuel'"
+                (click)="activeTab = 'fuel'"
+                data-toggle="tab"
+                >Combustível</a
+              >
+            </li>
           </ul>
         }
 
@@ -44,6 +53,9 @@
             <app-vehicle-maintenance-list
               [vehicleId]="data!.id"
             ></app-vehicle-maintenance-list>
+          }
+          @if (activeTab === 'fuel' && data?.id) {
+            <app-fuel-log-list [vehicleId]="data!.id"></app-fuel-log-list>
           }
         }
       </div>

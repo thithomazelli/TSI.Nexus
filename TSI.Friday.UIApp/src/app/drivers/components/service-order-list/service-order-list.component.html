@@ -1,0 +1,57 @@
+<div class="service-order-list">
+  <h5 class="mb-2">Ordens de Serviço e Comissões</h5>
+  <p class="text-muted small">
+    Geradas automaticamente quando uma viagem vinculada a este motorista é
+    marcada como Fechada.
+  </p>
+
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>OS</th>
+        <th>Emissão</th>
+        <th>Base</th>
+        <th>%</th>
+        <th>Comissão</th>
+        <th>Status</th>
+        <th style="width: 120px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (so of serviceOrders; track so.id) {
+        <tr>
+          <td>{{ so.number }}</td>
+          <td>{{ so.issueDate | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ so.commission?.baseAmount | currency: 'BRL' }}</td>
+          <td>{{ so.commission?.percentage }}%</td>
+          <td>{{ so.commission?.amount | currency: 'BRL' }}</td>
+          <td>
+            @if (so.commission) {
+              <span class="badge bg-{{ getStatusInfo(so.commission.status).color }}">
+                {{ getStatusInfo(so.commission.status).label }}
+              </span>
+            }
+          </td>
+          <td>
+            @if (so.commission && so.commission.status === 'Pending') {
+              <button
+                type="button"
+                class="btn btn-link btn-sm p-0"
+                title="Marcar como paga"
+                (click)="markAsPaid(so.commission)"
+              >
+                <i class="bi bi-check-circle text-success"></i> Pagar
+              </button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="text-center text-muted small py-3">
+            Nenhuma Ordem de Serviço gerada ainda
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

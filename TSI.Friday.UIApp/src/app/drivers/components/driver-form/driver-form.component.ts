@@ -144,6 +144,7 @@ export class DriverFormComponent
       employmentType: [EmploymentType.CLT, Validators.required],
       admissionDate: [null as Date | null],
       status: [DriverStatus.Active, Validators.required],
+      commissionPercentage: [0, [Validators.min(0), Validators.max(100)]],
     };
 
     this.form = !this.isEdit

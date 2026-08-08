@@ -10,11 +10,39 @@
   <div class="container-fluid">
     <div class="card card-secondary card-outline">
       <div class="card-body">
+        @if (isEdit) {
+          <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="activeTab === 'details'"
+                (click)="activeTab = 'details'"
+                data-toggle="tab"
+                >Dados</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="activeTab === 'serviceOrders'"
+                (click)="activeTab = 'serviceOrders'"
+                data-toggle="tab"
+                >OS e Comissões</a
+              >
+            </li>
+          </ul>
+        }
+
         @if (loading) {
           <div class="text-center py-4">Loading...</div>
         }
         @if (!loading) {
-          <app-driver-form [isEdit]="isEdit" [data]="data"></app-driver-form>
+          @if (activeTab === 'details') {
+            <app-driver-form [isEdit]="isEdit" [data]="data"></app-driver-form>
+          }
+          @if (activeTab === 'serviceOrders' && data?.id) {
+            <app-service-order-list [driverId]="data!.id"></app-service-order-list>
+          }
         }
       </div>
     </div>

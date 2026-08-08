@@ -18,4 +18,5 @@ export interface Driver extends BaseModel {
   employmentType: EmploymentType;
   admissionDate?: Date | null;
   status: DriverStatus;
+  commissionPercentage: number;
 }

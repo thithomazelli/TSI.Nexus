@@ -13,6 +13,7 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data?: Driver | null = null;
   loading = false;
+  activeTab: 'details' | 'serviceOrders' = 'details';
 
   private _destroy$ = new Subject<void>();
 

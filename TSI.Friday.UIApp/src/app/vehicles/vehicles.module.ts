@@ -5,6 +5,7 @@ import { VehiclesComponent } from './vehicles.component';
 import { VehicleFormComponent } from './components/vehicle-form/vehicle-form.component';
 import { VehicleDetailsPageComponent } from './components/vehicle-details-page/vehicle-details-page.component';
 import { VehicleMaintenanceListComponent } from './components/vehicle-maintenance-list/vehicle-maintenance-list.component';
+import { FuelLogListComponent } from './components/fuel-log-list/fuel-log-list.component';
 
 import { VehiclesRoutingModule } from './vehicles-routing.module';
 import { SharedModule } from '../shared/shared.module';
@@ -15,6 +16,7 @@ import { SharedModule } from '../shared/shared.module';
     VehicleFormComponent,
     VehicleDetailsPageComponent,
     VehicleMaintenanceListComponent,
+    FuelLogListComponent,
   ],
   imports: [CommonModule, VehiclesRoutingModule, SharedModule],
 })

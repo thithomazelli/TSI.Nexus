@@ -188,6 +188,22 @@
       </div>
       <div class="col-12 col-md-4">
         <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="commissionPercentage"
+              type="number"
+              min="0"
+              max="100"
+              placeholder="Comissão (%)"
+              class="form-control"
+              id="commissionPercentage"
+            />
+            <label for="commissionPercentage">Comissão sobre viagem (%)</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="input-group">
           <div class="form-floating flex-fill select-floating">
             <select
               formControlName="status"
