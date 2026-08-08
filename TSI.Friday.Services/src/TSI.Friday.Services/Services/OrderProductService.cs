@@ -144,8 +144,7 @@ namespace TSI.Friday.Services
                 var orders = await _repository.GetAllAsync(
                     op => op.Order,
                     op => op.Order.BusinessPartner,
-                    op => op.Product,
-                    op => op.Address
+                    op => op.Product
                 );
 
                 result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(orders);
@@ -173,8 +172,7 @@ namespace TSI.Friday.Services
                 var items = await _repository.QueryAsync(
                     op => op.OrderId == orderId,
                     op => op.Order,
-                    op => op.Product,
-                    op => op.Address
+                    op => op.Product
                 );
                 result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);
                 result.Status = ResponseStatus.Success;
@@ -204,8 +202,7 @@ namespace TSI.Friday.Services
                     op => op.ProductId == productId,
                     op => op.Order,
                     op => op.Order.BusinessPartner,
-                    op => op.Product,
-                    op => op.Address
+                    op => op.Product
                 );
 
                 result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);
@@ -270,8 +267,7 @@ namespace TSI.Friday.Services
                         ),
                     op => op.Order,
                     op => op.Order.BusinessPartner,
-                    op => op.Product,
-                    op => op.Address
+                    op => op.Product
                 );
 
                 result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);

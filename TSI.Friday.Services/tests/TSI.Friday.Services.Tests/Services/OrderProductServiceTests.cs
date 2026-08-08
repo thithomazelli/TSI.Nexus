@@ -169,8 +169,7 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
                         op => op.Order,
-                        op => op.Product,
-                        op => op.Address
+                        op => op.Product
                     )
                 )
                 .ReturnsAsync(items);
@@ -192,7 +191,6 @@ namespace TSI.Friday.Services.Tests.Services
                     r.QueryAsync(
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
                         It.IsAny<Expression<Func<OrderProduct, object>>>(),
-                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
                         It.IsAny<Expression<Func<OrderProduct, object>>>()
                     ),
                 Times.Once
@@ -211,8 +209,7 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
                         op => op.Order,
                         op => op.Order.BusinessPartner,
-                        op => op.Product,
-                        op => op.Address
+                        op => op.Product
                     )
                 )
                 .ReturnsAsync(items);
@@ -235,8 +232,7 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
                         op => op.Order,
                         op => op.Order.BusinessPartner,
-                        op => op.Product,
-                        op => op.Address
+                        op => op.Product
                     ),
                 Times.Once
             );
@@ -289,8 +285,7 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
                         op => op.Order,
                         op => op.Order.BusinessPartner,
-                        op => op.Product,
-                        op => op.Address
+                        op => op.Product
                     )
                 )
                 .ReturnsAsync(expectedItems);
@@ -315,8 +310,7 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Expression<Func<OrderProduct, bool>>>(),
                         op => op.Order,
                         op => op.Order.BusinessPartner,
-                        op => op.Product,
-                        op => op.Address
+                        op => op.Product
                     ),
                 Times.Once
             );
