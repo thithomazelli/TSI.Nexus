@@ -238,6 +238,26 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
+        public async Task VehicleService_FindWithExpiringLicense_ShouldReturnVehiclesWithExpiringOrExpiredLicense()
+        {
+            // Arrange
+            var expiring = _vehicleListMock
+                .Where(v => v.Plate == "ABC1D23")
+                .ToList();
+
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(expiring);
+
+            // Act
+            var result = await _vehicleService.FindWithExpiringLicense(60);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(expiring, result.Data);
+        }
+
+        [Fact]
         public async Task VehicleService_FindAll_ShouldReturnAnEmptyListAndAnErrorMessage_WhenRepositoryGetsAnError()
         {
             // Arrange

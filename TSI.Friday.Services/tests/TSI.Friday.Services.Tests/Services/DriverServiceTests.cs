@@ -237,5 +237,31 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Equal(activeOnly, result.Data);
         }
+
+        [Fact]
+        public async Task DriverService_FindWithExpiringLicense_ShouldReturnDriversWithExpiringOrExpiredLicense()
+        {
+            // Arrange
+            var expiring = new List<Driver>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "João da Silva",
+                    LicenseExpiryDate = DateTime.UtcNow.Date.AddDays(-1),
+                },
+            };
+
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Driver, bool>>>()))
+                .ReturnsAsync(expiring);
+
+            // Act
+            var result = await _driverService.FindWithExpiringLicense(60);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(expiring, result.Data);
+        }
     }
 }

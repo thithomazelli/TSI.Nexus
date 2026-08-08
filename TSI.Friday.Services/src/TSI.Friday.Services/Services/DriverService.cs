@@ -243,6 +243,35 @@ namespace TSI.Friday.Services
             return result;
         }
 
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<Driver>>> FindWithExpiringLicense(
+            int daysAhead
+        )
+        {
+            WebApiResponse<IEnumerable<Driver>> result = new();
+
+            try
+            {
+                var threshold = DateTime.UtcNow.Date.AddDays(daysAhead);
+
+                result.Data = await _repository.QueryAsync(_ =>
+                    _.LicenseExpiryDate.Date <= threshold
+                );
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "DriverService.FindWithExpiringLicense", daysAhead);
+
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de Motoristas na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
         #endregion Public methods
 
         #region Private methods

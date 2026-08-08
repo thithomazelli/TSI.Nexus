@@ -54,5 +54,14 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <returns>All available Vehicles.</returns>
         Task<WebApiResponse<IEnumerable<Vehicle>>> FindAvailable();
+
+        /// <summary>
+        /// Method responsible to get all Vehicles whose transport license (NTT/ARTESP) is already
+        /// expired or will expire within the given number of days, so the office can be alerted
+        /// ahead of time (recommended lead time in the sector is ~60 days).
+        /// </summary>
+        /// <param name="daysAhead">How many days ahead of the expiry date should be considered.</param>
+        /// <returns>All Vehicles with an expiring or expired transport license.</returns>
+        Task<WebApiResponse<IEnumerable<Vehicle>>> FindWithExpiringLicense(int daysAhead);
     }
 }

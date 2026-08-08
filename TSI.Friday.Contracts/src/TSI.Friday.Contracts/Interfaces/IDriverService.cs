@@ -54,5 +54,13 @@ namespace TSI.Friday.Contracts.Interfaces
         /// </summary>
         /// <returns>All active Drivers.</returns>
         Task<WebApiResponse<IEnumerable<Driver>>> FindActive();
+
+        /// <summary>
+        /// Method responsible to get all Drivers whose CNH is already expired or will expire
+        /// within the given number of days, so the office can be alerted ahead of time.
+        /// </summary>
+        /// <param name="daysAhead">How many days ahead of the expiry date should be considered.</param>
+        /// <returns>All Drivers with an expiring or expired CNH.</returns>
+        Task<WebApiResponse<IEnumerable<Driver>>> FindWithExpiringLicense(int daysAhead);
     }
 }

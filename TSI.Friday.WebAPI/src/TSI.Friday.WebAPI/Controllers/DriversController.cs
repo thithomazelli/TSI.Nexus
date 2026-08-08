@@ -124,5 +124,17 @@ namespace TSI.Friday.WebAPI.Controllers
             var webApiResponse = await _driverService.FindActive();
             return Ok(webApiResponse);
         }
+
+        /// <summary>
+        /// Get drivers whose CNH is expired or expiring within the given number of days
+        /// (defaults to 60, the lead time recommended in the sector).
+        /// </summary>
+        [HttpGet]
+        [Route("GetExpiringLicenses")]
+        public async Task<IActionResult> GetExpiringLicenses([FromQuery] int daysAhead = 60)
+        {
+            var webApiResponse = await _driverService.FindWithExpiringLicense(daysAhead);
+            return Ok(webApiResponse);
+        }
     }
 }

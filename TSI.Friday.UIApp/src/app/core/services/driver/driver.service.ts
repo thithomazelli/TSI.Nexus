@@ -30,6 +30,12 @@ export class DriverService {
     );
   }
 
+  getExpiringLicenses(daysAhead = 60): Observable<WebApiResponse<Driver[]>> {
+    return this.apiService.get<WebApiResponse<Driver[]>>(
+      `${this._baseEndPoint}/getExpiringLicenses?daysAhead=${daysAhead}`,
+    );
+  }
+
   refresh(): Observable<WebApiResponse<Driver[]>> {
     return this.getAll();
   }

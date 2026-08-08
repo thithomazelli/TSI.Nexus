@@ -258,5 +258,42 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
 
             _driverServiceMock.Verify(_ => _.FindActive(), Times.Once);
         }
+
+        [Fact]
+        public async Task DriversController_GetExpiringLicenses_ShouldGetDriversWithExpiringLicense_WhenMethodIsCalled()
+        {
+            // Arrange
+            var driverMock = new List<Driver>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "João da Silva",
+                    LicenseExpiryDate = DateTime.UtcNow.AddDays(10),
+                },
+            };
+
+            var expectedResult = new WebApiResponse<IEnumerable<Driver>>
+            {
+                Data = driverMock,
+                Status = ResponseStatus.Success,
+                Message = $"{driverMock.Count} registro(s) encontrado(s).",
+            };
+
+            _driverServiceMock
+                .Setup(_ => _.FindWithExpiringLicense(It.IsAny<int>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _driversController.GetExpiringLicenses(60);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<Driver>>>(okResult.Value);
+            Assert.Equal(ResponseStatus.Success, response.Status);
+            Assert.Equal(driverMock, response.Data);
+
+            _driverServiceMock.Verify(_ => _.FindWithExpiringLicense(60), Times.Once);
+        }
     }
 }
