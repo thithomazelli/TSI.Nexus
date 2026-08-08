@@ -6,8 +6,13 @@ import {
   QuoteStatus,
   QuoteService,
   QuoteProductService,
+  BusinessPartnerService,
+  downloadLetterheadPdf,
 } from '@friday/core';
-import { Subject, Subscription, switchMap, takeUntil, merge } from 'rxjs';
+import { Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+import { buildQuotePages } from '../../utilities/quote-documents';
 
 @Component({
   selector: 'app-quote-details-page',
@@ -30,6 +35,8 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     [QuoteStatus.Expired]: 'Expirado',
   };
 
+  emittingQuote = false;
+
   private _quoteChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
@@ -38,6 +45,7 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     private quoteService: QuoteService,
     private quoteProductService: QuoteProductService,
     private routerService: Router,
+    private businessPartnerService: BusinessPartnerService,
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +79,31 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     }
 
     return this.quoteStatusOptions[this.data?.status] || '';
+  }
+
+  emitQuote(): void {
+    if (!this.data || this.emittingQuote) {
+      return;
+    }
+    const quote = this.data;
+    this.emittingQuote = true;
+
+    const businessPartner$ = quote.businessPartnerId
+      ? this.businessPartnerService
+          .getById(quote.businessPartnerId)
+          .pipe(catchError(() => of({ data: null } as WebApiResponse<any>)))
+      : of({ data: null } as WebApiResponse<any>);
+
+    businessPartner$.subscribe({
+      next: (response) => {
+        this.emittingQuote = false;
+        const pages = buildQuotePages(quote, response.data ?? null);
+        downloadLetterheadPdf(pages, `orcamento-${quote.quoteNumber}.pdf`);
+      },
+      error: () => {
+        this.emittingQuote = false;
+      },
+    });
   }
 
   private getQuoteById(id: string): void {
