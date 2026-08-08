@@ -19,6 +19,15 @@ using TSI.Friday.Services.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Optional, git-ignored file for local secrets (connection strings, JWT key, MailJet keys).
+// Loaded after appsettings.{Environment}.json so it overrides them, but before environment
+// variables/user-secrets, keeping the usual ASP.NET Core precedence for those.
+builder.Configuration.AddJsonFile(
+    "appsettings.Local.json",
+    optional: true,
+    reloadOnChange: true
+);
+
 // Add services to the container.
 
 builder

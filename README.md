@@ -52,15 +52,17 @@ npm install
 npm start
 ```
 
-> `appsettings.json` / `appsettings.Development.json` não contêm mais credenciais reais — os valores devem ser fornecidos via variáveis de ambiente (o ASP.NET Core sobrescreve a configuração automaticamente) ou via `dotnet user-secrets` em desenvolvimento local:
+> `appsettings.json` / `appsettings.Development.json` não contêm mais credenciais reais — os valores devem ser fornecidos via variáveis de ambiente (o ASP.NET Core sobrescreve a configuração automaticamente), via `dotnet user-secrets` ou via um arquivo `appsettings.Local.json` local (já no `.gitignore`, nunca é commitado — copie `appsettings.Local.json.example` para `appsettings.Local.json` e preencha os valores reais):
 >
-> | Variável | Corresponde a |
+> | Variável / chave | Corresponde a |
 > |---|---|
-> | `ConnectionStrings__DefaultConnection` | Connection string do MySQL de produção |
+> | `ConnectionStrings__DefaultConnection` | Connection string do MySQL (produção, ou a instância na nuvem usada localmente) |
 > | `ConnectionStrings__HomologConnection` | Connection string do MySQL de homologação |
 > | `JWT__Key` | Chave de assinatura dos tokens JWT |
 > | `MailJet__ApiKey` | API Key do Mailjet |
 > | `MailJet__SecretKey` | Secret Key do Mailjet |
+>
+> Nota: o `Program.cs` só lê `ConnectionStrings:DefaultConnection` — `HomologConnection`/`LocalConnection` existem no `appsettings.json` só como referência, não são usados no código.
 
 ### CI/CD
 
