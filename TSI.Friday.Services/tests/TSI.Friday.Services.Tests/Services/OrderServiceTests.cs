@@ -23,6 +23,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly Mock<ICurrentUserService> _currentUserService;
+        private readonly Mock<IServiceOrderService> _serviceOrderService;
         private readonly Mock<ILogService> _logService;
         private readonly IList<OrderDto> _orderListMock;
         private readonly IMapper _mapper;
@@ -43,6 +44,7 @@ namespace TSI.Friday.Services.Tests.Services
             _transactionService = new Mock<ITransactionService>();
             _sequenceService = new Mock<ISequenceService>();
             _currentUserService = new Mock<ICurrentUserService>();
+            _serviceOrderService = new Mock<IServiceOrderService>();
             _logService = new Mock<ILogService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
@@ -52,6 +54,7 @@ namespace TSI.Friday.Services.Tests.Services
                 _transactionService.Object,
                 _sequenceService.Object,
                 _currentUserService.Object,
+                _serviceOrderService.Object,
                 _mapper,
                 _logService.Object
             );
@@ -62,6 +65,12 @@ namespace TSI.Friday.Services.Tests.Services
             _vehicleRepository
                 .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
                 .ReturnsAsync(new List<Vehicle>());
+
+            // Default: no previous Order state found, so the Closed-transition commission trigger
+            // and the ownership-by-id lookup are both safely skipped unless a test overrides this.
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+                .ReturnsAsync(new List<Order>());
 
             _orderListMock = new List<OrderDto>
             {
@@ -523,6 +532,78 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Action<OrderProduct>>()
                     ),
                 Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task OrderService_Update_ShouldGenerateServiceOrder_WhenOrderTransitionsToClosedWithDriverAssigned()
+        {
+            // Arrange
+            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var driverId = Guid.Parse("00000000-0000-0000-0000-000000000077");
+            var orderDto = new OrderDto
+            {
+                Id = orderId,
+                OrderNumber = "ORD-00001",
+                Status = OrderStatus.Closed,
+                DriverId = driverId,
+                Transaction = new TransactionDto(),
+            };
+
+            var previousOrder = new Order
+            {
+                Id = orderId,
+                Status = OrderStatus.Open,
+                DriverId = driverId,
+            };
+
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+                .ReturnsAsync(new List<Order> { previousOrder });
+
+            // Act
+            await _orderService.Update(orderDto);
+
+            // Assert
+            _serviceOrderService.Verify(
+                _ => _.GenerateForOrder(It.Is<Order>(o => o.Id == orderId)),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task OrderService_Update_ShouldNotGenerateServiceOrder_WhenOrderWasAlreadyClosed()
+        {
+            // Arrange
+            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var driverId = Guid.Parse("00000000-0000-0000-0000-000000000077");
+            var orderDto = new OrderDto
+            {
+                Id = orderId,
+                OrderNumber = "ORD-00001",
+                Status = OrderStatus.Closed,
+                DriverId = driverId,
+                Transaction = new TransactionDto(),
+            };
+
+            var previousOrder = new Order
+            {
+                Id = orderId,
+                Status = OrderStatus.Closed,
+                DriverId = driverId,
+            };
+
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+                .ReturnsAsync(new List<Order> { previousOrder });
+
+            // Act
+            await _orderService.Update(orderDto);
+
+            // Assert
+            _serviceOrderService.Verify(
+                _ => _.GenerateForOrder(It.IsAny<Order>()),
+                Times.Never
             );
         }
 

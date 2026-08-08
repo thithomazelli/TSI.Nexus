@@ -60,6 +60,10 @@ namespace TSI.Friday.Data
 
         public DbSet<FuelLog> FuelLog { get; set; }
 
+        public DbSet<ServiceOrder> ServiceOrder { get; set; }
+
+        public DbSet<Commission> Commission { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -235,6 +239,43 @@ namespace TSI.Friday.Data
                 .WithMany(v => v.FuelLogs)
                 .HasForeignKey(f => f.VehicleId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ServiceOrder>().HasIndex(s => s.Number).IsUnique();
+
+            modelBuilder
+                .Entity<ServiceOrder>()
+                .HasOne(s => s.Order)
+                .WithMany()
+                .HasForeignKey(s => s.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<ServiceOrder>()
+                .HasOne(s => s.Driver)
+                .WithMany(d => d.ServiceOrders)
+                .HasForeignKey(s => s.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<ServiceOrder>()
+                .HasOne(s => s.Vehicle)
+                .WithMany()
+                .HasForeignKey(s => s.VehicleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<Commission>()
+                .HasOne(c => c.ServiceOrder)
+                .WithOne(s => s.Commission)
+                .HasForeignKey<Commission>(c => c.ServiceOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Commission>()
+                .HasOne(c => c.Driver)
+                .WithMany()
+                .HasForeignKey(c => c.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

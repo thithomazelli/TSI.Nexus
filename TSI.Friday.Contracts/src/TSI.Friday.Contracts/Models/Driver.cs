@@ -39,7 +39,12 @@ namespace TSI.Friday.Contracts.Models
 
         public DriverStatus Status { get; set; }
 
+        public decimal CommissionPercentage { get; set; }
+
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+
+        public virtual ICollection<ServiceOrder> ServiceOrders { get; set; } =
+            new List<ServiceOrder>();
 
         public ICollection<Attachment> Attachments { get; set; }
     }

@@ -21,6 +21,7 @@ namespace TSI.Friday.Services
         private readonly ITransactionService _transactionService;
         private readonly ISequenceService _sequenceService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IServiceOrderService _serviceOrderService;
         private readonly IMapper _mapper;
         private readonly ILogService _logService;
 
@@ -39,6 +40,7 @@ namespace TSI.Friday.Services
             ITransactionService transactionService,
             ISequenceService sequenceService,
             ICurrentUserService currentUserService,
+            IServiceOrderService serviceOrderService,
             IMapper mapper,
             ILogService logService
         )
@@ -49,6 +51,7 @@ namespace TSI.Friday.Services
             _transactionService = transactionService;
             _sequenceService = sequenceService;
             _currentUserService = currentUserService;
+            _serviceOrderService = serviceOrderService;
             _mapper = mapper;
             _logService = logService;
         }
@@ -162,7 +165,20 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
+                var previousOrders = await _repository.QueryAsync(o => o.Id == orderEntity.Id);
+                var previousStatus = previousOrders.FirstOrDefault()?.Status;
+
                 await _repository.UpdateAsync(orderEntity);
+
+                if (
+                    previousStatus.HasValue
+                    && previousStatus.Value != OrderStatus.Closed
+                    && orderEntity.Status == OrderStatus.Closed
+                    && orderEntity.DriverId.HasValue
+                )
+                {
+                    await _serviceOrderService.GenerateForOrder(orderEntity);
+                }
 
                 if (orderDto.Transaction != null)
                 {
