@@ -94,10 +94,11 @@ a:hover {
 
 // Customização para modal Angular Material igual ao ngx-bootstrap
 
-/* Aplica estilos diretamente ao container do Angular Material MDC Dialog */
-.mat-mdc-dialog-container.custom-modal,
-.mat-mdc-dialog-container.custom-modal .mat-mdc-dialog-surface,
-.mat-mdc-dialog-container.custom-modal .mdc-dialog__surface {
+/* Aplica estilos diretamente ao container do Angular Material MDC Dialog.
+   O panelClass "custom-modal" (definido em ModalService) é aplicado ao .cdk-overlay-pane,
+   não ao .mat-mdc-dialog-container - por isso o seletor precisa começar por ali. */
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface,
+.cdk-overlay-pane.custom-modal .mdc-dialog__surface {
   border-radius: 12px !important;
   padding: 24px 24px 16px 24px !important;
   min-width: 400px !important;
@@ -110,7 +111,7 @@ a:hover {
 }
 
 /* Garante que o conteúdo do modal não tenha padding duplicado */
-.mat-mdc-dialog-container.custom-modal .custom-modal {
+.cdk-overlay-pane.custom-modal .custom-modal {
   padding: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
