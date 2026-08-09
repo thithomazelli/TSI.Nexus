@@ -14,6 +14,7 @@ namespace TSI.Friday.Repository.Overdue
             _context = context;
         }
 
+        /// <inheritdoc />
         public async Task<int> MarkOverdueOrderProductsAsync(string systemUserId)
         {
             var today = DateTime.UtcNow.Date;
@@ -36,6 +37,7 @@ namespace TSI.Friday.Repository.Overdue
             return updatedOps;
         }
 
+        /// <inheritdoc />
         public async Task<int> MarkOverduePaymentsAsync(string systemUserId)
         {
             var today = DateTime.UtcNow.Date;
