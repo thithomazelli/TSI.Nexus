@@ -2,13 +2,25 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Order,
+  Payment,
   WebApiResponse,
   OrderStatus,
   OrderService,
   OrderProductService,
   PaymentService,
+  BusinessPartnerService,
+  downloadLetterheadPdf,
 } from '@friday/core';
-import { Subject, Subscription, switchMap, takeUntil, merge } from 'rxjs';
+import { Subject, Subscription, switchMap, takeUntil, merge, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+import {
+  buildContractPages,
+  buildSalesOrderPages,
+  buildServiceOrderPages,
+} from '../../utilities/order-documents';
+
+type EmittableDocument = 'salesOrder' | 'contract' | 'serviceOrder';
 
 @Component({
   selector: 'app-order-details-page',
@@ -30,6 +42,8 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     [OrderStatus.WaitingPayment]: 'Aguardando pagamento',
   };
 
+  emittingDocument: EmittableDocument | null = null;
+
   private _orderChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
@@ -38,6 +52,7 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     private orderProductService: OrderProductService,
     private paymentService: PaymentService,
+    private businessPartnerService: BusinessPartnerService,
     private routerService: Router,
   ) {}
 
@@ -67,6 +82,56 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     }
 
     return this.orderStatusOptions[this.data?.status] || '';
+  }
+
+  emitDocument(type: EmittableDocument): void {
+    if (!this.data?.id || this.emittingDocument) {
+      return;
+    }
+    const order = this.data;
+    const orderId = order.id!;
+    this.emittingDocument = type;
+
+    const businessPartner$ = order.businessPartnerId
+      ? this.businessPartnerService
+          .getById(order.businessPartnerId)
+          .pipe(catchError(() => of({ data: null } as WebApiResponse<any>)))
+      : of({ data: null } as WebApiResponse<any>);
+    const payments$ = this.paymentService
+      .getByEntityId(orderId, 'Order')
+      .pipe(catchError(() => of({ data: [] as Payment[] } as WebApiResponse<Payment[]>)));
+
+    forkJoin({ businessPartner: businessPartner$, payments: payments$ }).subscribe({
+      next: ({ businessPartner, payments }) => {
+        this.emittingDocument = null;
+        const partner = businessPartner.data ?? null;
+        const paymentList = payments.data ?? [];
+
+        switch (type) {
+          case 'salesOrder':
+            downloadLetterheadPdf(
+              buildSalesOrderPages(order, partner, paymentList),
+              `pedido-de-venda-${order.orderNumber}.pdf`,
+            );
+            break;
+          case 'contract':
+            downloadLetterheadPdf(
+              buildContractPages(order, partner, paymentList),
+              `contrato-${order.orderNumber}.pdf`,
+            );
+            break;
+          case 'serviceOrder':
+            downloadLetterheadPdf(
+              buildServiceOrderPages(order, partner),
+              `os-${order.orderNumber}.pdf`,
+            );
+            break;
+        }
+      },
+      error: () => {
+        this.emittingDocument = null;
+      },
+    });
   }
 
   private getOrderById(id: string): void {
