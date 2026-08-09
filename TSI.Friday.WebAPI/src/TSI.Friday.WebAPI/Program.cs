@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using TSI.Friday.Contracts.Models;
 using TSI.Friday.Data;
 using TSI.Friday.Data.Interceptors;
+using TSI.Friday.Data.Seed;
 using TSI.Friday.IoC;
 using TSI.Friday.Services.BackgroundServices;
 
@@ -141,6 +142,21 @@ try
 catch
 {
     // swallow to not break startup
+}
+
+// Optional demo data (fake business partners, quotes, orders, fleet, etc.) for presenting the
+// app on a clean database. Never runs unless explicitly enabled - and never in Production, even
+// if the flag is set by mistake - and it's a no-op once real data exists (see DemoDataSeeder).
+if (builder.Configuration.GetValue<bool>("SeedDemoData") && !app.Environment.IsProduction())
+{
+    try
+    {
+        DemoDataSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
+    }
+    catch
+    {
+        // swallow to not break startup
+    }
 }
 
 // Ensure attachments directory exists (files served only via authenticated API endpoints)
