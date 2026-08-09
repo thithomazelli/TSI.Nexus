@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, isDevMode } from '@angular/core';
 
 import {
   HTTP_INTERCEPTORS,
@@ -28,6 +28,7 @@ import { SharedModule } from './shared/shared.module';
 
 import { CurrencyFormatDirective } from './core/directives/currency-format.directive';
 import { NavbarModule } from './navbar/navbar.module';
+import { ServiceWorkerModule } from '@angular/service-worker';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -50,6 +51,12 @@ ModuleRegistry.registerModules([AllCommunityModule]);
       progressBar: true,
       preventDuplicates: true,
       toastClass: 'ngx-toastr toast-slide',
+    }),
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
   providers: [
