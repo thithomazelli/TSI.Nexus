@@ -1,6 +1,6 @@
 # TSI.Friday
 
-Sistema de gestão comercial (ERP enxuto) desenvolvido para uma empresa de locação/venda de produtos (caçambas e serviços de descarte/reciclagem). Cobre o fluxo completo de **orçamento → pedido → transação → pagamento**, além de cadastro de clientes/fornecedores, catálogo de produtos, controle de inadimplência e relatórios.
+Sistema de gestão comercial (ERP enxuto) para empresas de locação/venda de produtos e serviços. Cobre o fluxo completo de **orçamento → pedido → transação → pagamento**, além de cadastro de clientes/fornecedores, catálogo de produtos, controle de inadimplência e relatórios.
 
 ## Stack
 
