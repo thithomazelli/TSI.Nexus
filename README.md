@@ -64,6 +64,14 @@ npm start
 >
 > Nota: o `Program.cs` só lê `ConnectionStrings:DefaultConnection` — `HomologConnection`/`LocalConnection` existem no `appsettings.json` só como referência, não são usados no código.
 
+### Dados de demonstração
+
+Para popular um banco **vazio** com dados fake (business partners, produtos, orçamentos, pedidos,
+pagamentos, etc.) e apresentar a aplicação sem cadastrar tudo na mão, defina `"SeedDemoData": true`
+no `appsettings.Local.json` e suba o backend. O seed só roda se: (1) a tabela `BusinessPartner`
+estiver vazia, e (2) o ambiente não for `Production` — em qualquer outro caso ele não faz nada,
+mesmo com a flag ligada. Veja `TSI.Friday.Data/src/TSI.Friday.Data/Seed/DemoDataSeeder.cs`.
+
 ### CI/CD
 
 Todo push em `main` dispara `.github/workflows/deploy.yml`, que builda e publica via FTP:
