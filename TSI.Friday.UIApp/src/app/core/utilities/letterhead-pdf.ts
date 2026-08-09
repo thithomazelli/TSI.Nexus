@@ -1,18 +1,30 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { SERODIO_COMPANY } from './document-branding';
+import { COMPANY_BRANDING } from './document-branding';
 
 /**
- * Wraps one or more page fragments (already-built inner HTML) with Serodio's letterhead
- * background repeated on every page, and the shared print styles used by every exported
- * document (contrato, ordem de serviço, orçamento) so they all look like they came from the
- * same template the company already uses on paper.
+ * Wraps one or more page fragments (already-built inner HTML) with a CSS-drawn company header
+ * repeated on every page, and the shared print styles used by every exported document (contrato,
+ * ordem de serviço, orçamento, pedido de venda) so they all look like they came from the same
+ * template. The header is plain text/CSS (no logo image) so it works out of the box for any
+ * company - just edit the values in document-branding.ts.
  */
 export function buildLetterheadDocument(pagesHtml: string[]): string {
+  const header = `
+    <div class="pdf-header">
+      <div class="pdf-header-name">${COMPANY_BRANDING.legalName}</div>
+      <div class="pdf-header-details">
+        CNPJ ${COMPANY_BRANDING.cnpj} · ${COMPANY_BRANDING.addressLine}<br/>
+        ${COMPANY_BRANDING.phone} · ${COMPANY_BRANDING.whatsapp} · ${COMPANY_BRANDING.site}
+      </div>
+    </div>
+  `;
+
   const pages = pagesHtml
     .map(
       (page, index) => `
         <div class="pdf-page" style="${index > 0 ? 'page-break-before: always;' : ''}">
+          ${header}
           ${page}
         </div>
       `,
@@ -29,15 +41,27 @@ export function buildLetterheadDocument(pagesHtml: string[]): string {
         .pdf-letterhead-root .pdf-page {
           width: 210mm;
           min-height: 297mm;
-          background-image: url('${SERODIO_COMPANY.letterheadPath}');
-          background-size: 210mm 297mm;
-          background-repeat: no-repeat;
-          background-position: top left;
-          padding: 42mm 18mm 32mm 18mm;
+          background: #ffffff;
+          padding: 14mm 18mm 18mm 18mm;
           font-size: 11px;
           line-height: 1.5;
           position: relative;
           box-sizing: border-box;
+        }
+        .pdf-letterhead-root .pdf-header {
+          border-bottom: 2px solid #1a1a1a;
+          padding-bottom: 8px;
+          margin-bottom: 16px;
+        }
+        .pdf-letterhead-root .pdf-header-name {
+          font-size: 15px;
+          font-weight: bold;
+          letter-spacing: 0.3px;
+        }
+        .pdf-letterhead-root .pdf-header-details {
+          font-size: 9px;
+          color: #444;
+          margin-top: 3px;
         }
         .pdf-letterhead-root h1 {
           text-align: center;
@@ -91,27 +115,10 @@ export function buildLetterheadDocument(pagesHtml: string[]): string {
           padding-top: 4px;
           font-size: 10px;
         }
-        .pdf-letterhead-root .signature-image {
-          max-height: 32px;
-          margin-bottom: -6px;
-        }
       </style>
       ${pages}
     </div>
   `;
-}
-
-/**
- * Preloads an image URL into the browser cache and waits for it to finish loading (or fail),
- * so a subsequent CSS background-image paint of the same URL is guaranteed to have pixels ready.
- */
-function preloadImage(src: string): Promise<void> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
-    img.src = src;
-  });
 }
 
 /**
@@ -160,8 +167,6 @@ export async function downloadLetterheadPdf(
   document.body.appendChild(hiddenWrapper);
 
   try {
-    await preloadImage(SERODIO_COMPANY.letterheadPath);
-
     const widthMm = 210;
     let pdf: jsPDF | null = null;
 

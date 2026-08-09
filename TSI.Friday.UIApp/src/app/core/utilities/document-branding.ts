@@ -1,17 +1,15 @@
 /**
- * Serodio Turismo's own company data and letterhead assets, used to print/export the documents
- * that mirror the templates the company already uses (contrato, ordem de serviço, orçamento).
+ * Fictitious, generic company data used to print/export documents (contrato, ordem de serviço,
+ * orçamento, pedido de venda). This branch is meant to work for any client - swap these values
+ * for the real company's info per deployment; none of it should ever name a specific client here.
  */
-export const SERODIO_COMPANY = {
-  legalName: 'VIAÇÃO SERODIO TURISMO LTDA',
-  cnpj: '22.397.670/0001-26',
-  addressLine: 'Avenida Quinze de Janeiro, nº 542, Guarulhos - SP, CEP 04366-000',
-  phone: '(11) 2469-9327',
-  whatsapp: '(11) 98180-2113',
-  site: 'www.serodioturismo.com.br',
-  officeContactName: 'WARLEN',
-  signatureName: 'WARLEN DA SALVA MONTEIRO',
-  logoPath: 'assets/img/serodio/logo.png',
-  letterheadPath: 'assets/img/serodio/letterhead-a4.jpg',
-  signaturePath: 'assets/img/serodio/signature-warlen.png',
+export const COMPANY_BRANDING = {
+  legalName: 'Empresa Modelo Comércio e Serviços LTDA',
+  cnpj: '00.000.000/0001-00',
+  addressLine: 'Rua Exemplo, nº 100, Bairro Central, São Paulo - SP, CEP 00000-000',
+  phone: '(11) 0000-0000',
+  whatsapp: '(11) 90000-0000',
+  site: 'www.empresamodelo.com.br',
+  officeContactName: 'Atendimento',
+  signatureName: 'Responsável Legal',
 };

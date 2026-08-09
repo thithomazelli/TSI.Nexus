@@ -1,5 +1,5 @@
 import { BusinessPartner, Order, Payment, PaymentMethod, PaymentStatus } from '@friday/core';
-import { SERODIO_COMPANY } from '@friday/core';
+import { COMPANY_BRANDING } from '@friday/core';
 
 function formatCurrency(value?: number | null): string {
   return (value ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -93,8 +93,7 @@ function signatureBlock(clientName: string): string {
   return `
     <div class="signature-block">
       <div class="signature-column">
-        <img class="signature-image" src="${SERODIO_COMPANY.signaturePath}" alt="Assinatura" /><br/>
-        <div class="signature-line">${SERODIO_COMPANY.legalName}</div>
+        <div class="signature-line" style="margin-top: 32px;">${COMPANY_BRANDING.legalName}</div>
       </div>
       <div class="signature-column">
         <div class="signature-line" style="margin-top: 32px;">${clientName}</div>
@@ -187,8 +186,8 @@ export function buildContractPages(
     <h1>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</h1>
     <p class="doc-number">N°. ${order.orderNumber ?? '-'}</p>
 
-    <p><b>CONTRATADA:</b> ${SERODIO_COMPANY.legalName}, CNPJ ${SERODIO_COMPANY.cnpj}, com sede em
-      ${SERODIO_COMPANY.addressLine}.</p>
+    <p><b>CONTRATADA:</b> ${COMPANY_BRANDING.legalName}, CNPJ ${COMPANY_BRANDING.cnpj}, com sede em
+      ${COMPANY_BRANDING.addressLine}.</p>
     <p><b>CONTRATANTE:</b> ${clientName}, CPF/CNPJ ${clientDoc}, com endereço em ${clientAddress}.</p>
 
     <p>As partes acima identificadas têm, entre si, justo e contratado o presente instrumento

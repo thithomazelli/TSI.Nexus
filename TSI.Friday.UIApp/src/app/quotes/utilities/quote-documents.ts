@@ -1,5 +1,5 @@
 import { BusinessPartner, PaymentCondition, PaymentMethod, Quote } from '@friday/core';
-import { SERODIO_COMPANY } from '@friday/core';
+import { COMPANY_BRANDING } from '@friday/core';
 
 function formatCurrency(value?: number | null): string {
   return (value ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -54,9 +54,6 @@ function paymentMethodLabel(method?: PaymentMethod | null): string {
 /**
  * Builds the Orçamento (quote) pages, using the same letterhead layout applied to the Contrato
  * and Ordem de Serviço, populated with the quote's itemized products and payment condition.
- *
- * Note: this reproduces the general orçamento layout Serodio uses (client, itens, condições de
- * pagamento e validade), not a literal clone of a specific past quote document.
  */
 export function buildQuotePages(quote: Quote, businessPartner: BusinessPartner | null): string[] {
   const clientName = businessPartner?.name ?? quote.businessPartnerName ?? '-';
@@ -80,7 +77,7 @@ export function buildQuotePages(quote: Quote, businessPartner: BusinessPartner |
     : `<tr><td colspan="5">${quote.description || 'Conforme descrito na proposta.'}</td></tr>`;
 
   const page1 = `
-    <h1>ORÇAMENTO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE</h1>
+    <h1>ORÇAMENTO DE PRESTAÇÃO DE SERVIÇOS</h1>
     <p class="doc-number">N°. ${quote.quoteNumber ?? '-'}</p>
     <table>
       <tbody>
@@ -108,21 +105,20 @@ export function buildQuotePages(quote: Quote, businessPartner: BusinessPartner |
 
     <h2>Condições Gerais</h2>
     <p>1. Este orçamento tem validade de 10 (dez) dias corridos a partir da data de emissão.</p>
-    <p>2. Os valores apresentados poderão sofrer alterações em caso de mudança de roteiro,
-      quilometragem, datas ou quantidade de passageiros informados na solicitação.</p>
-    <p>3. A confirmação do serviço está sujeita à disponibilidade de veículo e motorista na data
-      solicitada, e será formalizada mediante assinatura de contrato e pagamento do sinal.</p>
-    <p>4. Despesas com pedágio, estacionamento, hospedagem e alimentação do(s) motorista(s), quando
-      aplicável, não estão incluídas neste orçamento, salvo indicação em contrário.</p>
+    <p>2. Os valores apresentados poderão sofrer alterações em caso de mudança no escopo, nas
+      quantidades ou nas datas informadas na solicitação.</p>
+    <p>3. A confirmação do serviço está sujeita à disponibilidade na data solicitada, e será
+      formalizada mediante assinatura de contrato e pagamento do sinal, quando aplicável.</p>
+    <p>4. Despesas adicionais não previstas neste orçamento não estão incluídas, salvo indicação em
+      contrário.</p>
     <p>5. Cancelamentos e alterações seguem as condições descritas no contrato de prestação de
       serviços firmado no momento da confirmação.</p>
     <p>6. Dúvidas e informações adicionais podem ser tratadas diretamente com
-      ${SERODIO_COMPANY.officeContactName}, pelo telefone ${SERODIO_COMPANY.whatsapp}.</p>
+      ${COMPANY_BRANDING.officeContactName}, pelo telefone ${COMPANY_BRANDING.whatsapp}.</p>
 
     <div class="signature-block">
       <div class="signature-column">
-        <img class="signature-image" src="${SERODIO_COMPANY.signaturePath}" alt="Assinatura" /><br/>
-        <div class="signature-line">${SERODIO_COMPANY.legalName}</div>
+        <div class="signature-line" style="margin-top: 32px;">${COMPANY_BRANDING.legalName}</div>
       </div>
       <div class="signature-column">
         <div class="signature-line" style="margin-top: 32px;">${clientName}</div>
