@@ -37,6 +37,34 @@
               </div>
             </div>
           </div>
+          @if (isEdit) {
+            <div class="card-footer d-flex flex-column gap-1">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm w-100"
+                [disabled]="!!emittingDocument"
+                (click)="emitDocument('salesOrder')"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir Pedido de Venda
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm w-100"
+                [disabled]="!!emittingDocument"
+                (click)="emitDocument('contract')"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir Contrato
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm w-100"
+                [disabled]="!!emittingDocument"
+                (click)="emitDocument('serviceOrder')"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir Ordem de Serviço
+              </button>
+            </div>
+          }
         </div>
       </div>
       <!-- /.col -->

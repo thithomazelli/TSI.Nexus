@@ -1,7 +1,6 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
-  Address,
   ApiType,
   ModalService,
   NotificationService,
@@ -355,19 +354,6 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? 'N/A';
           return value;
-        },
-      },
-      {
-        field: 'address',
-        headerName: 'Endereço',
-        sortable: true,
-        filter: true,
-        minWidth: 350,
-        valueFormatter: (params: ValueFormatterParams) => {
-          const addressModel = new Address({ ...params.value });
-          return params.value != null
-            ? `${addressModel.street}, ${addressModel.number} - ${addressModel.city}/${addressModel.state}`
-            : 'N/A';
         },
       },
       {

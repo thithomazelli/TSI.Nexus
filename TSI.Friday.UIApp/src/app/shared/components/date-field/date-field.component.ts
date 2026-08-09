@@ -123,6 +123,10 @@ export class DateFieldComponent implements ControlValueAccessor {
         value.substring(4);
     }
     event.target.value = formatted;
+    // Propaga pro FormControl - sem isso, uma data digitada manualmente (sem usar o datepicker)
+    // nunca chegava a atualizar o valor do formulário.
+    this.value = formatted;
+    this.onChange(formatted);
   }
 
   // Bloqueia letras e limita a 10 caracteres totais (incluindo barras)
