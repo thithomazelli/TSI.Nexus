@@ -16,6 +16,7 @@ import {
   FormBaseComponent,
   ModalService,
   Order,
+  Trip,
   PaymentMethod,
   PaymentStatus,
   Transaction,
@@ -63,7 +64,7 @@ export class TransactionFormComponent
   data?: Transaction | null;
 
   @Input()
-  parentData?: Order | null;
+  parentData?: Order | Trip | null;
 
   @Input()
   compact = false;
