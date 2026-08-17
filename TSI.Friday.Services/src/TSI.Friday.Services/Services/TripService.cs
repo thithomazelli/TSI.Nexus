@@ -79,6 +79,11 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
+                // tripEntity gets re-mapped from tripDto further down (once the Transaction has an
+                // Id), so carry the vehicle-rate price computed above into the DTO or it would be
+                // overwritten back to whatever the client originally sent.
+                tripDto.Price = tripEntity.Price;
+
                 // Save Transaction first (if provided) so we can assign TransactionId to Trip before saving Trip
                 var transactionResult = new WebApiResponse<TransactionDto>();
 

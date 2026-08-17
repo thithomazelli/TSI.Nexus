@@ -27,7 +27,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Id = Guid.NewGuid(),
                 Number = "OS-00001",
-                OrderId = Guid.NewGuid(),
+                TripId = Guid.NewGuid(),
                 DriverId = Guid.NewGuid(),
             };
             var expectedResult = new WebApiResponse<ServiceOrder>
@@ -76,7 +76,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Id = Guid.NewGuid(),
                 Number = "OS-00001",
-                OrderId = Guid.NewGuid(),
+                TripId = Guid.NewGuid(),
                 DriverId = Guid.NewGuid(),
             };
             var expectedResult = new WebApiResponse<ServiceOrder>
@@ -107,7 +107,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Id = Guid.NewGuid(),
                 Number = "OS-00001",
-                OrderId = Guid.NewGuid(),
+                TripId = Guid.NewGuid(),
                 DriverId = Guid.NewGuid(),
             };
             var expectedResult = new WebApiResponse<ServiceOrder>
@@ -141,7 +141,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 {
                     Id = Guid.NewGuid(),
                     Number = "OS-00001",
-                    OrderId = Guid.NewGuid(),
+                    TripId = Guid.NewGuid(),
                     DriverId = driverId,
                 },
             };
