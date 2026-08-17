@@ -78,6 +78,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IOrderProductService, OrderProductService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<ITripService, TripService>();
             services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPhotoService, PhotoService>();
@@ -96,6 +97,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IFuelLogService, FuelLogService>();
             services.AddScoped<IServiceOrderService, ServiceOrderService>();
             services.AddScoped<ICommissionService, CommissionService>();
+            services.AddScoped<IDocumentTemplateService, DocumentTemplateService>();
 
             #endregion Services
 
@@ -109,6 +111,9 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<Individual>, Repository<Individual>>();
             services.AddScoped<IRepository<Order>, Repository<Order>>();
             services.AddScoped<IRepository<OrderProduct>, Repository<OrderProduct>>();
+            services.AddScoped<IRepository<Trip>, Repository<Trip>>();
+            services.AddScoped<IRepository<QuoteTrip>, Repository<QuoteTrip>>();
+            services.AddScoped<IRepository<DocumentTemplate>, Repository<DocumentTemplate>>();
             services.AddScoped<IRepository<Transaction>, Repository<Transaction>>();
             services.AddScoped<IRepository<Payment>, Repository<Payment>>();
             services.AddScoped<IRepository<Product>, Repository<Product>>();
