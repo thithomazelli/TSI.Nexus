@@ -4,7 +4,7 @@ import { Passenger } from '@friday/core';
  * Parses passenger list rows (comma or tab separated: Nome, Documento, Assento, Telefone) coming
  * from an uploaded CSV/TXT file, the same convention already used by the paste-based import.
  */
-export function parsePassengerRows(text: string, orderId: string): Passenger[] {
+export function parsePassengerRows(text: string, tripId: string): Passenger[] {
   return text
     .split('\n')
     .map((line) => line.trim())
@@ -16,7 +16,7 @@ export function parsePassengerRows(text: string, orderId: string): Passenger[] {
         documentNumber: (columns[1] ?? '').trim(),
         seat: (columns[2] ?? '').trim(),
         phone: (columns[3] ?? '').trim(),
-        orderId,
+        tripId,
       } as Passenger;
     })
     .filter((passenger) => passenger.name.length > 0);

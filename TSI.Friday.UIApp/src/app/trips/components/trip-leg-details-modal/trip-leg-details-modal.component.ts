@@ -19,7 +19,7 @@ import { forkJoin, Observable } from 'rxjs';
 export class TripLegDetailsModalComponent {
   saving = false;
 
-  orderId: string;
+  tripId: string;
   private _nextSequenceNumber: number;
 
   form: FormGroup;
@@ -31,7 +31,7 @@ export class TripLegDetailsModalComponent {
     private tripLegService: TripLegService,
     private notificationService: NotificationService,
   ) {
-    this.orderId = dialogData?.orderId ?? '';
+    this.tripId = dialogData?.tripId ?? '';
     this._nextSequenceNumber = dialogData?.nextSequenceNumber ?? 1;
 
     this.form = this.formBuilder.group({
@@ -76,7 +76,7 @@ export class TripLegDetailsModalComponent {
         departureDate: this.combineDateAndTime(stop.dateOnly, stop.time),
         distanceKm: stop.distanceKm ?? 0,
         notes: stop.notes ?? '',
-        orderId: this.orderId,
+        tripId: this.tripId,
       } as TripLeg);
       previousPoint = stop.destination;
     });

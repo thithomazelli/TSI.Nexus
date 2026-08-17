@@ -15,6 +15,7 @@ import {
   CurrencyService,
   FormBaseComponent,
   Order,
+  Trip,
   Transaction,
   Payment,
   PaymentStatus,
@@ -50,7 +51,7 @@ export class PaymentFormComponent
   parentId: string | null = null;
 
   @Input()
-  parentData: Transaction | Order | null = null;
+  parentData: Transaction | Order | Trip | null = null;
 
   @Input()
   data?: Payment | null;
@@ -248,19 +249,25 @@ export class PaymentFormComponent
   private initForm(): void {
     let transactionDescription = '';
     let orderId = '';
+    let tripId = '';
     let transactionId = '';
 
-    // Is Order
+    // Is Order or Trip (both are root entities with an embedded Transaction)
     if (this.parentData && 'transactionId' in this.parentData) {
       transactionDescription = this.parentData.transaction?.description || '';
-      orderId = this.parentData?.id || '';
       transactionId = this.parentData?.transactionId || '';
+      if ('tripNumber' in this.parentData) {
+        tripId = this.parentData?.id || '';
+      } else {
+        orderId = this.parentData?.id || '';
+      }
     }
 
     // Is Transaction
     if (this.parentData && 'orderId' in this.parentData) {
       transactionDescription = this.parentData.description || '';
       orderId = this.parentData?.orderId || '';
+      tripId = this.parentData?.tripId || '';
       transactionId = this.parentId ?? '';
     }
 
@@ -280,7 +287,9 @@ export class PaymentFormComponent
       businessPartnerId: [this.parentData?.businessPartnerId],
       businessPartnerName: [this.parentData?.businessPartnerName],
       orderId: [orderId],
-      orderNumber: [this.parentData?.orderNumber],
+      orderNumber: [(this.parentData as any)?.orderNumber],
+      tripId: [tripId],
+      tripNumber: [(this.parentData as any)?.tripNumber],
     };
 
     this.form = !this.isEdit

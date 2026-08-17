@@ -46,6 +46,13 @@ const routes: Routes = [
       import('./orders/orders.module').then((m) => m.OrdersModule),
   },
   {
+    path: 'trips',
+    canActivateChild: [AuthorizationGuard],
+    data: { featureFlag: 'FleetModule' },
+    loadChildren: () =>
+      import('./trips/trips.module').then((m) => m.TripsModule),
+  },
+  {
     path: 'order-products',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>

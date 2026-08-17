@@ -28,6 +28,14 @@ namespace TSI.Friday.Contracts.Models
         /// </summary>
         public string OrderNumber { get; set; }
 
+        public Guid? TripId { get; set; }
+
+        /// <summary>
+        /// Trip number used to resolve TripId when navigating the folder tree.
+        /// When provided and TripId is null, the service will look up the Trip by this number.
+        /// </summary>
+        public string TripNumber { get; set; }
+
         public Guid? QuoteId { get; set; }
 
         public Guid? TransactionId { get; set; }

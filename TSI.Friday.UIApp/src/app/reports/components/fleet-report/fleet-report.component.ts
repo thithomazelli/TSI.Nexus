@@ -5,8 +5,8 @@ import {
   Driver,
   DriverService,
   DriverStatus,
-  Order,
-  OrderService,
+  Trip,
+  TripService,
   ServiceOrderService,
   Vehicle,
   VehicleMaintenance,
@@ -58,7 +58,7 @@ export class FleetReportComponent implements OnInit {
 
   constructor(
     private driverService: DriverService,
-    private orderService: OrderService,
+    private tripService: TripService,
     private serviceOrderService: ServiceOrderService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private vehicleService: VehicleService,
@@ -73,18 +73,18 @@ export class FleetReportComponent implements OnInit {
 
     forkJoin({
       vehicles: this.vehicleService.getAll(),
-      orders: this.orderService.getAll(),
+      trips: this.tripService.getAll(),
       maintenances: this.vehicleMaintenanceService.getAll(),
       drivers: this.driverService.getAll(),
     })
       .pipe(
-        map(({ vehicles, orders, maintenances, drivers }) => ({
+        map(({ vehicles, trips, maintenances, drivers }) => ({
           vehicles: vehicles.data ?? [],
-          orders: orders.data ?? [],
+          trips: trips.data ?? [],
           maintenances: maintenances.data ?? [],
           drivers: drivers.data ?? [],
         })),
-        switchMap(({ vehicles, orders, maintenances, drivers }) =>
+        switchMap(({ vehicles, trips, maintenances, drivers }) =>
           forkJoin(
             drivers.length
               ? drivers.map((driver) =>
@@ -101,7 +101,7 @@ export class FleetReportComponent implements OnInit {
           ).pipe(
             map((driverCommissions) => ({
               vehicles,
-              orders,
+              trips,
               maintenances,
               drivers,
               driverCommissions,
@@ -109,15 +109,15 @@ export class FleetReportComponent implements OnInit {
           ),
         ),
       )
-      .subscribe(({ vehicles, orders, maintenances, drivers, driverCommissions }) => {
-        this.buildSummary(vehicles, orders, maintenances, drivers, driverCommissions);
+      .subscribe(({ vehicles, trips, maintenances, drivers, driverCommissions }) => {
+        this.buildSummary(vehicles, trips, maintenances, drivers, driverCommissions);
         this.loading = false;
       });
   }
 
   private buildSummary(
     vehicles: Vehicle[],
-    orders: Order[],
+    allTrips: Trip[],
     maintenances: VehicleMaintenance[],
     drivers: Driver[],
     driverCommissions: { driver: Driver; commissions: Commission[] }[],
@@ -128,9 +128,9 @@ export class FleetReportComponent implements OnInit {
     ).length;
     this.blockedVehicles = vehicles.filter((v) => v.status === VehicleStatus.Blocked).length;
 
-    const trips = orders.filter((o) => !!o.vehicleId);
+    const trips = allTrips.filter((t) => !!t.vehicleId);
     this.totalTrips = trips.length;
-    this.totalRevenue = trips.reduce((sum, o) => sum + (o.totalPrice ?? 0), 0);
+    this.totalRevenue = trips.reduce((sum, t) => sum + (t.totalPrice ?? 0), 0);
     this.totalMaintenanceCost = maintenances.reduce((sum, m) => sum + (m.cost ?? 0), 0);
 
     const vehicleMap = new Map<string, VehicleSummaryRow>();
@@ -144,11 +144,11 @@ export class FleetReportComponent implements OnInit {
         maintenanceCost: 0,
       });
     }
-    for (const order of trips) {
-      const row = order.vehicleId ? vehicleMap.get(order.vehicleId) : undefined;
+    for (const trip of trips) {
+      const row = trip.vehicleId ? vehicleMap.get(trip.vehicleId) : undefined;
       if (row) {
         row.tripCount += 1;
-        row.revenue += order.totalPrice ?? 0;
+        row.revenue += trip.totalPrice ?? 0;
       }
     }
     for (const maintenance of maintenances) {

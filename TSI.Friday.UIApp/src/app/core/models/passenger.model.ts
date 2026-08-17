@@ -6,5 +6,5 @@ export interface Passenger extends BaseModel {
   documentNumber: string;
   seat: string;
   phone: string;
-  orderId: string;
+  tripId: string;
 }

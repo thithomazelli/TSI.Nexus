@@ -7,6 +7,8 @@ export interface Attachment {
   businessPartnerName: string;
   orderId?: string | null;
   orderNumber: string;
+  tripId?: string | null;
+  tripNumber?: string;
   transactionId?: string | null;
   paymentId?: string | null;
   productId?: string | null;

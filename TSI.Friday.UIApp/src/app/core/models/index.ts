@@ -29,3 +29,7 @@ export * from './trip-leg.model';
 export * from './passenger.model';
 export * from './fuel-log.model';
 export * from './service-order.model';
+export * from './trip.model';
+export * from './quote-trip.model';
+export * from './document-template.model';
+export * from './feature-toggle.model';

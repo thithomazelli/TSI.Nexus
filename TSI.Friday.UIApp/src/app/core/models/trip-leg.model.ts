@@ -9,5 +9,5 @@ export interface TripLeg extends BaseModel {
   arrivalDate?: Date | null;
   distanceKm: number;
   notes: string;
-  orderId: string;
+  tripId: string;
 }

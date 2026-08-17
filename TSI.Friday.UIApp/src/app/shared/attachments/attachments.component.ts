@@ -20,6 +20,8 @@ export class AttachmentsComponent implements OnInit {
   @Input()
   orderNumber = '';
   @Input()
+  tripNumber = '';
+  @Input()
   entity = 'businessPartner';
 
   @Input()
@@ -393,6 +395,7 @@ export class AttachmentsComponent implements OnInit {
       businessPartner: (id) =>
         this.attachmentService.getByBusinessPartnerId(id),
       order: (id) => this.attachmentService.getByOrderId(id),
+      trip: (id) => this.attachmentService.getByTripId(id),
       transaction: (id) => this.attachmentService.getByTransactionId(id),
       payment: (id) => this.attachmentService.getByPaymentId(id),
       product: (id) => this.attachmentService.getByProductId(id),
@@ -433,6 +436,7 @@ export class AttachmentsComponent implements OnInit {
     const map: Record<string, string> = {
       businessPartner: 'BusinessPartners',
       order: 'Orders',
+      trip: 'Trips',
       transaction: 'Transactions',
       payment: 'Payments',
       product: 'Products',
@@ -451,6 +455,7 @@ export class AttachmentsComponent implements OnInit {
     const entityFolders = [
       'BusinessPartners',
       'Orders',
+      'Trips',
       'Transactions',
       'Payments',
       'Products',
@@ -466,6 +471,17 @@ export class AttachmentsComponent implements OnInit {
           const prefix =
             att.path.split(`/Orders/${this.orderNumber}`)[0] +
             `/Orders/${this.orderNumber}`;
+          return { prefix, rootName: 'Anexos' };
+        }
+      }
+    }
+    // Para viagem, corta até attachments/BusinessPartners/{NomeCliente}/Trips/{TripNumber}
+    if (this.entity === 'trip' && this.tripNumber && this.entityId) {
+      for (const att of this.attachments) {
+        if (att.path && att.path.includes(`/Trips/${this.tripNumber}/`)) {
+          const prefix =
+            att.path.split(`/Trips/${this.tripNumber}`)[0] +
+            `/Trips/${this.tripNumber}`;
           return { prefix, rootName: 'Anexos' };
         }
       }

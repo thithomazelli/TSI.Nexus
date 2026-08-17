@@ -68,6 +68,13 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByOrderId(Guid? orderId);
 
         /// <summary>
+        /// Method responsible to get a list of Payments based on the TripID received as parameter.
+        /// </summary>
+        /// <param name="tripId">The ID to be used on the search.</param>
+        /// <returns>List of payments according to the TripID defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByTripId(Guid? tripId);
+
+        /// <summary>
         /// Method responsible to get Payments considered delayed/overdue for notifications.
         /// Rules: status == Delayed OR (status != Approved && Date < today) — compare dates using only day/month/year (UTC).
         /// </summary>

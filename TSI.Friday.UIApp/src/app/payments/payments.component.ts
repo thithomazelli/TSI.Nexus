@@ -13,6 +13,7 @@ import {
   BusinessPartner,
   ModalService,
   Order,
+  Trip,
   Transaction,
   Payment,
   WebApiResponse,
@@ -42,7 +43,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
   entity: string = '';
 
   @Input()
-  parentData?: BusinessPartner | Order | Transaction | null = null;
+  parentData?: BusinessPartner | Order | Trip | Transaction | null = null;
 
   @Input()
   compact: boolean = false;
@@ -366,7 +367,20 @@ export class PaymentsComponent implements OnInit, OnDestroy {
         filter: true,
         flex: 1,
         maxWidth: 150,
-        hide: this.entity === 'Order',
+        hide: this.entity === 'Order' || this.entity === 'Trip',
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? 'N/A';
+          return value;
+        },
+      },
+      {
+        field: 'tripNumber',
+        headerName: 'Viagem',
+        sortable: true,
+        filter: true,
+        flex: 1,
+        maxWidth: 150,
+        hide: this.entity === 'Order' || this.entity === 'Trip',
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? 'N/A';
           return value;

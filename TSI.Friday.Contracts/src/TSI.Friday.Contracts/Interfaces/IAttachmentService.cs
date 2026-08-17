@@ -71,6 +71,13 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByOrderId(Guid orderId);
 
         /// <summary>
+        /// Gets attachments linked to a specific trip, including download URLs.
+        /// </summary>
+        /// <param name="tripId">Trip id.</param>
+        /// <returns>Collection of attachment response DTOs.</returns>
+        Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByTripId(Guid tripId);
+
+        /// <summary>
         /// Gets attachments linked to a specific transaction, including download URLs.
         /// </summary>
         /// <param name="transactionId">Transaction id.</param>

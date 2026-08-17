@@ -134,6 +134,18 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
+        /// Get transaction payments by trip id
+        /// </summary>
+        /// <param name="tripId">Trip id to be used in the search</param>
+        [HttpGet]
+        [Route("GetByTripId/{tripId}")]
+        public async Task<IActionResult> GetByTripId(Guid? tripId)
+        {
+            var webApiResponse = await _paymentService.FindByTripId(tripId);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
         /// Get transaction payments by transaction id
         /// </summary>
         /// <param name="OrderId">Order id to be used in the search</param>

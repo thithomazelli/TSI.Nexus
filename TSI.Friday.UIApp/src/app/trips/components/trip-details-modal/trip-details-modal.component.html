@@ -1,0 +1,16 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ isEdit ? "Editar Viagem" : "Adicionar Viagem" }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-trip-form
+    [isModal]="true"
+    [isEdit]="isEdit"
+    [data]="data"
+    [dialogRef]="dialogRef"
+    [compact]="true"
+  ></app-trip-form>
+</div>

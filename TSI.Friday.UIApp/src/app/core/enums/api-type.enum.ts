@@ -6,6 +6,7 @@ export enum ApiType {
   Dashboard = 'dashboard',
   Individuals = 'individuals',
   Orders = 'orders',
+  Trips = 'trips',
   OrderProducts = 'orderproducts',
   Quotes = 'quotes',
   QuoteProducts = 'quoteproducts',
@@ -22,4 +23,6 @@ export enum ApiType {
   FuelLogs = 'fuellogs',
   ServiceOrders = 'serviceorders',
   Commissions = 'commissions',
+  FeatureToggles = 'featuretoggles',
+  DocumentTemplates = 'documenttemplates',
 }

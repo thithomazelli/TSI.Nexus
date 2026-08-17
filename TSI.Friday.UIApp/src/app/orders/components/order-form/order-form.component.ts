@@ -13,8 +13,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   BusinessPartnerService,
   BusinessPartner,
-  Driver,
-  DriverService,
   Order,
   OrderStatus,
   FormBaseComponent,
@@ -24,8 +22,6 @@ import {
   PaymentCondition,
   PaymentMethod,
   PaymentStatus,
-  Vehicle,
-  VehicleService,
   WebApiResponse,
   ApiType,
   ResponseStatus,
@@ -75,9 +71,6 @@ export class OrderFormComponent
   businessPartnersArray$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
-  vehicles: Vehicle[] = [];
-  drivers: Driver[] = [];
-
   orderStatusOptions = [
     { value: OrderStatus.Open, label: 'Em Aberto' },
     { value: OrderStatus.Closed, label: 'Fechado' },
@@ -92,13 +85,11 @@ export class OrderFormComponent
   constructor(
     private businessPartnerService: BusinessPartnerService,
     private currencyService: CurrencyService,
-    private driverService: DriverService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
     private orderService: OrderService,
     private orderProductService: OrderProductService,
-    private vehicleService: VehicleService,
     private routerService: Router,
   ) {
     super();
@@ -109,7 +100,6 @@ export class OrderFormComponent
     this.disableEditFields();
     this.patchFormWithData();
     this.setupAutoComplete();
-    this.loadVehiclesAndDrivers();
     this.totalPriceChange();
     this.setupStatusWatcher();
     this.setupTotalOfPaymentsWatcher();
@@ -388,13 +378,6 @@ export class OrderFormComponent
       totalPrice: [{ value: 0, disabled: true }],
       totalPriceFormatted: [{ value: 0, disabled: true }],
       transactionId: [null],
-      vehicleId: [null],
-      driverId: [null],
-      route: [''],
-      distanceKm: [0, [Validators.min(0)]],
-      dailyCount: [0, [Validators.min(0)]],
-      transportLicenseNumber: [''],
-      transportLicenseExpiryDate: [null as Date | null],
     });
 
     this.addTransactionForm();
@@ -517,16 +500,6 @@ export class OrderFormComponent
           );
         }),
       );
-  }
-
-  private loadVehiclesAndDrivers(): void {
-    const vehicleSub = this.vehicleService
-      .getAll()
-      .subscribe((response) => (this.vehicles = response.data ?? []));
-    const driverSub = this.driverService
-      .getAll()
-      .subscribe((response) => (this.drivers = response.data ?? []));
-    this._subscriptions.push(vehicleSub, driverSub);
   }
 
   private disableEditFields(): void {

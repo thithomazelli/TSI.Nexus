@@ -15,7 +15,7 @@ namespace TSI.Friday.Contracts.Models
         /// <summary>
         /// Relative path representing the folder structure (e.g. "BusinessPartners/ClienteX/Orders").
         /// Used by the front-end to build a directory tree (like Google Drive).
-        /// Does NOT include the file name — only the folder hierarchy.
+        /// Does NOT include the file name ï¿½ only the folder hierarchy.
         /// </summary>
         public string Path { get; set; } = string.Empty;
 
@@ -27,6 +27,8 @@ namespace TSI.Friday.Contracts.Models
         public Guid? BusinessPartnerId { get; set; }
 
         public Guid? OrderId { get; set; }
+
+        public Guid? TripId { get; set; }
 
         public Guid? TransactionId { get; set; }
 

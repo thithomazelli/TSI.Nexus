@@ -13,12 +13,22 @@
             <div class="input-group">
               <div class="form-floating">
                 <app-link-field
-                  [placeHolder]="'Número do Pedido'"
-                  [text]="form.get('orderNumber')?.value || 'N/A'"
+                  [placeHolder]="
+                    form.get('tripNumber')?.value
+                      ? 'Número da Viagem'
+                      : 'Número do Pedido'
+                  "
+                  [text]="
+                    form.get('tripNumber')?.value ||
+                    form.get('orderNumber')?.value ||
+                    'N/A'
+                  "
                   [linkUrl]="
-                    form.get('orderNumber')?.value
-                      ? ['/orders', form.get('orderId')?.value]
-                      : []
+                    form.get('tripNumber')?.value
+                      ? ['/trips', form.get('tripId')?.value]
+                      : form.get('orderNumber')?.value
+                        ? ['/orders', form.get('orderId')?.value]
+                        : []
                   "
                 >
                 </app-link-field>

@@ -1,0 +1,319 @@
+<div class="trip-form-wrapper custom-modal">
+  @if (isEdit) {
+    <app-alert-banner-component
+      [status]="data?.status"
+      [entity]="'Viagem'"
+    ></app-alert-banner-component>
+  }
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="modal-scrollable-area">
+      <section>
+        <div class="row g-1 mb-1">
+          <div *ngIf="isEdit" class="col-12 col-md-4">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="tripNumber"
+                  type="text"
+                  placeholder="Número da Viagem"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('tripNumber')"
+                  [class.is-valid]="isValid('tripNumber')"
+                />
+                <label for="tripNumber">Número da Viagem</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-hash"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12" [ngClass]="isEdit ? 'col-md-8' : 'col-md-12'">
+            <div class="input-group">
+              <div class="form-floating">
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="businessPartnerName"
+                    class="form-control"
+                    [matAutocomplete]="auto"
+                    #firstInput
+                    [class.is-invalid]="isInvalid('businessPartnerName')"
+                    [class.is-valid]="isValid('businessPartnerName')"
+                    placeholder="Cliente"
+                    (blur)="onClientBlur()"
+                  />
+                  <label for="businessPartnerName">Cliente</label>
+                  <mat-autocomplete #auto="matAutocomplete">
+                    <mat-option
+                      *ngFor="
+                        let businessPartner of filteredBusinessPartners$ | async
+                      "
+                      [value]="businessPartner.name"
+                    >
+                      {{ businessPartner.name }}
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'Cliente'"
+                    [text]="form.get('businessPartnerName')?.value || 'Cliente'"
+                    [linkUrl]="[
+                      '/clients',
+                      form.get('businessPartnerId')?.value,
+                    ]"
+                  >
+                  </app-link-field>
+                }
+              </div>
+              <div class="input-group-text"><i class="bi bi-building"></i></div>
+            </div>
+          </div>
+
+          <div *ngIf="data?.quoteNumber != null" class="col-md-12">
+            <div class="input-group">
+              <div class="form-floating">
+                <app-link-field
+                  [placeHolder]="'Orçamento'"
+                  [text]="form.get('quoteNumber')?.value || 'Orçamento'"
+                  [linkUrl]="['/quotes', form.get('quoteNumber')?.value]"
+                >
+                </app-link-field>
+              </div>
+              <div class="input-group-text"><i class="bi bi-building"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <app-date-field
+              formControlName="date"
+              [label]="'Data da Viagem'"
+            ></app-date-field>
+          </div>
+
+          <div class="col-12 col-md-5">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <select
+                  formControlName="status"
+                  class="form-select"
+                  [class.is-invalid]="isInvalid('status')"
+                  [class.is-valid]="isValid('status')"
+                >
+                  <option
+                    *ngFor="let s of tripStatusOptions"
+                    [value]="s.value"
+                  >
+                    {{ s.label }}
+                  </option>
+                </select>
+                <label for="status">Status</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-info-circle"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="Desconto"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('discount')"
+                  [class.is-valid]="isValid('discount')"
+                />
+                <label for="discount">Desconto</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-percent"></i></div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="price"
+                  type="number"
+                  min="0"
+                  placeholder="Preço"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('price')"
+                  [class.is-valid]="isValid('price')"
+                />
+                <label for="price">Preço</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="totalPriceFormatted"
+                  type="text"
+                  placeholder="Preço Total"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('totalPriceFormatted')"
+                  [class.is-valid]="isValid('totalPriceFormatted')"
+                />
+                <label for="totalPrice">Preço Total</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-cash-coin"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dados da viagem: veículo, motorista e cálculo por km/diária -->
+      <section class="trip-section mt-2">
+        <h5>Dados da Viagem</h5>
+        <div class="row g-1 mb-1">
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill select-floating">
+                <select formControlName="vehicleId" class="form-select">
+                  <option [ngValue]="null">Sem veículo</option>
+                  <option *ngFor="let v of vehicles" [ngValue]="v.id">
+                    {{ v.plate }} - {{ v.brand }} {{ v.model }} ({{
+                      v.status
+                    }})
+                  </option>
+                </select>
+                <label>Veículo</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-bus-front"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill select-floating">
+                <select formControlName="driverId" class="form-select">
+                  <option [ngValue]="null">Sem motorista</option>
+                  <option *ngFor="let d of drivers" [ngValue]="d.id">
+                    {{ d.name }} ({{ d.status }})
+                  </option>
+                </select>
+                <label>Motorista</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-person-vcard"></i></div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="route"
+                  type="text"
+                  placeholder="Roteiro"
+                  class="form-control"
+                />
+                <label>Roteiro</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="distanceKm"
+                  type="number"
+                  min="0"
+                  placeholder="Distância (km)"
+                  class="form-control"
+                />
+                <label>Distância (km)</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="dailyCount"
+                  type="number"
+                  min="0"
+                  placeholder="Qtd. diárias"
+                  class="form-control"
+                />
+                <label>Qtd. diárias</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="transportLicenseNumber"
+                  type="text"
+                  placeholder="Licença NTT/ARTESP"
+                  class="form-control"
+                  id="transportLicenseNumber"
+                />
+                <label for="transportLicenseNumber">Licença NTT/ARTESP</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-patch-check"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <app-date-field
+              formControlName="transportLicenseExpiryDate"
+              [label]="'Validade da licença'"
+            ></app-date-field>
+          </div>
+          <div class="col-12" *ngIf="form.get('vehicleId')?.value">
+            <small class="text-muted">
+              Quando km/diárias forem informados, o preço da viagem é
+              calculado automaticamente a partir da tarifa do veículo,
+              substituindo o valor informado acima.
+            </small>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        @if (canDisplayTransactionForm) {
+          <app-transaction-form
+            [isEdit]="isEdit"
+            [formGroup]="transactionFormGroup"
+            [compact]="true"
+            [data]="data?.transaction"
+            [parentData]="data"
+          ></app-transaction-form>
+        } @else {
+          <div [ngClass]="'callout callout-success mb-2'">
+            <i class="fas fa-check"></i>
+            Excelente! Cliente informado já tem pagamento antecipado!
+          </div>
+        }
+      </section>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
+        Cancelar
+      </button>
+      @if (isEdit) {
+        <button (click)="remove()" type="button" class="btn btn-danger me-2">
+          Remover
+        </button>
+      }
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success"
+      >
+        {{ isEdit ? "Salvar" : "Adicionar" }}
+      </button>
+    </div>
+  </form>
+</div>

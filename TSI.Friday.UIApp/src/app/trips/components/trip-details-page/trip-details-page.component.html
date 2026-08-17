@@ -1,0 +1,142 @@
+<app-header
+  [title]="isEdit ? 'Editar Viagem' : 'Adicionar Viagem'"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Viagens', link: '/trips' },
+    { label: isEdit ? 'Editar Viagem' : 'Adicionar Viagem', link: '' },
+  ]"
+></app-header>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Coluna de informações da viagem -->
+      <div class="col-md-3">
+        <div class="card card-secondary card-outline mb-2">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <i class="bi bi-bus-front" style="font-size: 4rem"></i>
+              <div class="box-profile">
+                <div class="text-center">
+                  <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                      <b>Número da Viagem: </b>
+                      <span class="float-right">{{ data?.tripNumber }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Cliente: </b>
+                      <span class="float-right">{{
+                        data?.businessPartnerName
+                      }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>Status: </b>
+                      <span class="float-right">{{ getStatusLabel() }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          @if (isEdit) {
+            <div class="card-footer text-center d-flex flex-column gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm w-100"
+                [disabled]="emittingContract"
+                (click)="emitContract()"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir Contrato
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm w-100"
+                [disabled]="emittingServiceOrder"
+                (click)="emitServiceOrder()"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir OS
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+        <div class="card card-secondary card-outline">
+          <div class="card-body">
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
+                  >Detalhes</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'triplegs'"
+                  (click)="activeTab = 'triplegs'"
+                  >Itinerário</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'passengers'"
+                  (click)="activeTab = 'passengers'"
+                  >Passageiros</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'payments'"
+                  (click)="activeTab = 'payments'"
+                  >Pagamentos</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  >Anexos</a
+                >
+              </li>
+            </ul>
+            <div *ngIf="activeTab === 'details'">
+              <app-trip-form
+                [isEdit]="isEdit"
+                [data]="data"
+                [compact]="false"
+              ></app-trip-form>
+            </div>
+
+            <div *ngIf="activeTab === 'triplegs'">
+              <app-trip-leg-list [tripId]="data!.id!"></app-trip-leg-list>
+            </div>
+            <div *ngIf="activeTab === 'passengers'">
+              <app-passenger-list [tripId]="data!.id!"></app-passenger-list>
+            </div>
+            <div *ngIf="activeTab === 'payments'">
+              <app-payments
+                [compact]="true"
+                [canAdd]="true"
+                [entity]="'Trip'"
+                [parentData]="data"
+              ></app-payments>
+            </div>
+            <div *ngIf="activeTab === 'attachments'">
+              <app-attachments
+                [entity]="'trip'"
+                [entityId]="data!.id!"
+                [tripNumber]="data!.tripNumber!"
+              ></app-attachments>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -95,6 +95,7 @@ namespace TSI.Friday.Services
                     Path = Path.GetRelativePath(_env.ContentRootPath, fullPath),
                     BusinessPartnerId = dto.BusinessPartnerId,
                     OrderId = dto.OrderId,
+                    TripId = dto.TripId,
                     TransactionId = dto.TransactionId,
                     PaymentId = dto.PaymentId,
                     ProductId = dto.ProductId,
@@ -188,6 +189,7 @@ namespace TSI.Friday.Services
                 // update metadata
                 existing.BusinessPartnerId = dto.BusinessPartnerId;
                 existing.OrderId = dto.OrderId;
+                existing.TripId = dto.TripId;
                 existing.TransactionId = dto.TransactionId;
                 existing.PaymentId = dto.PaymentId;
                 existing.ProductId = dto.ProductId;
@@ -351,6 +353,12 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByTripId(Guid tripId)
+        {
+            return QueryAsync(q => q.Where(a => a.TripId == tripId));
+        }
+
+        /// <inheritdoc />
         public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByTransactionId(
             Guid transactionId
         )
@@ -400,6 +408,7 @@ namespace TSI.Friday.Services
                 DownloadUrl = string.Format(_downloadUrlTemplate, attachment.Id),
                 BusinessPartnerId = attachment.BusinessPartnerId,
                 OrderId = attachment.OrderId,
+                TripId = attachment.TripId,
                 TransactionId = attachment.TransactionId,
                 PaymentId = attachment.PaymentId,
                 ProductId = attachment.ProductId,
@@ -468,6 +477,19 @@ namespace TSI.Friday.Services
                 }
             }
 
+            // Resolve TripId from TripNumber when TripId is not provided
+            if (dto.TripId == null && !string.IsNullOrWhiteSpace(dto.TripNumber))
+            {
+                var trip = await _db.Trip.FirstOrDefaultAsync(t =>
+                    t.TripNumber == dto.TripNumber
+                );
+                if (trip != null)
+                {
+                    dto.TripId = trip.Id;
+                    dto.BusinessPartnerId ??= trip.BusinessPartnerId;
+                }
+            }
+
             // Payment → Transaction → Order → BusinessPartner
             if (dto.PaymentId != null && dto.TransactionId == null)
             {
@@ -476,17 +498,22 @@ namespace TSI.Friday.Services
                 {
                     dto.TransactionId = payment.TransactionId;
                     dto.OrderId ??= payment.OrderId;
+                    dto.TripId ??= payment.TripId;
                     dto.BusinessPartnerId ??= payment.BusinessPartnerId;
                 }
             }
 
-            // Transaction → Order → BusinessPartner
-            if (dto.TransactionId != null && (dto.OrderId == null || dto.BusinessPartnerId == null))
+            // Transaction → Order/Trip → BusinessPartner
+            if (
+                dto.TransactionId != null
+                && (dto.OrderId == null || dto.TripId == null || dto.BusinessPartnerId == null)
+            )
             {
                 var transaction = await _db.Transaction.FindAsync(dto.TransactionId.Value);
                 if (transaction != null)
                 {
                     dto.OrderId ??= transaction.OrderId;
+                    dto.TripId ??= transaction.TripId;
                     dto.BusinessPartnerId ??= transaction.BusinessPartnerId;
                 }
             }
@@ -498,6 +525,16 @@ namespace TSI.Friday.Services
                 if (order != null)
                 {
                     dto.BusinessPartnerId = order.BusinessPartnerId;
+                }
+            }
+
+            // Trip → BusinessPartner
+            if (dto.TripId != null && dto.BusinessPartnerId == null)
+            {
+                var trip = await _db.Trip.FindAsync(dto.TripId.Value);
+                if (trip != null)
+                {
+                    dto.BusinessPartnerId = trip.BusinessPartnerId;
                 }
             }
         }
@@ -546,6 +583,11 @@ namespace TSI.Friday.Services
                     {
                         // entityValue is OrderNumber (e.g. "TEA-00022")
                         dto.OrderNumber ??= entityValue;
+                    }
+                    else if (entityType.Equals("Trips", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // entityValue is TripNumber (e.g. "SER-V00022")
+                        dto.TripNumber ??= entityValue;
                     }
                     else if (entityType.Equals("Transactions", StringComparison.OrdinalIgnoreCase))
                     {
@@ -679,6 +721,17 @@ namespace TSI.Friday.Services
                         ? SanitizeFileName(order.OrderNumber)
                         : dto.OrderId.ToString();
                 return Path.Combine(basePath, "BusinessPartners", bpName, "Orders", orderFolder);
+            }
+
+            // Trip → BusinessPartners/{BpName}/Trips/{TripNumber}
+            if (dto.TripId != null && bpName != null)
+            {
+                var trip = await _db.Trip.FindAsync(dto.TripId.Value);
+                var tripFolder =
+                    trip != null && !string.IsNullOrWhiteSpace(trip.TripNumber)
+                        ? SanitizeFileName(trip.TripNumber)
+                        : dto.TripId.ToString();
+                return Path.Combine(basePath, "BusinessPartners", bpName, "Trips", tripFolder);
             }
 
             // BusinessPartner → BusinessPartners/{BpName}

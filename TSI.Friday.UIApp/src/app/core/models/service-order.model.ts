@@ -20,7 +20,7 @@ export interface ServiceOrder extends BaseModel {
   completionDate?: Date | null;
   description: string;
   status: ServiceOrderStatus;
-  orderId: string;
+  tripId: string;
   driverId: string;
   vehicleId?: string | null;
   commission?: Commission | null;

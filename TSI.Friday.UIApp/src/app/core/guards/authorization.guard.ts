@@ -4,8 +4,8 @@ import {
   RouterStateSnapshot,
   CanActivateChild,
 } from '@angular/router';
-import { AccountService, ModalService } from '../services';
-import { map, Observable } from 'rxjs';
+import { AccountService, FeatureFlagService, ModalService } from '../services';
+import { map, switchMap, Observable, of } from 'rxjs';
 import { User } from '../models/account/user';
 import { Injectable } from '@angular/core';
 
@@ -15,6 +15,7 @@ import { Injectable } from '@angular/core';
 export class AuthorizationGuard implements CanActivateChild {
   constructor(
     private accountService: AccountService,
+    private featureFlagService: FeatureFlagService,
     private modalService: ModalService,
     private router: Router,
   ) {}
@@ -24,7 +25,7 @@ export class AuthorizationGuard implements CanActivateChild {
     state: RouterStateSnapshot,
   ): Observable<boolean> {
     return this.accountService.user$.pipe(
-      map((user: User | null) => {
+      switchMap((user: User | null) => {
         const requiredRoles = route.data['roles'] as string[] | undefined;
 
         if (!user) {
@@ -39,7 +40,7 @@ export class AuthorizationGuard implements CanActivateChild {
           this.router.navigate(['account/login'], {
             queryParams: { returnUrl: state.url },
           });
-          return false;
+          return of(false);
         }
 
         if (requiredRoles && requiredRoles.length > 0) {
@@ -51,11 +52,26 @@ export class AuthorizationGuard implements CanActivateChild {
               'Você não tem permissão para acessar esta área.',
             );
             this.router.navigate(['']);
-            return false;
+            return of(false);
           }
         }
 
-        return true;
+        // A module behind a feature flag disappears entirely - route included - while off, the
+        // same way its data disappears from every API response and the sidebar link.
+        const featureFlag = route.data['featureFlag'] as string | undefined;
+        if (featureFlag) {
+          return this.featureFlagService.isEnabled(featureFlag).pipe(
+            map((enabled) => {
+              if (!enabled) {
+                this.router.navigate(['not-found']);
+                return false;
+              }
+              return true;
+            }),
+          );
+        }
+
+        return of(true);
       }),
     );
   }

@@ -18,6 +18,8 @@ export interface Transaction extends BaseModel {
   condition?: PaymentCondition;
   orderId?: string;
   orderNumber?: string;
+  tripId?: string;
+  tripNumber?: string;
   businessPartnerId?: string;
   businessPartnerName?: string;
   hasOpenedPayments?: boolean;

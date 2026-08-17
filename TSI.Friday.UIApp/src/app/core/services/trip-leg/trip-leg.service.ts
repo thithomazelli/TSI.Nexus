@@ -12,9 +12,9 @@ export class TripLegService {
 
   constructor(private apiService: ApiService) {}
 
-  getByOrder(orderId: string): Observable<WebApiResponse<TripLeg[]>> {
+  getByTrip(tripId: string): Observable<WebApiResponse<TripLeg[]>> {
     return this.apiService.get<WebApiResponse<TripLeg[]>>(
-      `${this._baseEndPoint}/getByOrder/${orderId}`,
+      `${this._baseEndPoint}/getByTrip/${tripId}`,
     );
   }
 

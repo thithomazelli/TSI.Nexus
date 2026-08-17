@@ -26,7 +26,7 @@ import { PassengerImportComponent } from '../passenger-import/passenger-import.c
 })
 export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
-  orderId!: string;
+  tripId!: string;
 
   passengers: Passenger[] = [];
 
@@ -46,7 +46,7 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['orderId'] && !changes['orderId'].firstChange) {
+    if (changes['tripId'] && !changes['tripId'].firstChange) {
       this.load();
     }
   }
@@ -58,14 +58,14 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
 
   openModal(passenger?: Passenger): void {
     this.modalService.showTemplateModal(PassengerDetailsModalComponent, {
-      orderId: this.orderId,
+      tripId: this.tripId,
       data: passenger ?? null,
     });
   }
 
   openImportModal(): void {
     this.modalService.showTemplateModal(PassengerImportComponent, {
-      orderId: this.orderId,
+      tripId: this.tripId,
     });
   }
 
@@ -79,11 +79,11 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private load(): void {
-    if (!this.orderId) {
+    if (!this.tripId) {
       return;
     }
     this.passengerService
-      .getByOrder(this.orderId)
+      .getByTrip(this.tripId)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response) => {
         this.passengers = response.data ?? [];

@@ -1,5 +1,6 @@
 import { PaymentCondition, PaymentMethod } from '../enums';
 import { QuoteStatus } from '../enums/quote-status.enum';
+import { QuoteType } from '../enums/quote-type.enum';
 import { QuoteProduct } from './quote-product.model';
 
 export interface Quote {
@@ -9,6 +10,7 @@ export interface Quote {
   businessPartnerId?: string;
   businessPartnerName?: string;
   status?: QuoteStatus;
+  type?: QuoteType;
   createDate?: Date;
   description?: string;
   discount?: number;

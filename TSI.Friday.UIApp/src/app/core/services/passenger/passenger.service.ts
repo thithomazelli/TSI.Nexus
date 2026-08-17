@@ -12,9 +12,9 @@ export class PassengerService {
 
   constructor(private apiService: ApiService) {}
 
-  getByOrder(orderId: string): Observable<WebApiResponse<Passenger[]>> {
+  getByTrip(tripId: string): Observable<WebApiResponse<Passenger[]>> {
     return this.apiService.get<WebApiResponse<Passenger[]>>(
-      `${this._baseEndPoint}/getByOrder/${orderId}`,
+      `${this._baseEndPoint}/getByTrip/${tripId}`,
     );
   }
 

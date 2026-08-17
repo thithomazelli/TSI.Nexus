@@ -26,7 +26,7 @@ import { TripLegDetailsModalComponent } from '../trip-leg-details-modal/trip-leg
 })
 export class TripLegListComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
-  orderId!: string;
+  tripId!: string;
 
   tripLegs: TripLeg[] = [];
 
@@ -46,7 +46,7 @@ export class TripLegListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['orderId'] && !changes['orderId'].firstChange) {
+    if (changes['tripId'] && !changes['tripId'].firstChange) {
       this.load();
     }
   }
@@ -58,7 +58,7 @@ export class TripLegListComponent implements OnInit, OnChanges, OnDestroy {
 
   openModal(): void {
     this.modalService.showTemplateModal(TripLegDetailsModalComponent, {
-      orderId: this.orderId,
+      tripId: this.tripId,
       nextSequenceNumber: this.tripLegs.length + 1,
     });
   }
@@ -73,11 +73,11 @@ export class TripLegListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private load(): void {
-    if (!this.orderId) {
+    if (!this.tripId) {
       return;
     }
     this.tripLegService
-      .getByOrder(this.orderId)
+      .getByTrip(this.tripId)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response) => {
         this.tripLegs = response.data ?? [];

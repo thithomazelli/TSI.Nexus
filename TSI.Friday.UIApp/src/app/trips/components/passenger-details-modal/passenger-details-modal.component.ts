@@ -17,7 +17,7 @@ import {
 export class PassengerDetailsModalComponent {
   saving = false;
   isEdit: boolean;
-  orderId: string;
+  tripId: string;
   private _id: string;
   form: FormGroup;
 
@@ -29,7 +29,7 @@ export class PassengerDetailsModalComponent {
     private notificationService: NotificationService,
   ) {
     const existing: Passenger | null = dialogData?.data ?? null;
-    this.orderId = dialogData?.orderId ?? '';
+    this.tripId = dialogData?.tripId ?? '';
     this.isEdit = !!existing?.id;
     this._id = existing?.id ?? '';
 
@@ -59,7 +59,7 @@ export class PassengerDetailsModalComponent {
       documentNumber: raw.documentNumber,
       seat: raw.seat,
       phone: raw.phone,
-      orderId: this.orderId,
+      tripId: this.tripId,
     } as Passenger;
 
     this.saving = true;

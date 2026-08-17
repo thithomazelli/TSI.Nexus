@@ -20,7 +20,7 @@ import { parsePassengerRows } from '../../utilities/passenger-import-parser';
   standalone: false,
 })
 export class PassengerImportComponent {
-  orderId: string;
+  tripId: string;
 
   selectedFile: File | null = null;
   previewPassengers: Passenger[] = [];
@@ -33,7 +33,7 @@ export class PassengerImportComponent {
     private attachmentService: AttachmentService,
     private notificationService: NotificationService,
   ) {
-    this.orderId = dialogData?.orderId ?? '';
+    this.tripId = dialogData?.tripId ?? '';
   }
 
   close(): void {
@@ -53,7 +53,7 @@ export class PassengerImportComponent {
     const reader = new FileReader();
     reader.onload = () => {
       const text = (reader.result as string) ?? '';
-      this.previewPassengers = parsePassengerRows(text, this.orderId);
+      this.previewPassengers = parsePassengerRows(text, this.tripId);
     };
     reader.readAsText(file);
   }
@@ -67,7 +67,7 @@ export class PassengerImportComponent {
 
     const attachment: Partial<Attachment> = {
       file: this.selectedFile,
-      orderId: this.orderId,
+      tripId: this.tripId,
     };
 
     forkJoin({
