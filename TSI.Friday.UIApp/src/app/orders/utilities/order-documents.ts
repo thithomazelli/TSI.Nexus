@@ -3,9 +3,8 @@ import {
   BusinessPartner,
   DocumentTemplateService,
   DocumentTemplateType,
-  PaymentCondition,
+  Order,
   PaymentMethod,
-  Quote,
   SERODIO_COMPANY,
   renderDocumentTemplate,
   splitTemplatePages,
@@ -37,17 +36,6 @@ function partnerAddress(partner?: BusinessPartner | null): string {
   return `${address.street ?? ''}, nº ${address.number ?? 's/n'} - ${address.city ?? ''}/${address.state ?? ''}`;
 }
 
-function paymentConditionLabel(condition?: PaymentCondition | null): string {
-  switch (condition) {
-    case PaymentCondition.FullPayment:
-      return 'À vista';
-    case PaymentCondition.InInstallments:
-      return 'Parcelado';
-    default:
-      return 'A combinar';
-  }
-}
-
 function paymentMethodLabel(method?: PaymentMethod | null): string {
   switch (method) {
     case PaymentMethod.Cash:
@@ -76,18 +64,18 @@ function signatureBlock(clientName: string): string {
 }
 
 /**
- * Fetches the Orçamento admin-editable template and substitutes its tokens with the quote's
- * itemized products and payment condition.
+ * Fetches the Pedido de Venda admin-editable template and substitutes its tokens with the
+ * order's product list, totals and payment method.
  */
-export function buildQuotePages(
+export function buildSalesOrderPages(
   documentTemplateService: DocumentTemplateService,
-  quote: Quote,
+  order: Order,
   businessPartner: BusinessPartner | null,
 ): Observable<string[]> {
-  const clientName = businessPartner?.name ?? quote.businessPartnerName ?? '-';
+  const clientName = businessPartner?.name ?? order.businessPartnerName ?? '-';
 
-  const productRows = quote.quoteProducts?.length
-    ? quote.quoteProducts
+  const productRows = order.orderProducts?.length
+    ? order.orderProducts
         .map(
           (item) => `
             <tr>
@@ -100,20 +88,19 @@ export function buildQuotePages(
           `,
         )
         .join('')
-    : `<tr><td colspan="5">${quote.description || 'Conforme descrito na proposta.'}</td></tr>`;
+    : `<tr><td colspan="5">${order.description || 'Conforme descrito no pedido.'}</td></tr>`;
 
-  return documentTemplateService.getByType(DocumentTemplateType.Quote).pipe(
+  return documentTemplateService.getByType(DocumentTemplateType.SalesOrder).pipe(
     map((response) => {
       const rendered = renderDocumentTemplate(response.data?.content ?? '', {
-        QuoteNumber: quote.quoteNumber ?? '-',
+        OrderNumber: order.orderNumber ?? '-',
         ClientName: clientName,
         ClientDocument: partnerDocument(businessPartner),
         ClientAddress: partnerAddress(businessPartner),
-        QuoteDate: formatDate(quote.date),
+        OrderDate: formatDate(order.date),
         ProductRows: productRows,
-        TotalPrice: formatCurrency(quote.totalPrice),
-        PaymentCondition: paymentConditionLabel(quote.condition),
-        PaymentMethod: paymentMethodLabel(quote.method),
+        TotalPrice: formatCurrency(order.totalPrice),
+        PaymentMethod: paymentMethodLabel(order.transaction?.method),
         CompanyContactName: SERODIO_COMPANY.officeContactName,
         CompanyWhatsapp: SERODIO_COMPANY.whatsapp,
         SignatureBlock: signatureBlock(clientName),

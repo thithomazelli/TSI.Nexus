@@ -7,6 +7,7 @@ import {
   QuoteService,
   QuoteProductService,
   BusinessPartnerService,
+  DocumentTemplateService,
   downloadLetterheadPdf,
 } from '@friday/core';
 import { Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
@@ -46,6 +47,7 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     private quoteProductService: QuoteProductService,
     private routerService: Router,
     private businessPartnerService: BusinessPartnerService,
+    private documentTemplateService: DocumentTemplateService,
   ) {}
 
   ngOnInit(): void {
@@ -97,8 +99,13 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     businessPartner$.subscribe({
       next: (response) => {
         this.emittingQuote = false;
-        const pages = buildQuotePages(quote, response.data ?? null);
-        downloadLetterheadPdf(pages, `orcamento-${quote.quoteNumber}.pdf`);
+        buildQuotePages(
+          this.documentTemplateService,
+          quote,
+          response.data ?? null,
+        ).subscribe((pages) => {
+          downloadLetterheadPdf(pages, `orcamento-${quote.quoteNumber}.pdf`);
+        });
       },
       error: () => {
         this.emittingQuote = false;

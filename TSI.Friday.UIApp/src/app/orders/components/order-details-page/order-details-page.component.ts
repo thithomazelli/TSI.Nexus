@@ -7,8 +7,14 @@ import {
   OrderService,
   OrderProductService,
   PaymentService,
+  BusinessPartnerService,
+  DocumentTemplateService,
+  downloadLetterheadPdf,
 } from '@friday/core';
-import { Subject, Subscription, switchMap, takeUntil, merge } from 'rxjs';
+import { Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+import { buildSalesOrderPages } from '../../utilities/order-documents';
 
 @Component({
   selector: 'app-order-details-page',
@@ -30,6 +36,8 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     [OrderStatus.WaitingPayment]: 'Aguardando pagamento',
   };
 
+  emittingSalesOrder = false;
+
   private _orderChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
@@ -38,6 +46,8 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     private orderProductService: OrderProductService,
     private paymentService: PaymentService,
+    private businessPartnerService: BusinessPartnerService,
+    private documentTemplateService: DocumentTemplateService,
     private routerService: Router,
   ) {}
 
@@ -67,6 +77,36 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
     }
 
     return this.orderStatusOptions[this.data?.status] || '';
+  }
+
+  emitSalesOrder(): void {
+    if (!this.data || this.emittingSalesOrder) {
+      return;
+    }
+    const order = this.data;
+    this.emittingSalesOrder = true;
+
+    const businessPartner$ = order.businessPartnerId
+      ? this.businessPartnerService
+          .getById(order.businessPartnerId)
+          .pipe(catchError(() => of({ data: null } as WebApiResponse<any>)))
+      : of({ data: null } as WebApiResponse<any>);
+
+    businessPartner$.subscribe({
+      next: (response) => {
+        this.emittingSalesOrder = false;
+        buildSalesOrderPages(
+          this.documentTemplateService,
+          order,
+          response.data ?? null,
+        ).subscribe((pages) => {
+          downloadLetterheadPdf(pages, `pedido-de-venda-${order.orderNumber}.pdf`);
+        });
+      },
+      error: () => {
+        this.emittingSalesOrder = false;
+      },
+    });
   }
 
   private getOrderById(id: string): void {

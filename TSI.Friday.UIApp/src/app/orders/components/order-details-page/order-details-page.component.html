@@ -37,6 +37,18 @@
               </div>
             </div>
           </div>
+          @if (isEdit) {
+            <div class="card-footer text-center d-flex flex-column gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm w-100"
+                [disabled]="emittingSalesOrder"
+                (click)="emitSalesOrder()"
+              >
+                <i class="bi bi-file-earmark-pdf"></i> Emitir Pedido de Venda
+              </button>
+            </div>
+          }
         </div>
       </div>
       <!-- /.col -->
