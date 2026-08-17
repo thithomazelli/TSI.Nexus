@@ -40,112 +40,97 @@ namespace TSI.Friday.Data
                     }
                 }
 
-                // ensure admin user
-                var adminUserName = "admin";
-                var admin = await userManager.FindByNameAsync(adminUserName);
-                if (admin == null)
+                // ensure initial users: Admin (Master role) plus the named Admin-role accounts.
+                var initialUsers = new[]
                 {
-                    var year = DateTime.UtcNow.Year;
-                    var password = $"tsi@{year}";
+                    (
+                        UserName: "Admin",
+                        Email: "admin@local",
+                        FirstName: "Admin",
+                        LastName: "",
+                        Role: "Master",
+                        PasswordPrefix: "admin@master"
+                    ),
+                    (
+                        UserName: "Thiago",
+                        Email: "thiago@local",
+                        FirstName: "Thiago",
+                        LastName: "",
+                        Role: "Admin",
+                        PasswordPrefix: "thiago"
+                    ),
+                    (
+                        UserName: "Leonardo",
+                        Email: "leonardo@local",
+                        FirstName: "Leonardo",
+                        LastName: "",
+                        Role: "Admin",
+                        PasswordPrefix: "leonardo"
+                    ),
+                };
 
-                    var user = new User
+                foreach (var initialUser in initialUsers)
+                {
+                    var existing = await userManager.FindByNameAsync(initialUser.UserName);
+                    if (existing == null)
                     {
-                        UserName = adminUserName,
-                        Email = "admin@local",
-                        EmailConfirmed = true,
-                        FirstName = "Admin",
-                        LastName = "User",
-                    };
+                        var year = DateTime.UtcNow.Year;
+                        var password = $"{initialUser.PasswordPrefix}@{year}";
 
-                    var result = await userManager.CreateAsync(user, password);
-                    if (!result.Succeeded)
-                    {
-                        logger?.LogError(
-                            "Failed to create admin user: {Errors}",
-                            string.Join(';', result.Errors)
-                        );
-                    }
-                    else
-                    {
+                        var user = new User
+                        {
+                            UserName = initialUser.UserName,
+                            Email = initialUser.Email,
+                            EmailConfirmed = true,
+                            FirstName = initialUser.FirstName,
+                            LastName = initialUser.LastName,
+                        };
+
+                        var result = await userManager.CreateAsync(user, password);
+                        if (!result.Succeeded)
+                        {
+                            logger?.LogError(
+                                "Failed to create user '{UserName}': {Errors}",
+                                initialUser.UserName,
+                                string.Join(';', result.Errors)
+                            );
+                            continue;
+                        }
+
                         logger?.LogInformation(
-                            "Admin user created with password 'tsi@{Year}'",
+                            "User '{UserName}' created with password '{PasswordPrefix}@{Year}'",
+                            initialUser.UserName,
+                            initialUser.PasswordPrefix,
                             year
                         );
 
-                        // assign admin role
-                        var addRoleResult = await userManager.AddToRoleAsync(user, "Admin");
+                        var addRoleResult = await userManager.AddToRoleAsync(user, initialUser.Role);
                         if (!addRoleResult.Succeeded)
                         {
-                            logger?.LogError("Failed to add admin user to role 'Admin': {Errors}", string.Join(';', addRoleResult.Errors));
+                            logger?.LogError(
+                                "Failed to add user '{UserName}' to role '{Role}': {Errors}",
+                                initialUser.UserName,
+                                initialUser.Role,
+                                string.Join(';', addRoleResult.Errors)
+                            );
                         }
-                    }
-                }
-                else
-                {
-                    logger?.LogInformation("Admin user already exists");
-
-                    // ensure admin has Admin role
-                    if (!await userManager.IsInRoleAsync(admin, "Admin"))
-                    {
-                        var addRoleResult = await userManager.AddToRoleAsync(admin, "Admin");
-                        if (!addRoleResult.Succeeded)
-                        {
-                            logger?.LogError("Failed to add existing admin user to role 'Admin': {Errors}", string.Join(';', addRoleResult.Errors));
-                        }
-                    }
-                }
-
-                // ensure master user
-                var masterUserName = "master";
-                var master = await userManager.FindByNameAsync(masterUserName);
-                if (master == null)
-                {
-                    var year = DateTime.UtcNow.Year;
-                    var password = $"tsi@master{year}";
-
-                    var user = new User
-                    {
-                        UserName = masterUserName,
-                        Email = "master@local",
-                        EmailConfirmed = true,
-                        FirstName = "Master",
-                        LastName = "User",
-                    };
-
-                    var result = await userManager.CreateAsync(user, password);
-                    if (!result.Succeeded)
-                    {
-                        logger?.LogError(
-                            "Failed to create master user: {Errors}",
-                            string.Join(';', result.Errors)
-                        );
                     }
                     else
                     {
-                        logger?.LogInformation(
-                            "Master user created with password 'tsi@master{Year}'",
-                            year
-                        );
+                        logger?.LogInformation("User '{UserName}' already exists", initialUser.UserName);
 
-                        // assign master role
-                        var addRoleResult = await userManager.AddToRoleAsync(user, "Master");
-                        if (!addRoleResult.Succeeded)
+                        if (!await userManager.IsInRoleAsync(existing, initialUser.Role))
                         {
-                            logger?.LogError("Failed to add master user to role 'Master': {Errors}", string.Join(';', addRoleResult.Errors));
-                        }
-                    }
-                }
-                else
-                {
-                    logger?.LogInformation("Master user already exists");
-
-                    // ensure master has Master role
-                    if (!await userManager.IsInRoleAsync(master, "Master"))
-                    {
-                        var addRoleResult = await userManager.AddToRoleAsync(master, "Master");
-                        if (!addRoleResult.Succeeded)
-                        {
-                            logger?.LogError("Failed to add existing master user to role 'Master': {Errors}", string.Join(';', addRoleResult.Errors));
+                            var addRoleResult = await userManager.AddToRoleAsync(existing, initialUser.Role);
+                            if (!addRoleResult.Succeeded)
+                            {
+                                logger?.LogError(
+                                    "Failed to add existing user '{UserName}' to role '{Role}': {Errors}",
+                                    initialUser.UserName,
+                                    initialUser.Role,
+                                    string.Join(';', addRoleResult.Errors)
+                                );
+                            }
                         }
                     }
                 }
