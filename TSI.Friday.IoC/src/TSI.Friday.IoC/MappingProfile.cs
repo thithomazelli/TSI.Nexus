@@ -450,11 +450,27 @@ namespace TSI.Friday.IoC
                 .ForMember(
                     dest => dest.QuoteProducts,
                     opt => opt.MapFrom(src => src.QuoteProducts)
-                );
+                )
+                .ForMember(dest => dest.QuoteTrip, opt => opt.MapFrom(src => src.QuoteTrip));
 
             CreateMap<QuoteDto, Quote>()
                 // map dto OrderNumber -> entity QuoteNumber
                 .ForMember(dest => dest.QuoteNumber, opt => opt.MapFrom(src => src.QuoteNumber))
+                .ForMember(dest => dest.QuoteTrip, opt => opt.Ignore())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // QuoteTrip mappings
+            CreateMap<QuoteTrip, QuoteTripDto>()
+                .ForMember(
+                    dest => dest.VehiclePlate,
+                    opt => opt.MapFrom(src => src.Vehicle != null ? src.Vehicle.Plate : null)
+                )
+                .ForMember(
+                    dest => dest.DriverName,
+                    opt => opt.MapFrom(src => src.Driver != null ? src.Driver.Name : null)
+                );
+
+            CreateMap<QuoteTripDto, QuoteTrip>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // QuoteProduct mappings

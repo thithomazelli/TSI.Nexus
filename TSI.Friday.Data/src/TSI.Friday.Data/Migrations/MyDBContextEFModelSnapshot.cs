@@ -1937,8 +1937,8 @@ namespace TSI.Friday.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TSI.Friday.Contracts.Models.Quote", "Quote")
-                        .WithMany()
-                        .HasForeignKey("QuoteId")
+                        .WithOne("QuoteTrip")
+                        .HasForeignKey("TSI.Friday.Contracts.Models.QuoteTrip", "QuoteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -2099,6 +2099,8 @@ namespace TSI.Friday.Data.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("QuoteProducts");
+
+                    b.Navigation("QuoteTrip");
                 });
 
             modelBuilder.Entity("TSI.Friday.Contracts.Models.ServiceOrder", b =>

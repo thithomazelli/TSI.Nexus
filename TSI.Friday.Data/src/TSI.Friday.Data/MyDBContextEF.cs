@@ -278,8 +278,8 @@ namespace TSI.Friday.Data
             modelBuilder
                 .Entity<QuoteTrip>()
                 .HasOne(qt => qt.Quote)
-                .WithMany()
-                .HasForeignKey(qt => qt.QuoteId)
+                .WithOne(q => q.QuoteTrip)
+                .HasForeignKey<QuoteTrip>(qt => qt.QuoteId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder

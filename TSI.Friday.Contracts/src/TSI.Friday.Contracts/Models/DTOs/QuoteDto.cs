@@ -43,5 +43,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public string BusinessPartnerName { get; set; }
 
         public ICollection<QuoteProductDto> QuoteProducts { get; set; } = [];
+
+        // Only populated when Type == QuoteType.Trip.
+        public QuoteTripDto QuoteTrip { get; set; }
     }
 }

@@ -15,6 +15,7 @@ namespace TSI.Friday.Services
         #region Properties
 
         private readonly IRepository<Quote> _repository;
+        private readonly IRepository<QuoteTrip> _quoteTripRepository;
         private readonly ISequenceService _sequenceService;
         private readonly IMapper _mapper;
         private readonly ILogService _logService;
@@ -28,6 +29,7 @@ namespace TSI.Friday.Services
 
         public QuoteService(
             IRepository<Quote> repository,
+            IRepository<QuoteTrip> quoteTripRepository,
             ISequenceService sequenceService,
             IMapper mapper,
             ILogService logService,
@@ -38,6 +40,7 @@ namespace TSI.Friday.Services
         )
         {
             _repository = repository;
+            _quoteTripRepository = quoteTripRepository;
             _sequenceService = sequenceService;
             _mapper = mapper;
             _logService = logService;
@@ -63,6 +66,14 @@ namespace TSI.Friday.Services
 
                 var entity = _mapper.Map<Quote>(quoteDto);
                 await _repository.AddAsync(entity);
+
+                if (quoteDto.Type == QuoteType.Trip && quoteDto.QuoteTrip != null)
+                {
+                    var quoteTripEntity = _mapper.Map<QuoteTrip>(quoteDto.QuoteTrip);
+                    quoteTripEntity.QuoteId = entity.Id;
+                    await _quoteTripRepository.AddAsync(quoteTripEntity);
+                    entity.QuoteTrip = quoteTripEntity;
+                }
 
                 var responseDto = _mapper.Map<QuoteDto>(entity);
 
@@ -90,6 +101,28 @@ namespace TSI.Friday.Services
             {
                 var entity = _mapper.Map<Quote>(quoteDto);
                 await _repository.UpdateAsync(entity);
+
+                if (quoteDto.Type == QuoteType.Trip && quoteDto.QuoteTrip != null)
+                {
+                    var existingQuoteTrip = await _quoteTripRepository.FirstOrDefaultAsync(qt =>
+                        qt.QuoteId == entity.Id
+                    );
+
+                    if (existingQuoteTrip != null)
+                    {
+                        var updatedQuoteTrip = _mapper.Map(quoteDto.QuoteTrip, existingQuoteTrip);
+                        updatedQuoteTrip.QuoteId = entity.Id;
+                        await _quoteTripRepository.UpdateAsync(updatedQuoteTrip);
+                        entity.QuoteTrip = updatedQuoteTrip;
+                    }
+                    else
+                    {
+                        var newQuoteTrip = _mapper.Map<QuoteTrip>(quoteDto.QuoteTrip);
+                        newQuoteTrip.QuoteId = entity.Id;
+                        await _quoteTripRepository.AddAsync(newQuoteTrip);
+                        entity.QuoteTrip = newQuoteTrip;
+                    }
+                }
 
                 result.Data = _mapper.Map<QuoteDto>(entity);
                 result.Status = ResponseStatus.Success;
@@ -154,7 +187,9 @@ namespace TSI.Friday.Services
             {
                 var quotes = await _repository.GetAllAsync(
                     q => q.BusinessPartner,
-                    q => q.QuoteProducts
+                    q => q.QuoteProducts,
+                    q => q.QuoteTrip.Vehicle,
+                    q => q.QuoteTrip.Driver
                 );
 
                 if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
@@ -187,7 +222,9 @@ namespace TSI.Friday.Services
                 var quote = await _repository.GetByIdAsync(
                     id,
                     q => q.BusinessPartner,
-                    q => q.QuoteProducts
+                    q => q.QuoteProducts,
+                    q => q.QuoteTrip.Vehicle,
+                    q => q.QuoteTrip.Driver
                 );
 
                 if (
@@ -518,6 +555,19 @@ namespace TSI.Friday.Services
                     TotalPrice = quoteDto.TotalPrice,
                     QuoteNumber = quoteDto.QuoteNumber,
                 };
+
+                if (quoteDto.QuoteTrip != null)
+                {
+                    tripDto.Route = quoteDto.QuoteTrip.Route;
+                    tripDto.DistanceKm = quoteDto.QuoteTrip.DistanceKm;
+                    tripDto.DailyCount = quoteDto.QuoteTrip.DailyCount;
+                    tripDto.TransportLicenseNumber = quoteDto.QuoteTrip.TransportLicenseNumber;
+                    tripDto.TransportLicenseExpiryDate = quoteDto
+                        .QuoteTrip
+                        .TransportLicenseExpiryDate;
+                    tripDto.VehicleId = quoteDto.QuoteTrip.VehicleId;
+                    tripDto.DriverId = quoteDto.QuoteTrip.DriverId;
+                }
 
                 if (
                     quoteDto.TotalOfPayments > 0

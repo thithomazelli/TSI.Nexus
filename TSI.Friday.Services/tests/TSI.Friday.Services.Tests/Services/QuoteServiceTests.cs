@@ -18,6 +18,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly QuoteService _quoteService;
         private readonly Mock<IRepository<Quote>> _repository;
+        private readonly Mock<IRepository<QuoteTrip>> _quoteTripRepository;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly Mock<ILogService> _logService;
         private readonly Mock<IRepository<Product>> _productRepository;
@@ -37,6 +38,7 @@ namespace TSI.Friday.Services.Tests.Services
                 new LoggerFactory()
             );
             _repository = new Mock<IRepository<Quote>>();
+            _quoteTripRepository = new Mock<IRepository<QuoteTrip>>();
             _sequenceService = new Mock<ISequenceService>();
             _logService = new Mock<ILogService>();
             _productRepository = new Mock<IRepository<Product>>();
@@ -46,6 +48,7 @@ namespace TSI.Friday.Services.Tests.Services
             _mapper = config.CreateMapper();
             _quoteService = new QuoteService(
                 _repository.Object,
+                _quoteTripRepository.Object,
                 _sequenceService.Object,
                 _mapper,
                 _logService.Object,
@@ -168,6 +171,163 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             Assert.Equal(ResponseStatus.Warning, result.Status);
             _tripService.Verify(_ => _.Add(It.IsAny<TripDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task QuoteService_Add_ShouldPersistQuoteTrip_WhenTypeIsTripAndQuoteTripIsProvided()
+        {
+            // Arrange
+            var quoteDto = new QuoteDto
+            {
+                BusinessPartnerId = Guid.NewGuid(),
+                BusinessPartnerName = "SER",
+                Type = QuoteType.Trip,
+                QuoteTrip = new QuoteTripDto { Route = "SP-RJ", DistanceKm = 450, DailyCount = 1 },
+            };
+
+            _sequenceService.Setup(_ => _.GetNextValue("QuoteNumberSeq")).ReturnsAsync(1);
+
+            // Act
+            var result = await _quoteService.Add(quoteDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(result.Data.QuoteTrip);
+            Assert.Equal("SP-RJ", result.Data.QuoteTrip.Route);
+            _quoteTripRepository.Verify(
+                _ =>
+                    _.AddAsync(
+                        It.Is<QuoteTrip>(qt =>
+                            qt.Route == "SP-RJ" && qt.QuoteId == result.Data.Id
+                        )
+                    ),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task QuoteService_Add_ShouldNotPersistQuoteTrip_WhenTypeIsProduct()
+        {
+            // Arrange
+            var quoteDto = new QuoteDto
+            {
+                BusinessPartnerId = Guid.NewGuid(),
+                BusinessPartnerName = "SER",
+                Type = QuoteType.Product,
+            };
+
+            _sequenceService.Setup(_ => _.GetNextValue("QuoteNumberSeq")).ReturnsAsync(1);
+
+            // Act
+            var result = await _quoteService.Add(quoteDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data.QuoteTrip);
+            _quoteTripRepository.Verify(_ => _.AddAsync(It.IsAny<QuoteTrip>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task QuoteService_Update_ShouldCreateQuoteTrip_WhenNoneExistsYet()
+        {
+            // Arrange
+            var quoteId = Guid.NewGuid();
+            var quoteDto = new QuoteDto
+            {
+                Id = quoteId,
+                QuoteNumber = "SER-Q00001",
+                Type = QuoteType.Trip,
+                QuoteTrip = new QuoteTripDto { Route = "SP-RJ", DistanceKm = 450 },
+            };
+
+            _quoteTripRepository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<QuoteTrip, bool>>>()))
+                .ReturnsAsync((QuoteTrip)null);
+
+            // Act
+            var result = await _quoteService.Update(quoteDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _quoteTripRepository.Verify(
+                _ => _.AddAsync(It.Is<QuoteTrip>(qt => qt.QuoteId == quoteId)),
+                Times.Once
+            );
+            _quoteTripRepository.Verify(_ => _.UpdateAsync(It.IsAny<QuoteTrip>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task QuoteService_Update_ShouldUpdateExistingQuoteTrip()
+        {
+            // Arrange
+            var quoteId = Guid.NewGuid();
+            var existingQuoteTrip = new QuoteTrip { Id = Guid.NewGuid(), QuoteId = quoteId };
+            var quoteDto = new QuoteDto
+            {
+                Id = quoteId,
+                QuoteNumber = "SER-Q00001",
+                Type = QuoteType.Trip,
+                QuoteTrip = new QuoteTripDto { Route = "RJ-SP", DistanceKm = 460 },
+            };
+
+            _quoteTripRepository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<QuoteTrip, bool>>>()))
+                .ReturnsAsync(existingQuoteTrip);
+
+            // Act
+            var result = await _quoteService.Update(quoteDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal("RJ-SP", result.Data.QuoteTrip.Route);
+            _quoteTripRepository.Verify(
+                _ => _.UpdateAsync(It.Is<QuoteTrip>(qt => qt.Route == "RJ-SP")),
+                Times.Once
+            );
+            _quoteTripRepository.Verify(_ => _.AddAsync(It.IsAny<QuoteTrip>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task QuoteService_ConvertToTrip_ShouldCarryQuoteTripFieldsIntoTripDto()
+        {
+            // Arrange
+            var vehicleId = Guid.NewGuid();
+            var driverId = Guid.NewGuid();
+            var quoteDto = new QuoteDto
+            {
+                Id = Guid.NewGuid(),
+                QuoteNumber = "SER-Q00001",
+                Type = QuoteType.Trip,
+                BusinessPartnerId = Guid.NewGuid(),
+                QuoteTrip = new QuoteTripDto
+                {
+                    Route = "SP-RJ",
+                    DistanceKm = 450,
+                    DailyCount = 2,
+                    TransportLicenseNumber = "ANTT-123",
+                    VehicleId = vehicleId,
+                    DriverId = driverId,
+                },
+            };
+
+            TripDto capturedTripDto = null;
+            _tripService
+                .Setup(_ => _.Add(It.IsAny<TripDto>()))
+                .Callback<TripDto>(dto => capturedTripDto = dto)
+                .ReturnsAsync(new WebApiResponse<TripDto> { Status = ResponseStatus.Success });
+
+            // Act
+            var result = await _quoteService.ConvertToTrip(quoteDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(capturedTripDto);
+            Assert.Equal("SP-RJ", capturedTripDto.Route);
+            Assert.Equal(450, capturedTripDto.DistanceKm);
+            Assert.Equal(2, capturedTripDto.DailyCount);
+            Assert.Equal("ANTT-123", capturedTripDto.TransportLicenseNumber);
+            Assert.Equal(vehicleId, capturedTripDto.VehicleId);
+            Assert.Equal(driverId, capturedTripDto.DriverId);
         }
     }
 }
