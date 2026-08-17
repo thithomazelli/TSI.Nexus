@@ -35,6 +35,22 @@ const routes: Routes = [
     component: HomeComponent,
   },
   {
+    path: 'document-templates',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./document-templates/document-templates.module').then(
+        (m) => m.DocumentTemplatesModule,
+      ),
+  },
+  {
+    path: 'feature-toggles',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./feature-toggles/feature-toggles.module').then(
+        (m) => m.FeatureTogglesModule,
+      ),
+  },
+  {
     path: 'not-found',
     canActivate: [AuthorizationGuard],
     component: NotFoundComponent,

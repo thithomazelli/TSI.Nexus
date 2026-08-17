@@ -1,0 +1,65 @@
+<app-header
+  title="Templates de Documentos"
+  [navigationMenus]="[
+    { label: 'Home', link: '/home' },
+    { label: 'Templates de Documentos', link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <div class="card card-secondary card-outline">
+    <div class="card-body">
+      <p class="text-muted">
+        Baixe o HTML de cada documento gerado pelo sistema, edite o texto,
+        logotipo ou informações de rodapé que quiser e envie de volta.
+        Trechos como tabelas de produtos, totais e assinaturas continuam
+        sendo montados automaticamente pelo sistema a partir dos dados de
+        cada pedido/viagem/orçamento.
+      </p>
+
+      <div *ngIf="loading" class="text-center py-4">
+        <i class="bi bi-arrow-repeat"></i> Carregando...
+      </div>
+
+      <div *ngIf="!loading && templates.length === 0" class="text-muted py-3">
+        Nenhum template encontrado.
+      </div>
+
+      <ul *ngIf="!loading" class="list-group list-group-flush">
+        <li
+          *ngFor="let template of templates"
+          class="list-group-item d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <div class="fw-bold">{{ template.name }}</div>
+            <div class="text-muted small">{{ template.fileName }}</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm"
+              (click)="download(template)"
+            >
+              <i class="bi bi-download"></i> Baixar
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              [disabled]="uploadingType === template.type"
+              (click)="triggerUpload(fileInput)"
+            >
+              <i class="bi bi-upload"></i> Enviar
+            </button>
+            <input
+              #fileInput
+              type="file"
+              accept=".html,text/html"
+              class="d-none"
+              (change)="onFileSelected($event, template)"
+            />
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

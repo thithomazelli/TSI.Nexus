@@ -8,6 +8,8 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AccountService } from '../../core/services/account/account.service';
+import { FeatureFlagService } from '../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../core/models/feature-toggle.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -20,19 +22,29 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private transitionCleanups: (() => void)[] = [];
   private osInstance: any = null;
   private userSub: Subscription | null = null;
+  private featureFlagSub: Subscription | null = null;
 
   isAdmin = false;
+  isMaster = false;
+  isFleetModuleEnabled = true;
 
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
     private accountService: AccountService,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   ngOnInit(): void {
     this.userSub = this.accountService.user$.subscribe((user) => {
       this.isAdmin = !!user?.roles?.includes('Admin');
+      this.isMaster = !!user?.roles?.includes('Master');
     });
+    this.featureFlagSub = this.featureFlagService
+      .isEnabled(FeatureToggleKeys.FleetModule)
+      .subscribe((enabled) => {
+        this.isFleetModuleEnabled = enabled;
+      });
   }
 
   ngAfterViewInit(): void {
@@ -240,6 +252,10 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.userSub) {
       this.userSub.unsubscribe();
       this.userSub = null;
+    }
+    if (this.featureFlagSub) {
+      this.featureFlagSub.unsubscribe();
+      this.featureFlagSub = null;
     }
   }
 
