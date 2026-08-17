@@ -12,18 +12,24 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly VehicleService _vehicleService;
         private readonly Mock<IRepository<Vehicle>> _repository;
-        private readonly Mock<IRepository<Order>> _orderRepositoryMock;
+        private readonly Mock<IRepository<Trip>> _tripRepositoryMock;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logServiceMock;
         private readonly IList<Vehicle> _vehicleListMock;
 
         public VehicleServiceTests()
         {
             _repository = new Mock<IRepository<Vehicle>>();
-            _orderRepositoryMock = new Mock<IRepository<Order>>();
+            _tripRepositoryMock = new Mock<IRepository<Trip>>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _vehicleService = new VehicleService(
                 _repository.Object,
-                _orderRepositoryMock.Object,
+                _tripRepositoryMock.Object,
+                _featureToggleServiceMock.Object,
                 _logServiceMock.Object
             );
 
@@ -126,7 +132,7 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task VehicleService_Remove_ShouldReturnWarning_WhenVehicleIsLinkedToOrders()
+        public async Task VehicleService_Remove_ShouldReturnWarning_WhenVehicleIsLinkedToTrips()
         {
             // Arrange
             var vehicleMock = new Vehicle
@@ -135,8 +141,8 @@ namespace TSI.Friday.Services.Tests.Services
                 Plate = "ABC1D23",
             };
 
-            _orderRepositoryMock
-                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+            _tripRepositoryMock
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Trip, bool>>>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -148,7 +154,7 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task VehicleService_Remove_ShouldRemoveVehicleSuccessfully_WhenNotLinkedToOrders()
+        public async Task VehicleService_Remove_ShouldRemoveVehicleSuccessfully_WhenNotLinkedToTrips()
         {
             // Arrange
             var vehicleMock = new Vehicle
@@ -157,8 +163,8 @@ namespace TSI.Friday.Services.Tests.Services
                 Plate = "ABC1D23",
             };
 
-            _orderRepositoryMock
-                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+            _tripRepositoryMock
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Trip, bool>>>()))
                 .ReturnsAsync(false);
 
             // Act

@@ -13,6 +13,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<Commission> _commissionRepository;
         private readonly IRepository<Driver> _driverRepository;
         private readonly ISequenceService _sequenceService;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
@@ -24,6 +25,7 @@ namespace TSI.Friday.Services
             IRepository<Commission> commissionRepository,
             IRepository<Driver> driverRepository,
             ISequenceService sequenceService,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
@@ -31,6 +33,7 @@ namespace TSI.Friday.Services
             _commissionRepository = commissionRepository;
             _driverRepository = driverRepository;
             _sequenceService = sequenceService;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -129,6 +132,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhuma Ordem de Serviço com o ID {id} foi encontrada";
+                    return result;
+                }
+
                 result.Data = await _repository.GetByIdAsync(id, s => s.Commission);
                 result.Status = ResponseStatus.Success;
                 result.Message =
@@ -155,6 +166,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 result.Data = await _repository.QueryAsync(
                     _ => _.DriverId == driverId,
                     s => s.Commission

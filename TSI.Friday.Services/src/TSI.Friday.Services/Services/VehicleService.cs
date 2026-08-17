@@ -13,7 +13,8 @@ namespace TSI.Friday.Services
         /// Repository object created to access the Vehicle registers on database using EntityFramework.
         /// </summary>
         private readonly IRepository<Vehicle> _repository;
-        private readonly IRepository<Order> _orderRepository;
+        private readonly IRepository<Trip> _tripRepository;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
@@ -25,12 +26,14 @@ namespace TSI.Friday.Services
         /// </summary>
         public VehicleService(
             IRepository<Vehicle> repository,
-            IRepository<Order> orderRepository,
+            IRepository<Trip> tripRepository,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
             _repository = repository;
-            _orderRepository = orderRepository;
+            _tripRepository = tripRepository;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -112,7 +115,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (await _orderRepository.AnyAsync(_ => _.VehicleId == vehicle.Id))
+                if (await _tripRepository.AnyAsync(_ => _.VehicleId == vehicle.Id))
                 {
                     var message =
                         $"Veículo {vehicle.Plate} não pode ser removido pois está vinculado à uma ou mais viagens.";
@@ -150,6 +153,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 result.Data = await _repository.GetAllAsync();
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
@@ -173,6 +184,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhum Veículo com o ID {id} foi encontrado";
+                    return result;
+                }
+
                 result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
                 result.Message =

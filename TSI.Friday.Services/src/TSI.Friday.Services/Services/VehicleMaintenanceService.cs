@@ -11,6 +11,7 @@ namespace TSI.Friday.Services
 
         private readonly IRepository<VehicleMaintenance> _repository;
         private readonly IRepository<Vehicle> _vehicleRepository;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
@@ -20,11 +21,13 @@ namespace TSI.Friday.Services
         public VehicleMaintenanceService(
             IRepository<VehicleMaintenance> repository,
             IRepository<Vehicle> vehicleRepository,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
             _repository = repository;
             _vehicleRepository = vehicleRepository;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -129,6 +132,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 result.Data = await _repository.GetAllAsync(m => m.Vehicle);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
@@ -152,6 +163,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhuma Manutenção com o ID {id} foi encontrada";
+                    return result;
+                }
+
                 result.Data = await _repository.GetByIdAsync(id, m => m.Vehicle);
                 result.Status = ResponseStatus.Success;
                 result.Message =

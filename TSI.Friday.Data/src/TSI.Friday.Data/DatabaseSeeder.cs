@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TSI.Friday.Contracts.Models;
@@ -147,6 +148,28 @@ namespace TSI.Friday.Data
                             logger?.LogError("Failed to add existing master user to role 'Master': {Errors}", string.Join(';', addRoleResult.Errors));
                         }
                     }
+                }
+
+                // ensure the fleet module feature toggle exists. Enabled by default, so this
+                // never changes the behaviour of a database that already has real fleet data.
+                var context = provider.GetRequiredService<MyDBContextEF>();
+                var fleetModuleExists = await context.FeatureToggle.AnyAsync(f =>
+                    f.Key == FeatureToggleKeys.FleetModule
+                );
+                if (!fleetModuleExists)
+                {
+                    await context.FeatureToggle.AddAsync(
+                        new FeatureToggle
+                        {
+                            Key = FeatureToggleKeys.FleetModule,
+                            Name = "Módulo de Frota / Viagens",
+                            Description =
+                                "Controla a exibição de Viagens, Veículos, Motoristas, Ordens de Serviço e demais dados de frota em todo o sistema.",
+                            Enabled = true,
+                        }
+                    );
+                    await context.SaveChangesAsync();
+                    logger?.LogInformation("FeatureToggle 'FleetModule' created (enabled)");
                 }
             }
             catch (Exception ex)

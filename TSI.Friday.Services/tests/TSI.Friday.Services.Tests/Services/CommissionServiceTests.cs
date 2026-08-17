@@ -11,13 +11,22 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly CommissionService _service;
         private readonly Mock<IRepository<Commission>> _repository;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logServiceMock;
 
         public CommissionServiceTests()
         {
             _repository = new Mock<IRepository<Commission>>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
-            _service = new CommissionService(_repository.Object, _logServiceMock.Object);
+            _service = new CommissionService(
+                _repository.Object,
+                _featureToggleServiceMock.Object,
+                _logServiceMock.Object
+            );
         }
 
         [Fact]

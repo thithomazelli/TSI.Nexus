@@ -10,15 +10,21 @@ namespace TSI.Friday.Services
         #region Properties
 
         private readonly IRepository<TripLeg> _repository;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
 
         #region Public methods
 
-        public TripLegService(IRepository<TripLeg> repository, ILogService logService)
+        public TripLegService(
+            IRepository<TripLeg> repository,
+            IFeatureToggleService featureToggleService,
+            ILogService logService
+        )
         {
             _repository = repository;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -104,6 +110,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhum trecho da viagem com o ID {id} foi encontrado";
+                    return result;
+                }
+
                 result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
                 result.Message =
@@ -130,6 +144,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var legs = await _repository.QueryAsync(_ => _.TripId == tripId);
                 result.Data = legs.OrderBy(l => l.SequenceNumber);
                 result.Status = ResponseStatus.Success;

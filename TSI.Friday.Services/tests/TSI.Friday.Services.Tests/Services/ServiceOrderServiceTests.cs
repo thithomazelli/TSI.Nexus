@@ -14,6 +14,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly Mock<IRepository<Commission>> _commissionRepository;
         private readonly Mock<IRepository<Driver>> _driverRepository;
         private readonly Mock<ISequenceService> _sequenceService;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logServiceMock;
 
         public ServiceOrderServiceTests()
@@ -22,12 +23,17 @@ namespace TSI.Friday.Services.Tests.Services
             _commissionRepository = new Mock<IRepository<Commission>>();
             _driverRepository = new Mock<IRepository<Driver>>();
             _sequenceService = new Mock<ISequenceService>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _service = new ServiceOrderService(
                 _repository.Object,
                 _commissionRepository.Object,
                 _driverRepository.Object,
                 _sequenceService.Object,
+                _featureToggleServiceMock.Object,
                 _logServiceMock.Object
             );
 

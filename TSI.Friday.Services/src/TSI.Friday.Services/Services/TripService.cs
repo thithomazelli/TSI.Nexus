@@ -21,6 +21,7 @@ namespace TSI.Friday.Services
         private readonly IServiceOrderService _serviceOrderService;
         private readonly ISequenceService _sequenceService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly IMapper _mapper;
         private readonly ILogService _logService;
 
@@ -39,6 +40,7 @@ namespace TSI.Friday.Services
             IServiceOrderService serviceOrderService,
             ISequenceService sequenceService,
             ICurrentUserService currentUserService,
+            IFeatureToggleService featureToggleService,
             IMapper mapper,
             ILogService logService
         )
@@ -49,6 +51,7 @@ namespace TSI.Friday.Services
             _serviceOrderService = serviceOrderService;
             _sequenceService = sequenceService;
             _currentUserService = currentUserService;
+            _featureToggleService = featureToggleService;
             _mapper = mapper;
             _logService = logService;
         }
@@ -265,6 +268,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var trips = await _repository.GetAllAsync(
                     t => t.BusinessPartner,
                     t => t.Vehicle,
@@ -295,6 +306,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhuma Viagem com o ID {id} foi encontrada";
+                    return result;
+                }
+
                 var trip = await _repository.GetByIdAsync(
                     id,
                     t => t.BusinessPartner,

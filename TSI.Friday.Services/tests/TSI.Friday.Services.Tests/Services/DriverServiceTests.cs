@@ -11,18 +11,24 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly DriverService _driverService;
         private readonly Mock<IRepository<Driver>> _repository;
-        private readonly Mock<IRepository<Order>> _orderRepositoryMock;
+        private readonly Mock<IRepository<Trip>> _tripRepositoryMock;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logServiceMock;
         private readonly IList<Driver> _driverListMock;
 
         public DriverServiceTests()
         {
             _repository = new Mock<IRepository<Driver>>();
-            _orderRepositoryMock = new Mock<IRepository<Order>>();
+            _tripRepositoryMock = new Mock<IRepository<Trip>>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _driverService = new DriverService(
                 _repository.Object,
-                _orderRepositoryMock.Object,
+                _tripRepositoryMock.Object,
+                _featureToggleServiceMock.Object,
                 _logServiceMock.Object
             );
 
@@ -127,7 +133,7 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task DriverService_Remove_ShouldReturnWarning_WhenDriverIsLinkedToOrders()
+        public async Task DriverService_Remove_ShouldReturnWarning_WhenDriverIsLinkedToTrips()
         {
             // Arrange
             var driverMock = new Driver
@@ -136,8 +142,8 @@ namespace TSI.Friday.Services.Tests.Services
                 Name = "João da Silva",
             };
 
-            _orderRepositoryMock
-                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+            _tripRepositoryMock
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Trip, bool>>>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -149,7 +155,7 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task DriverService_Remove_ShouldRemoveDriverSuccessfully_WhenNotLinkedToOrders()
+        public async Task DriverService_Remove_ShouldRemoveDriverSuccessfully_WhenNotLinkedToTrips()
         {
             // Arrange
             var driverMock = new Driver
@@ -158,8 +164,8 @@ namespace TSI.Friday.Services.Tests.Services
                 Name = "João da Silva",
             };
 
-            _orderRepositoryMock
-                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+            _tripRepositoryMock
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Trip, bool>>>()))
                 .ReturnsAsync(false);
 
             // Act

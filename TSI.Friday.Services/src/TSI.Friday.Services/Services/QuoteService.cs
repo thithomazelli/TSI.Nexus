@@ -20,6 +20,7 @@ namespace TSI.Friday.Services
         private readonly ILogService _logService;
         private readonly IRepository<Product> _productRepository;
         private readonly IOrderService _orderService;
+        private readonly IFeatureToggleService _featureToggleService;
         #endregion Properties
 
         #region Public methods
@@ -30,7 +31,8 @@ namespace TSI.Friday.Services
             IMapper mapper,
             ILogService logService,
             IRepository<Product> productRepository,
-            IOrderService orderService
+            IOrderService orderService,
+            IFeatureToggleService featureToggleService
         )
         {
             _repository = repository;
@@ -39,6 +41,7 @@ namespace TSI.Friday.Services
             _logService = logService;
             _productRepository = productRepository;
             _orderService = orderService;
+            _featureToggleService = featureToggleService;
         }
 
         /// <inheritdoc />
@@ -151,6 +154,11 @@ namespace TSI.Friday.Services
                     q => q.QuoteProducts
                 );
 
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    quotes = quotes.Where(q => q.Type != QuoteType.Trip).ToList();
+                }
+
                 result.Data = _mapper.Map<IEnumerable<QuoteDto>>(quotes);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -178,6 +186,14 @@ namespace TSI.Friday.Services
                     q => q.BusinessPartner,
                     q => q.QuoteProducts
                 );
+
+                if (
+                    quote?.Type == QuoteType.Trip
+                    && !await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule)
+                )
+                {
+                    quote = null;
+                }
 
                 result.Data = _mapper.Map<QuoteDto>(quote);
                 result.Status = ResponseStatus.Success;

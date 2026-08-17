@@ -70,6 +70,8 @@ namespace TSI.Friday.Data
 
         public DbSet<DocumentTemplate> DocumentTemplate { get; set; }
 
+        public DbSet<FeatureToggle> FeatureToggle { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -348,6 +350,9 @@ namespace TSI.Friday.Data
             // One DocumentTemplate row per DocumentTemplateType - it's "the current template for
             // each document", not a list of arbitrary files.
             modelBuilder.Entity<DocumentTemplate>().HasIndex(dt => dt.Type).IsUnique();
+
+            // One FeatureToggle row per Key - see FeatureToggleKeys for the known values.
+            modelBuilder.Entity<FeatureToggle>().HasIndex(f => f.Key).IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }

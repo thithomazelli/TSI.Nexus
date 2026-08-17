@@ -12,6 +12,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly FuelLogService _service;
         private readonly Mock<IRepository<FuelLog>> _repository;
         private readonly Mock<IRepository<Vehicle>> _vehicleRepository;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logServiceMock;
         private readonly Guid _vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000010");
 
@@ -19,10 +20,15 @@ namespace TSI.Friday.Services.Tests.Services
         {
             _repository = new Mock<IRepository<FuelLog>>();
             _vehicleRepository = new Mock<IRepository<Vehicle>>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _service = new FuelLogService(
                 _repository.Object,
                 _vehicleRepository.Object,
+                _featureToggleServiceMock.Object,
                 _logServiceMock.Object
             );
         }

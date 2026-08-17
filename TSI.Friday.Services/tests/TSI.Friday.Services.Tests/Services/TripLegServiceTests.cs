@@ -11,14 +11,23 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly TripLegService _service;
         private readonly Mock<IRepository<TripLeg>> _repository;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logServiceMock;
         private readonly Guid _tripId = Guid.Parse("00000000-0000-0000-0000-000000000010");
 
         public TripLegServiceTests()
         {
             _repository = new Mock<IRepository<TripLeg>>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
-            _service = new TripLegService(_repository.Object, _logServiceMock.Object);
+            _service = new TripLegService(
+                _repository.Object,
+                _featureToggleServiceMock.Object,
+                _logServiceMock.Object
+            );
         }
 
         [Fact]

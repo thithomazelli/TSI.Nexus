@@ -113,6 +113,7 @@ builder
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireAdmin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("RequireMaster", policy => policy.RequireRole("Master"));
 });
 
 builder.Services.AddCors();

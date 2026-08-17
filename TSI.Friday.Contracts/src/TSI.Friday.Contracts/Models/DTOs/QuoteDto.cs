@@ -16,6 +16,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public QuoteStatus Status { get; set; }
 
+        public QuoteType Type { get; set; }
+
         public string Description { get; set; }
 
         public decimal Price { get; set; }

@@ -11,6 +11,7 @@ namespace TSI.Friday.Services
 
         private readonly IRepository<FuelLog> _repository;
         private readonly IRepository<Vehicle> _vehicleRepository;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
@@ -20,11 +21,13 @@ namespace TSI.Friday.Services
         public FuelLogService(
             IRepository<FuelLog> repository,
             IRepository<Vehicle> vehicleRepository,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
             _repository = repository;
             _vehicleRepository = vehicleRepository;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -116,6 +119,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhum abastecimento com o ID {id} foi encontrado";
+                    return result;
+                }
+
                 result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
                 result.Message =
@@ -142,6 +153,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 result.Data = await _repository.QueryAsync(_ => _.VehicleId == vehicleId);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";

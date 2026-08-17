@@ -10,15 +10,21 @@ namespace TSI.Friday.Services
         #region Properties
 
         private readonly IRepository<Commission> _repository;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
 
         #region Public methods
 
-        public CommissionService(IRepository<Commission> repository, ILogService logService)
+        public CommissionService(
+            IRepository<Commission> repository,
+            IFeatureToggleService featureToggleService,
+            ILogService logService
+        )
         {
             _repository = repository;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -58,6 +64,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhuma comissão com o ID {id} foi encontrada";
+                    return result;
+                }
+
                 result.Data = await _repository.GetByIdAsync(id);
                 result.Status = ResponseStatus.Success;
                 result.Message =
@@ -84,6 +98,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 result.Data = await _repository.QueryAsync(_ => _.DriverId == driverId);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
