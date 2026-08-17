@@ -200,6 +200,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message =
+                        "Não é possível gerar Ordem de Serviço: o módulo de Frota está desabilitado.";
+                    return result;
+                }
+
                 if (trip.DriverId == null || trip.DriverId == Guid.Empty)
                 {
                     result.Status = ResponseStatus.Warning;

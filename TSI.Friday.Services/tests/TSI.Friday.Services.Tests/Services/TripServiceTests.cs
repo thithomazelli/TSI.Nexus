@@ -592,5 +592,80 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(ResponseStatus.Warning, result.Status);
             _repository.Verify(r => r.UpdateAsync(It.IsAny<Trip>()), Times.Never);
         }
+
+        [Fact]
+        public async Task TripService_FindByTripNumber_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleService
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _tripService.FindByTripNumber("SER-V00001");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            _repository.Verify(
+                r =>
+                    r.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>[]>()
+                    ),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task TripService_FindByBusinessPartnerId_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var businessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            _featureToggleService
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _tripService.FindByBusinessPartnerId(businessPartnerId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task TripService_FindByDriverId_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var driverId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            _featureToggleService
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _tripService.FindByDriverId(driverId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task TripService_FindByVehicleId_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            _featureToggleService
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _tripService.FindByVehicleId(vehicleId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
     }
 }

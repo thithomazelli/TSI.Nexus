@@ -218,6 +218,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhum Veículo com placa {plate} foi encontrado";
+                    return result;
+                }
+
                 result.Data = await _repository.FirstOrDefaultAsync(_ => _.Plate.Equals(plate));
                 result.Status = ResponseStatus.Success;
                 result.Message =
@@ -244,6 +252,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 result.Data = await _repository.QueryAsync(_ =>
                     _.Status == VehicleStatus.Available
                 );

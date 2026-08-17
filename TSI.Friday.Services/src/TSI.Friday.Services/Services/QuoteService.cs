@@ -228,6 +228,14 @@ namespace TSI.Friday.Services
                     q => q.BusinessPartner
                 );
 
+                if (
+                    quote?.Type == QuoteType.Trip
+                    && !await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule)
+                )
+                {
+                    quote = null;
+                }
+
                 result.Data = _mapper.Map<QuoteDto>(quote);
                 result.Status = ResponseStatus.Success;
                 result.Message =
@@ -258,6 +266,12 @@ namespace TSI.Friday.Services
                 var quotes = await _repository.QueryAsync(q =>
                     q.BusinessPartnerId == businessPartnerId
                 );
+
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    quotes = quotes.Where(q => q.Type != QuoteType.Trip).ToList();
+                }
+
                 result.Data = _mapper.Map<IEnumerable<QuoteDto>>(quotes);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -287,6 +301,12 @@ namespace TSI.Friday.Services
                 var quotes = await _repository.QueryAsync(q =>
                     q.QuoteProducts.Any(qp => qp.ProductId == productId)
                 );
+
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    quotes = quotes.Where(q => q.Type != QuoteType.Trip).ToList();
+                }
+
                 result.Data = _mapper.Map<IEnumerable<QuoteDto>>(quotes);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -477,6 +497,14 @@ namespace TSI.Friday.Services
                 {
                     result.Status = ResponseStatus.Error;
                     result.Message = "Orçamento inválido.";
+                    return result;
+                }
+
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message =
+                        "Não é possível converter em Viagem: o módulo de Frota está desabilitado.";
                     return result;
                 }
 

@@ -214,6 +214,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhum Motorista com CPF {socialSecurityCard} foi encontrado";
+                    return result;
+                }
+
                 result.Data = await _repository.FirstOrDefaultAsync(_ =>
                     _.SocialSecurityCard.Equals(socialSecurityCard)
                 );
@@ -246,6 +254,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 result.Data = await _repository.QueryAsync(_ => _.Status == DriverStatus.Active);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
@@ -271,6 +287,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var threshold = DateTime.UtcNow.Date.AddDays(daysAhead);
 
                 result.Data = await _repository.QueryAsync(_ =>

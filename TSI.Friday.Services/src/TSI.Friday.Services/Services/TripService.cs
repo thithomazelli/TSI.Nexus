@@ -364,6 +364,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhuma Viagem com o número {tripNumber} foi encontrada";
+                    return result;
+                }
+
                 var trip = await _repository.FirstOrDefaultAsync(
                     t => t.TripNumber == tripNumber,
                     t => t.BusinessPartner,
@@ -399,6 +407,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var trips = await _repository.QueryAsync(
                     t => t.BusinessPartnerId == businessPartnerId,
                     p => p.Transaction
@@ -429,6 +445,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var trips = await _repository.QueryAsync(
                     t => t.DriverId == driverId,
                     p => p.Transaction
@@ -455,6 +479,14 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var trips = await _repository.QueryAsync(
                     t => t.VehicleId == vehicleId,
                     p => p.Transaction

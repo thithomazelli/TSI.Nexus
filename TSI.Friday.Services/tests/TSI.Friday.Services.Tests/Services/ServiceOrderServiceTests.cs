@@ -55,6 +55,30 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
+        public async Task ServiceOrderService_GenerateForTrip_ShouldReturnWarning_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var trip = new Trip
+            {
+                Id = Guid.NewGuid(),
+                TripNumber = "VIA-001",
+                DriverId = Guid.NewGuid(),
+                TotalPrice = 1000,
+            };
+
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.GenerateForTrip(trip);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            _repository.Verify(_ => _.AddAsync(It.IsAny<ServiceOrder>()), Times.Never);
+        }
+
+        [Fact]
         public async Task ServiceOrderService_GenerateForTrip_ShouldReturnWarning_WhenServiceOrderAlreadyExistsForTrip()
         {
             // Arrange
