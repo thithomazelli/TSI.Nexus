@@ -20,6 +20,7 @@ namespace TSI.Friday.Services
         private readonly ILogService _logService;
         private readonly IRepository<Product> _productRepository;
         private readonly IOrderService _orderService;
+        private readonly ITripService _tripService;
         private readonly IFeatureToggleService _featureToggleService;
         #endregion Properties
 
@@ -32,6 +33,7 @@ namespace TSI.Friday.Services
             ILogService logService,
             IRepository<Product> productRepository,
             IOrderService orderService,
+            ITripService tripService,
             IFeatureToggleService featureToggleService
         )
         {
@@ -41,6 +43,7 @@ namespace TSI.Friday.Services
             _logService = logService;
             _productRepository = productRepository;
             _orderService = orderService;
+            _tripService = tripService;
             _featureToggleService = featureToggleService;
         }
 
@@ -459,6 +462,83 @@ namespace TSI.Friday.Services
                 _logService.LogException(ex, "QuoteService.ConvertToOrder", quoteDto);
                 result.Status = ResponseStatus.Error;
                 result.Message = "Erro ao converter orçamento para pedido. " + ex.Message;
+                return result;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<QuoteDto>> ConvertToTrip(QuoteDto quoteDto)
+        {
+            var result = new WebApiResponse<QuoteDto>();
+
+            try
+            {
+                if (quoteDto == null)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = "Orçamento inválido.";
+                    return result;
+                }
+
+                var tripDto = new TripDto
+                {
+                    BusinessPartnerId = quoteDto.BusinessPartnerId,
+                    BusinessPartnerName = quoteDto.BusinessPartnerName,
+                    Date = DateTime.UtcNow,
+                    Discount = quoteDto.Discount,
+                    Price = quoteDto.Price,
+                    TotalPrice = quoteDto.TotalPrice,
+                    QuoteNumber = quoteDto.QuoteNumber,
+                };
+
+                if (
+                    quoteDto.TotalOfPayments > 0
+                    || quoteDto.PaymentTotalPrice > 0m
+                    || quoteDto.TotalOfExpenses > 0
+                    || quoteDto.ExpenseTotalPrice > 0m
+                )
+                {
+                    var transactionDto = new TransactionDto
+                    {
+                        Date = DateTime.UtcNow,
+                        Description =
+                            $"Transação da Viagem a partir do Orçamento {quoteDto.QuoteNumber}",
+                        Status = PaymentStatus.Pending,
+                        TotalOfPayments = quoteDto.TotalOfPayments,
+                        PaymentTotalPrice = quoteDto.PaymentTotalPrice,
+                        TotalOfExpenses = quoteDto.TotalOfExpenses,
+                        ExpenseTotalPrice = quoteDto.ExpenseTotalPrice,
+                        Condition = quoteDto.Condition,
+                        Method = quoteDto.Method,
+                        BusinessPartnerId = quoteDto.BusinessPartnerId,
+                        TripNumber = tripDto.QuoteNumber,
+                        Type = PaymentType.Incoming,
+                    };
+
+                    tripDto.Transaction = transactionDto;
+                }
+
+                await _tripService.Add(tripDto);
+
+                // set quote status to Converted and update repository
+                var quoteEntity = await _repository.GetByIdAsync(quoteDto.Id, q => q.QuoteProducts);
+                if (quoteEntity != null)
+                {
+                    quoteEntity.Status = QuoteStatus.Converted;
+                    await _repository.UpdateAsync(quoteEntity);
+                }
+
+                result.Data = _mapper.Map<QuoteDto>(quoteEntity ?? _mapper.Map<Quote>(quoteDto));
+                result.Status = ResponseStatus.Success;
+                result.Message = "Orçamento convertido em viagem com sucesso";
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "QuoteService.ConvertToTrip", quoteDto);
+                result.Status = ResponseStatus.Error;
+                result.Message = "Erro ao converter orçamento para viagem. " + ex.Message;
                 return result;
             }
         }

@@ -15,6 +15,7 @@ import {
   BusinessPartner,
   Quote,
   QuoteStatus,
+  QuoteType,
   FormBaseComponent,
   ModalService,
   CurrencyService,
@@ -180,7 +181,11 @@ export class QuoteFormComponent
     }
   }
 
-  convertToOrder(): void {
+  isTripQuote(): boolean {
+    return this.data?.type === QuoteType.Trip;
+  }
+
+  convert(): void {
     if (!this.data) {
       this.notificationService?.showMessage(
         'Error',
@@ -189,7 +194,11 @@ export class QuoteFormComponent
       return;
     }
 
-    this.quoteService.convertToOrder(this.data).subscribe({
+    const convert$ = this.isTripQuote()
+      ? this.quoteService.convertToTrip(this.data)
+      : this.quoteService.convertToOrder(this.data);
+
+    convert$.subscribe({
       next: (response: WebApiResponse<any>) => {
         // Se status for Warning, exibe confirmação
         if (response.status === 'Warning') {

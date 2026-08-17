@@ -4,11 +4,14 @@ import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
 import {
   ApiType,
   Company,
+  FeatureFlagService,
+  FeatureToggleKeys,
   Individual,
   ModalService,
   NotificationService,
   Quote,
   QuoteService,
+  QuoteType,
   ResponseStatus,
   WebApiResponse,
 } from '@friday/core';
@@ -49,11 +52,13 @@ export class QuotesComponent implements OnInit, OnDestroy {
     Closed: false,
   };
   showFiltersOnInit = false;
+  isFleetModuleEnabled = true;
 
   private _quoteChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
   constructor(
+    private featureFlagService: FeatureFlagService,
     private modalService: ModalService,
     private notificationService: NotificationService,
     private quoteService: QuoteService,
@@ -67,6 +72,13 @@ export class QuotesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
         this.getQuotes(() => this.applyFilters());
+      });
+
+    this.featureFlagService
+      .isEnabled(FeatureToggleKeys.FleetModule)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((enabled) => {
+        this.isFleetModuleEnabled = enabled;
       });
   }
 
@@ -83,6 +95,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
       initialState = {
         ...initialState,
         data: <Quote>{
+          type: initialState?.data?.type,
           businessPartnerId: this.parentData?.id,
           businessPartnerName: this.parentData?.name,
           quoteProducts: [],
@@ -94,6 +107,28 @@ export class QuotesComponent implements OnInit, OnDestroy {
       QuoteDetailsModalComponent,
       initialState,
     );
+  }
+
+  openNewProductQuoteModal(): void {
+    this.openModal({
+      isEdit: false,
+      id: null,
+      data: <Quote>{
+        type: QuoteType.Product,
+        quoteProducts: [],
+      },
+    });
+  }
+
+  openNewTripQuoteModal(): void {
+    this.openModal({
+      isEdit: false,
+      id: null,
+      data: <Quote>{
+        type: QuoteType.Trip,
+        quoteProducts: [],
+      },
+    });
   }
 
   deleteQuote(quote: Quote): void {
@@ -182,6 +217,19 @@ export class QuotesComponent implements OnInit, OnDestroy {
         cellRenderer: (params: ValueFormatterParams) => {
           const value = params.value ?? '';
           return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'type',
+        headerName: 'Tipo',
+        sortable: true,
+        filter: true,
+        width: 100,
+        cellRenderer: (params: ICellRendererParams) => {
+          const isTrip = params.value === 'Trip';
+          const label = isTrip ? 'Viagem' : 'Produto';
+          const color = isTrip ? 'info' : 'secondary';
+          return `<span class="badge bg-${color}">${label}</span>`;
         },
       },
       {

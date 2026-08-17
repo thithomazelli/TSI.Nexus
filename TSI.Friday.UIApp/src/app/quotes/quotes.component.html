@@ -8,9 +8,30 @@
 ></app-header>
 
 <div class="app-content">
+  <div class="d-flex justify-content-end gap-2 mb-2">
+    <button
+      type="button"
+      class="btn btn-success"
+      (click)="openNewProductQuoteModal()"
+    >
+      <i class="bi bi-plus-lg"></i>
+      Novo Orçamento de Produto
+    </button>
+    <button
+      *ngIf="isFleetModuleEnabled"
+      type="button"
+      class="btn btn-success"
+      (click)="openNewTripQuoteModal()"
+    >
+      <i class="bi bi-plus-lg"></i>
+      Novo Orçamento de Viagem
+    </button>
+  </div>
+
   <app-grid
     [compactView]="compact"
     [className]="'Orçamentos'"
+    [canAdd]="false"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"

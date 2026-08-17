@@ -89,4 +89,10 @@ export class QuoteService {
       .post<WebApiResponse<any>>(`${this._baseEndPoint}/convertToOrder`, quote)
       .pipe(tap(() => this._quoteChangedSubject.next()));
   }
+
+  convertToTrip(quote: Quote): Observable<WebApiResponse<any>> {
+    return this.apiService
+      .post<WebApiResponse<any>>(`${this._baseEndPoint}/convertToTrip`, quote)
+      .pipe(tap(() => this._quoteChangedSubject.next()));
+  }
 }

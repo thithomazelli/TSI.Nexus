@@ -361,12 +361,8 @@
     <div class="row mt-3">
       <div class="col-6 d-flex justify-content-start align-items-center">
         <ng-container *ngIf="canDisplayConvertButton()">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="convertToOrder()"
-          >
-            Converter em Pedido
+          <button type="button" class="btn btn-primary" (click)="convert()">
+            {{ isTripQuote() ? "Converter em Viagem" : "Converter em Pedido" }}
           </button>
         </ng-container>
       </div>

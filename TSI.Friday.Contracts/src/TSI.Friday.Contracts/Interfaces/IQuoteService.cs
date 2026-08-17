@@ -71,5 +71,12 @@ namespace TSI.Friday.Contracts.Interfaces
         /// Otherwise calls OrderService.Add() to create the order and returns the converted Quote (status updated to Converted).
         /// </summary>
         Task<WebApiResponse<QuoteDto>> ConvertToOrder(QuoteDto quoteDto);
+
+        /// <summary>
+        /// Convert a Quote of type Trip into a Trip. Trip has no line items, so there is no
+        /// stock check - calls TripService.Add() to create the trip and returns the converted
+        /// Quote (status updated to Converted).
+        /// </summary>
+        Task<WebApiResponse<QuoteDto>> ConvertToTrip(QuoteDto quoteDto);
     }
 }

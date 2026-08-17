@@ -79,6 +79,23 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
+        /// Convert a quote of type Trip into a trip, delegating creation to TripService.
+        /// </summary>
+        /// <param name="quoteDto">Quote DTO to convert</param>
+        [HttpPost]
+        [Route("ConvertToTrip")]
+        public async Task<IActionResult> ConvertToTrip([FromBody] QuoteDto quoteDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var webApiResponse = await _quoteService.ConvertToTrip(quoteDto);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
         /// Remove quote when it is identified on database
         /// </summary>
         /// <param name="quoteDto">Object to be removed</param>
