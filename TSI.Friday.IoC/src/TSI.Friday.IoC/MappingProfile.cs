@@ -188,6 +188,94 @@ namespace TSI.Friday.IoC
             );
             // removed AfterMap here because transaction status should be computed when mapping to DTO (entity -> dto)
 
+            // Trip mappings
+            CreateMap<Trip, TripDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.VehiclePlate,
+                    opt => opt.MapFrom(src => src.Vehicle != null ? src.Vehicle.Plate : null)
+                )
+                .ForMember(
+                    dest => dest.DriverName,
+                    opt => opt.MapFrom(src => src.Driver != null ? src.Driver.Name : null)
+                )
+                .ForMember(dest => dest.Transaction, opt => opt.MapFrom(src => src.Transaction))
+                // also map nested flags directly from entity Transaction.Payments when possible
+                .ForPath(
+                    dest => dest.Transaction.HasOpenedPayments,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Transaction != null
+                            && src.Transaction.Payments != null
+                            && src.Transaction.Payments.Any(p => p.Status != PaymentStatus.Approved)
+                        )
+                )
+                .ForPath(
+                    dest => dest.Transaction.MarkAllPaymentsAsApproved,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Transaction != null
+                            && src.Transaction.Payments != null
+                            && src.Transaction.Payments.Any()
+                            && src.Transaction.Payments.All(p => p.Status == PaymentStatus.Approved)
+                        )
+                )
+                .AfterMap(
+                    (src, dest) =>
+                    {
+                        // compute TransactionDto.Status and other flags from mapped PaymentDto statuses when mapping entity -> dto
+                        if (dest?.Transaction != null)
+                        {
+                            var payments =
+                                dest.Transaction.Payments?.ToList() ?? new List<PaymentDto>();
+                            if (payments.Any())
+                            {
+                                if (payments.Any(p => p.Status == PaymentStatus.Delayed))
+                                {
+                                    dest.Transaction.Status = PaymentStatus.Delayed;
+                                }
+                                else if (payments.Any(p => p.Status == PaymentStatus.Pending))
+                                {
+                                    dest.Transaction.Status = PaymentStatus.Pending;
+                                }
+                                else if (payments.All(p => p.Status == PaymentStatus.Approved))
+                                {
+                                    dest.Transaction.Status = PaymentStatus.Approved;
+                                }
+
+                                dest.Transaction.HasOpenedPayments = payments.Any(p =>
+                                    p.Status != PaymentStatus.Approved
+                                );
+
+                                dest.Transaction.MarkAllPaymentsAsApproved =
+                                    payments.Any()
+                                    && payments.All(p => p.Status == PaymentStatus.Approved);
+                            }
+                            else
+                            {
+                                dest.Transaction.HasOpenedPayments = false;
+                                dest.Transaction.MarkAllPaymentsAsApproved = false;
+                            }
+                        }
+                    }
+                );
+
+            var tripDtoToTripMap = CreateMap<TripDto, Trip>();
+            tripDtoToTripMap.ForMember(
+                dest => dest.Transaction,
+                opt => opt.MapFrom(src => src.Transaction)
+            );
+            tripDtoToTripMap.ForAllMembers(opts =>
+                opts.Condition((src, dest, srcMember) => srcMember != null)
+            );
+
             // OrderProduct mappings
             CreateMap<OrderProduct, OrderProductDto>()
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
@@ -236,6 +324,10 @@ namespace TSI.Friday.IoC
                 .ForMember(
                     dest => dest.OrderNumber,
                     opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderNumber : null)
+                )
+                .ForMember(
+                    dest => dest.TripNumber,
+                    opt => opt.MapFrom(src => src.Trip != null ? src.Trip.TripNumber : null)
                 )
                 .ForMember(
                     dest => dest.BusinessPartnerName,
@@ -312,6 +404,10 @@ namespace TSI.Friday.IoC
                 .ForMember(
                     dest => dest.OrderNumber,
                     opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderNumber : null)
+                )
+                .ForMember(
+                    dest => dest.TripNumber,
+                    opt => opt.MapFrom(src => src.Trip != null ? src.Trip.TripNumber : null)
                 )
                 .ForMember(
                     dest => dest.BusinessPartnerName,
