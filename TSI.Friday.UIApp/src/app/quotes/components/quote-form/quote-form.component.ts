@@ -13,12 +13,16 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   BusinessPartnerService,
   BusinessPartner,
+  Driver,
+  DriverService,
   Quote,
   QuoteStatus,
   QuoteType,
   FormBaseComponent,
   ModalService,
   CurrencyService,
+  Vehicle,
+  VehicleService,
   WebApiResponse,
   ApiType,
   ResponseStatus,
@@ -69,6 +73,9 @@ export class QuoteFormComponent
   businessPartnersArray$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
+  vehicles: Vehicle[] = [];
+  drivers: Driver[] = [];
+
   quoteStatusOptions = [
     { value: QuoteStatus.Open, label: 'Em Aberto' },
     { value: QuoteStatus.Canceled, label: 'Cancelado' },
@@ -93,11 +100,13 @@ export class QuoteFormComponent
   constructor(
     private businessPartnerService: BusinessPartnerService,
     private currencyService: CurrencyService,
+    private driverService: DriverService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
     private quoteService: QuoteService,
     private quoteProductService: QuoteProductService,
+    private vehicleService: VehicleService,
     private routerService: Router,
   ) {
     super();
@@ -110,6 +119,10 @@ export class QuoteFormComponent
     this.setupAutoComplete();
     this.totalPriceChange();
     this.setupPaymentPriceWatcher();
+
+    if (this.isTripQuote()) {
+      this.loadVehiclesAndDrivers();
+    }
 
     if (this.isQuoteConverted && this.isQuoteConverted()) {
       this.form.disable();
@@ -407,6 +420,39 @@ export class QuoteFormComponent
         }),
       );
     }
+
+    if (this.isTripQuote()) {
+      this.addQuoteTripForm();
+    }
+  }
+
+  private addQuoteTripForm(): void {
+    if (!this.form.contains('quoteTrip')) {
+      this.form.addControl(
+        'quoteTrip',
+        this.formBuilder.group({
+          id: [null],
+          route: [''],
+          distanceKm: [0, [Validators.min(0)]],
+          dailyCount: [0, [Validators.min(0)]],
+          transportLicenseNumber: [''],
+          transportLicenseExpiryDate: [null as Date | null],
+          vehicleId: [null],
+          driverId: [null],
+          quoteId: [null],
+        }),
+      );
+    }
+  }
+
+  private loadVehiclesAndDrivers(): void {
+    const vehicleSub = this.vehicleService
+      .getAll()
+      .subscribe((response) => (this.vehicles = response.data ?? []));
+    const driverSub = this.driverService
+      .getAll()
+      .subscribe((response) => (this.drivers = response.data ?? []));
+    this._subscriptions.push(vehicleSub, driverSub);
   }
 
   private patchFormWithData(): void {

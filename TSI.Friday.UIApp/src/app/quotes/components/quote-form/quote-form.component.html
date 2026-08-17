@@ -177,6 +177,106 @@
         </div>
       </section>
 
+      <!-- Dados da viagem: veículo, motorista e roteiro (apenas orçamentos do tipo Viagem) -->
+      <section *ngIf="isTripQuote()" class="quote-section mt-2" formGroupName="quoteTrip">
+        <h5>Dados da Viagem</h5>
+        <div class="row g-1 mb-1">
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill select-floating">
+                <select formControlName="vehicleId" class="form-select">
+                  <option [ngValue]="null">Sem veículo</option>
+                  <option *ngFor="let v of vehicles" [ngValue]="v.id">
+                    {{ v.plate }} - {{ v.brand }} {{ v.model }} ({{
+                      v.status
+                    }})
+                  </option>
+                </select>
+                <label>Veículo</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-bus-front"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill select-floating">
+                <select formControlName="driverId" class="form-select">
+                  <option [ngValue]="null">Sem motorista</option>
+                  <option *ngFor="let d of drivers" [ngValue]="d.id">
+                    {{ d.name }} ({{ d.status }})
+                  </option>
+                </select>
+                <label>Motorista</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-person-vcard"></i></div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="route"
+                  type="text"
+                  placeholder="Roteiro"
+                  class="form-control"
+                />
+                <label>Roteiro</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="distanceKm"
+                  type="number"
+                  min="0"
+                  placeholder="Distância (km)"
+                  class="form-control"
+                />
+                <label>Distância (km)</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="dailyCount"
+                  type="number"
+                  min="0"
+                  placeholder="Qtd. diárias"
+                  class="form-control"
+                />
+                <label>Qtd. diárias</label>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="transportLicenseNumber"
+                  type="text"
+                  placeholder="Licença NTT/ARTESP"
+                  class="form-control"
+                  id="quoteTripTransportLicenseNumber"
+                />
+                <label for="quoteTripTransportLicenseNumber">Licença NTT/ARTESP</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-patch-check"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <app-date-field
+              formControlName="transportLicenseExpiryDate"
+              [label]="'Validade da licença'"
+            ></app-date-field>
+          </div>
+        </div>
+      </section>
+
       <!-- Tabela de produtos do orçamento -->
       <section *ngIf="!isEdit" class="quote-products-table mt-2">
         <h5>Produtos</h5>
