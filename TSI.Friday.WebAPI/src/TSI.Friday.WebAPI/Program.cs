@@ -144,6 +144,18 @@ catch
     // swallow to not break startup
 }
 
+// Seed the default document templates (Orçamento, Contrato, OS, Pedido de Venda) used to
+// generate PDFs. Only inserts a template when its type doesn't exist yet - never overwrites one
+// an Admin has already edited.
+try
+{
+    DocumentTemplateSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
+}
+catch
+{
+    // swallow to not break startup
+}
+
 // Optional demo data (fake business partners, quotes, orders, fleet, etc.) for presenting the
 // app on a clean database. Never runs unless explicitly enabled - and never in Production, even
 // if the flag is set by mistake - and it's a no-op once real data exists (see DemoDataSeeder).

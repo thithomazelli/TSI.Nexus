@@ -22,7 +22,7 @@ namespace TSI.Friday.Data
                 var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
 
                 // ensure roles
-                var roles = new[] { "Admin", "User" };
+                var roles = new[] { "Master", "Admin", "User" };
                 foreach (var role in roles)
                 {
                     if (!await roleManager.RoleExistsAsync(role))
@@ -90,6 +90,61 @@ namespace TSI.Friday.Data
                         if (!addRoleResult.Succeeded)
                         {
                             logger?.LogError("Failed to add existing admin user to role 'Admin': {Errors}", string.Join(';', addRoleResult.Errors));
+                        }
+                    }
+                }
+
+                // ensure master user
+                var masterUserName = "master";
+                var master = await userManager.FindByNameAsync(masterUserName);
+                if (master == null)
+                {
+                    var year = DateTime.UtcNow.Year;
+                    var password = $"tsi@master{year}";
+
+                    var user = new User
+                    {
+                        UserName = masterUserName,
+                        Email = "master@local",
+                        EmailConfirmed = true,
+                        FirstName = "Master",
+                        LastName = "User",
+                    };
+
+                    var result = await userManager.CreateAsync(user, password);
+                    if (!result.Succeeded)
+                    {
+                        logger?.LogError(
+                            "Failed to create master user: {Errors}",
+                            string.Join(';', result.Errors)
+                        );
+                    }
+                    else
+                    {
+                        logger?.LogInformation(
+                            "Master user created with password 'tsi@master{Year}'",
+                            year
+                        );
+
+                        // assign master role
+                        var addRoleResult = await userManager.AddToRoleAsync(user, "Master");
+                        if (!addRoleResult.Succeeded)
+                        {
+                            logger?.LogError("Failed to add master user to role 'Master': {Errors}", string.Join(';', addRoleResult.Errors));
+                        }
+                    }
+                }
+                else
+                {
+                    logger?.LogInformation("Master user already exists");
+
+                    // ensure master has Master role
+                    if (!await userManager.IsInRoleAsync(master, "Master"))
+                    {
+                        var addRoleResult = await userManager.AddToRoleAsync(master, "Master");
+                        if (!addRoleResult.Succeeded)
+                        {
+                            logger?.LogError("Failed to add existing master user to role 'Master': {Errors}", string.Join(';', addRoleResult.Errors));
                         }
                     }
                 }
