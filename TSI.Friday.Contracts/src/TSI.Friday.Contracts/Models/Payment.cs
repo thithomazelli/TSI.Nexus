@@ -40,6 +40,11 @@ namespace TSI.Friday.Contracts.Models
 
         public Order Order { get; set; }
 
+        [ForeignKey("Trip")]
+        public Guid? TripId { get; set; }
+
+        public Trip Trip { get; set; }
+
         public ICollection<Attachment> Attachments { get; set; }
     }
 }

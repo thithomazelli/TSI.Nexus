@@ -10,7 +10,7 @@ namespace TSI.Friday.Contracts.Interfaces
     {
         /// <summary>
         /// Update a Commission based on the object received. Commission records are created
-        /// automatically by <see cref="IServiceOrderService.GenerateForOrder"/>, so there is no
+        /// automatically by <see cref="IServiceOrderService.GenerateForTrip"/>, so there is no
         /// direct Add method here.
         /// </summary>
         /// <param name="commission">The commission object updated.</param>

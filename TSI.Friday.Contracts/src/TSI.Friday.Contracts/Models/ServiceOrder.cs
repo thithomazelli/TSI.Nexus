@@ -17,11 +17,11 @@ namespace TSI.Friday.Contracts.Models
 
         public ServiceOrderStatus Status { get; set; }
 
-        [ForeignKey("Order")]
-        public Guid OrderId { get; set; }
+        [ForeignKey("Trip")]
+        public Guid TripId { get; set; }
 
         [Required]
-        public virtual Order Order { get; set; } = null!;
+        public virtual Trip Trip { get; set; } = null!;
 
         [ForeignKey("Driver")]
         public Guid DriverId { get; set; }

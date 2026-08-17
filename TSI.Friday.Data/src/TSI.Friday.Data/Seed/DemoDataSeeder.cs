@@ -76,20 +76,19 @@ namespace TSI.Friday.Data.Seed
                 await context.QuoteProduct.AddRangeAsync(quoteProducts);
                 await context.SaveChangesAsync();
 
-                // ---- Phase 5: Orders + Transactions ----
+                // ---- Phase 5: Orders + Transactions (generic, no fleet fields - Order stays
+                // exactly as it is without the fleet module) ----
                 var convertedQuotes = quotes.Where(q => q.Status == QuoteStatus.Converted).ToList();
-                var orders = BuildOrders(
-                    faker,
-                    clients,
-                    drivers,
-                    vehicles,
-                    convertedQuotes,
-                    now,
-                    out var transactions,
-                    out var fretamentoOrders
-                );
-                await context.Transaction.AddRangeAsync(transactions);
+                var orders = BuildOrders(faker, clients, convertedQuotes, now, out var orderTransactions);
+                await context.Transaction.AddRangeAsync(orderTransactions);
                 await context.Order.AddRangeAsync(orders);
+                await context.SaveChangesAsync();
+
+                // ---- Phase 5b: Trips + Transactions (independent root entity - see
+                // docs/feature-toggle-design.md) ----
+                var trips = BuildTrips(faker, clients, drivers, vehicles, now, out var tripTransactions);
+                await context.Transaction.AddRangeAsync(tripTransactions);
+                await context.Trip.AddRangeAsync(trips);
                 await context.SaveChangesAsync();
 
                 // ---- Phase 6: OrderProducts (stock is adjusted for Sale/Rental products here) ----
@@ -97,16 +96,20 @@ namespace TSI.Friday.Data.Seed
                 await context.OrderProduct.AddRangeAsync(orderProducts);
                 await context.SaveChangesAsync();
 
-                // ---- Phase 7: Payments ----
+                // ---- Phase 7: Payments (Orders and Trips each have their own) ----
                 var payments = BuildPayments(faker, orders, now);
                 await context.Payment.AddRangeAsync(payments);
+
+                var tripPayments = BuildTripPayments(faker, trips, now);
+                await context.Payment.AddRangeAsync(tripPayments);
+
                 await context.SaveChangesAsync();
 
-                // ---- Phase 8: TripLegs + Passengers (fretamento orders only) ----
-                var tripLegs = BuildTripLegs(faker, fretamentoOrders);
+                // ---- Phase 8: TripLegs + Passengers ----
+                var tripLegs = BuildTripLegs(faker, trips);
                 await context.TripLeg.AddRangeAsync(tripLegs);
 
-                var passengers = BuildPassengers(faker, fretamentoOrders);
+                var passengers = BuildPassengers(faker, trips);
                 await context.Passenger.AddRangeAsync(passengers);
 
                 await context.SaveChangesAsync();
@@ -121,8 +124,8 @@ namespace TSI.Friday.Data.Seed
                 await context.VehicleMaintenance.AddRangeAsync(maintenances);
                 await context.SaveChangesAsync();
 
-                // ---- Phase 11: ServiceOrders (one per fretamento order that has a Driver) ----
-                var serviceOrders = BuildServiceOrders(fretamentoOrders, now);
+                // ---- Phase 11: ServiceOrders (one per Trip that has a Driver) ----
+                var serviceOrders = BuildServiceOrders(trips, now);
                 await context.ServiceOrder.AddRangeAsync(serviceOrders);
                 await context.SaveChangesAsync();
 
@@ -134,12 +137,13 @@ namespace TSI.Friday.Data.Seed
                 // ---- Phase 13: Sequences - continue right after the numbers used above ----
                 await EnsureSequenceAsync(context, "OrderNumberSeq", orders.Count + 1);
                 await EnsureSequenceAsync(context, "QuoteNumberSeq", quotes.Count + 1);
+                await EnsureSequenceAsync(context, "TripNumberSeq", trips.Count + 1);
                 await context.SaveChangesAsync();
 
                 logger?.LogInformation(
                     "DemoDataSeeder: seeded {BusinessPartners} business partners, {Products} products, "
                         + "{Drivers} drivers, {Vehicles} vehicles, {Quotes} quotes, {Orders} orders, "
-                        + "{Payments} payments, {TripLegs} trip legs, {Passengers} passengers, "
+                        + "{Trips} trips, {Payments} payments, {TripLegs} trip legs, {Passengers} passengers, "
                         + "{FuelLogs} fuel logs, {Maintenances} maintenances, {ServiceOrders} service orders, "
                         + "{Commissions} commissions.",
                     businessPartners.Count,
@@ -148,7 +152,8 @@ namespace TSI.Friday.Data.Seed
                     vehicles.Count,
                     quotes.Count,
                     orders.Count,
-                    payments.Count,
+                    trips.Count,
+                    payments.Count + tripPayments.Count,
                     tripLegs.Count,
                     passengers.Count,
                     fuelLogs.Count,
@@ -496,41 +501,20 @@ namespace TSI.Friday.Data.Seed
         private static List<Order> BuildOrders(
             Faker faker,
             List<BusinessPartner> clients,
-            List<Driver> drivers,
-            List<Vehicle> vehicles,
             List<Quote> convertedQuotes,
             DateTime now,
-            out List<Transaction> transactions,
-            out List<Order> fretamentoOrders
+            out List<Transaction> transactions
         )
         {
-            var routes = new[]
-            {
-                "São Paulo → Campos do Jordão",
-                "São Paulo → Ilhabela",
-                "São Paulo → Ubatuba",
-                "São Paulo → Águas de Lindóia",
-                "São Paulo → Aparecida do Norte",
-                "São Paulo → Guarujá",
-                "São Paulo → Serra Negra",
-                "São Paulo → Socorro",
-            };
-
             var orders = new List<Order>();
             transactions = new List<Transaction>();
-            fretamentoOrders = new List<Order>();
-
-            var activeDrivers = drivers.Where(d => d.Status == DriverStatus.Active).ToList();
-            var availableVehicles = vehicles.Where(v => v.Status != VehicleStatus.Blocked).ToList();
 
             const int totalOrders = 22;
-            const int fretamentoCount = 12;
 
             for (var i = 0; i < totalOrders; i++)
             {
                 var client = faker.PickRandom(clients);
                 var orderDate = now.AddDays(-faker.Random.Number(0, 150));
-                var isFretamento = i < fretamentoCount;
                 var quote = i < convertedQuotes.Count ? convertedQuotes[i] : null;
 
                 var transaction = new Transaction
@@ -549,39 +533,96 @@ namespace TSI.Friday.Data.Seed
                     QuoteNumber = quote?.QuoteNumber ?? string.Empty,
                     Date = orderDate,
                     Status = faker.PickRandom(OrderStatus.Open, OrderStatus.Closed, OrderStatus.WaitingPayment),
-                    Description = isFretamento
-                        ? "Fretamento eventual sob demanda."
-                        : "Pedido de venda de produtos/serviços.",
+                    Description = "Pedido de venda de produtos/serviços.",
                     BusinessPartnerId = client.Id,
                     TransactionId = transaction.Id,
                 };
 
-                if (isFretamento)
-                {
-                    order.Route = faker.PickRandom(routes);
-                    order.DistanceKm = faker.Random.Decimal(80, 420);
-                    order.DailyCount = faker.Random.Number(1, 3);
-                    order.TransportLicenseNumber = faker.Random.Replace("ANTT-#######");
-                    order.TransportLicenseExpiryDate = now.AddMonths(faker.Random.Number(2, 24));
-
-                    if (activeDrivers.Count > 0)
-                    {
-                        order.DriverId = faker.PickRandom(activeDrivers).Id;
-                    }
-                    if (availableVehicles.Count > 0)
-                    {
-                        order.VehicleId = faker.PickRandom(availableVehicles).Id;
-                    }
-                }
-
                 orders.Add(order);
-                if (isFretamento)
-                {
-                    fretamentoOrders.Add(order);
-                }
             }
 
             return orders;
+        }
+
+        private static List<Trip> BuildTrips(
+            Faker faker,
+            List<BusinessPartner> clients,
+            List<Driver> drivers,
+            List<Vehicle> vehicles,
+            DateTime now,
+            out List<Transaction> transactions
+        )
+        {
+            var routes = new[]
+            {
+                "São Paulo → Campos do Jordão",
+                "São Paulo → Ilhabela",
+                "São Paulo → Ubatuba",
+                "São Paulo → Águas de Lindóia",
+                "São Paulo → Aparecida do Norte",
+                "São Paulo → Guarujá",
+                "São Paulo → Serra Negra",
+                "São Paulo → Socorro",
+            };
+
+            var trips = new List<Trip>();
+            transactions = new List<Transaction>();
+
+            var activeDrivers = drivers.Where(d => d.Status == DriverStatus.Active).ToList();
+            var availableVehicles = vehicles.Where(v => v.Status != VehicleStatus.Blocked).ToList();
+
+            const int totalTrips = 12;
+
+            for (var i = 0; i < totalTrips; i++)
+            {
+                var client = faker.PickRandom(clients);
+                var tripDate = now.AddDays(-faker.Random.Number(0, 150));
+
+                var transaction = new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    Date = tripDate,
+                    Description = "Transação da Viagem",
+                    BusinessPartnerId = client.Id,
+                };
+                transactions.Add(transaction);
+
+                var trip = new Trip
+                {
+                    Id = Guid.NewGuid(),
+                    TripNumber = $"VIA-{i + 1:D5}",
+                    Date = tripDate,
+                    Status = faker.PickRandom(OrderStatus.Open, OrderStatus.Closed, OrderStatus.WaitingPayment),
+                    BusinessPartnerId = client.Id,
+                    TransactionId = transaction.Id,
+                    Route = faker.PickRandom(routes),
+                    DistanceKm = faker.Random.Decimal(80, 420),
+                    DailyCount = faker.Random.Number(1, 3),
+                    TransportLicenseNumber = faker.Random.Replace("ANTT-#######"),
+                    TransportLicenseExpiryDate = now.AddMonths(faker.Random.Number(2, 24)),
+                };
+
+                if (activeDrivers.Count > 0)
+                {
+                    trip.DriverId = faker.PickRandom(activeDrivers).Id;
+                }
+                if (availableVehicles.Count > 0)
+                {
+                    trip.VehicleId = faker.PickRandom(availableVehicles).Id;
+                }
+
+                // Mirrors the Price formula TripService will apply when a Vehicle is assigned.
+                var vehicle = availableVehicles.FirstOrDefault(v => v.Id == trip.VehicleId);
+                trip.Price = vehicle != null
+                    ? (vehicle.PricePerKm * trip.DistanceKm) + (vehicle.DailyRate * trip.DailyCount)
+                    : faker.Random.Decimal(800, 4000);
+                trip.Discount = 0;
+                trip.TotalPrice = trip.Price;
+
+                trips.Add(trip);
+            }
+
+            return trips;
         }
 
         private static List<OrderProduct> BuildOrderProducts(
@@ -603,7 +644,7 @@ namespace TSI.Friday.Data.Seed
                     var quantity = faker.Random.Number(1, 3);
                     var discount = faker.Random.Number(0, 10);
                     var lineStart = order.Date;
-                    var lineEnd = order.Date.AddDays(faker.Random.Number(0, order.DailyCount > 0 ? order.DailyCount : 3));
+                    var lineEnd = order.Date.AddDays(faker.Random.Number(1, 7));
 
                     result.Add(
                         new OrderProduct
@@ -679,24 +720,70 @@ namespace TSI.Friday.Data.Seed
             return result;
         }
 
+        private static List<Payment> BuildTripPayments(Faker faker, List<Trip> trips, DateTime now)
+        {
+            var result = new List<Payment>();
+
+            foreach (var trip in trips)
+            {
+                var installments = faker.Random.Number(1, 3);
+                var installmentAmount = Math.Round(trip.TotalPrice / installments, 2);
+                var method = faker.PickRandom(
+                    PaymentMethod.Cash,
+                    PaymentMethod.Pix,
+                    PaymentMethod.CreditCard,
+                    PaymentMethod.DebitCard
+                );
+
+                for (var n = 1; n <= installments; n++)
+                {
+                    var dueDate = trip.Date.AddDays(30 * n);
+                    var status = dueDate < now
+                        ? faker.PickRandom(PaymentStatus.Approved, PaymentStatus.Approved, PaymentStatus.Delayed)
+                        : PaymentStatus.Pending;
+
+                    result.Add(
+                        new Payment
+                        {
+                            Id = Guid.NewGuid(),
+                            Type = PaymentType.Incoming,
+                            Status = status,
+                            Condition = installments > 1 ? PaymentCondition.InInstallments : PaymentCondition.FullPayment,
+                            Method = method,
+                            Category = "Viagem",
+                            Date = dueDate,
+                            Description = $"Parcela {n}/{installments} - Viagem {trip.TripNumber}",
+                            PaymentNumber = n,
+                            Price = installmentAmount,
+                            TransactionId = trip.TransactionId,
+                            BusinessPartnerId = trip.BusinessPartnerId,
+                            TripId = trip.Id,
+                        }
+                    );
+                }
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region TripLeg / Passenger / FuelLog / VehicleMaintenance
 
-        private static List<TripLeg> BuildTripLegs(Faker faker, List<Order> fretamentoOrders)
+        private static List<TripLeg> BuildTripLegs(Faker faker, List<Trip> trips)
         {
             var result = new List<TripLeg>();
 
-            foreach (var order in fretamentoOrders)
+            foreach (var trip in trips)
             {
                 var legCount = faker.Random.Number(1, 2);
-                var parts = (order.Route ?? "Origem → Destino").Split('→');
+                var parts = (trip.Route ?? "Origem → Destino").Split('→');
                 var origin = parts.Length > 0 ? parts[0].Trim() : "Garagem";
                 var destination = parts.Length > 1 ? parts[1].Trim() : "Destino";
 
                 for (var n = 1; n <= legCount; n++)
                 {
-                    var departure = order.Date.AddDays(n - 1).AddHours(faker.Random.Number(5, 9));
+                    var departure = trip.Date.AddDays(n - 1).AddHours(faker.Random.Number(5, 9));
 
                     result.Add(
                         new TripLeg
@@ -707,9 +794,9 @@ namespace TSI.Friday.Data.Seed
                             Destination = n == 1 ? destination : origin,
                             DepartureDate = departure,
                             ArrivalDate = departure.AddHours(faker.Random.Number(2, 6)),
-                            DistanceKm = order.DistanceKm > 0 ? order.DistanceKm / legCount : faker.Random.Decimal(50, 200),
+                            DistanceKm = trip.DistanceKm > 0 ? trip.DistanceKm / legCount : faker.Random.Decimal(50, 200),
                             Notes = string.Empty,
-                            OrderId = order.Id,
+                            TripId = trip.Id,
                         }
                     );
                 }
@@ -718,11 +805,11 @@ namespace TSI.Friday.Data.Seed
             return result;
         }
 
-        private static List<Passenger> BuildPassengers(Faker faker, List<Order> fretamentoOrders)
+        private static List<Passenger> BuildPassengers(Faker faker, List<Trip> trips)
         {
             var result = new List<Passenger>();
 
-            foreach (var order in fretamentoOrders)
+            foreach (var trip in trips)
             {
                 var passengerCount = faker.Random.Number(2, 4);
 
@@ -736,7 +823,7 @@ namespace TSI.Friday.Data.Seed
                             DocumentNumber = faker.Random.Replace("###.###.###-##"),
                             Seat = n.ToString(),
                             Phone = faker.Phone.PhoneNumber("(##) 9####-####"),
-                            OrderId = order.Id,
+                            TripId = trip.Id,
                         }
                     );
                 }
@@ -841,28 +928,28 @@ namespace TSI.Friday.Data.Seed
 
         #region ServiceOrder / Commission
 
-        private static List<ServiceOrder> BuildServiceOrders(List<Order> fretamentoOrders, DateTime now)
+        private static List<ServiceOrder> BuildServiceOrders(List<Trip> trips, DateTime now)
         {
             var result = new List<ServiceOrder>();
-            var withDriver = fretamentoOrders.Where(o => o.DriverId.HasValue).ToList();
+            var withDriver = trips.Where(t => t.DriverId.HasValue).ToList();
 
             for (var i = 0; i < withDriver.Count; i++)
             {
-                var order = withDriver[i];
-                var completed = order.Status == OrderStatus.Closed;
+                var trip = withDriver[i];
+                var completed = trip.Status == OrderStatus.Closed;
 
                 result.Add(
                     new ServiceOrder
                     {
                         Id = Guid.NewGuid(),
                         Number = $"OS-{i + 1:D5}",
-                        IssueDate = order.Date,
-                        CompletionDate = completed ? order.Date.AddDays(order.DailyCount > 0 ? order.DailyCount : 1) : null,
-                        Description = $"OS gerada para o pedido {order.OrderNumber}.",
+                        IssueDate = trip.Date,
+                        CompletionDate = completed ? trip.Date.AddDays(trip.DailyCount > 0 ? trip.DailyCount : 1) : null,
+                        Description = $"OS gerada para a viagem {trip.TripNumber}.",
                         Status = completed ? ServiceOrderStatus.Completed : ServiceOrderStatus.Open,
-                        OrderId = order.Id,
-                        DriverId = order.DriverId!.Value,
-                        VehicleId = order.VehicleId,
+                        TripId = trip.Id,
+                        DriverId = trip.DriverId!.Value,
+                        VehicleId = trip.VehicleId,
                     }
                 );
             }

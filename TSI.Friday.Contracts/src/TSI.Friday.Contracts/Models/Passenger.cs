@@ -13,20 +13,20 @@ namespace TSI.Friday.Contracts.Models
 
         public string Phone { get; set; } = string.Empty;
 
-        [ForeignKey("Order")]
-        public Guid OrderId { get; set; }
+        [ForeignKey("Trip")]
+        public Guid TripId { get; set; }
 
-        // Not [Required]: the API only ever receives OrderId from the client, never a nested
-        // Order object, and DataAnnotations validation would otherwise reject every request.
-        // The relationship is still enforced at the DB level since OrderId is a non-nullable Guid.
-        public virtual Order Order { get; set; } = null!;
+        // Not [Required]: the API only ever receives TripId from the client, never a nested
+        // Trip object, and DataAnnotations validation would otherwise reject every request.
+        // The relationship is still enforced at the DB level since TripId is a non-nullable Guid.
+        public virtual Trip Trip { get; set; } = null!;
 
         public Passenger() { }
 
-        public Passenger(Order order)
+        public Passenger(Trip trip)
         {
-            Order = order ?? throw new ArgumentNullException(nameof(order));
-            OrderId = order.Id;
+            Trip = trip ?? throw new ArgumentNullException(nameof(trip));
+            TripId = trip.Id;
         }
     }
 }

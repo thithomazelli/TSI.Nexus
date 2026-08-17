@@ -23,7 +23,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task TripLegsController_Add_ShouldAddTripLegSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var tripLegMock = new TripLeg { Id = Guid.NewGuid(), OrderId = Guid.NewGuid() };
+            var tripLegMock = new TripLeg { Id = Guid.NewGuid(), TripId = Guid.NewGuid() };
             var expectedResult = new WebApiResponse<TripLeg>
             {
                 Data = tripLegMock,
@@ -49,7 +49,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         {
             // Arrange
             var tripLegMock = new TripLeg();
-            _controller.ModelState.AddModelError("OrderId", "OrderId is required");
+            _controller.ModelState.AddModelError("TripId", "TripId is required");
 
             // Act
             var result = await _controller.Add(tripLegMock);
@@ -57,7 +57,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var modelState = Assert.IsType<SerializableError>(badRequest.Value);
-            Assert.True(modelState.ContainsKey("OrderId"));
+            Assert.True(modelState.ContainsKey("TripId"));
 
             _serviceMock.Verify(_ => _.Add(It.IsAny<TripLeg>()), Times.Never);
         }
@@ -66,7 +66,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task TripLegsController_Update_ShouldUpdateTripLegSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var tripLegMock = new TripLeg { Id = Guid.NewGuid(), OrderId = Guid.NewGuid() };
+            var tripLegMock = new TripLeg { Id = Guid.NewGuid(), TripId = Guid.NewGuid() };
             var expectedResult = new WebApiResponse<TripLeg>
             {
                 Data = tripLegMock,
@@ -91,7 +91,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task TripLegsController_Remove_ShouldRemoveTripLegSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var tripLegMock = new TripLeg { Id = Guid.NewGuid(), OrderId = Guid.NewGuid() };
+            var tripLegMock = new TripLeg { Id = Guid.NewGuid(), TripId = Guid.NewGuid() };
             var expectedResult = new WebApiResponse<TripLeg>
             {
                 Data = tripLegMock,
@@ -117,7 +117,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         {
             // Arrange
             var idMock = Guid.NewGuid();
-            var tripLegMock = new TripLeg { Id = idMock, OrderId = Guid.NewGuid() };
+            var tripLegMock = new TripLeg { Id = idMock, TripId = Guid.NewGuid() };
             var expectedResult = new WebApiResponse<TripLeg>
             {
                 Data = tripLegMock,
@@ -140,11 +140,11 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task TripLegsController_GetByOrder_ShouldGetTripLegsForOrder_WhenMethodIsCalled()
+        public async Task TripLegsController_GetByTrip_ShouldGetTripLegsForTrip_WhenMethodIsCalled()
         {
             // Arrange
-            var orderId = Guid.NewGuid();
-            var tripLegsMock = new List<TripLeg> { new() { Id = Guid.NewGuid(), OrderId = orderId } };
+            var tripId = Guid.NewGuid();
+            var tripLegsMock = new List<TripLeg> { new() { Id = Guid.NewGuid(), TripId = tripId } };
             var expectedResult = new WebApiResponse<IEnumerable<TripLeg>>
             {
                 Data = tripLegsMock,
@@ -152,10 +152,10 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Message = $"{tripLegsMock.Count} registro(s) encontrado(s).",
             };
 
-            _serviceMock.Setup(_ => _.FindByOrder(It.IsAny<Guid>())).ReturnsAsync(expectedResult);
+            _serviceMock.Setup(_ => _.FindByTrip(It.IsAny<Guid>())).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _controller.GetByOrder(orderId);
+            var result = await _controller.GetByTrip(tripId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -163,7 +163,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(tripLegsMock, response.Data);
 
-            _serviceMock.Verify(_ => _.FindByOrder(It.IsAny<Guid>()), Times.Once);
+            _serviceMock.Verify(_ => _.FindByTrip(It.IsAny<Guid>()), Times.Once);
         }
     }
 }

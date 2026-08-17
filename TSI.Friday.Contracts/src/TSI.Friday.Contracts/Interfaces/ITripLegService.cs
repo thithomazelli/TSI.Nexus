@@ -37,10 +37,10 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<TripLeg>> FindById(Guid? id);
 
         /// <summary>
-        /// Method responsible to get all TripLegs registered for a given Order, ordered by SequenceNumber.
+        /// Method responsible to get all TripLegs registered for a given Trip, ordered by SequenceNumber.
         /// </summary>
-        /// <param name="orderId">The Order ID to be used on the search.</param>
-        /// <returns>All TripLegs found for the Order.</returns>
-        Task<WebApiResponse<IEnumerable<TripLeg>>> FindByOrder(Guid orderId);
+        /// <param name="tripId">The Trip ID to be used on the search.</param>
+        /// <returns>All TripLegs found for the Trip.</returns>
+        Task<WebApiResponse<IEnumerable<TripLeg>>> FindByTrip(Guid tripId);
     }
 }

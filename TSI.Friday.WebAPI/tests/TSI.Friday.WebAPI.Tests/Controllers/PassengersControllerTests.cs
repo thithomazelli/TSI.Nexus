@@ -26,7 +26,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var passengerMock = new Passenger
             {
                 Id = Guid.NewGuid(),
-                OrderId = Guid.NewGuid(),
+                TripId = Guid.NewGuid(),
                 Name = "Maria Silva",
             };
             var expectedResult = new WebApiResponse<Passenger>
@@ -54,7 +54,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         {
             // Arrange
             var passengerMock = new Passenger();
-            _controller.ModelState.AddModelError("OrderId", "OrderId is required");
+            _controller.ModelState.AddModelError("TripId", "TripId is required");
 
             // Act
             var result = await _controller.Add(passengerMock);
@@ -62,7 +62,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var modelState = Assert.IsType<SerializableError>(badRequest.Value);
-            Assert.True(modelState.ContainsKey("OrderId"));
+            Assert.True(modelState.ContainsKey("TripId"));
 
             _serviceMock.Verify(_ => _.Add(It.IsAny<Passenger>()), Times.Never);
         }
@@ -73,8 +73,8 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             // Arrange
             var passengersMock = new List<Passenger>
             {
-                new() { Id = Guid.NewGuid(), OrderId = Guid.NewGuid(), Name = "Passageiro 1" },
-                new() { Id = Guid.NewGuid(), OrderId = Guid.NewGuid(), Name = "Passageiro 2" },
+                new() { Id = Guid.NewGuid(), TripId = Guid.NewGuid(), Name = "Passageiro 1" },
+                new() { Id = Guid.NewGuid(), TripId = Guid.NewGuid(), Name = "Passageiro 2" },
             };
             var expectedResult = new WebApiResponse<IEnumerable<Passenger>>
             {
@@ -103,7 +103,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task PassengersController_Update_ShouldUpdatePassengerSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var passengerMock = new Passenger { Id = Guid.NewGuid(), OrderId = Guid.NewGuid() };
+            var passengerMock = new Passenger { Id = Guid.NewGuid(), TripId = Guid.NewGuid() };
             var expectedResult = new WebApiResponse<Passenger>
             {
                 Data = passengerMock,
@@ -128,7 +128,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         public async Task PassengersController_Remove_ShouldRemovePassengerSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
-            var passengerMock = new Passenger { Id = Guid.NewGuid(), OrderId = Guid.NewGuid() };
+            var passengerMock = new Passenger { Id = Guid.NewGuid(), TripId = Guid.NewGuid() };
             var expectedResult = new WebApiResponse<Passenger>
             {
                 Data = passengerMock,
@@ -150,13 +150,13 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public async Task PassengersController_GetByOrder_ShouldGetPassengersForOrder_WhenMethodIsCalled()
+        public async Task PassengersController_GetByTrip_ShouldGetPassengersForTrip_WhenMethodIsCalled()
         {
             // Arrange
-            var orderId = Guid.NewGuid();
+            var tripId = Guid.NewGuid();
             var passengersMock = new List<Passenger>
             {
-                new() { Id = Guid.NewGuid(), OrderId = orderId, Name = "Maria Silva" },
+                new() { Id = Guid.NewGuid(), TripId = tripId, Name = "Maria Silva" },
             };
             var expectedResult = new WebApiResponse<IEnumerable<Passenger>>
             {
@@ -165,10 +165,10 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 Message = $"{passengersMock.Count} registro(s) encontrado(s).",
             };
 
-            _serviceMock.Setup(_ => _.FindByOrder(It.IsAny<Guid>())).ReturnsAsync(expectedResult);
+            _serviceMock.Setup(_ => _.FindByTrip(It.IsAny<Guid>())).ReturnsAsync(expectedResult);
 
             // Act
-            var result = await _controller.GetByOrder(orderId);
+            var result = await _controller.GetByTrip(tripId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -176,7 +176,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(ResponseStatus.Success, response.Status);
             Assert.Equal(passengersMock, response.Data);
 
-            _serviceMock.Verify(_ => _.FindByOrder(It.IsAny<Guid>()), Times.Once);
+            _serviceMock.Verify(_ => _.FindByTrip(It.IsAny<Guid>()), Times.Once);
         }
     }
 }

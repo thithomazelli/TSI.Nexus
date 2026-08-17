@@ -44,12 +44,12 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<IEnumerable<ServiceOrder>>> FindByDriver(Guid driverId);
 
         /// <summary>
-        /// Automatically creates a ServiceOrder for the given Order (which must have a Driver
+        /// Automatically creates a ServiceOrder for the given Trip (which must have a Driver
         /// assigned) plus its Commission, calculated from the Driver's CommissionPercentage over
-        /// the Order's TotalPrice. Called when a trip is marked as Closed.
+        /// the Trip's TotalPrice. Called when a trip is marked as Closed.
         /// </summary>
-        /// <param name="order">The Order that was just closed.</param>
+        /// <param name="trip">The Trip that was just closed.</param>
         /// <returns>Return an WebApiReponse with the ServiceOrder created for this operation.</returns>
-        Task<WebApiResponse<ServiceOrder>> GenerateForOrder(Order order);
+        Task<WebApiResponse<ServiceOrder>> GenerateForTrip(Trip trip);
     }
 }

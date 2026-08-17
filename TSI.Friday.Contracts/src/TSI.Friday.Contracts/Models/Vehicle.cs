@@ -36,7 +36,7 @@ namespace TSI.Friday.Contracts.Models
         public virtual ICollection<VehicleMaintenance> Maintenances { get; set; } =
             new List<VehicleMaintenance>();
 
-        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+        public virtual ICollection<Trip> Trips { get; set; } = new List<Trip>();
 
         public virtual ICollection<FuelLog> FuelLogs { get; set; } = new List<FuelLog>();
 

@@ -62,10 +62,10 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         [HttpGet]
-        [Route("GetByOrder/{orderId}")]
-        public async Task<IActionResult> GetByOrder(Guid orderId)
+        [Route("GetByTrip/{tripId}")]
+        public async Task<IActionResult> GetByTrip(Guid tripId)
         {
-            var webApiResponse = await _tripLegService.FindByOrder(orderId);
+            var webApiResponse = await _tripLegService.FindByTrip(tripId);
             return Ok(webApiResponse);
         }
     }

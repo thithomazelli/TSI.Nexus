@@ -47,10 +47,10 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<Passenger>> FindById(Guid? id);
 
         /// <summary>
-        /// Method responsible to get all Passengers registered for a given Order.
+        /// Method responsible to get all Passengers registered for a given Trip.
         /// </summary>
-        /// <param name="orderId">The Order ID to be used on the search.</param>
-        /// <returns>All Passengers found for the Order.</returns>
-        Task<WebApiResponse<IEnumerable<Passenger>>> FindByOrder(Guid orderId);
+        /// <param name="tripId">The Trip ID to be used on the search.</param>
+        /// <returns>All Passengers found for the Trip.</returns>
+        Task<WebApiResponse<IEnumerable<Passenger>>> FindByTrip(Guid tripId);
     }
 }

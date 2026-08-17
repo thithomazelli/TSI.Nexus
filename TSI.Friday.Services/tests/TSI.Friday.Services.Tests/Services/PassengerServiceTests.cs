@@ -12,7 +12,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly PassengerService _service;
         private readonly Mock<IRepository<Passenger>> _repository;
         private readonly Mock<ILogService> _logServiceMock;
-        private readonly Guid _orderId = Guid.Parse("00000000-0000-0000-0000-000000000010");
+        private readonly Guid _tripId = Guid.Parse("00000000-0000-0000-0000-000000000010");
 
         public PassengerServiceTests()
         {
@@ -28,7 +28,7 @@ namespace TSI.Friday.Services.Tests.Services
             var passenger = new Passenger
             {
                 Id = Guid.NewGuid(),
-                OrderId = _orderId,
+                TripId = _tripId,
                 Name = "Maria Silva",
             };
 
@@ -50,13 +50,13 @@ namespace TSI.Friday.Services.Tests.Services
                 new()
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = _orderId,
+                    TripId = _tripId,
                     Name = "Passageiro 1",
                 },
                 new()
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = _orderId,
+                    TripId = _tripId,
                     Name = "Passageiro 2",
                 },
             };
@@ -77,7 +77,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var passengers = new List<Passenger>
             {
-                new() { Id = Guid.NewGuid(), OrderId = _orderId, Name = "Passageiro 1" },
+                new() { Id = Guid.NewGuid(), TripId = _tripId, Name = "Passageiro 1" },
             };
             _repository
                 .Setup(_ => _.AddAsync(It.IsAny<Passenger>()))
@@ -97,7 +97,7 @@ namespace TSI.Friday.Services.Tests.Services
             var passenger = new Passenger
             {
                 Id = Guid.NewGuid(),
-                OrderId = _orderId,
+                TripId = _tripId,
                 Name = "Maria Silva",
             };
 
@@ -116,7 +116,7 @@ namespace TSI.Friday.Services.Tests.Services
             var passenger = new Passenger
             {
                 Id = Guid.NewGuid(),
-                OrderId = _orderId,
+                TripId = _tripId,
                 Name = "Maria Silva",
             };
 
@@ -129,12 +129,12 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task PassengerService_FindByOrder_ShouldReturnPassengersForOrder()
+        public async Task PassengerService_FindByTrip_ShouldReturnPassengersForTrip()
         {
             // Arrange
             var passengers = new List<Passenger>
             {
-                new() { Id = Guid.NewGuid(), OrderId = _orderId, Name = "Maria Silva" },
+                new() { Id = Guid.NewGuid(), TripId = _tripId, Name = "Maria Silva" },
             };
 
             _repository
@@ -142,7 +142,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(passengers);
 
             // Act
-            var result = await _service.FindByOrder(_orderId);
+            var result = await _service.FindByTrip(_tripId);
 
             // Assert
             Assert.Equal(ResponseStatus.Success, result.Status);

@@ -154,19 +154,19 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<Passenger>>> FindByOrder(Guid orderId)
+        public async Task<WebApiResponse<IEnumerable<Passenger>>> FindByTrip(Guid tripId)
         {
             WebApiResponse<IEnumerable<Passenger>> result = new();
 
             try
             {
-                result.Data = await _repository.QueryAsync(_ => _.OrderId == orderId);
+                result.Data = await _repository.QueryAsync(_ => _.TripId == tripId);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
             }
             catch (Exception ex)
             {
-                _logService.LogException(ex, "PassengerService.FindByOrder", orderId);
+                _logService.LogException(ex, "PassengerService.FindByTrip", tripId);
 
                 result.Status = ResponseStatus.Error;
                 result.Message =

@@ -19,11 +19,9 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly OrderService _orderService;
         private readonly Mock<IRepository<Order>> _repository;
         private readonly Mock<IRepository<OrderProduct>> _orderProductRepository;
-        private readonly Mock<IRepository<Vehicle>> _vehicleRepository;
         private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly Mock<ICurrentUserService> _currentUserService;
-        private readonly Mock<IServiceOrderService> _serviceOrderService;
         private readonly Mock<ILogService> _logService;
         private readonly IList<OrderDto> _orderListMock;
         private readonly IMapper _mapper;
@@ -40,21 +38,17 @@ namespace TSI.Friday.Services.Tests.Services
             );
             _repository = new Mock<IRepository<Order>>();
             _orderProductRepository = new Mock<IRepository<OrderProduct>>();
-            _vehicleRepository = new Mock<IRepository<Vehicle>>();
             _transactionService = new Mock<ITransactionService>();
             _sequenceService = new Mock<ISequenceService>();
             _currentUserService = new Mock<ICurrentUserService>();
-            _serviceOrderService = new Mock<IServiceOrderService>();
             _logService = new Mock<ILogService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
                 _repository.Object,
                 _orderProductRepository.Object,
-                _vehicleRepository.Object,
                 _transactionService.Object,
                 _sequenceService.Object,
                 _currentUserService.Object,
-                _serviceOrderService.Object,
                 _mapper,
                 _logService.Object
             );
@@ -62,12 +56,8 @@ namespace TSI.Friday.Services.Tests.Services
             // Default: current user is Admin, so ownership checks are bypassed unless a test overrides this.
             _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(true);
 
-            _vehicleRepository
-                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
-                .ReturnsAsync(new List<Vehicle>());
-
-            // Default: no previous Order state found, so the Closed-transition commission trigger
-            // and the ownership-by-id lookup are both safely skipped unless a test overrides this.
+            // Default: no previous Order state found, so the ownership-by-id lookup is safely
+            // skipped unless a test overrides this.
             _repository
                 .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
                 .ReturnsAsync(new List<Order>());
@@ -146,98 +136,6 @@ namespace TSI.Friday.Services.Tests.Services
             // Assert
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Once);
-        }
-
-        [Fact]
-        public async Task OrderService_Add_ShouldReturnWarningAndNotAddOrder_WhenVehicleIsBlocked()
-        {
-            // Arrange
-            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000099");
-            var orderDto = new OrderDto
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                OrderNumber = "ORD-00001",
-                Description = "Novo Pedido",
-                BusinessPartnerName = "ORD",
-                VehicleId = vehicleId,
-                Transaction = new TransactionDto(),
-                QuoteNumber = string.Empty,
-            };
-
-            var blockedVehicle = new Vehicle
-            {
-                Id = vehicleId,
-                Plate = "ABC1D23",
-                Status = VehicleStatus.Blocked,
-            };
-
-            _vehicleRepository
-                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
-                .ReturnsAsync(new List<Vehicle> { blockedVehicle });
-
-            // Act
-            var result = await _orderService.Add(orderDto);
-
-            // Assert
-            Assert.Equal(ResponseStatus.Warning, result.Status);
-            Assert.Equal(
-                $"O veículo {blockedVehicle.Plate} está bloqueado por manutenção vencida e não pode ser vinculado a uma viagem.",
-                result.Message
-            );
-            _repository.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task OrderService_Add_ShouldCalculatePriceFromVehicleRates_WhenDistanceAndDailyCountAreInformed()
-        {
-            // Arrange
-            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000098");
-            var orderDto = new OrderDto
-            {
-                Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                OrderNumber = "ORD-00001",
-                Description = "Novo Pedido",
-                BusinessPartnerName = "ORD",
-                VehicleId = vehicleId,
-                DistanceKm = 100,
-                DailyCount = 2,
-                Transaction = new TransactionDto(),
-                QuoteNumber = string.Empty,
-            };
-
-            var availableVehicle = new Vehicle
-            {
-                Id = vehicleId,
-                Plate = "ABC1D23",
-                Status = VehicleStatus.Available,
-                PricePerKm = 5.00M,
-                DailyRate = 300.00M,
-            };
-
-            _vehicleRepository
-                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
-                .ReturnsAsync(new List<Vehicle> { availableVehicle });
-
-            Order capturedOrder = null;
-            _repository
-                .Setup(r => r.AddAsync(It.IsAny<Order>()))
-                .Callback<Order>(o => capturedOrder = o)
-                .Returns(Task.CompletedTask);
-            _transactionService
-                .Setup(_ => _.Add(It.IsAny<TransactionDto>()))
-                .ReturnsAsync(
-                    new WebApiResponse<TransactionDto> { Data = new TransactionDto { Id = Guid.NewGuid() } }
-                );
-            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
-
-            // Act
-            var result = await _orderService.Add(orderDto);
-
-            // Assert
-            Assert.Equal(ResponseStatus.Success, result.Status);
-            Assert.NotNull(capturedOrder);
-            // 100km * 5.00 + 2 daily * 300.00 = 500 + 600 = 1100
-            Assert.Equal(1100.00M, capturedOrder.Price);
         }
 
         [Fact]
@@ -532,78 +430,6 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Action<OrderProduct>>()
                     ),
                 Times.Once
-            );
-        }
-
-        [Fact]
-        public async Task OrderService_Update_ShouldGenerateServiceOrder_WhenOrderTransitionsToClosedWithDriverAssigned()
-        {
-            // Arrange
-            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            var driverId = Guid.Parse("00000000-0000-0000-0000-000000000077");
-            var orderDto = new OrderDto
-            {
-                Id = orderId,
-                OrderNumber = "ORD-00001",
-                Status = OrderStatus.Closed,
-                DriverId = driverId,
-                Transaction = new TransactionDto(),
-            };
-
-            var previousOrder = new Order
-            {
-                Id = orderId,
-                Status = OrderStatus.Open,
-                DriverId = driverId,
-            };
-
-            _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
-                .ReturnsAsync(new List<Order> { previousOrder });
-
-            // Act
-            await _orderService.Update(orderDto);
-
-            // Assert
-            _serviceOrderService.Verify(
-                _ => _.GenerateForOrder(It.Is<Order>(o => o.Id == orderId)),
-                Times.Once
-            );
-        }
-
-        [Fact]
-        public async Task OrderService_Update_ShouldNotGenerateServiceOrder_WhenOrderWasAlreadyClosed()
-        {
-            // Arrange
-            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
-            var driverId = Guid.Parse("00000000-0000-0000-0000-000000000077");
-            var orderDto = new OrderDto
-            {
-                Id = orderId,
-                OrderNumber = "ORD-00001",
-                Status = OrderStatus.Closed,
-                DriverId = driverId,
-                Transaction = new TransactionDto(),
-            };
-
-            var previousOrder = new Order
-            {
-                Id = orderId,
-                Status = OrderStatus.Closed,
-                DriverId = driverId,
-            };
-
-            _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
-                .ReturnsAsync(new List<Order> { previousOrder });
-
-            // Act
-            await _orderService.Update(orderDto);
-
-            // Assert
-            _serviceOrderService.Verify(
-                _ => _.GenerateForOrder(It.IsAny<Order>()),
-                Times.Never
             );
         }
 

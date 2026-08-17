@@ -25,6 +25,11 @@ namespace TSI.Friday.Contracts.Models
         public Guid? OrderId { get; set; }
         public Order? Order { get; set; }
 
+        // Optional link to Trip
+        [ForeignKey("Trip")]
+        public Guid? TripId { get; set; }
+        public Trip? Trip { get; set; }
+
         // Optional link to Transaction
         [ForeignKey("Transaction")]
         public Guid? TransactionId { get; set; }

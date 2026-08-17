@@ -175,13 +175,13 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
-        public async Task<WebApiResponse<ServiceOrder>> GenerateForOrder(Order order)
+        public async Task<WebApiResponse<ServiceOrder>> GenerateForTrip(Trip trip)
         {
             WebApiResponse<ServiceOrder> result = new();
 
             try
             {
-                if (order.DriverId == null || order.DriverId == Guid.Empty)
+                if (trip.DriverId == null || trip.DriverId == Guid.Empty)
                 {
                     result.Status = ResponseStatus.Warning;
                     result.Message =
@@ -189,14 +189,14 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
-                if (await _repository.AnyAsync(_ => _.OrderId == order.Id))
+                if (await _repository.AnyAsync(_ => _.TripId == trip.Id))
                 {
                     result.Status = ResponseStatus.Warning;
                     result.Message = "Já existe uma Ordem de Serviço gerada para esta viagem.";
                     return result;
                 }
 
-                var drivers = await _driverRepository.QueryAsync(d => d.Id == order.DriverId);
+                var drivers = await _driverRepository.QueryAsync(d => d.Id == trip.DriverId);
                 var driver = drivers.FirstOrDefault();
 
                 if (driver == null)
@@ -209,12 +209,12 @@ namespace TSI.Friday.Services
                 var serviceOrder = new ServiceOrder
                 {
                     Number = await BuildNextNumberAsync(),
-                    OrderId = order.Id,
-                    DriverId = order.DriverId.Value,
-                    VehicleId = order.VehicleId,
+                    TripId = trip.Id,
+                    DriverId = trip.DriverId.Value,
+                    VehicleId = trip.VehicleId,
                     IssueDate = DateTime.UtcNow,
                     CompletionDate = DateTime.UtcNow,
-                    Description = $"OS gerada automaticamente para o pedido {order.OrderNumber}.",
+                    Description = $"OS gerada automaticamente para a viagem {trip.TripNumber}.",
                     Status = ServiceOrderStatus.Completed,
                 };
 
@@ -225,8 +225,8 @@ namespace TSI.Friday.Services
                     ServiceOrderId = serviceOrder.Id,
                     DriverId = driver.Id,
                     Percentage = driver.CommissionPercentage,
-                    BaseAmount = order.TotalPrice,
-                    Amount = order.TotalPrice * driver.CommissionPercentage / 100m,
+                    BaseAmount = trip.TotalPrice,
+                    Amount = trip.TotalPrice * driver.CommissionPercentage / 100m,
                     Status = CommissionStatus.Pending,
                 };
 
@@ -241,7 +241,7 @@ namespace TSI.Friday.Services
             }
             catch (Exception ex)
             {
-                _logService.LogException(ex, "ServiceOrderService.GenerateForOrder", order);
+                _logService.LogException(ex, "ServiceOrderService.GenerateForTrip", trip);
 
                 result.Status = ResponseStatus.Error;
                 result.Message = $"Não foi possível gerar a Ordem de Serviço automaticamente. Erro: {ex.Message}";

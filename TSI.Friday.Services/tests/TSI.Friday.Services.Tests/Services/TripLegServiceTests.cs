@@ -12,7 +12,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly TripLegService _service;
         private readonly Mock<IRepository<TripLeg>> _repository;
         private readonly Mock<ILogService> _logServiceMock;
-        private readonly Guid _orderId = Guid.Parse("00000000-0000-0000-0000-000000000010");
+        private readonly Guid _tripId = Guid.Parse("00000000-0000-0000-0000-000000000010");
 
         public TripLegServiceTests()
         {
@@ -28,7 +28,7 @@ namespace TSI.Friday.Services.Tests.Services
             var tripLeg = new TripLeg
             {
                 Id = Guid.NewGuid(),
-                OrderId = _orderId,
+                TripId = _tripId,
                 SequenceNumber = 1,
                 Origin = "São Paulo",
                 Destination = "Campinas",
@@ -48,7 +48,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var exception = new Exception("boom");
-            var tripLeg = new TripLeg { Id = Guid.NewGuid(), OrderId = _orderId };
+            var tripLeg = new TripLeg { Id = Guid.NewGuid(), TripId = _tripId };
             _repository.Setup(_ => _.AddAsync(tripLeg)).ThrowsAsync(exception);
 
             // Act
@@ -62,7 +62,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task TripLegService_Update_ShouldUpdateTripLegSuccessfully()
         {
             // Arrange
-            var tripLeg = new TripLeg { Id = Guid.NewGuid(), OrderId = _orderId };
+            var tripLeg = new TripLeg { Id = Guid.NewGuid(), TripId = _tripId };
 
             // Act
             var result = await _service.Update(tripLeg);
@@ -76,7 +76,7 @@ namespace TSI.Friday.Services.Tests.Services
         public async Task TripLegService_Remove_ShouldRemoveTripLegSuccessfully()
         {
             // Arrange
-            var tripLeg = new TripLeg { Id = Guid.NewGuid(), OrderId = _orderId };
+            var tripLeg = new TripLeg { Id = Guid.NewGuid(), TripId = _tripId };
 
             // Act
             var result = await _service.Remove(tripLeg);
@@ -91,7 +91,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             var id = Guid.NewGuid();
-            var tripLeg = new TripLeg { Id = id, OrderId = _orderId };
+            var tripLeg = new TripLeg { Id = id, TripId = _tripId };
             _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync(tripLeg);
 
             // Act
@@ -103,7 +103,7 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task TripLegService_FindByOrder_ShouldReturnLegsOrderedBySequenceNumber()
+        public async Task TripLegService_FindByTrip_ShouldReturnLegsOrderedBySequenceNumber()
         {
             // Arrange
             var legs = new List<TripLeg>
@@ -111,13 +111,13 @@ namespace TSI.Friday.Services.Tests.Services
                 new()
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = _orderId,
+                    TripId = _tripId,
                     SequenceNumber = 2,
                 },
                 new()
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = _orderId,
+                    TripId = _tripId,
                     SequenceNumber = 1,
                 },
             };
@@ -127,7 +127,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(legs);
 
             // Act
-            var result = await _service.FindByOrder(_orderId);
+            var result = await _service.FindByTrip(_tripId);
 
             // Assert
             Assert.Equal(ResponseStatus.Success, result.Status);

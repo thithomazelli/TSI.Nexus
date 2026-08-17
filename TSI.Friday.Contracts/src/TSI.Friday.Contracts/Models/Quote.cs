@@ -13,6 +13,8 @@ namespace TSI.Friday.Contracts.Models
 
         public QuoteStatus Status { get; set; }
 
+        public QuoteType Type { get; set; }
+
         public string Description { get; set; } = string.Empty;
 
         public decimal Price { get; set; }

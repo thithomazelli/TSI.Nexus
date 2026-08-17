@@ -35,13 +35,13 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ServiceOrderService_GenerateForOrder_ShouldReturnWarning_WhenOrderHasNoDriver()
+        public async Task ServiceOrderService_GenerateForTrip_ShouldReturnWarning_WhenTripHasNoDriver()
         {
             // Arrange
-            var order = new Order { Id = Guid.NewGuid(), OrderNumber = "ORD-001", DriverId = null };
+            var trip = new Trip { Id = Guid.NewGuid(), TripNumber = "VIA-001", DriverId = null };
 
             // Act
-            var result = await _service.GenerateForOrder(order);
+            var result = await _service.GenerateForTrip(trip);
 
             // Assert
             Assert.Equal(ResponseStatus.Warning, result.Status);
@@ -49,14 +49,14 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ServiceOrderService_GenerateForOrder_ShouldReturnWarning_WhenServiceOrderAlreadyExistsForOrder()
+        public async Task ServiceOrderService_GenerateForTrip_ShouldReturnWarning_WhenServiceOrderAlreadyExistsForTrip()
         {
             // Arrange
             var driverId = Guid.NewGuid();
-            var order = new Order
+            var trip = new Trip
             {
                 Id = Guid.NewGuid(),
-                OrderNumber = "ORD-001",
+                TripNumber = "VIA-001",
                 DriverId = driverId,
                 TotalPrice = 1000,
             };
@@ -66,7 +66,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(true);
 
             // Act
-            var result = await _service.GenerateForOrder(order);
+            var result = await _service.GenerateForTrip(trip);
 
             // Assert
             Assert.Equal(ResponseStatus.Warning, result.Status);
@@ -74,14 +74,14 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ServiceOrderService_GenerateForOrder_ShouldCreateServiceOrderAndCommission_WhenDataIsValid()
+        public async Task ServiceOrderService_GenerateForTrip_ShouldCreateServiceOrderAndCommission_WhenDataIsValid()
         {
             // Arrange
             var driverId = Guid.NewGuid();
-            var order = new Order
+            var trip = new Trip
             {
                 Id = Guid.NewGuid(),
-                OrderNumber = "ORD-001",
+                TripNumber = "VIA-001",
                 DriverId = driverId,
                 TotalPrice = 1000,
             };
@@ -100,7 +100,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(new List<Driver> { driver });
 
             // Act
-            var result = await _service.GenerateForOrder(order);
+            var result = await _service.GenerateForTrip(trip);
 
             // Assert
             Assert.Equal(ResponseStatus.Success, result.Status);
@@ -112,14 +112,14 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
-        public async Task ServiceOrderService_GenerateForOrder_ShouldReturnWarning_WhenDriverIsNotFound()
+        public async Task ServiceOrderService_GenerateForTrip_ShouldReturnWarning_WhenDriverIsNotFound()
         {
             // Arrange
             var driverId = Guid.NewGuid();
-            var order = new Order
+            var trip = new Trip
             {
                 Id = Guid.NewGuid(),
-                OrderNumber = "ORD-001",
+                TripNumber = "VIA-001",
                 DriverId = driverId,
                 TotalPrice = 1000,
             };
@@ -132,7 +132,7 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(new List<Driver>());
 
             // Act
-            var result = await _service.GenerateForOrder(order);
+            var result = await _service.GenerateForTrip(trip);
 
             // Assert
             Assert.Equal(ResponseStatus.Warning, result.Status);

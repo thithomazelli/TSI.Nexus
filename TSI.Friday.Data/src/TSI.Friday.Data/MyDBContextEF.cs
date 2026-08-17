@@ -64,6 +64,12 @@ namespace TSI.Friday.Data
 
         public DbSet<Commission> Commission { get; set; }
 
+        public DbSet<Trip> Trip { get; set; }
+
+        public DbSet<QuoteTrip> QuoteTrip { get; set; }
+
+        public DbSet<DocumentTemplate> DocumentTemplate { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -153,6 +159,13 @@ namespace TSI.Friday.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder
+                .Entity<Payment>()
+                .HasOne(pi => pi.Trip)
+                .WithMany(t => t.Payments)
+                .HasForeignKey(pi => pi.TripId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder
                 .Entity<Attachment>()
                 .HasOne(a => a.BusinessPartner)
                 .WithMany(b => (ICollection<Attachment>)b.Attachments)
@@ -164,6 +177,13 @@ namespace TSI.Friday.Data
                 .HasOne(a => a.Order)
                 .WithMany(o => (ICollection<Attachment>)o.Attachments)
                 .HasForeignKey(a => a.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.Trip)
+                .WithMany(t => (ICollection<Attachment>)t.Attachments)
+                .HasForeignKey(a => a.TripId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder
@@ -213,47 +233,88 @@ namespace TSI.Friday.Data
             modelBuilder.Entity<Driver>().HasIndex(d => d.SocialSecurityCard).IsUnique();
 
             modelBuilder
-                .Entity<Order>()
-                .HasOne(o => o.Vehicle)
-                .WithMany(v => v.Orders)
-                .HasForeignKey(o => o.VehicleId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder
-                .Entity<Order>()
-                .HasOne(o => o.Driver)
-                .WithMany(d => d.Orders)
-                .HasForeignKey(o => o.DriverId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder
-                .Entity<TripLeg>()
-                .HasOne(t => t.Order)
-                .WithMany(o => o.TripLegs)
-                .HasForeignKey(t => t.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder
-                .Entity<Passenger>()
-                .HasOne(p => p.Order)
-                .WithMany(o => o.Passengers)
-                .HasForeignKey(p => p.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder
                 .Entity<FuelLog>()
                 .HasOne(f => f.Vehicle)
                 .WithMany(v => v.FuelLogs)
                 .HasForeignKey(f => f.VehicleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Trip - an independent root entity (its own client/price/transaction), not an
+            // extension of Order. Kept fully decoupled so clients that don't use the fleet module
+            // never carry any trace of it on Order/Quote.
+            modelBuilder.Entity<Trip>().HasIndex(t => t.TripNumber).IsUnique();
+
+            modelBuilder
+                .Entity<Trip>()
+                .Property(t => t.TotalPrice)
+                .HasComputedColumnSql("(Price - (Price * Discount /100.0))", stored: true);
+
+            modelBuilder
+                .Entity<Trip>()
+                .HasOne(t => t.Transaction)
+                .WithOne(p => p.Trip)
+                .HasForeignKey<Trip>(t => t.TransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<Trip>()
+                .HasOne(t => t.Vehicle)
+                .WithMany(v => v.Trips)
+                .HasForeignKey(t => t.VehicleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<Trip>()
+                .HasOne(t => t.Driver)
+                .WithMany(d => d.Trips)
+                .HasForeignKey(t => t.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 1 QuoteTrip per Quote (the trip-specific data of a Type == Trip quote).
+            modelBuilder.Entity<QuoteTrip>().HasIndex(qt => qt.QuoteId).IsUnique();
+
+            modelBuilder
+                .Entity<QuoteTrip>()
+                .HasOne(qt => qt.Quote)
+                .WithMany()
+                .HasForeignKey(qt => qt.QuoteId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<QuoteTrip>()
+                .HasOne(qt => qt.Vehicle)
+                .WithMany()
+                .HasForeignKey(qt => qt.VehicleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<QuoteTrip>()
+                .HasOne(qt => qt.Driver)
+                .WithMany()
+                .HasForeignKey(qt => qt.DriverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<TripLeg>()
+                .HasOne(t => t.Trip)
+                .WithMany(tr => tr.TripLegs)
+                .HasForeignKey(t => t.TripId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Passenger>()
+                .HasOne(p => p.Trip)
+                .WithMany(tr => tr.Passengers)
+                .HasForeignKey(p => p.TripId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<ServiceOrder>().HasIndex(s => s.Number).IsUnique();
 
             modelBuilder
                 .Entity<ServiceOrder>()
-                .HasOne(s => s.Order)
+                .HasOne(s => s.Trip)
                 .WithMany()
-                .HasForeignKey(s => s.OrderId)
+                .HasForeignKey(s => s.TripId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder
@@ -283,6 +344,10 @@ namespace TSI.Friday.Data
                 .WithMany()
                 .HasForeignKey(c => c.DriverId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // One DocumentTemplate row per DocumentTemplateType - it's "the current template for
+            // each document", not a list of arbitrary files.
+            modelBuilder.Entity<DocumentTemplate>().HasIndex(dt => dt.Type).IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }
