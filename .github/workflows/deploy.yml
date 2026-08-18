@@ -150,18 +150,30 @@ jobs:
         # so attachments/ and stdout* are naturally preserved with no extra flag; appsettings.json
         # DOES need an explicit exclude since dotnet publish copies it into publish/backend/ and it
         # would otherwise overwrite the real secrets kept manually on the server.
+        #
+        # Also hit "550 Access failed" on every .dll mid-mirror: the previous deploy's dotnet
+        # process was still running and holding those files locked, because web.config (the file
+        # that makes IIS/ANCM recycle the process) only gets overwritten near the END of the
+        # mirror, by which point the DLLs earlier in the transfer order are already locked.
+        # app_offline.htm is the standard IIS/ANCM fix -- ANCM watches for it and gracefully shuts
+        # the process down (releasing the locks) as soon as it appears, so it has to land, and the
+        # process has to actually exit, before the DLL mirror starts.
         env:
           LFTP_FTP_SERVER: ${{ secrets.SERODIO_FTP_SERVER }}
           LFTP_FTP_USERNAME: ${{ secrets.SERODIO_FTP_USERNAME }}
           LFTP_FTP_PASSWORD: ${{ secrets.SERODIO_FTP_PASSWORD }}
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          echo '<html><body>Manutenção em andamento...</body></html>' > app_offline.htm
           lftp -u "$LFTP_FTP_USERNAME","$LFTP_FTP_PASSWORD" "ftp://$LFTP_FTP_SERVER" -e "
             set ftp:ssl-force true;
             set ftp:ssl-protect-data true;
             set ssl:verify-certificate no;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
+            put app_offline.htm -o /www/serodio-api/app_offline.htm;
+            !sleep 8;
             mirror -R --verbose --parallel=1 --no-perms --exclude-glob appsettings.json publish/backend/ /www/serodio-api/;
+            rm -f /www/serodio-api/app_offline.htm;
             bye
           "
