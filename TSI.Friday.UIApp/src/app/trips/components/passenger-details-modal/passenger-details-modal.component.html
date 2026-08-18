@@ -13,11 +13,11 @@
             <input
               formControlName="name"
               type="text"
-              placeholder="Nome"
+              [placeholder]="'COMMON.NAME' | translate"
               class="form-control"
               id="passengerModalName"
             />
-            <label for="passengerModalName">Nome</label>
+            <label for="passengerModalName">{{ 'COMMON.NAME' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-person"></i></div>
         </div>
@@ -56,11 +56,11 @@
             <input
               formControlName="phone"
               type="text"
-              placeholder="Telefone"
+              [placeholder]="'COMMON.PHONE' | translate"
               class="form-control"
               id="passengerModalPhone"
             />
-            <label for="passengerModalPhone">Telefone</label>
+            <label for="passengerModalPhone">{{ 'COMMON.PHONE' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-telephone"></i></div>
         </div>
@@ -69,9 +69,7 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">
         {{ isEdit ? 'Salvar' : 'Adicionar' }}
       </button>

@@ -1,7 +1,7 @@
 <app-header
   title="Templates de Documentos"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Templates de Documentos', link: '' },
   ]"
 ></app-header>
@@ -18,8 +18,7 @@
       </p>
 
       <div *ngIf="loading" class="text-center py-4">
-        <i class="bi bi-arrow-repeat"></i> Carregando...
-      </div>
+        <i class="bi bi-arrow-repeat"></i>{{ 'COMMON.LOADING' | translate }}</div>
 
       <div *ngIf="!loading && templates.length === 0" class="text-muted py-3">
         Nenhum template encontrado.

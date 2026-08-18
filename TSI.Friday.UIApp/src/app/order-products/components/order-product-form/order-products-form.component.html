@@ -138,7 +138,7 @@
                     {{ option.label }}
                   </option>
                 </select>
-                <label for="status">Status</label>
+                <label for="status">{{ 'COMMON.STATUS' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-info-circle"></i>
@@ -188,7 +188,7 @@
                   [class.is-invalid]="isInvalid('quantity')"
                   (blur)="onQuantityBlur()"
                 />
-                <label for="quantity">Quantidade</label>
+                <label for="quantity">{{ 'COMMON.QUANTITY' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-123"></i></div>
             </div>
@@ -202,11 +202,11 @@
                   min="0"
                   max="100"
                   step="0.01"
-                  placeholder="Desconto"
+                  [placeholder]="'TRANSACTIONS.DISCOUNT' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('discount')"
                 />
-                <label for="discount">Desconto</label>
+                <label for="discount">{{ 'TRANSACTIONS.DISCOUNT' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-percent"></i></div>
             </div>
@@ -240,7 +240,7 @@
                   class="form-control"
                   [class.is-invalid]="isInvalid('totalPriceFormatted')"
                 />
-                <label for="totalPrice">Preço Total</label>
+                <label for="totalPrice">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-cash-coin"></i>
@@ -252,13 +252,9 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3 gap-2">
-      <button type="button" class="btn btn-secondary" (click)="cancel()">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
       @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger">
-          Remover
-        </button>
+        <button (click)="remove()" type="button" class="btn btn-danger">{{ 'COMMON.REMOVE' | translate }}</button>
       }
       <button
         [appClick]="submit.bind(this)"
@@ -266,7 +262,7 @@
         class="btn btn-success"
         [disabled]="data?.status === 'Returned'"
       >
-        {{ isEdit ? "Salvar" : "Adicionar" }}
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

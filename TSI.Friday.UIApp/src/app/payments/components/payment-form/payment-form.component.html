@@ -105,11 +105,11 @@
               <input
                 formControlName="description"
                 type="text"
-                placeholder="Descrição"
+                [placeholder]="'COMMON.DESCRIPTION' | translate"
                 class="form-control"
                 id="description"
               />
-              <label for="description">Descrição</label>
+              <label for="description">{{ 'COMMON.DESCRIPTION' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-card-text"></i></div>
           </div>
@@ -125,12 +125,12 @@
                 [class.is-invalid]="isInvalid('method')"
                 [class.is-valid]="isValid('method')"
               >
-                <option value="" disabled selected>Método</option>
+                <option value="" disabled selected>{{ 'TRANSACTIONS.METHOD' | translate }}</option>
                 @for (option of methodOptions; track option) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
-              <label for="method">Método</label>
+              <label for="method">{{ 'TRANSACTIONS.METHOD' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-credit-card"></i>
@@ -151,7 +151,7 @@
                     class="form-control"
                     id="businessPartnerName"
                   />
-                  <label for="businessPartnerName">Cliente</label>
+                  <label for="businessPartnerName">{{ 'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate }}</label>
                 </div>
                 <div class="input-group-text"><i class="bi bi-person"></i></div>
               </div>
@@ -190,7 +190,7 @@
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
-              <label for="status">Status</label>
+              <label for="status">{{ 'COMMON.STATUS' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-info-circle"></i>
@@ -208,12 +208,12 @@
                 [class.is-invalid]="isInvalid('condition')"
                 [class.is-valid]="isValid('condition')"
               >
-                <option value="" disabled selected>Condição</option>
+                <option value="" disabled selected>{{ 'TRANSACTIONS.CONDITION' | translate }}</option>
                 @for (option of conditionOptions; track option) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
-              <label for="condition">Condição</label>
+              <label for="condition">{{ 'TRANSACTIONS.CONDITION' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-calendar2-week"></i>
@@ -311,20 +311,16 @@
       </div>
     </div>
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
       @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger me-2">
-          Remover
-        </button>
+        <button (click)="remove()" type="button" class="btn btn-danger me-2">{{ 'COMMON.REMOVE' | translate }}</button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
       >
-        {{ isEdit ? "Salvar" : "Adicionar" }}
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

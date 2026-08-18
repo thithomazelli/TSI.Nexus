@@ -1,7 +1,7 @@
 <app-header
   [title]="isEdit ? 'Editar Transação' : 'Adicionar Transação'"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Transações', link: '/transactions' },
     { label: isEdit ? 'Editar Transação' : 'Adicionar Transação', link: '' },
   ]"
@@ -57,7 +57,7 @@
                   [class.active]="activeTab === 'details'"
                   (click)="activeTab = 'details'"
                   data-toggle="tab"
-                  >Detalhes</a
+                  >{{ 'COMMON.DETAILS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -66,7 +66,7 @@
                   [class.active]="activeTab === 'payments'"
                   (click)="activeTab = 'payments'"
                   data-toggle="tab"
-                  >Pagamentos</a
+                  >{{ 'SIDEBAR.PAGAMENTOS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -75,13 +75,13 @@
                   [class.active]="activeTab === 'attachments'"
                   (click)="activeTab = 'attachments'"
                   data-toggle="tab"
-                  >Anexos</a
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
             </ul>
 
             @if (loading) {
-              <div class="text-center py-4">Carregando...</div>
+              <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
             }
 
             @if (!loading) {

@@ -2,7 +2,7 @@
   <app-header
     title="Relatórios"
     [navigationMenus]="[
-      { label: 'Home', link: '/home' },
+      { label: 'COMMON.HOME' | translate, link: '/home' },
       { label: 'Relatórios', link: '' },
     ]"
   ></app-header>
@@ -122,7 +122,7 @@
                         <th>Cliente / Fornecedor</th>
                         <th>Descrição</th>
                         <th>Status</th>
-                        <th>Data</th>
+                        <th>{{ 'COMMON.DATE' | translate }}</th>
                         <th>Tipo</th>
                         <th>Subtotal</th>
                       </tr>

@@ -1,7 +1,7 @@
 <app-header
   [title]="isEdit ? 'Editar Usuários' : 'Adicionar Usuários'"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Usuários', link: '/users' },
     { label: isEdit ? 'Editar Usuários' : 'Adicionar Usuários', link: '' },
   ]"
@@ -57,7 +57,7 @@
                   [class.active]="activeTab === 'details'"
                   (click)="activeTab = 'details'"
                   data-toggle="tab"
-                  >Detalhes</a
+                  >{{ 'COMMON.DETAILS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -66,7 +66,7 @@
                   [class.active]="activeTab === 'attachments'"
                   (click)="activeTab = 'attachments'"
                   data-toggle="tab"
-                  >Anexos</a
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
               <li class="nav-item" *ngIf="isOwnProfile">
@@ -81,7 +81,7 @@
             </ul>
 
             @if (loading) {
-              <div class="text-center py-4">Loading...</div>
+              <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
             }
 
             @if (!loading) {

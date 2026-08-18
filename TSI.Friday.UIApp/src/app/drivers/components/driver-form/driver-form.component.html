@@ -78,7 +78,7 @@
             <input
               formControlName="phone"
               type="text"
-              placeholder="Telefone"
+              [placeholder]="'COMMON.PHONE' | translate"
               class="form-control"
               id="phone"
               mask="(00) 0000-0000"
@@ -86,7 +86,7 @@
               [class.is-valid]="isValid('phone')"
               (blur)="markAsTouched('phone')"
             />
-            <label for="phone">Telefone</label>
+            <label for="phone">{{ 'COMMON.PHONE' | translate }}</label>
           </div>
         </div>
       </div>
@@ -96,7 +96,7 @@
             <input
               formControlName="mobile"
               type="text"
-              placeholder="Celular"
+              [placeholder]="'BUSINESS_PARTNER.MOBILE' | translate"
               class="form-control"
               id="mobile"
               mask="(00) 0 0000-0000"
@@ -104,7 +104,7 @@
               [class.is-valid]="isValid('mobile')"
               (blur)="markAsTouched('mobile')"
             />
-            <label for="mobile">Celular</label>
+            <label for="mobile">{{ 'BUSINESS_PARTNER.MOBILE' | translate }}</label>
           </div>
         </div>
       </div>
@@ -208,7 +208,7 @@
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>
-            <label for="status">Status</label>
+            <label for="status">{{ 'COMMON.STATUS' | translate }}</label>
           </div>
         </div>
       </div>
@@ -216,20 +216,16 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="cancel()">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
       @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger btn-sm me-2">
-          Remover
-        </button>
+        <button (click)="remove()" type="button" class="btn btn-danger btn-sm me-2">{{ 'COMMON.REMOVE' | translate }}</button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success btn-sm"
       >
-        {{ isEdit ? "Salvar" : "Adicionar" }}
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

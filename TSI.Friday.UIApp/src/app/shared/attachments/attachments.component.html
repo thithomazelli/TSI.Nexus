@@ -120,7 +120,7 @@
       class="pi pi-spin pi-spinner"
       style="font-size: 2rem; color: #6c757d"
     ></i>
-    <p class="text-muted mt-2 mb-0">Carregando...</p>
+    <p class="text-muted mt-2 mb-0">{{ 'COMMON.LOADING' | translate }}</p>
   </div>
 
   <!-- Folder cards -->
@@ -320,17 +320,13 @@
           class="btn btn-secondary me-2"
           type="button"
           (click)="showAddDialog = false"
-        >
-          Cancelar
-        </button>
+        >{{ 'COMMON.CANCEL' | translate }}</button>
         <button
           class="btn btn-success"
           type="button"
           (click)="addAttachment()"
           [disabled]="!addFile"
-        >
-          Salvar
-        </button>
+        >{{ 'COMMON.SAVE' | translate }}</button>
       </div>
     </ng-template>
   </p-dialog>

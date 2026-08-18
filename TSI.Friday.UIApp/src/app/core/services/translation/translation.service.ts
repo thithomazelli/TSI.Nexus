@@ -48,10 +48,20 @@ export class TranslationService {
     this.applyDocumentLang(language);
   }
 
-  instant(key: string): string {
+  /**
+   * Resolves a key to its translated string. Pass `params` to substitute `{name}` placeholders
+   * in the resolved value, e.g. instant('GRID.EDIT_ENTITY', { entity: t('SIDEBAR.CLIENTES') }).
+   */
+  instant(key: string, params?: Record<string, string>): string {
     const dictionary = DICTIONARIES[this.current] ?? DICTIONARIES[DEFAULT_LANGUAGE];
     const value = this.resolveKey(dictionary, key);
-    return typeof value === 'string' ? value : key;
+    const resolved = typeof value === 'string' ? value : key;
+    if (!params) {
+      return resolved;
+    }
+    return resolved.replace(/\{(\w+)\}/g, (match, name) =>
+      Object.prototype.hasOwnProperty.call(params, name) ? params[name] : match,
+    );
   }
 
   private resolveKey(dictionary: Record<string, unknown>, key: string): unknown {

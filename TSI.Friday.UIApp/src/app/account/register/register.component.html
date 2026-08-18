@@ -6,7 +6,7 @@
       </a>
     </div>
     <div class="card-body register-card-body">
-      <p class="register-box-msg">Register a new membership</p>
+      <p class="register-box-msg">{{ 'ACCOUNT.REGISTER.SUBTITLE' | translate }}</p>
 
       <form [formGroup]="form" (ngSubmit)="register()" novalidate>
         <div class="input-group mb-1">
@@ -14,21 +14,23 @@
             <input
               formControlName="firstName"
               type="text"
-              placeholder="First name"
+              [placeholder]="'ACCOUNT.REGISTER.FIRST_NAME' | translate"
               class="form-control"
               [class.is-invalid]="isInvalid('firstName')"
             />
-            <label for="firstName">First name</label>
+            <label for="firstName">{{ 'ACCOUNT.REGISTER.FIRST_NAME' | translate }}</label>
             @if (inputHasError("firstName", "required")) {
-              <span class="text-danger">First name is required </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.FIRST_NAME_REQUIRED' | translate
+              }}</span>
             }
             @if (
               inputHasError("firstName", "minlength") ||
               inputHasError("firstName", "maxlength")
             ) {
-              <span class="text-danger"
-                >First name must be at least 3, and maximum 15 characters
-              </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.FIRST_NAME_LENGTH' | translate
+              }}</span>
             }
           </div>
           <div class="input-group-text"><i class="bi bi-person"></i></div>
@@ -39,21 +41,23 @@
             <input
               formControlName="lastName"
               type="text"
-              placeholder="Last name"
+              [placeholder]="'ACCOUNT.REGISTER.LAST_NAME' | translate"
               class="form-control"
               [class.is-invalid]="isInvalid('lastName')"
             />
-            <label for="lastName">Last name</label>
+            <label for="lastName">{{ 'ACCOUNT.REGISTER.LAST_NAME' | translate }}</label>
             @if (inputHasError("lastName", "required")) {
-              <span class="text-danger">Last name is required </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.LAST_NAME_REQUIRED' | translate
+              }}</span>
             }
             @if (
               inputHasError("lastName", "minlength") ||
               inputHasError("lastName", "maxlength")
             ) {
-              <span class="text-danger"
-                >Last name must be at least 3, and maximum 30 characters
-              </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.LAST_NAME_LENGTH' | translate
+              }}</span>
             }
           </div>
           <div class="input-group-text"><i class="bi bi-person"></i></div>
@@ -64,16 +68,20 @@
             <input
               formControlName="email"
               type="text"
-              placeholder="Email"
+              [placeholder]="'ACCOUNT.REGISTER.EMAIL' | translate"
               class="form-control"
               [class.is-invalid]="isInvalid('email')"
             />
-            <label for="email">Email</label>
+            <label for="email">{{ 'ACCOUNT.REGISTER.EMAIL' | translate }}</label>
             @if (inputHasError("email", "required")) {
-              <span class="text-danger">Email is required </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.EMAIL_REQUIRED' | translate
+              }}</span>
             }
             @if (inputHasError("email", "pattern")) {
-              <span class="text-danger">Invalid email address </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.EMAIL_INVALID' | translate
+              }}</span>
             }
           </div>
           <div class="input-group-text"><i class="bi bi-envelope"></i></div>
@@ -84,21 +92,23 @@
             <input
               formControlName="password"
               type="password"
-              placeholder="Password"
+              [placeholder]="'ACCOUNT.REGISTER.PASSWORD' | translate"
               class="form-control"
               [class.is-invalid]="isInvalid('password')"
             />
-            <label for="password">Password</label>
+            <label for="password">{{ 'ACCOUNT.REGISTER.PASSWORD' | translate }}</label>
             @if (inputHasError("password", "required")) {
-              <span class="text-danger">Password is required </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.PASSWORD_REQUIRED' | translate
+              }}</span>
             }
             @if (
               inputHasError("password", "minlength") ||
               inputHasError("password", "maxlength")
             ) {
-              <span class="text-danger"
-                >A senha precisa ter no mínimo 6 e no máximo 15 caracteres.
-              </span>
+              <span class="text-danger">{{
+                'ACCOUNT.REGISTER.PASSWORD_LENGTH' | translate
+              }}</span>
             }
           </div>
           <div class="input-group-text"><i class="bi bi-lock-fill"></i></div>
@@ -122,13 +132,16 @@
                 formControlName="agree"
               />
               <label class="form-check-label" for="agree">
-                I agree to the <a href="#">terms</a>
+                {{ 'ACCOUNT.REGISTER.AGREE_TERMS' | translate }}
+                <a href="#">{{ 'ACCOUNT.REGISTER.TERMS' | translate }}</a>
               </label>
             </div>
           </div>
           <div class="col-4">
             <div class="d-grid">
-              <button type="submit" class="btn btn-primary">Sign Up</button>
+              <button type="submit" class="btn btn-primary">
+                {{ 'ACCOUNT.REGISTER.SUBMIT' | translate }}
+              </button>
             </div>
           </div>
         </div>
@@ -136,7 +149,7 @@
 
       <p class="mb-0">
         <a routerLink="/account/login" class="link-primary">
-          I already have a membership
+          {{ 'ACCOUNT.REGISTER.HAVE_ACCOUNT' | translate }}
         </a>
       </p>
     </div>

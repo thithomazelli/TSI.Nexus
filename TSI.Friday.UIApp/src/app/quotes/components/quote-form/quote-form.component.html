@@ -2,7 +2,7 @@
   @if (isEdit) {
     <app-alert-banner-component
       [status]="data?.status"
-      [entity]="'Orçamento'"
+      [entity]="'SIDEBAR.ORCAMENTOS' | translate"
     ></app-alert-banner-component>
   }
   <form [formGroup]="form" (ngSubmit)="submit()">
@@ -15,12 +15,12 @@
                 <input
                   formControlName="quoteNumber"
                   type="text"
-                  placeholder="Número do Orçamento"
+                  [placeholder]="'QUOTES.QUOTE_NUMBER' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('quoteNumber')"
                   [class.is-valid]="isValid('quoteNumber')"
                 />
-                <label for="quoteNumber">Número do Orçamento</label>
+                <label for="quoteNumber">{{ 'QUOTES.QUOTE_NUMBER' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-hash"></i></div>
             </div>
@@ -38,10 +38,10 @@
                     #firstInput
                     [class.is-invalid]="isInvalid('businessPartnerName')"
                     [class.is-valid]="isValid('businessPartnerName')"
-                    placeholder="Cliente"
+                    [placeholder]="'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate"
                     (blur)="onClientBlur()"
                   />
-                  <label for="businessPartnerName">Cliente</label>
+                  <label for="businessPartnerName">{{ 'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate }}</label>
                   <mat-autocomplete #auto="matAutocomplete">
                     <mat-option
                       *ngFor="
@@ -54,8 +54,11 @@
                   </mat-autocomplete>
                 } @else {
                   <app-link-field
-                    [placeHolder]="'Cliente'"
-                    [text]="form.get('businessPartnerName')?.value || 'Cliente'"
+                    [placeHolder]="'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate"
+                    [text]="
+                      form.get('businessPartnerName')?.value ||
+                      ('BUSINESS_PARTNER.CLIENT_SINGULAR' | translate)
+                    "
                     [linkUrl]="[
                       '/clients',
                       form.get('businessPartnerId')?.value,
@@ -74,12 +77,12 @@
                 <input
                   formControlName="description"
                   type="text"
-                  placeholder="Descrição"
+                  [placeholder]="'COMMON.DESCRIPTION' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('description')"
                   [class.is-valid]="isValid('description')"
                 />
-                <label for="description">Descrição</label>
+                <label for="description">{{ 'COMMON.DESCRIPTION' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-card-text"></i>
@@ -89,7 +92,7 @@
           <div class="col-12 col-md-4">
             <app-date-field
               formControlName="date"
-              [label]="'Data do Orçamento'"
+              [label]="'QUOTES.QUOTE_DATE' | translate"
               [isDisabled]="data?.status === 'Converted'"
             ></app-date-field>
           </div>
@@ -110,7 +113,7 @@
                     {{ s.label }}
                   </option>
                 </select>
-                <label for="status">Status</label>
+                <label for="status">{{ 'COMMON.STATUS' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-info-circle"></i>
@@ -126,12 +129,12 @@
                   type="number"
                   min="0"
                   max="100"
-                  placeholder="Desconto"
+                  [placeholder]="'TRANSACTIONS.DISCOUNT' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('discount')"
                   [class.is-valid]="isValid('discount')"
                 />
-                <label for="discount">Desconto</label>
+                <label for="discount">{{ 'TRANSACTIONS.DISCOUNT' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-percent"></i></div>
             </div>
@@ -143,12 +146,12 @@
                 <input
                   formControlName="priceFormatted"
                   type="text"
-                  placeholder="Preço"
+                  [placeholder]="'COMMON.PRICE' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('priceFormatted')"
                   [class.is-valid]="isValid('priceFormatted')"
                 />
-                <label for="price">Preço</label>
+                <label for="price">{{ 'COMMON.PRICE' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-cash-coin"></i>
@@ -162,12 +165,12 @@
                 <input
                   formControlName="totalPriceFormatted"
                   type="text"
-                  placeholder="Preço Total"
+                  [placeholder]="'COMMON.TOTAL_PRICE_LABEL' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('totalPriceFormatted')"
                   [class.is-valid]="isValid('totalPriceFormatted')"
                 />
-                <label for="totalPrice">Preço Total</label>
+                <label for="totalPrice">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-cash-coin"></i>
@@ -179,20 +182,20 @@
 
       <!-- Dados da viagem: veículo, motorista e roteiro (apenas orçamentos do tipo Viagem) -->
       <section *ngIf="isTripQuote()" class="quote-section mt-2" formGroupName="quoteTrip">
-        <h5>Dados da Viagem</h5>
+        <h5>{{ 'TRIPS.TRIP_DATA' | translate }}</h5>
         <div class="row g-1 mb-1">
           <div class="col-12 col-md-6">
             <div class="input-group">
               <div class="form-floating flex-fill select-floating">
                 <select formControlName="vehicleId" class="form-select">
-                  <option [ngValue]="null">Sem veículo</option>
+                  <option [ngValue]="null">{{ 'TRIPS.NO_VEHICLE' | translate }}</option>
                   <option *ngFor="let v of vehicles" [ngValue]="v.id">
                     {{ v.plate }} - {{ v.brand }} {{ v.model }} ({{
                       v.status
                     }})
                   </option>
                 </select>
-                <label>Veículo</label>
+                <label>{{ 'VEHICLES.SINGULAR' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-bus-front"></i></div>
             </div>
@@ -201,12 +204,12 @@
             <div class="input-group">
               <div class="form-floating flex-fill select-floating">
                 <select formControlName="driverId" class="form-select">
-                  <option [ngValue]="null">Sem motorista</option>
+                  <option [ngValue]="null">{{ 'TRIPS.NO_DRIVER' | translate }}</option>
                   <option *ngFor="let d of drivers" [ngValue]="d.id">
                     {{ d.name }} ({{ d.status }})
                   </option>
                 </select>
-                <label>Motorista</label>
+                <label>{{ 'SIDEBAR.MOTORISTAS_SINGULAR' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-person-vcard"></i></div>
             </div>
@@ -217,10 +220,10 @@
                 <input
                   formControlName="route"
                   type="text"
-                  placeholder="Roteiro"
+                  [placeholder]="'TRIPS.ROUTE' | translate"
                   class="form-control"
                 />
-                <label>Roteiro</label>
+                <label>{{ 'TRIPS.ROUTE' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
             </div>
@@ -232,10 +235,10 @@
                   formControlName="distanceKm"
                   type="number"
                   min="0"
-                  placeholder="Distância (km)"
+                  [placeholder]="'TRIPS.DISTANCE_KM' | translate"
                   class="form-control"
                 />
-                <label>Distância (km)</label>
+                <label>{{ 'TRIPS.DISTANCE_KM' | translate }}</label>
               </div>
             </div>
           </div>
@@ -246,10 +249,10 @@
                   formControlName="dailyCount"
                   type="number"
                   min="0"
-                  placeholder="Qtd. diárias"
+                  [placeholder]="'TRIPS.DAILY_COUNT' | translate"
                   class="form-control"
                 />
-                <label>Qtd. diárias</label>
+                <label>{{ 'TRIPS.DAILY_COUNT' | translate }}</label>
               </div>
             </div>
           </div>
@@ -259,11 +262,11 @@
                 <input
                   formControlName="transportLicenseNumber"
                   type="text"
-                  placeholder="Licença NTT/ARTESP"
+                  [placeholder]="'TRIPS.LICENSE_NUMBER' | translate"
                   class="form-control"
                   id="quoteTripTransportLicenseNumber"
                 />
-                <label for="quoteTripTransportLicenseNumber">Licença NTT/ARTESP</label>
+                <label for="quoteTripTransportLicenseNumber">{{ 'TRIPS.LICENSE_NUMBER' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-patch-check"></i></div>
             </div>
@@ -271,7 +274,7 @@
           <div class="col-12 col-md-6">
             <app-date-field
               formControlName="transportLicenseExpiryDate"
-              [label]="'Validade da licença'"
+              [label]="'TRIPS.LICENSE_EXPIRY' | translate"
             ></app-date-field>
           </div>
         </div>
@@ -279,18 +282,16 @@
 
       <!-- Tabela de produtos do orçamento -->
       <section *ngIf="!isEdit" class="quote-products-table mt-2">
-        <h5>Produtos</h5>
+        <h5>{{ 'SIDEBAR.PRODUTOS' | translate }}</h5>
         <table class="table">
           <thead>
             <tr>
               <th class="table-header-title" scope="col">SKU</th>
-              <th class="table-header-title" scope="col">Nome</th>
-              <th class="table-header-title" scope="col">Preço Total</th>
-              <th class="table-header-title" scope="col">Quantidade</th>
+              <th class="table-header-title" scope="col">{{ 'COMMON.NAME' | translate }}</th>
+              <th class="table-header-title" scope="col">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</th>
+              <th class="table-header-title" scope="col">{{ 'COMMON.QUANTITY' | translate }}</th>
               <th class="" scope="col" style="width: 40px">
-                <button class="address-link" (click)="openQuoteProductsModal()">
-                  Adicionar
-                </button>
+                <button class="address-link" (click)="openQuoteProductsModal()">{{ 'COMMON.ADD' | translate }}</button>
               </th>
             </tr>
           </thead>
@@ -306,7 +307,7 @@
                 <button
                   type="button"
                   class="btn btn-link p-0 text-danger"
-                  title="Remover"
+                  [title]="'COMMON.REMOVE' | translate"
                   (click)="removeProduct(i)"
                 >
                   <i class="bi bi-trash"></i>
@@ -317,7 +318,7 @@
               *ngIf="!data?.quoteProducts || data?.quoteProducts?.length === 0"
             >
               <td colspan="5" class="text-center text-muted small py-3">
-                Nenhum produto adicionado
+                {{ 'QUOTES.NO_PRODUCTS_ADDED' | translate }}
               </td>
             </tr>
           </tbody>
@@ -326,7 +327,7 @@
 
       <!-- Dados do Pagamento -->
       <section>
-      <h5 class="mt-3 mb-2">Dados do Pagamento</h5>
+      <h5 class="mt-3 mb-2">{{ 'TRANSACTIONS.PAYMENT_DATA' | translate }}</h5>
       <div class="row g-1 mb-1">
         <div class="col-6">
           <div class="input-group">
@@ -338,12 +339,12 @@
                 [class.is-invalid]="isInvalid('condition')"
                 [class.is-valid]="isValid('condition')"
               >
-                <option value="" disabled selected>Condição</option>
+                <option value="" disabled selected>{{ 'TRANSACTIONS.CONDITION' | translate }}</option>
                 @for (option of conditionOptions; track option) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
-              <label for="condition">Condição</label>
+              <label for="condition">{{ 'TRANSACTIONS.CONDITION' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-calendar2-week"></i>
@@ -360,12 +361,12 @@
                 [class.is-invalid]="isInvalid('method')"
                 [class.is-valid]="isValid('method')"
               >
-                <option value="" disabled selected>Método</option>
+                <option value="" disabled selected>{{ 'TRANSACTIONS.METHOD' | translate }}</option>
                 @for (option of methodOptions; track option) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
-              <label for="method">Método</label>
+              <label for="method">{{ 'TRANSACTIONS.METHOD' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-credit-card"></i>
@@ -381,13 +382,13 @@
                 type="number"
                 min="1"
                 step="1"
-                placeholder="Total de Pagamentos"
+                [placeholder]="'TRANSACTIONS.TOTAL_OF_PAYMENTS' | translate"
                 class="form-control"
                 id="totalOfPayments"
                 [class.is-invalid]="isInvalid('totalOfPayments')"
                 [class.is-valid]="isValid('totalOfPayments')"
               />
-              <label for="totalOfPayments">Total de Pagamentos</label>
+              <label for="totalOfPayments">{{ 'TRANSACTIONS.TOTAL_OF_PAYMENTS' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-list-ol"></i>
@@ -401,13 +402,13 @@
               <input
                 formControlName="paymentTotalPriceFormatted"
                 type="text"
-                placeholder="Preço Total Pagamentos"
+                [placeholder]="'TRANSACTIONS.PAYMENT_TOTAL_PRICE' | translate"
                 class="form-control"
                 [class.is-invalid]="isInvalid('paymentTotalPriceFormatted')"
                 [class.is-valid]="isValid('paymentTotalPriceFormatted')"
                 (blur)="onCurrencyBlur('paymentTotalPrice')"
               />
-              <label for="paymentTotalPrice">Preço Total Pagamentos</label>
+              <label for="paymentTotalPrice">{{ 'TRANSACTIONS.PAYMENT_TOTAL_PRICE' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-cash-coin"></i>
@@ -423,13 +424,13 @@
                 type="number"
                 min="0"
                 step="1"
-                placeholder="Total de Despesas"
+                [placeholder]="'TRANSACTIONS.TOTAL_OF_EXPENSES' | translate"
                 class="form-control"
                 id="totalOfExpenses"
                 [class.is-invalid]="isInvalid('totalOfExpenses')"
                 [class.is-valid]="isValid('totalOfExpenses')"
               />
-              <label for="totalOfExpenses">Total de Despesas</label>
+              <label for="totalOfExpenses">{{ 'TRANSACTIONS.TOTAL_OF_EXPENSES' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-list-ol"></i>
@@ -443,13 +444,13 @@
               <input
                 formControlName="expenseTotalPriceFormatted"
                 type="text"
-                placeholder="Preço Total Despesas"
+                [placeholder]="'TRANSACTIONS.EXPENSE_TOTAL_PRICE' | translate"
                 class="form-control"
                 [class.is-invalid]="isInvalid('expenseTotalPriceFormatted')"
                 [class.is-valid]="isValid('expenseTotalPriceFormatted')"
                 (blur)="onCurrencyBlur('expenseTotalPrice')"
               />
-              <label for="expenseTotalPrice">Preço Total Despesas</label>
+              <label for="expenseTotalPrice">{{ 'TRANSACTIONS.EXPENSE_TOTAL_PRICE' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-cash"></i></div>
           </div>
@@ -462,22 +463,23 @@
       <div class="col-6 d-flex justify-content-start align-items-center">
         <ng-container *ngIf="canDisplayConvertButton()">
           <button type="button" class="btn btn-primary" (click)="convert()">
-            {{ isTripQuote() ? "Converter em Viagem" : "Converter em Pedido" }}
+            {{
+              (isTripQuote()
+                ? "QUOTES.CONVERT_TO_TRIP"
+                : "QUOTES.CONVERT_TO_ORDER"
+              ) | translate
+            }}
           </button>
         </ng-container>
       </div>
       <div class="col-6 d-flex justify-content-end align-items-center">
-        <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
-          Cancelar
-        </button>
+        <button type="button" class="btn btn-secondary me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
         <button
           type="submit"
           class="btn btn-success"
           [appClick]="submit.bind(this)"
           [disabled]="data?.status === 'Converted'"
-        >
-          Salvar
-        </button>
+        >{{ 'COMMON.SAVE' | translate }}</button>
       </div>
     </div>
   </form>

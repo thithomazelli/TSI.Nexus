@@ -11,14 +11,14 @@
                 class="form-select"
                 [class.is-invalid]="isInvalid('type')"
               >
-                <option [ngValue]="null">Selecione o tipo</option>
-                <option [ngValue]="'Home'">Residencial</option>
-                <option [ngValue]="'Office'">Escritório</option>
-                <option [ngValue]="'Postal'">Postal</option>
-                <option [ngValue]="'Billing'">Cobrança</option>
-                <option [ngValue]="'Shipping'">Entrega</option>
+                <option [ngValue]="null">{{ 'ADDRESS.SELECT_TYPE' | translate }}</option>
+                <option [ngValue]="'Home'">{{ 'ADDRESS.TYPE_HOME' | translate }}</option>
+                <option [ngValue]="'Office'">{{ 'ADDRESS.TYPE_OFFICE' | translate }}</option>
+                <option [ngValue]="'Postal'">{{ 'ADDRESS.TYPE_POSTAL' | translate }}</option>
+                <option [ngValue]="'Billing'">{{ 'ADDRESS.TYPE_BILLING' | translate }}</option>
+                <option [ngValue]="'Shipping'">{{ 'ADDRESS.TYPE_SHIPPING' | translate }}</option>
               </select>
-              <label for="type">Tipo de Endereço</label>
+              <label for="type">{{ 'ADDRESS.ADDRESS_TYPE' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-info-circle"></i>
@@ -32,12 +32,12 @@
                 formControlName="zipCode"
                 type="text"
                 class="form-control"
-                placeholder="CEP"
+                [placeholder]="'ADDRESS.ZIP_CODE' | translate"
                 maxlength="9"
                 mask="00000-000"
                 [class.is-invalid]="isInvalid('zipCode')"
               />
-              <label for="zipCode">CEP</label>
+              <label for="zipCode">{{ 'ADDRESS.ZIP_CODE' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-mailbox"></i></div>
             @if (loadingCep) {
@@ -60,10 +60,10 @@
                 formControlName="street"
                 type="text"
                 class="form-control"
-                placeholder="Rua"
+                [placeholder]="'ADDRESS.STREET' | translate"
                 [class.is-invalid]="isInvalid('street')"
               />
-              <label for="street">Rua</label>
+              <label for="street">{{ 'ADDRESS.STREET' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-signpost"></i></div>
           </div>
@@ -75,10 +75,10 @@
                 formControlName="number"
                 type="number"
                 class="form-control"
-                placeholder="Número"
+                [placeholder]="'ADDRESS.NUMBER' | translate"
                 [class.is-invalid]="isInvalid('number')"
               />
-              <label for="number">Número</label>
+              <label for="number">{{ 'ADDRESS.NUMBER' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-hash"></i></div>
           </div>
@@ -93,7 +93,7 @@
                 class="form-select"
                 [class.is-invalid]="isInvalid('state')"
               >
-                <option [ngValue]="null">Selecione o estado</option>
+                <option [ngValue]="null">{{ 'ADDRESS.SELECT_STATE' | translate }}</option>
                 @for (
                   estado of estados;
                   track trackByEstadoId(i, estado);
@@ -104,7 +104,7 @@
                   </option>
                 }
               </select>
-              <label for="state">Estado</label>
+              <label for="state">{{ 'ADDRESS.STATE' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-flag"></i></div>
           </div>
@@ -117,7 +117,7 @@
                 class="form-select"
                 [class.is-invalid]="isInvalid('city')"
               >
-                <option selected disabled>Selecione a cidade</option>
+                <option selected disabled>{{ 'ADDRESS.SELECT_CITY' | translate }}</option>
                 @for (
                   cidade of cidades;
                   track trackByCidadeId(i, cidade);
@@ -128,7 +128,7 @@
                   </option>
                 }
               </select>
-              <label for="city">Cidade</label>
+              <label for="city">{{ 'ADDRESS.CITY' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-building"></i></div>
           </div>
@@ -142,10 +142,10 @@
                 formControlName="name"
                 type="text"
                 class="form-control"
-                placeholder="Nome do Endereço"
+                [placeholder]="'ADDRESS.ADDRESS_NAME' | translate"
                 [class.is-invalid]="isInvalid('name')"
               />
-              <label for="name">Nome do Endereço</label>
+              <label for="name">{{ 'ADDRESS.ADDRESS_NAME' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
           </div>
@@ -157,9 +157,9 @@
                 formControlName="comments"
                 type="text"
                 class="form-control"
-                placeholder="Comentários"
+                [placeholder]="'ADDRESS.COMMENTS' | translate"
               />
-              <label for="comments">Comentários</label>
+              <label for="comments">{{ 'ADDRESS.COMMENTS' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-chat-left-text"></i>
@@ -171,20 +171,16 @@
 
     @if (!compact) {
       <div class="d-flex justify-content-end mt-3">
-        <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
-          Cancelar
-        </button>
+        <button type="button" class="btn btn-secondary me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
         @if (isEdit) {
-          <button (click)="remove()" type="button" class="btn btn-danger me-2">
-            Remover
-          </button>
+          <button (click)="remove()" type="button" class="btn btn-danger me-2">{{ 'COMMON.REMOVE' | translate }}</button>
         }
         <button
           [appClick]="submit.bind(this)"
           type="submit"
           class="btn btn-success"
         >
-          {{ isEdit ? "Salvar" : "Adicionar" }}
+          {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
         </button>
       </div>
     }

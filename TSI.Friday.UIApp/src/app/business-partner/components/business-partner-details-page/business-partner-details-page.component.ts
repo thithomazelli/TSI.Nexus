@@ -1,6 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BusinessPartnerService, Company, Individual } from '@friday/core';
+import {
+  BusinessPartnerService,
+  Company,
+  Individual,
+  TranslationService,
+} from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -31,10 +36,14 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private businessPartnerService: BusinessPartnerService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
     this.initialize();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initialize());
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {
@@ -56,10 +65,14 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
     const url = this.routerService.url;
     if (url.includes('clients')) {
       this.baseEndPoint = 'clients';
-      this.title = 'Cliente';
+      this.title = this.translationService.instant(
+        'BUSINESS_PARTNER.CLIENT_SINGULAR',
+      );
     } else if (url.includes('suppliers')) {
       this.baseEndPoint = 'suppliers';
-      this.title = 'Fornecedor';
+      this.title = this.translationService.instant(
+        'BUSINESS_PARTNER.SUPPLIER_SINGULAR',
+      );
       this.canDisplayOrdersTab = false;
     } else {
       this.baseEndPoint = '';

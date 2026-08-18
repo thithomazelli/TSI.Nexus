@@ -1,8 +1,8 @@
 <app-header
-  title="404 Error Page"
+  [title]="'NOT_FOUND.TITLE' | translate"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
-    { label: '404 Error Page', link: '' }
+    { label: 'COMMON.HOME' | translate, link: '/home' },
+    { label: 'NOT_FOUND.TITLE' | translate, link: '' }
   ]"
 ></app-header>
 
@@ -12,13 +12,14 @@
 
     <div class="error-content">
       <h3>
-        <i class="fas fa-exclamation-triangle text-danger"></i> Oops! Page not
-        found.
+        <i class="fas fa-exclamation-triangle text-danger"></i> {{
+          'NOT_FOUND.OOPS' | translate
+        }}
       </h3>
 
       <p>
-        We could not find the page you were looking for. Meanwhile, you may
-        <a routerLink="/">return to dashboard</a> or try using the search form.
+        {{ 'NOT_FOUND.MESSAGE' | translate }}
+        <a routerLink="/">{{ 'NOT_FOUND.RETURN_TO_DASHBOARD' | translate }}</a>
       </p>
     </div>
     <!-- /.error-content -->

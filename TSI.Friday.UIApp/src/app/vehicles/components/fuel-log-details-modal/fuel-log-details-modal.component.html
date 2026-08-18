@@ -79,9 +79,7 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">
         {{ isEdit ? 'Salvar' : 'Adicionar' }}
       </button>

@@ -6,6 +6,7 @@ import {
   ModalService,
   NotificationService,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -27,133 +28,7 @@ export class BusinessPartnersComponent {
   title: string = '';
   baseEndPoint: string = '';
   rowData: BusinessPartner[] = [];
-  columnDefs: ColDef[] = [
-    {
-      field: 'id',
-      headerName: 'ID',
-      sortable: true,
-      filter: true,
-      hide: true,
-    },
-    {
-      field: 'name',
-      headerName: 'Nome',
-      sortable: true,
-      filter: true,
-      minWidth: 250,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-    {
-      field: 'documentType',
-      headerName: 'Tipo',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      minWidth: 85,
-    },
-    {
-      headerName: 'CPF / CNPJ',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      minWidth: 160,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const documentType = params.data?.documentType;
-        let value =
-          documentType === 'Física'
-            ? params.data?.socialSecurityCard || ''
-            : params.data?.nationalRegistry || '';
-        const digits = value.replace(/\D/g, '');
-        if (documentType === 'Física' && digits.length === 11) {
-          return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-        } else if (documentType !== 'Física' && digits.length === 14) {
-          return digits.replace(
-            /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
-            '$1.$2.$3/$4-$5',
-          );
-        }
-        return value;
-      },
-    },
-    {
-      field: 'email',
-      headerName: 'Email',
-      sortable: true,
-      filter: true,
-      flex: 1,
-      minWidth: 250,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        return `<a data-action="view" class="ag-link">${value}</a>`;
-      },
-    },
-    {
-      field: 'birthday',
-      headerName: 'Birthday',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      hide: true,
-    },
-    {
-      field: 'phone',
-      headerName: 'Phone',
-      sortable: true,
-      filter: true,
-      flex: 2,
-      hide: true,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        const digits = value.replace(/\D/g, '');
-        if (digits.length === 10) {
-          return digits.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-        }
-        return value;
-      },
-    },
-    {
-      field: 'mobile',
-      headerName: 'Celular',
-      sortable: true,
-      filter: true,
-      minWidth: 60,
-      cellRenderer: (params: ValueFormatterParams) => {
-        const value = params.value ?? '';
-        const digits = value.replace(/\D/g, '');
-        if (digits.length === 11) {
-          return digits.replace(
-            /(\d{2})(\d{1})(\d{4})(\d{4})/,
-            '($1) $2 $3-$4',
-          );
-        }
-        return value;
-      },
-    },
-    {
-      headerName: 'Ações',
-      flex: 1,
-      minWidth: 150,
-      sortable: false,
-      filter: false,
-      resizable: true,
-      cellRenderer: (params: ICellRendererParams) => {
-        return `
-          <button class="btn btn-primary btn-sm" data-action="view">
-            <i class="fas fa-eye" data-action="view"></i>
-          </button>
-          <button class="btn btn-info btn-sm" data-action="edit">
-            <i class="fas fa-edit" data-action="edit"></i>
-          </button>
-          <button class="btn btn-danger btn-sm" data-action="delete">
-            <i class="fas fa-trash" data-action="delete"></i>  
-          </button>
-        `;
-      },
-    },
-  ];
+  columnDefs: ColDef[] = [];
 
   private _businessPartnerChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -163,16 +38,158 @@ export class BusinessPartnersComponent {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
     this.initialize();
+    this.buildColumnDefs();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => {
+        this.initialize();
+        this.buildColumnDefs();
+      });
     this._businessPartnerChangedSub =
       this.businessPartnerService.businessPartnerChanged$
         .pipe(takeUntil(this._destroy$))
         .subscribe(() => {
           this.getBusinessPartners();
         });
+  }
+
+  private buildColumnDefs(): void {
+    const t = (key: string) => this.translationService.instant(key);
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        sortable: true,
+        filter: true,
+        hide: true,
+      },
+      {
+        field: 'name',
+        headerName: t('COMMON.NAME'),
+        sortable: true,
+        filter: true,
+        minWidth: 250,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'documentType',
+        headerName: t('BUSINESS_PARTNER.DOCUMENT_TYPE'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        minWidth: 85,
+      },
+      {
+        headerName: t('BUSINESS_PARTNER.CPF_CNPJ'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        minWidth: 160,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const documentType = params.data?.documentType;
+          let value =
+            documentType === 'Física'
+              ? params.data?.socialSecurityCard || ''
+              : params.data?.nationalRegistry || '';
+          const digits = value.replace(/\D/g, '');
+          if (documentType === 'Física' && digits.length === 11) {
+            return digits.replace(
+              /(\d{3})(\d{3})(\d{3})(\d{2})/,
+              '$1.$2.$3-$4',
+            );
+          } else if (documentType !== 'Física' && digits.length === 14) {
+            return digits.replace(
+              /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+              '$1.$2.$3/$4-$5',
+            );
+          }
+          return value;
+        },
+      },
+      {
+        field: 'email',
+        headerName: t('COMMON.EMAIL'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        minWidth: 250,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'birthday',
+        headerName: t('BUSINESS_PARTNER.BIRTHDAY'),
+        sortable: true,
+        filter: true,
+        flex: 2,
+        hide: true,
+      },
+      {
+        field: 'phone',
+        headerName: t('COMMON.PHONE'),
+        sortable: true,
+        filter: true,
+        flex: 2,
+        hide: true,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          const digits = value.replace(/\D/g, '');
+          if (digits.length === 10) {
+            return digits.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+          }
+          return value;
+        },
+      },
+      {
+        field: 'mobile',
+        headerName: t('BUSINESS_PARTNER.MOBILE'),
+        sortable: true,
+        filter: true,
+        minWidth: 60,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          const digits = value.replace(/\D/g, '');
+          if (digits.length === 11) {
+            return digits.replace(
+              /(\d{2})(\d{1})(\d{4})(\d{4})/,
+              '($1) $2 $3-$4',
+            );
+          }
+          return value;
+        },
+      },
+      {
+        headerName: t('COMMON.ACTIONS'),
+        flex: 1,
+        minWidth: 150,
+        sortable: false,
+        filter: false,
+        resizable: true,
+        cellRenderer: (params: ICellRendererParams) => {
+          return `
+          <button class="btn btn-primary btn-sm" data-action="view">
+            <i class="fas fa-eye" data-action="view"></i>
+          </button>
+          <button class="btn btn-info btn-sm" data-action="edit">
+            <i class="fas fa-edit" data-action="edit"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" data-action="delete">
+            <i class="fas fa-trash" data-action="delete"></i>
+          </button>
+        `;
+        },
+      },
+    ];
   }
 
   ngOnDestroy(): void {
@@ -233,16 +250,20 @@ export class BusinessPartnersComponent {
           next: () =>
             this.notificationService.showMessage(
               ResponseStatus.Success,
-              type === BusinessPartnerType.Client
-                ? 'Clientes atualizados com sucesso'
-                : 'Fornecedores atualizados com sucesso',
+              this.translationService.instant(
+                type === BusinessPartnerType.Client
+                  ? 'BUSINESS_PARTNER.CLIENTS_REFRESHED'
+                  : 'BUSINESS_PARTNER.SUPPLIERS_REFRESHED',
+              ),
             ),
           error: () =>
             this.notificationService.showMessage(
               ResponseStatus.Error,
-              type === BusinessPartnerType.Client
-                ? 'Erro ao atualizar Clientes'
-                : 'Erro ao atualizar Fornecedores',
+              this.translationService.instant(
+                type === BusinessPartnerType.Client
+                  ? 'BUSINESS_PARTNER.CLIENTS_REFRESH_ERROR'
+                  : 'BUSINESS_PARTNER.SUPPLIERS_REFRESH_ERROR',
+              ),
             ),
         }),
         takeUntil(this._destroy$),
@@ -256,10 +277,10 @@ export class BusinessPartnersComponent {
     const url = this.routerService.url;
     if (url.includes('clients')) {
       this.baseEndPoint = 'clients';
-      this.title = 'Clientes';
+      this.title = this.translationService.instant('SIDEBAR.CLIENTES');
     } else if (url.includes('suppliers')) {
       this.baseEndPoint = 'suppliers';
-      this.title = 'Fornecedores';
+      this.title = this.translationService.instant('SIDEBAR.FORNECEDORES');
     } else {
       this.baseEndPoint = '';
       this.title = '';

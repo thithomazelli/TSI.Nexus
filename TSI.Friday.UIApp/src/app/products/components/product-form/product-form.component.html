@@ -49,12 +49,12 @@
               <input
                 formControlName="description"
                 type="text"
-                placeholder="Descrição"
+                [placeholder]="'COMMON.DESCRIPTION' | translate"
                 class="form-control"
                 [class.is-invalid]="isInvalid('description')"
                 [class.is-valid]="isValid('description')"
               />
-              <label for="description">Descrição</label>
+              <label for="description">{{ 'COMMON.DESCRIPTION' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-card-text"></i>
@@ -145,7 +145,7 @@
                 [class.is-valid]="isValid('priceFormatted')"
                 (blur)="onPriceBlur()"
               />
-              <label for="price">Preço</label>
+              <label for="price">{{ 'COMMON.PRICE' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-cash-coin"></i>
@@ -173,20 +173,16 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
-        Cancelar
-      </button>
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
       @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger me-2">
-          Remover
-        </button>
+        <button (click)="remove()" type="button" class="btn btn-danger me-2">{{ 'COMMON.REMOVE' | translate }}</button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
       >
-        {{ isEdit ? "Salvar" : "Adicionar" }}
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

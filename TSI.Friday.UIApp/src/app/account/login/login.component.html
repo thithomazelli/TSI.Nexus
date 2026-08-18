@@ -5,18 +5,18 @@
       <div class="form-box login">
         <div class="form-details"></div>
         <div class="form-content">
-          <h2>LOGIN</h2>
+          <h2>{{ 'ACCOUNT.LOGIN.TITLE' | translate }}</h2>
           <form [formGroup]="form" (ngSubmit)="login()" novalidate>
             <div class="input-group mb-1">
               <div class="form-floating flex-fill">
                 <input
                   formControlName="userName"
                   type="text"
-                  placeholder="Email"
+                  [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('userName')"
                 />
-                <label for="userName">E-mail</label>
+                <label for="userName">{{ 'ACCOUNT.LOGIN.EMAIL_LABEL' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-envelope"></i></div>
             </div>
@@ -26,18 +26,23 @@
                 <input
                   formControlName="password"
                   [type]="passwordVisible ? 'text' : 'password'"
-                  placeholder="Senha"
+                  [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('password')"
                 />
-                <label for="password">Senha</label>
+                <label for="password">{{ 'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate }}</label>
               </div>
               <button
                 type="button"
                 class="btn btn-outline-secondary"
                 (click)="togglePasswordVisibility()"
                 [attr.aria-pressed]="passwordVisible"
-                [title]="passwordVisible ? 'Hide password' : 'Show password'"
+                [title]="
+                  (passwordVisible
+                    ? 'ACCOUNT.LOGIN.HIDE_PASSWORD'
+                    : 'ACCOUNT.LOGIN.SHOW_PASSWORD'
+                  ) | translate
+                "
               >
                 <i
                   [ngClass]="passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"
@@ -59,7 +64,7 @@
                 type="submit"
                 class="btn btn-info text-white"
               >
-                Entrar
+                {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
               </button>
             </div>
           </form>
@@ -71,7 +76,9 @@
             </div>
           </div> -->
           <p class="mb-1">
-            <a routerLink="/account/reset-password">Esqueci minha senha</a>
+            <a routerLink="/account/reset-password">{{
+              'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
+            }}</a>
           </p>
         </div>
       </div>
@@ -91,7 +98,7 @@
         </div>
 
         <div class="card-body login-card-body">
-          <p class="login-box-msg">Inicie a sua sessão</p>
+          <p class="login-box-msg">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
 
           <form [formGroup]="form" (ngSubmit)="login()" novalidate>
             <div class="input-group mb-1">
@@ -99,11 +106,11 @@
                 <input
                   formControlName="userName"
                   type="text"
-                  placeholder="Email"
+                  [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('userName')"
                 />
-                <label for="userName">E-mail</label>
+                <label for="userName">{{ 'ACCOUNT.LOGIN.EMAIL_LABEL' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-envelope"></i></div>
             </div>
@@ -113,18 +120,23 @@
                 <input
                   formControlName="password"
                   [type]="passwordVisible ? 'text' : 'password'"
-                  placeholder="Senha"
+                  [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('password')"
                 />
-                <label for="password">Senha</label>
+                <label for="password">{{ 'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate }}</label>
               </div>
               <button
                 type="button"
                 class="btn btn-outline-secondary"
                 (click)="togglePasswordVisibility()"
                 [attr.aria-pressed]="passwordVisible"
-                [title]="passwordVisible ? 'Hide password' : 'Show password'"
+                [title]="
+                  (passwordVisible
+                    ? 'ACCOUNT.LOGIN.HIDE_PASSWORD'
+                    : 'ACCOUNT.LOGIN.SHOW_PASSWORD'
+                  ) | translate
+                "
               >
                 <i
                   [ngClass]="passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"
@@ -148,19 +160,25 @@
                     type="checkbox"
                     id="remember"
                   />
-                  <label class="form-check-label">Lembre-se de mim</label>
+                  <label class="form-check-label">{{
+                    'ACCOUNT.LOGIN.REMEMBER_ME' | translate
+                  }}</label>
                 </div>
               </div>
               <div class="col-4">
                 <div class="d-grid">
-                  <button type="submit" class="btn btn-primary">Entrar</button>
+                  <button type="submit" class="btn btn-primary">
+                    {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
+                  </button>
                 </div>
               </div>
             </div>
           </form>
 
           <p class="mb-1">
-            <a routerLink="/account/reset-password">Esqueci minha senha</a>
+            <a routerLink="/account/reset-password">{{
+              'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
+            }}</a>
           </p>
         </div>
       </div>

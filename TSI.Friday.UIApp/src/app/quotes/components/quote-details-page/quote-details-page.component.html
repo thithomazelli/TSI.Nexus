@@ -1,7 +1,7 @@
 <app-header
   [title]="isEdit ? 'Editar Orçamento' : 'Adicionar Orçamento'"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Orçamentos', link: '/quotes' },
     { label: isEdit ? 'Editar Orçamento' : 'Adicionar Orçamento', link: '' },
   ]"
@@ -61,7 +61,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'details'"
                   (click)="activeTab = 'details'"
-                  >Detalhes</a
+                  >{{ 'COMMON.DETAILS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -69,7 +69,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'products'"
                   (click)="activeTab = 'products'"
-                  >Produtos</a
+                  >{{ 'SIDEBAR.PRODUTOS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -77,7 +77,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'attachments'"
                   (click)="activeTab = 'attachments'"
-                  >Anexos</a
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
             </ul>

@@ -1,7 +1,7 @@
 <app-header
   [title]="isEdit ? 'Editar Motorista' : 'Adicionar Motorista'"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Motoristas', link: '/drivers' },
     { label: isEdit ? 'Editar Motorista' : 'Adicionar Motorista', link: '' },
   ]"
@@ -34,7 +34,7 @@
         }
 
         @if (loading) {
-          <div class="text-center py-4">Loading...</div>
+          <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
         }
         @if (!loading) {
           @if (activeTab === 'details') {

@@ -8,10 +8,13 @@ import { TranslationService } from '../services/translation/translation.service'
 export class TranslatePipe implements PipeTransform {
   constructor(private translationService: TranslationService) {}
 
-  transform(key: string | null | undefined): string {
+  transform(
+    key: string | null | undefined,
+    params?: Record<string, string>,
+  ): string {
     if (!key) {
       return '';
     }
-    return this.translationService.instant(key);
+    return this.translationService.instant(key, params);
   }
 }

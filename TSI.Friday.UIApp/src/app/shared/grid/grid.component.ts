@@ -1,9 +1,13 @@
 import { TemplateRef } from '@angular/core';
-import { AG_GRID_LOCALE_BR } from '@ag-grid-community/locale';
+import {
+  AG_GRID_LOCALE_BR,
+  AG_GRID_LOCALE_EN,
+  AG_GRID_LOCALE_ES,
+} from '@ag-grid-community/locale';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ModalService } from '@friday/core';
+import { ModalService, TranslationService } from '@friday/core';
 import {
   CellClickedEvent,
   ColDef,
@@ -11,6 +15,12 @@ import {
   GridReadyEvent,
 } from 'ag-grid-community';
 import { map } from 'rxjs';
+
+const AG_GRID_LOCALES: Record<string, Record<string, string>> = {
+  'pt-BR': AG_GRID_LOCALE_BR,
+  en: AG_GRID_LOCALE_EN,
+  es: AG_GRID_LOCALE_ES,
+};
 
 @Component({
   selector: 'app-grid',
@@ -58,10 +68,8 @@ export class GridComponent<T> implements OnInit {
   gridStyle: string = '';
   gridApi!: GridApi;
   quickFilter = '';
-  localeText = AG_GRID_LOCALE_BR;
-
-  noRowsOverlayTemplate =
-    '<span class="text-muted p-3">Nenhum item encontrado</span>';
+  localeText: Record<string, string> = AG_GRID_LOCALE_BR;
+  noRowsOverlayTemplate = '';
 
   defaultColDef: ColDef = {
     sortable: true,
@@ -83,7 +91,14 @@ export class GridComponent<T> implements OnInit {
     private modalService: ModalService,
     private routerService: Router,
     private activatedRoute: ActivatedRoute,
-  ) {}
+    private translationService: TranslationService,
+  ) {
+    this.localeText =
+      AG_GRID_LOCALES[this.translationService.current] ?? AG_GRID_LOCALE_BR;
+    this.noRowsOverlayTemplate = `<span class="text-muted p-3">${this.translationService.instant(
+      'GRID.NO_ROWS',
+    )}</span>`;
+  }
 
   ngOnInit(): void {
     this.gridStyle = this.compactView ? 'compact-view' : 'regular-view';
@@ -93,6 +108,19 @@ export class GridComponent<T> implements OnInit {
       .subscribe((id) => {
         this._parentId = id;
       });
+
+    this.translationService.language$.subscribe((language) => {
+      // ag-grid's own localeText isn't a live-updatable grid option - it's read once when the
+      // grid initializes. The initial locale (set in the constructor from the current language)
+      // covers the common case; a full reload picks up a language switch made mid-session.
+      this.noRowsOverlayTemplate = `<span class="text-muted p-3">${this.translationService.instant(
+        'GRID.NO_ROWS',
+      )}</span>`;
+      this.gridApi?.setGridOption?.(
+        'overlayNoRowsTemplate',
+        this.noRowsOverlayTemplate,
+      );
+    });
   }
 
   onGridReady(params: GridReadyEvent): void {
@@ -172,7 +200,7 @@ export class GridComponent<T> implements OnInit {
     this.modalService
       .showSweetConfirmation(
         '',
-        'Deseja realmente excluir este registro?',
+        this.translationService.instant('GRID.CONFIRM_DELETE'),
         'question',
       )
       .then((result: any) => {

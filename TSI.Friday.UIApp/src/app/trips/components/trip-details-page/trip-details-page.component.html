@@ -1,7 +1,7 @@
 <app-header
   [title]="isEdit ? 'Editar Viagem' : 'Adicionar Viagem'"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Viagens', link: '/trips' },
     { label: isEdit ? 'Editar Viagem' : 'Adicionar Viagem', link: '' },
   ]"
@@ -69,7 +69,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'details'"
                   (click)="activeTab = 'details'"
-                  >Detalhes</a
+                  >{{ 'COMMON.DETAILS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -93,7 +93,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'payments'"
                   (click)="activeTab = 'payments'"
-                  >Pagamentos</a
+                  >{{ 'SIDEBAR.PAGAMENTOS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -101,7 +101,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'attachments'"
                   (click)="activeTab = 'attachments'"
-                  >Anexos</a
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
             </ul>

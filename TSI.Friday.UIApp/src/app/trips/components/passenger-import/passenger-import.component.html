@@ -8,7 +8,7 @@
     <p class="text-muted small">
       Envie um arquivo <b>.csv</b> ou <b>.txt</b> com uma linha por passageiro, no formato
       <b>Nome, Documento, Assento, Telefone</b> (aceita vírgula ou tabulação como separador). O
-      arquivo enviado também fica disponível na aba <b>Anexos</b> deste pedido.
+      arquivo enviado também fica disponível na aba <b>{{ 'COMMON.ATTACHMENTS' | translate }}</b> deste pedido.
     </p>
 
     <div class="border rounded p-3 mb-3">
@@ -71,9 +71,7 @@
       class="btn btn-secondary btn-sm me-2"
       [disabled]="importing"
       (click)="close()"
-    >
-      Cancelar
-    </button>
+    >{{ 'COMMON.CANCEL' | translate }}</button>
     @if (previewPassengers.length > 0) {
       <button
         type="button"

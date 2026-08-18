@@ -1,7 +1,7 @@
 <app-header
   [title]="isEdit ? 'Editar Produto' : 'Adicionar Produto'"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Produtos', link: '/products' },
     { label: isEdit ? 'Editar Produto' : 'Adicionar Produto', link: '' },
   ]"
@@ -54,7 +54,7 @@
                   [class.active]="activeTab === 'details'"
                   (click)="activeTab = 'details'"
                   data-toggle="tab"
-                  >Detalhes</a
+                  >{{ 'COMMON.DETAILS' | translate }}</a
                 >
               </li>
               <!-- TODO: temporaly disabled -->
@@ -82,13 +82,13 @@
                   [class.active]="activeTab === 'attachments'"
                   (click)="activeTab = 'attachments'"
                   data-toggle="tab"
-                  >Anexos</a
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
             </ul>
 
             @if (loading) {
-              <div class="text-center py-4">Loading...</div>
+              <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
             }
 
             @if (!loading) {

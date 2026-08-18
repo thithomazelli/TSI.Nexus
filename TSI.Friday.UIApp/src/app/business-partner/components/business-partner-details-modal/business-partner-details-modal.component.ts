@@ -5,6 +5,7 @@ import {
   Company,
   BusinessPartner,
   BusinessPartnerType,
+  TranslationService,
 } from '@friday/core';
 
 @Component({
@@ -23,6 +24,7 @@ export class BusinessPartnerDetailsModalComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<BusinessPartnerDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
+    private translationService: TranslationService,
   ) {
     if (dialogData) {
       this.isEdit = dialogData.isEdit ?? false;
@@ -40,9 +42,15 @@ export class BusinessPartnerDetailsModalComponent implements OnInit {
   }
 
   initializeTitle(): void {
-    const type =
-      this.data?.type === BusinessPartnerType.Client ? 'Cliente' : 'Fornecedor';
+    const type = this.translationService.instant(
+      this.data?.type === BusinessPartnerType.Client
+        ? 'SIDEBAR.CLIENTES'
+        : 'SIDEBAR.FORNECEDORES',
+    );
 
-    this.title = this.isEdit ? `Editar ${type}` : `Adicionar ${type}`;
+    this.title = this.translationService.instant(
+      this.isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY',
+      { entity: type },
+    );
   }
 }

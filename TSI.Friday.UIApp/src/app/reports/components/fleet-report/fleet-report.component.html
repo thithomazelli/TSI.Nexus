@@ -1,7 +1,7 @@
 <app-header
   title="Relatório de Frota"
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: 'Relatórios', link: '/reports' },
     { label: 'Frota', link: '' },
   ]"
@@ -9,7 +9,7 @@
 
 <div class="app-content">
   @if (loading) {
-    <div class="text-center py-4">Loading...</div>
+    <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
   }
 
   @if (!loading) {
@@ -17,7 +17,7 @@
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0">{{ totalVehicles }}</div>
-          <small class="text-muted">Veículos</small>
+          <small class="text-muted">{{ 'SIDEBAR.VEICULOS' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
@@ -71,9 +71,9 @@
           <thead>
             <tr>
               <th>Placa</th>
-              <th>Veículo</th>
+              <th>{{ 'VEHICLES.SINGULAR' | translate }}</th>
               <th>Status</th>
-              <th>Viagens</th>
+              <th>{{ 'SIDEBAR.VIAGENS' | translate }}</th>
               <th>Receita</th>
               <th>Custo manutenção</th>
             </tr>
@@ -106,7 +106,7 @@
         <table class="table table-sm mb-0">
           <thead>
             <tr>
-              <th>Motorista</th>
+              <th>{{ 'SIDEBAR.MOTORISTAS_SINGULAR' | translate }}</th>
               <th>Status</th>
               <th>OS geradas</th>
               <th>Comissão paga</th>

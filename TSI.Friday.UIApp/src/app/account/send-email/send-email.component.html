@@ -11,10 +11,10 @@
           <div class="text-center mb-4">
             <h1 class="mb-3 font-weight-normal">
               @if (mode.includes("resend-email-confirmation")) {
-                <span> Resend email confirmation </span>
+                <span>{{ 'ACCOUNT.SEND_EMAIL.RESEND_CONFIRMATION' | translate }}</span>
               }
               @if (mode.includes("forgot-username-or-password")) {
-                <span> Retrieve username or password </span>
+                <span>{{ 'ACCOUNT.SEND_EMAIL.RETRIEVE_CREDENTIALS' | translate }}</span>
               }
             </h1>
           </div>
@@ -22,16 +22,20 @@
             <input
               formControlName="email"
               type="text"
-              placeholder="Email"
+              [placeholder]="'ACCOUNT.SEND_EMAIL.EMAIL' | translate"
               class="form-control"
               [class.is-invalid]="isInvalid('email')"
             />
-            <label for="email">Email</label>
+            <label for="email">{{ 'ACCOUNT.SEND_EMAIL.EMAIL' | translate }}</label>
             @if (inputHasError("email", "required")) {
-              <span class="text-danger">Email is required </span>
+              <span class="text-danger">{{
+                'ACCOUNT.SEND_EMAIL.EMAIL_REQUIRED' | translate
+              }}</span>
             }
             @if (inputHasError("email", "pattern")) {
-              <span class="text-danger">Invalid email address </span>
+              <span class="text-danger">{{
+                'ACCOUNT.SEND_EMAIL.EMAIL_INVALID' | translate
+              }}</span>
             }
           </div>
           @if (errorMessages) {
@@ -45,7 +49,7 @@
             <div class="col-6">
               <div class="d-grid">
                 <button class="btn btn-block btn-success" type="submit">
-                  Send
+                  {{ 'ACCOUNT.SEND_EMAIL.SEND' | translate }}
                 </button>
               </div>
             </div>
@@ -56,7 +60,7 @@
                   type="button"
                   (click)="cancel()"
                 >
-                  Cancel
+                  {{ 'COMMON.CANCEL' | translate }}
                 </button>
               </div>
             </div>

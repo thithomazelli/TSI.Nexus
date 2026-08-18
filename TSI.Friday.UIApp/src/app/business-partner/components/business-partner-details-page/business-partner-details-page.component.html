@@ -1,9 +1,17 @@
 <app-header
-  [title]="isEdit ? 'Editar ' + title : 'Adicionar ' + title"
+  [title]="
+    (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY')
+      | translate: { entity: title }
+  "
   [navigationMenus]="[
-    { label: 'Home', link: '/home' },
+    { label: 'COMMON.HOME' | translate, link: '/home' },
     { label: title, link: '/' + baseEndPoint },
-    { label: isEdit ? 'Editar ' + title : 'Adicionar ' + title, link: '' },
+    {
+      label:
+        (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY')
+        | translate: { entity: title },
+      link: ''
+    },
   ]"
 ></app-header>
 <section class="content">
@@ -51,7 +59,7 @@
                   [class.active]="activeTab === 'details'"
                   (click)="activeTab = 'details'"
                   data-toggle="tab"
-                  >Detalhes</a
+                  >{{ 'COMMON.DETAILS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -60,7 +68,7 @@
                   [class.active]="activeTab === 'address'"
                   (click)="activeTab = 'address'"
                   data-toggle="tab"
-                  >Endereço</a
+                  >{{ 'COMMON.ADDRESS' | translate }}</a
                 >
               </li>
               <li *ngIf="canDisplayOrdersTab" class="nav-item">
@@ -69,7 +77,7 @@
                   [class.active]="activeTab === 'orders'"
                   (click)="activeTab = 'orders'"
                   data-toggle="tab"
-                  >Pedidos</a
+                  >{{ 'BUSINESS_PARTNER.ORDERS_TAB' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -78,7 +86,7 @@
                   [class.active]="activeTab === 'transaction'"
                   (click)="activeTab = 'transaction'"
                   data-toggle="tab"
-                  >Transações</a
+                  >{{ 'SIDEBAR.TRANSACOES' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -87,7 +95,7 @@
                   [class.active]="activeTab === 'payments'"
                   (click)="activeTab = 'payments'"
                   data-toggle="tab"
-                  >Pagamentos</a
+                  >{{ 'SIDEBAR.PAGAMENTOS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -96,13 +104,13 @@
                   [class.active]="activeTab === 'attachments'"
                   (click)="activeTab = 'attachments'"
                   data-toggle="tab"
-                  >Anexos</a
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
             </ul>
 
             @if (loading) {
-              <div class="text-center py-4">Loading...</div>
+              <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
             }
 
             @if (!loading) {

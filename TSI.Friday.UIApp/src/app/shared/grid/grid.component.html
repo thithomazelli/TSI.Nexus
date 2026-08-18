@@ -6,11 +6,11 @@
           type="text"
           class="form-control"
           id="gridSearchInput"
-          placeholder="Buscar {{ className | lowercase }}..."
+          placeholder="{{ 'COMMON.SEARCH' | translate }} {{ className | lowercase }}..."
           (input)="onFilterTextBoxChanged($event)"
         />
         <label for="gridSearchInput"
-          >Buscar {{ className | lowercase }}...</label
+          >{{ 'COMMON.SEARCH' | translate }} {{ className | lowercase }}...</label
         >
         <span
           class="position-absolute top-50 end-0 translate-middle-y me-3 text-secondary grid-search-icon"
@@ -27,15 +27,15 @@
       [ngClass]="showFilters ? 'active' : ''"
       (click)="toggleFilters()"
     >
-      <i class="bi bi-funnel"></i> Filtros
+      <i class="bi bi-funnel"></i> {{ 'GRID.FILTERS' | translate }}
     </button>
     <button class="btn btn-secondary" (click)="refresh()">
       <i class="bi bi-arrow-clockwise"></i>
-      Atualizar
+      {{ 'GRID.REFRESH' | translate }}
     </button>
     <button *ngIf="canAdd" class="btn btn-success" (click)="openAddModal()">
       <i class="bi bi-plus-lg"></i>
-      Adicionar
+      {{ 'COMMON.ADD' | translate }}
     </button>
   </div>
 </div>

@@ -12,7 +12,7 @@
                 class="form-control"
                 [class.is-invalid]="isInvalid('firstName')"
               />
-              <label for="firstName">Nome</label>
+              <label for="firstName">{{ 'COMMON.NAME' | translate }}</label>
               @if (inputHasError("firstName", "required")) {
                 <span class="text-danger">Nome é obrigatório</span>
               }
@@ -74,13 +74,13 @@
               <input
                 formControlName="email"
                 type="text"
-                placeholder="Email"
+                [placeholder]="'COMMON.EMAIL' | translate"
                 class="form-control"
                 [class.is-invalid]="isInvalid('email')"
                 [class.disabled]="isEdit"
                 [readonly]="isEdit"
               />
-              <label for="email">Email</label>
+              <label for="email">{{ 'COMMON.EMAIL' | translate }}</label>
               @if (inputHasError("email", "required")) {
                 <span class="text-danger">Email é obrigatório</span>
               }
@@ -186,21 +186,15 @@
       </div>
 
       <div class="d-flex flex-column flex-sm-row gap-2">
-        <button type="button" class="btn btn-secondary" (click)="cancel()">
-          Cancelar
-        </button>
+        <button type="button" class="btn btn-secondary" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
         @if (isEdit) {
-          <button (click)="remove()" type="button" class="btn btn-danger">
-            Remover
-          </button>
+          <button (click)="remove()" type="button" class="btn btn-danger">{{ 'COMMON.REMOVE' | translate }}</button>
         }
         <button
           [appClick]="submit.bind(this)"
           type="submit"
           class="btn btn-success"
-        >
-          Salvar
-        </button>
+        >{{ 'COMMON.SAVE' | translate }}</button>
       </div>
     </div>
   </form>
