@@ -1,17 +1,23 @@
 .login-split {
   position: fixed;
   inset: 0;
-  display: flex;
+  overflow: hidden;
   min-height: 100vh;
   min-width: 100vw;
   background: #f5f6f8;
 }
 
-// -------- Left panel: dark visual with brand mark --------
-.login-visual {
-  position: relative;
-  flex: 0 0 58%;
-  max-width: 58%;
+// -------- Dark overlay panel: brand mark + reveal trigger --------
+// Starts flush against the left edge; on reveal it slides across to hug the
+// right edge instead, while the light form panel slides in behind it to
+// take over the left side.
+.login-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,13 +30,11 @@
       #060f21 100%
     ),
     #060f21;
-  transition: flex-basis 1.1s cubic-bezier(0.65, 0, 0.35, 1),
-    max-width 1.1s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: left 1.1s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-.login-split.revealed .login-visual {
-  flex-basis: 45%;
-  max-width: 45%;
+.login-split.revealed .login-overlay {
+  left: 55%;
 }
 
 .login-visual-rays {
@@ -41,22 +45,32 @@
   pointer-events: none;
 }
 
-// Sits on the seam between the two panels, straddling it so its wavy right
-// edge breathes in and out over the light panel (see the `animate` on the
-// path's `d` attribute in the template).
+.login-overlay-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+// Wavy decorative edge attached to whichever side of the overlay currently
+// faces the light panel: it flips (mirrors) instantly the moment the class
+// toggles, while sliding smoothly to the new seam over the same duration as
+// the panel swap (see the `animate` on the path's `d` attribute for the
+// shape morph itself).
 .login-visual-wave {
   position: absolute;
-  left: calc(58% - 80px);
+  left: calc(45% - 80px);
   top: 0;
   width: 160px;
   height: 100%;
-  z-index: 1;
+  z-index: 3;
   pointer-events: none;
+  transform: scaleX(1);
   transition: left 1.1s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .login-split.revealed .login-visual-wave {
-  left: calc(45% - 80px);
+  left: calc(55% - 80px);
+  transform: scaleX(-1);
 }
 
 .login-brand {
@@ -68,6 +82,14 @@
   text-align: center;
   gap: 6px;
   padding: 0 24px;
+}
+
+.login-overlay-greeting {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 4px 0 2px;
 }
 
 .login-visual-sparkle {
@@ -96,14 +118,26 @@
   text-transform: uppercase;
 }
 
-// -------- Right panel: light form area --------
+// -------- Light form panel --------
+// Starts hugging the right edge (empty, behind the overlay); on reveal it
+// slides in to take over the left side while the overlay vacates it.
 .login-panel {
-  flex: 1 1 auto;
+  position: absolute;
+  top: 0;
+  left: 45%;
+  width: 55%;
+  height: 100%;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
   background: #f7f8fa;
+  transition: left 1.1s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.login-split.revealed .login-panel {
+  left: 0;
 }
 
 .login-panel-inner {
@@ -126,15 +160,9 @@
   box-shadow: 0 10px 30px rgba(15, 35, 65, 0.08);
 }
 
-.login-prompt {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 22px;
-}
-
 .login-reveal-btn {
-  min-width: 220px;
+  min-width: 200px;
+  margin-top: 6px;
 }
 
 @keyframes login-fade-in {
@@ -241,19 +269,29 @@
   }
 }
 
+// Below this width the side-swap trick (absolute positioning + horizontal
+// slide) doesn't make sense; stack the two panels vertically instead and
+// let the reveal just switch which one is in the DOM/visible.
 @media (max-width: 860px) {
   .login-split {
+    display: flex;
     flex-direction: column;
+    overflow-y: auto;
   }
 
-  .login-visual {
-    flex: 0 0 auto;
-    max-width: 100%;
+  .login-overlay,
+  .login-panel {
+    position: static;
+    left: auto !important;
     width: 100%;
+    transition: none;
+  }
+
+  .login-overlay {
     padding: 36px 16px;
   }
 
-  .login-panel {
-    flex: 1 1 auto;
+  .login-visual-wave {
+    display: none;
   }
 }

@@ -1,5 +1,5 @@
 <div class="login-split" [class.revealed]="revealed">
-  <div class="login-visual">
+  <div class="login-overlay">
     <svg class="login-visual-rays" viewBox="0 0 700 780" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
         <linearGradient id="rayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -104,21 +104,49 @@
       <circle cx="411.1" cy="461.7" r="1.23" fill="#bfe9f5" opacity="0.24" />
       <circle cx="566.8" cy="660.7" r="1.08" fill="#bfe9f5" opacity="0.5" />
     </svg>
-    <div class="login-brand">
-      <div class="login-visual-sparkle" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="18" height="18">
-          <path
-            d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"
-            fill="#ffffff"
-            opacity="0.9"
-          />
-        </svg>
-      </div>
-      <div class="login-brand-mark" aria-hidden="true">
-        <img src="assets/img/nexus/logo-icon.png" alt="" width="56" height="58" />
-      </div>
-      <div class="login-brand-name">Nexus</div>
-      <div class="login-brand-tagline">{{ 'ACCOUNT.LOGIN.TAGLINE' | translate }}</div>
+    <div class="login-overlay-content">
+      @if (!revealed) {
+        <div class="login-brand">
+          <div class="login-visual-sparkle" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path
+                d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"
+                fill="#ffffff"
+                opacity="0.9"
+              />
+            </svg>
+          </div>
+          <div class="login-brand-mark" aria-hidden="true">
+            <img src="assets/img/nexus/logo-icon.png" alt="" width="56" height="58" />
+          </div>
+          <div class="login-brand-name">Nexus</div>
+          <p class="login-overlay-greeting">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
+          <button
+            type="button"
+            class="login-submit login-reveal-btn"
+            (click)="reveal()"
+          >
+            {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
+          </button>
+        </div>
+      } @else {
+        <div class="login-brand login-fade-in">
+          <div class="login-visual-sparkle" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path
+                d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"
+                fill="#ffffff"
+                opacity="0.9"
+              />
+            </svg>
+          </div>
+          <div class="login-brand-mark" aria-hidden="true">
+            <img src="assets/img/nexus/logo-icon.png" alt="" width="56" height="58" />
+          </div>
+          <div class="login-brand-name">Nexus</div>
+          <div class="login-brand-tagline">{{ 'ACCOUNT.LOGIN.TAGLINE' | translate }}</div>
+        </div>
+      }
     </div>
   </div>
 
@@ -163,19 +191,8 @@
     </svg>
 
   <div class="login-panel">
-    <div class="login-panel-inner">
-      @if (!revealed) {
-        <div class="login-prompt">
-          <p class="login-welcome">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
-          <button
-            type="button"
-            class="login-submit login-reveal-btn"
-            (click)="reveal()"
-          >
-            {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
-          </button>
-        </div>
-      } @else {
+    @if (revealed) {
+      <div class="login-panel-inner">
         <p class="login-welcome login-fade-in">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
 
         <div class="login-card login-fade-in">
@@ -235,7 +252,7 @@
             'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
           }}</a>
         </div>
-      }
-    </div>
+      </div>
+    }
   </div>
 </div>
