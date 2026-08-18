@@ -42,9 +42,10 @@ import { PieChartComponent } from './pie-chart/pie-chart.component';
 import { AreaChartTrendingComponent } from './area-chart-trending/area-chart-trending.component';
 import { AlertBannerComponentComponent } from './alert-banner-component/alert-banner-component.component';
 import { InfoCardsComponent } from './info-cards/info-cards.component';
-import { ClickDirective } from '@friday/core';
+import { ClickDirective, TranslatePipe } from '@friday/core';
 import { AttachmentsComponent } from './attachments/attachments.component';
 import { AttachmentDetailsModalComponent } from './attachments/components/attachment-details-modal/attachment-details-modal.component';
+import { UserPreferencesComponent } from './components/user-preferences/user-preferences.component';
 
 import { Tree } from 'primeng/tree';
 import { ContextMenu } from 'primeng/contextmenu';
@@ -76,9 +77,11 @@ import { ConfirmationService } from 'primeng/api';
     AreaChartTrendingComponent,
     AlertBannerComponentComponent,
     InfoCardsComponent,
+    UserPreferencesComponent,
   ],
   imports: [
     ClickDirective,
+    TranslatePipe,
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
@@ -106,6 +109,7 @@ import { ConfirmationService } from 'primeng/api';
     AttachmentsComponent,
     AttachmentDetailsModalComponent,
     ClickDirective,
+    TranslatePipe,
     DateFieldComponent,
     LinkFieldComponent,
     SidebarComponent,
@@ -114,6 +118,7 @@ import { ConfirmationService } from 'primeng/api';
     AreaChartTrendingComponent,
     AlertBannerComponentComponent,
     InfoCardsComponent,
+    UserPreferencesComponent,
     NotificationComponent,
     FooterComponent,
     RouterModule,

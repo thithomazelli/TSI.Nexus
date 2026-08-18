@@ -82,16 +82,21 @@
               </app-photo>
             </li>
             <!--end::User Image-->
+            <!--begin::Preferences (theme/language)-->
+            <li class="px-3 py-2">
+              <app-user-preferences [compact]="true"></app-user-preferences>
+            </li>
+            <!--end::Preferences-->
             <!--begin::Menu Footer-->
 
             <li class="user-footer d-flex gap-2">
               <a
                 class="btn btn-primary btn-flat flex-fill"
                 [routerLink]="['/users/', user.id]"
-                >Perfil</a
+                >{{ 'NAVBAR.PROFILE' | translate }}</a
               >
               <a class="btn btn-danger btn-flat flex-fill" (click)="logout()"
-                >Sair</a
+                >{{ 'NAVBAR.LOGOUT' | translate }}</a
               >
             </li>
             <!--end::Menu Footer-->

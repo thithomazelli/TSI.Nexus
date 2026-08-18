@@ -5,6 +5,8 @@ import {
   Login,
   Register,
   ResetPassword,
+  ThemeService,
+  TranslationService,
   User,
   WebApiResponse,
 } from '@friday/core';
@@ -28,6 +30,8 @@ export class AccountService {
   constructor(
     private apiService: ApiService,
     private router: Router,
+    private themeService: ThemeService,
+    private translationService: TranslationService,
   ) {}
 
   /**
@@ -242,5 +246,18 @@ export class AccountService {
 
     localStorage.setItem(environment.userKey, JSON.stringify(user));
     this._userSource.next(user);
+
+    // Apply the user's saved theme/language preference (falls back to whatever was already
+    // applied from localStorage before login when the user has no saved preference yet).
+    if (user.theme === 'light' || user.theme === 'dark') {
+      this.themeService.apply(user.theme);
+    }
+    if (
+      user.language === 'pt-BR' ||
+      user.language === 'en' ||
+      user.language === 'es'
+    ) {
+      this.translationService.use(user.language);
+    }
   }
 }

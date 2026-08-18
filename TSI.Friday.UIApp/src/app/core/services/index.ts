@@ -26,4 +26,7 @@ export * from './service-order/service-order.service';
 export * from './commission/commission.service';
 export * from './feature-flag/feature-flag.service';
 export * from './alert-config/alert-config.service';
+export * from './theme/theme.service';
+export * from './translation/translation.service';
+export * from './preferences/preferences.service';
 export * from './document-template/document-template.service';

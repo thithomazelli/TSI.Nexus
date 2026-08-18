@@ -132,7 +132,8 @@ a:hover {
   display: flex !important;
   flex-direction: column !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
-  background: #fff !important;
+  background: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
   font-family: inherit !important;
   overflow: hidden !important;
 }

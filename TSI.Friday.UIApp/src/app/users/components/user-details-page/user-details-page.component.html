@@ -69,6 +69,15 @@
                   >Anexos</a
                 >
               </li>
+              <li class="nav-item" *ngIf="isOwnProfile">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'preferences'"
+                  (click)="activeTab = 'preferences'"
+                  data-toggle="tab"
+                  >{{ 'PREFERENCES.TITLE' | translate }}</a
+                >
+              </li>
             </ul>
 
             @if (loading) {
@@ -92,6 +101,9 @@
                     [entity]="'user'"
                     [entityId]="data!.id"
                   ></app-attachments>
+                }
+                @if (activeTab === "preferences" && isOwnProfile) {
+                  <app-user-preferences></app-user-preferences>
                 }
               </div>
             }

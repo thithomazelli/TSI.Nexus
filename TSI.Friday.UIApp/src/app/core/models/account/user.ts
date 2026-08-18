@@ -9,4 +9,6 @@ export interface User {
   photo: string;
   role?: string;
   roles?: string[];
+  theme?: string | null;
+  language?: string | null;
 }

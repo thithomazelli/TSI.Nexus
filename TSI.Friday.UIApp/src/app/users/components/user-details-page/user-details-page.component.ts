@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PhotoService, User, UserService } from '@friday/core';
+import { AccountService, PhotoService, User, UserService } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -14,7 +14,8 @@ export class UserDetailsPageComponent {
   data?: User | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'attachments' = 'details';
+  activeTab: 'details' | 'attachments' | 'preferences' = 'details';
+  isOwnProfile = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -23,6 +24,7 @@ export class UserDetailsPageComponent {
     private routerService: Router,
     private photoService: PhotoService,
     private userService: UserService,
+    private accountService: AccountService,
   ) {}
 
   ngOnInit(): void {
@@ -43,6 +45,10 @@ export class UserDetailsPageComponent {
       if (response.photoPath) {
         this.data!.photo = response.photoPath;
       }
+    });
+
+    this.accountService.user$.subscribe((currentUser) => {
+      this.isOwnProfile = !!currentUser && currentUser.id === this.id;
     });
   }
 
