@@ -97,7 +97,7 @@ namespace TSI.Friday.Services
                 cards.Add(
                     new DashboardCardDto
                     {
-                        Title = "Devoluções em Atraso",
+                        Title = "DevoluÃ§Ãµes em Atraso",
                         Value = delayedCount.ToString(),
                     }
                 );
@@ -110,7 +110,7 @@ namespace TSI.Friday.Services
             {
                 _logger.LogError(ex, "Failed to build dashboard summary");
                 result.Status = ResponseStatus.Error;
-                result.Message = "Não foi possível gerar os info cards.";
+                result.Message = "NÃ£o foi possÃ­vel gerar os info cards.";
             }
 
             return result;

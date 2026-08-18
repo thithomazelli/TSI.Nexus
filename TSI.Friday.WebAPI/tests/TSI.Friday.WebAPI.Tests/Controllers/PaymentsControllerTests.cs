@@ -281,7 +281,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             {
                 Data = json,
                 Status = ResponseStatus.Success,
-                Message = "Histórico de pagamentos gerado com sucesso.",
+                Message = "HistÃ³rico de pagamentos gerado com sucesso.",
             };
 
             _serviceMock.Setup(s => s.GetPaymentsHistory(It.IsAny<DateTime?>(), It.IsAny<DateTime?>())).ReturnsAsync(expected);

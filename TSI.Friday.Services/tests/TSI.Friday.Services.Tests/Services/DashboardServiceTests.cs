@@ -159,7 +159,7 @@ namespace TSI.Friday.Services.Tests.Services
 
             // Delayed items count
             var delayedCard = cards.FirstOrDefault(c =>
-                c.Title.Contains("Devoluções") || c.Title.Contains("Itens Atrasados")
+                c.Title.Contains("DevoluÃ§Ãµes") || c.Title.Contains("Itens Atrasados")
             );
             delayedCard.Should().NotBeNull();
             delayedCard.Value.Should().Be(delayedItems.Count.ToString());

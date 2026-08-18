@@ -48,14 +48,14 @@ namespace TSI.Friday.Services
 
                 result.Data = quoteProductDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Item do Orçamento cadastrado com sucesso.";
+                result.Message = $"Item do OrÃ§amento cadastrado com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteProductService.Add", quoteProductDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível cadastrar o Item do Orçamento na base de dados. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel cadastrar o Item do OrÃ§amento na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -76,14 +76,14 @@ namespace TSI.Friday.Services
 
                 result.Data = quoteProductDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Item do Orçamento atualizado com sucesso.";
+                result.Message = $"Item do OrÃ§amento atualizado com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteProductService.Update", quoteProductDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível atualizar os dados do Item do Orçamento na base de dados. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel atualizar os dados do Item do OrÃ§amento na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -105,14 +105,14 @@ namespace TSI.Friday.Services
 
                 result.Data = quoteProductDto;
                 result.Status = ResponseStatus.Success;
-                result.Message = $"Item do Orçamento removido com sucesso.";
+                result.Message = $"Item do OrÃ§amento removido com sucesso.";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteProductService.Remove", quoteProductDto);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível remover o Item do Orçamento da base de dados. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel remover o Item do OrÃ§amento da base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -140,7 +140,7 @@ namespace TSI.Friday.Services
                 _logService.LogException(ex, "QuoteProductService.FindAll", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de itens do orçamento. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel acessar os registros de itens do orÃ§amento. Erro: {ex.Message}";
             }
 
             return result;
@@ -167,7 +167,7 @@ namespace TSI.Friday.Services
                 _logService.LogException(ex, "QuoteProductService.FindByOrderId", orderId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Itens do Orçamento {orderId}. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel acessar os Itens do OrÃ§amento {orderId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -198,7 +198,7 @@ namespace TSI.Friday.Services
                 _logService.LogException(ex, "QuoteProductService.FindByProductId", productId);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os Itens do Orçamento para o Produto {productId}. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel acessar os Itens do OrÃ§amento para o Produto {productId}. Erro: {ex.Message}";
             }
 
             return result;
@@ -216,15 +216,15 @@ namespace TSI.Friday.Services
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
-                        ? $"Item do Orçamento encontrado com sucesso"
-                        : $"Nenhum Item do Orçamento com o ID {id} foi encontrado";
+                        ? $"Item do OrÃ§amento encontrado com sucesso"
+                        : $"Nenhum Item do OrÃ§amento com o ID {id} foi encontrado";
             }
             catch (Exception ex)
             {
                 _logService.LogException(ex, "QuoteProductService.FindById", id);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Itens do Orçamento na base de dados. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel acessar os registros de Itens do OrÃ§amento na base de dados. Erro: {ex.Message}";
             }
 
             return result;
@@ -263,7 +263,7 @@ namespace TSI.Friday.Services
                 _logService.LogException(ex, "QuoteProductService.FindDelayed", null);
                 result.Status = ResponseStatus.Error;
                 result.Message =
-                    $"Não foi possível acessar os registros de Itens do Orçamento. Erro: {ex.Message}";
+                    $"NÃ£o foi possÃ­vel acessar os registros de Itens do OrÃ§amento. Erro: {ex.Message}";
             }
 
             return result;

@@ -40,13 +40,13 @@ namespace TSI.Friday.Services.Tests.Services
                 new Payment
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Description = "Transação1",
+                    Description = "TransaÃ§Ã£o1",
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 },
                 new Payment
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Description = "Transação2",
+                    Description = "TransaÃ§Ã£o2",
                     TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                 },
             };
@@ -59,7 +59,7 @@ namespace TSI.Friday.Services.Tests.Services
             var paymentDto = new PaymentDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                Description = "Transação3",
+                Description = "TransaÃ§Ã£o3",
                 TransactionId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
             };
             _repository.Setup(r => r.AddAsync(It.IsAny<Payment>())).Returns(Task.CompletedTask);
