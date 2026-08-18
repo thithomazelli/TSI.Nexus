@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -20,12 +20,6 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
   returnUrl: string | null = null;
   // toggle show/hide password
   passwordVisible = false;
-  // login form starts hidden behind a single "Entrar" prompt; clicking it triggers the wave's
-  // reveal morph (see waveReveal in the template) and swaps in the real form.
-  revealed = false;
-
-  @ViewChild('waveReveal')
-  waveReveal?: ElementRef<SVGAnimateElement>;
 
   constructor(
     private accountService: AccountService,
@@ -54,11 +48,6 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
-  }
-
-  reveal(): void {
-    this.revealed = true;
-    this.waveReveal?.nativeElement.beginElement();
   }
 
   initializeForm(): void {

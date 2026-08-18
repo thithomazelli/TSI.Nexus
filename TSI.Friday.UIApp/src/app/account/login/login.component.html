@@ -1,286 +1,73 @@
-<div class="login-split" [class.revealed]="revealed">
-  <div class="login-overlay">
-    <svg class="login-visual-rays" viewBox="0 0 700 780" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <defs>
-        <linearGradient id="rayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#7fd8ea" />
-          <stop offset="100%" stop-color="#2f7fd6" />
-        </linearGradient>
-      </defs>
-      <line x1="40.0" y1="0.0" x2="345.1" y2="383.0" stroke="url(#rayGrad)" stroke-width="0.67" opacity="0.24" />
-      <line x1="40.0" y1="780.0" x2="351.0" y2="387.3" stroke="url(#rayGrad)" stroke-width="1.11" opacity="0.11" />
-      <line x1="69.5" y1="0.0" x2="337.0" y2="388.7" stroke="url(#rayGrad)" stroke-width="0.69" opacity="0.12" />
-      <line x1="69.5" y1="780.0" x2="347.9" y2="396.5" stroke="url(#rayGrad)" stroke-width="0.82" opacity="0.13" />
-      <line x1="99.0" y1="0.0" x2="353.6" y2="399.0" stroke="url(#rayGrad)" stroke-width="1.0" opacity="0.23" />
-      <line x1="99.0" y1="780.0" x2="363.3" y2="380.9" stroke="url(#rayGrad)" stroke-width="0.89" opacity="0.29" />
-      <line x1="128.6" y1="0.0" x2="340.0" y2="382.4" stroke="url(#rayGrad)" stroke-width="1.42" opacity="0.17" />
-      <line x1="128.6" y1="780.0" x2="341.1" y2="391.6" stroke="url(#rayGrad)" stroke-width="0.97" opacity="0.24" />
-      <line x1="158.1" y1="0.0" x2="351.3" y2="381.3" stroke="url(#rayGrad)" stroke-width="0.81" opacity="0.11" />
-      <line x1="158.1" y1="780.0" x2="355.1" y2="388.6" stroke="url(#rayGrad)" stroke-width="1.19" opacity="0.17" />
-      <line x1="187.6" y1="0.0" x2="348.7" y2="386.0" stroke="url(#rayGrad)" stroke-width="1.3" opacity="0.27" />
-      <line x1="187.6" y1="780.0" x2="342.8" y2="391.5" stroke="url(#rayGrad)" stroke-width="1.48" opacity="0.22" />
-      <line x1="217.1" y1="0.0" x2="356.4" y2="385.8" stroke="url(#rayGrad)" stroke-width="0.72" opacity="0.32" />
-      <line x1="217.1" y1="780.0" x2="347.7" y2="395.1" stroke="url(#rayGrad)" stroke-width="1.09" opacity="0.13" />
-      <line x1="246.7" y1="0.0" x2="337.1" y2="393.4" stroke="url(#rayGrad)" stroke-width="1.17" opacity="0.27" />
-      <line x1="246.7" y1="780.0" x2="360.5" y2="386.3" stroke="url(#rayGrad)" stroke-width="1.19" opacity="0.25" />
-      <line x1="276.2" y1="0.0" x2="352.2" y2="389.1" stroke="url(#rayGrad)" stroke-width="1.54" opacity="0.28" />
-      <line x1="276.2" y1="780.0" x2="349.3" y2="393.3" stroke="url(#rayGrad)" stroke-width="1.3" opacity="0.11" />
-      <line x1="305.7" y1="0.0" x2="354.1" y2="399.9" stroke="url(#rayGrad)" stroke-width="0.88" opacity="0.28" />
-      <line x1="305.7" y1="780.0" x2="346.8" y2="393.4" stroke="url(#rayGrad)" stroke-width="1.06" opacity="0.1" />
-      <line x1="335.2" y1="0.0" x2="340.7" y2="382.3" stroke="url(#rayGrad)" stroke-width="1.37" opacity="0.11" />
-      <line x1="335.2" y1="780.0" x2="339.6" y2="385.0" stroke="url(#rayGrad)" stroke-width="1.47" opacity="0.19" />
-      <line x1="364.8" y1="0.0" x2="338.3" y2="389.0" stroke="url(#rayGrad)" stroke-width="1.48" opacity="0.22" />
-      <line x1="364.8" y1="780.0" x2="358.9" y2="397.3" stroke="url(#rayGrad)" stroke-width="1.02" opacity="0.16" />
-      <line x1="394.3" y1="0.0" x2="346.0" y2="397.7" stroke="url(#rayGrad)" stroke-width="0.75" opacity="0.31" />
-      <line x1="394.3" y1="780.0" x2="340.9" y2="384.6" stroke="url(#rayGrad)" stroke-width="1.08" opacity="0.15" />
-      <line x1="423.8" y1="0.0" x2="352.5" y2="385.3" stroke="url(#rayGrad)" stroke-width="1.02" opacity="0.1" />
-      <line x1="423.8" y1="780.0" x2="346.3" y2="391.3" stroke="url(#rayGrad)" stroke-width="1.29" opacity="0.31" />
-      <line x1="453.3" y1="0.0" x2="350.4" y2="392.4" stroke="url(#rayGrad)" stroke-width="0.65" opacity="0.25" />
-      <line x1="453.3" y1="780.0" x2="361.2" y2="395.6" stroke="url(#rayGrad)" stroke-width="1.4" opacity="0.29" />
-      <line x1="482.9" y1="0.0" x2="347.0" y2="388.0" stroke="url(#rayGrad)" stroke-width="1.23" opacity="0.12" />
-      <line x1="482.9" y1="780.0" x2="337.7" y2="381.3" stroke="url(#rayGrad)" stroke-width="0.76" opacity="0.15" />
-      <line x1="512.4" y1="0.0" x2="345.5" y2="381.1" stroke="url(#rayGrad)" stroke-width="0.75" opacity="0.1" />
-      <line x1="512.4" y1="780.0" x2="338.8" y2="387.3" stroke="url(#rayGrad)" stroke-width="1.47" opacity="0.11" />
-      <line x1="541.9" y1="0.0" x2="353.2" y2="383.0" stroke="url(#rayGrad)" stroke-width="0.95" opacity="0.16" />
-      <line x1="541.9" y1="780.0" x2="346.2" y2="382.5" stroke="url(#rayGrad)" stroke-width="1.59" opacity="0.29" />
-      <line x1="571.4" y1="0.0" x2="349.0" y2="389.7" stroke="url(#rayGrad)" stroke-width="0.7" opacity="0.12" />
-      <line x1="571.4" y1="780.0" x2="345.6" y2="385.3" stroke="url(#rayGrad)" stroke-width="0.76" opacity="0.28" />
-      <line x1="601.0" y1="0.0" x2="336.6" y2="399.0" stroke="url(#rayGrad)" stroke-width="0.75" opacity="0.22" />
-      <line x1="601.0" y1="780.0" x2="351.2" y2="380.5" stroke="url(#rayGrad)" stroke-width="1.58" opacity="0.22" />
-      <line x1="630.5" y1="0.0" x2="360.2" y2="393.9" stroke="url(#rayGrad)" stroke-width="0.97" opacity="0.16" />
-      <line x1="630.5" y1="780.0" x2="340.7" y2="395.4" stroke="url(#rayGrad)" stroke-width="1.38" opacity="0.22" />
-      <line x1="660.0" y1="0.0" x2="345.2" y2="384.5" stroke="url(#rayGrad)" stroke-width="1.58" opacity="0.28" />
-      <line x1="660.0" y1="780.0" x2="359.9" y2="396.1" stroke="url(#rayGrad)" stroke-width="1.34" opacity="0.28" />
-      <circle cx="191.0" cy="189.6" r="1.82" fill="#bfe9f5" opacity="0.55" />
-      <circle cx="254.5" cy="269.3" r="1.46" fill="#bfe9f5" opacity="0.23" />
-      <circle cx="215.0" cy="219.7" r="1.28" fill="#bfe9f5" opacity="0.47" />
-      <circle cx="124.7" cy="80.2" r="0.94" fill="#bfe9f5" opacity="0.34" />
-      <circle cx="172.9" cy="150.2" r="1.48" fill="#bfe9f5" opacity="0.54" />
-      <circle cx="198.5" cy="155.9" r="1.7" fill="#bfe9f5" opacity="0.48" />
-      <circle cx="158.6" cy="93.3" r="1.34" fill="#bfe9f5" opacity="0.43" />
-      <circle cx="172.7" cy="115.5" r="2.04" fill="#bfe9f5" opacity="0.32" />
-      <circle cx="218.9" cy="163.3" r="1.36" fill="#bfe9f5" opacity="0.53" />
-      <circle cx="267.6" cy="251.3" r="1.04" fill="#bfe9f5" opacity="0.2" />
-      <circle cx="182.7" cy="97.8" r="2.07" fill="#bfe9f5" opacity="0.47" />
-      <circle cx="306.3" cy="455.2" r="1.72" fill="#bfe9f5" opacity="0.29" />
-      <circle cx="242.1" cy="572.6" r="0.98" fill="#bfe9f5" opacity="0.16" />
-      <circle cx="304.9" cy="457.8" r="1.71" fill="#bfe9f5" opacity="0.36" />
-      <circle cx="301.5" cy="494.9" r="1.1" fill="#bfe9f5" opacity="0.25" />
-      <circle cx="297.9" cy="264.2" r="1.26" fill="#bfe9f5" opacity="0.37" />
-      <circle cx="272.5" cy="153.4" r="1.44" fill="#bfe9f5" opacity="0.38" />
-      <circle cx="326.2" cy="302.1" r="1.39" fill="#bfe9f5" opacity="0.52" />
-      <circle cx="286.9" cy="193.3" r="1.54" fill="#bfe9f5" opacity="0.36" />
-      <circle cx="307.7" cy="513.1" r="1.65" fill="#bfe9f5" opacity="0.46" />
-      <circle cx="250.4" cy="681.9" r="1.0" fill="#bfe9f5" opacity="0.4" />
-      <circle cx="280.9" cy="148.8" r="1.53" fill="#bfe9f5" opacity="0.37" />
-      <circle cx="290.6" cy="73.8" r="1.07" fill="#bfe9f5" opacity="0.17" />
-      <circle cx="292.8" cy="85.0" r="1.43" fill="#bfe9f5" opacity="0.16" />
-      <circle cx="335.2" cy="301.9" r="0.89" fill="#bfe9f5" opacity="0.28" />
-      <circle cx="324.9" cy="599.6" r="1.55" fill="#bfe9f5" opacity="0.34" />
-      <circle cx="339.0" cy="467.2" r="1.78" fill="#bfe9f5" opacity="0.5" />
-      <circle cx="338.6" cy="473.9" r="1.08" fill="#bfe9f5" opacity="0.33" />
-      <circle cx="337.2" cy="605.5" r="1.35" fill="#bfe9f5" opacity="0.28" />
-      <circle cx="338.0" cy="535.1" r="1.4" fill="#bfe9f5" opacity="0.24" />
-      <circle cx="344.1" cy="302.6" r="1.02" fill="#bfe9f5" opacity="0.44" />
-      <circle cx="354.4" cy="329.0" r="1.11" fill="#bfe9f5" opacity="0.53" />
-      <circle cx="380.2" cy="675.6" r="1.73" fill="#bfe9f5" opacity="0.24" />
-      <circle cx="359.9" cy="525.2" r="2.19" fill="#bfe9f5" opacity="0.31" />
-      <circle cx="397.2" cy="143.7" r="1.81" fill="#bfe9f5" opacity="0.16" />
-      <circle cx="385.5" cy="207.2" r="1.42" fill="#bfe9f5" opacity="0.16" />
-      <circle cx="396.2" cy="641.3" r="2.15" fill="#bfe9f5" opacity="0.2" />
-      <circle cx="362.4" cy="471.8" r="1.12" fill="#bfe9f5" opacity="0.5" />
-      <circle cx="407.6" cy="698.8" r="1.18" fill="#bfe9f5" opacity="0.51" />
-      <circle cx="378.9" cy="284.0" r="1.99" fill="#bfe9f5" opacity="0.42" />
-      <circle cx="375.1" cy="307.8" r="1.6" fill="#bfe9f5" opacity="0.43" />
-      <circle cx="454.0" cy="82.5" r="0.88" fill="#bfe9f5" opacity="0.43" />
-      <circle cx="422.0" cy="173.7" r="0.9" fill="#bfe9f5" opacity="0.53" />
-      <circle cx="478.3" cy="702.8" r="2.01" fill="#bfe9f5" opacity="0.33" />
-      <circle cx="458.4" cy="169.4" r="2.08" fill="#bfe9f5" opacity="0.4" />
-      <circle cx="507.9" cy="69.0" r="1.79" fill="#bfe9f5" opacity="0.53" />
-      <circle cx="385.6" cy="317.3" r="1.17" fill="#bfe9f5" opacity="0.22" />
-      <circle cx="491.7" cy="640.7" r="1.5" fill="#bfe9f5" opacity="0.22" />
-      <circle cx="377.3" cy="337.6" r="0.85" fill="#bfe9f5" opacity="0.16" />
-      <circle cx="473.6" cy="576.3" r="1.14" fill="#bfe9f5" opacity="0.33" />
-      <circle cx="411.1" cy="461.7" r="1.23" fill="#bfe9f5" opacity="0.24" />
-      <circle cx="566.8" cy="660.7" r="1.08" fill="#bfe9f5" opacity="0.5" />
-    </svg>
-    <div class="login-overlay-content">
-      @if (!revealed) {
-        <div class="login-brand">
-          <div class="login-visual-sparkle" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path
-                d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"
-                fill="#ffffff"
-                opacity="0.9"
-              />
-            </svg>
-          </div>
-          <div class="login-brand-mark" aria-hidden="true">
-            <img src="assets/img/nexus/logo-icon.png" alt="" width="56" height="58" />
-          </div>
-          <div class="login-brand-name">Nexus</div>
-          <p class="login-overlay-greeting">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
-          <button
-            type="button"
-            class="login-submit login-reveal-btn"
-            (click)="reveal()"
-          >
-            {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
-          </button>
-        </div>
-      } @else {
-        <div class="login-brand login-fade-in">
-          <div class="login-visual-sparkle" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18">
-              <path
-                d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"
-                fill="#ffffff"
-                opacity="0.9"
-              />
-            </svg>
-          </div>
-          <div class="login-brand-mark" aria-hidden="true">
-            <img src="assets/img/nexus/logo-icon.png" alt="" width="56" height="58" />
-          </div>
-          <div class="login-brand-name">Nexus</div>
-          <div class="login-brand-tagline">{{ 'ACCOUNT.LOGIN.TAGLINE' | translate }}</div>
-        </div>
-      }
-    </div>
-
-    <svg
-      class="login-visual-wave"
-      viewBox="0 0 160 800"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#0b1f3a" />
-          <stop offset="100%" stop-color="#123055" />
-        </linearGradient>
-      </defs>
-      <path
-        fill="url(#waveGrad)"
-        d="M 0,0 L 0,800 L 50,800 L 50,620 C 50,520 70,460 90,400 C 70,340 50,280 50,180 L 50,0 Z"
-      >
-        <animate
-          #waveReveal
-          id="waveReveal"
-          attributeName="d"
-          begin="indefinite"
-          dur="1.1s"
-          fill="freeze"
-          from="M 0,0 L 0,800 L 50,800 L 50,620 C 50,520 70,460 90,400 C 70,340 50,280 50,180 L 50,0 Z"
-          to="M 0,0 L 0,800 L 50,800 L 50,620 C 50,520 80,460 115,400 C 80,340 50,280 50,180 L 50,0 Z"
-        />
-      </path>
-    </svg>
+<div class="login-split">
+  <div class="login-visual">
+    <img
+      src="assets/img/nexus/login_background.png"
+      alt="Nexus"
+      class="login-visual-image"
+    />
   </div>
 
   <div class="login-panel">
-    <svg
-      class="login-panel-decor"
-      viewBox="0 0 600 800"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
-      <circle cx="480" cy="130" r="170" fill="#5ec8e0" opacity="0.10" />
-      <circle cx="70" cy="660" r="140" fill="#123055" opacity="0.06" />
-      <circle cx="520" cy="610" r="80" fill="#2f7fd6" opacity="0.08" />
-      <rect
-        x="90"
-        y="150"
-        width="46"
-        height="46"
-        rx="8"
-        fill="none"
-        stroke="#2f7fd6"
-        stroke-width="2"
-        opacity="0.16"
-        transform="rotate(18 113 173)"
-      />
-      <rect
-        x="420"
-        y="430"
-        width="34"
-        height="34"
-        rx="6"
-        fill="none"
-        stroke="#5ec8e0"
-        stroke-width="2"
-        opacity="0.18"
-        transform="rotate(-12 437 447)"
-      />
-      <circle cx="180" cy="230" r="4" fill="#2f7fd6" opacity="0.25" />
-      <circle cx="380" cy="90" r="3" fill="#5ec8e0" opacity="0.3" />
-      <circle cx="250" cy="570" r="3.5" fill="#2f7fd6" opacity="0.22" />
-      <circle cx="110" cy="420" r="2.6" fill="#5ec8e0" opacity="0.28" />
-    </svg>
+    <div class="login-panel-inner">
+      <p class="login-welcome">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
 
-    @if (revealed) {
-      <div class="login-panel-inner">
-        <p class="login-welcome login-fade-in">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
+      <div class="login-card">
+        <form [formGroup]="form" (ngSubmit)="login()" novalidate>
+          <div class="login-field" [class.is-invalid]="isInvalid('userName')">
+            <i class="bi bi-person login-field-icon"></i>
+            <input
+              formControlName="userName"
+              type="text"
+              [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
+              [attr.aria-label]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
+              class="login-input"
+            />
+          </div>
 
-        <div class="login-card login-fade-in">
-          <form [formGroup]="form" (ngSubmit)="login()" novalidate>
-            <div class="login-field" [class.is-invalid]="isInvalid('userName')">
-              <i class="bi bi-person login-field-icon"></i>
-              <input
-                formControlName="userName"
-                type="text"
-                [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
-                [attr.aria-label]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
-                class="login-input"
-              />
-            </div>
-
-            <div class="login-field" [class.is-invalid]="isInvalid('password')">
-              <i class="bi bi-lock login-field-icon"></i>
-              <input
-                formControlName="password"
-                [type]="passwordVisible ? 'text' : 'password'"
-                [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
-                [attr.aria-label]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
-                class="login-input"
-              />
-              <button
-                type="button"
-                class="login-field-toggle"
-                (click)="togglePasswordVisibility()"
-                [attr.aria-pressed]="passwordVisible"
-                [title]="
-                  (passwordVisible
-                    ? 'ACCOUNT.LOGIN.HIDE_PASSWORD'
-                    : 'ACCOUNT.LOGIN.SHOW_PASSWORD'
-                  ) | translate
-                "
-              >
-                <i [ngClass]="passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-              </button>
-            </div>
-
-            @if (errorMessages) {
-              <app-validation-messages
-                [errorMessages]="errorMessages"
-              ></app-validation-messages>
-            }
-
+          <div class="login-field" [class.is-invalid]="isInvalid('password')">
+            <i class="bi bi-lock login-field-icon"></i>
+            <input
+              formControlName="password"
+              [type]="passwordVisible ? 'text' : 'password'"
+              [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
+              [attr.aria-label]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
+              class="login-input"
+            />
             <button
-              [appClick]="login.bind(this)"
-              type="submit"
-              class="login-submit"
+              type="button"
+              class="login-field-toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-pressed]="passwordVisible"
+              [title]="
+                (passwordVisible
+                  ? 'ACCOUNT.LOGIN.HIDE_PASSWORD'
+                  : 'ACCOUNT.LOGIN.SHOW_PASSWORD'
+                ) | translate
+              "
             >
-              {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
+              <i [ngClass]="passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
             </button>
-          </form>
+          </div>
 
-          <a class="login-forgot" routerLink="/account/reset-password">{{
-            'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
-          }}</a>
-        </div>
+          @if (errorMessages) {
+            <app-validation-messages
+              [errorMessages]="errorMessages"
+            ></app-validation-messages>
+          }
+
+          <button
+            [appClick]="login.bind(this)"
+            type="submit"
+            class="login-submit"
+          >
+            {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
+          </button>
+        </form>
+
+        <a class="login-forgot" routerLink="/account/reset-password">{{
+          'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
+        }}</a>
       </div>
-    }
+    </div>
   </div>
 </div>
