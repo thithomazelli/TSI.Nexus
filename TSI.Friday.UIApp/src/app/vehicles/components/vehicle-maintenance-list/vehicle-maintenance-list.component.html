@@ -1,8 +1,8 @@
 <div class="vehicle-maintenance-list">
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Manutenções</h5>
+    <h5 class="mb-0">{{ 'VEHICLES.MAINTENANCES' | translate }}</h5>
     <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
-      <i class="bi bi-plus-lg"></i> Nova manutenção
+      <i class="bi bi-plus-lg"></i> {{ 'VEHICLES.NEW_MAINTENANCE' | translate }}
     </button>
   </div>
 
@@ -10,17 +10,17 @@
     <thead>
       <tr>
         <th>{{ 'COMMON.TYPE' | translate }}</th>
-        <th>Descrição</th>
-        <th>Data agendada</th>
+        <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
+        <th>{{ 'VEHICLES.SCHEDULED_DATE' | translate }}</th>
         <th>{{ 'COMMON.STATUS' | translate }}</th>
-        <th>Custo</th>
+        <th>{{ 'VEHICLES.COST' | translate }}</th>
         <th style="width: 180px"></th>
       </tr>
     </thead>
     <tbody>
       @for (m of maintenances; track m.id) {
         <tr>
-          <td>{{ m.type === 'Preventive' ? 'Preventiva' : 'Corretiva' }}</td>
+          <td>{{ (m.type === 'Preventive' ? 'VEHICLES.PREVENTIVE' : 'VEHICLES.CORRECTIVE') | translate }}</td>
           <td>{{ m.description }}</td>
           <td>{{ m.scheduledDate | date: 'dd/MM/yyyy' }}</td>
           <td>
@@ -33,7 +33,7 @@
             <button
               type="button"
               class="btn btn-link btn-sm p-0 me-2"
-              title="Editar"
+              [title]="'COMMON.EDIT' | translate"
               (click)="openModal(m)"
             >
               <i class="bi bi-pencil"></i>
@@ -42,7 +42,7 @@
               <button
                 type="button"
                 class="btn btn-link btn-sm p-0 me-2"
-                title="Concluir"
+                [title]="'VEHICLES.COMPLETE' | translate"
                 (click)="completeMaintenance(m)"
               >
                 <i class="bi bi-check-circle text-success"></i>
@@ -50,7 +50,7 @@
               <button
                 type="button"
                 class="btn btn-link btn-sm p-0"
-                title="Cancelar"
+                [title]="'COMMON.CANCEL' | translate"
                 (click)="cancelMaintenance(m)"
               >
                 <i class="bi bi-x-circle text-danger"></i>
@@ -61,7 +61,7 @@
       } @empty {
         <tr>
           <td colspan="6" class="text-center text-muted small py-3">
-            Nenhuma manutenção registrada
+            {{ 'VEHICLES.NO_MAINTENANCE_REGISTERED' | translate }}
           </td>
         </tr>
       }

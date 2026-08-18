@@ -1,15 +1,15 @@
 <app-header
-  title="Motoristas"
+  [title]="'SIDEBAR.MOTORISTAS' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Motoristas', link: '' },
+    { label: 'SIDEBAR.MOTORISTAS' | translate, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
     [baseEndPoint]="baseEndPoint"
-    [className]="'Motoristas'"
+    [className]="'SIDEBAR.MOTORISTAS' | translate"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [refresh]="refreshDrivers.bind(this)"

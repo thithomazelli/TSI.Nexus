@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Viagem' : 'Adicionar Viagem'"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('TRIPS.SINGULAR' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Viagens', link: '/trips' },
-    { label: isEdit ? 'Editar Viagem' : 'Adicionar Viagem', link: '' },
+    { label: 'SIDEBAR.VIAGENS' | translate, link: '/trips' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('TRIPS.SINGULAR' | translate) }, link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -19,17 +19,17 @@
                 <div class="text-center">
                   <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                      <b>Número da Viagem: </b>
+                      <b>{{ 'TRIPS.TRIP_NUMBER' | translate }}: </b>
                       <span class="float-right">{{ data?.tripNumber }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Cliente: </b>
+                      <b>{{ 'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate }}: </b>
                       <span class="float-right">{{
                         data?.businessPartnerName
                       }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Status: </b>
+                      <b>{{ 'COMMON.STATUS' | translate }}: </b>
                       <span class="float-right">{{ getStatusLabel() }}</span>
                     </li>
                   </ul>
@@ -45,7 +45,7 @@
                 [disabled]="emittingContract"
                 (click)="emitContract()"
               >
-                <i class="bi bi-file-earmark-pdf"></i> Emitir Contrato
+                <i class="bi bi-file-earmark-pdf"></i> {{ 'TRIPS.EMIT_CONTRACT' | translate }}
               </button>
               <button
                 type="button"
@@ -53,7 +53,7 @@
                 [disabled]="emittingServiceOrder"
                 (click)="emitServiceOrder()"
               >
-                <i class="bi bi-file-earmark-pdf"></i> Emitir OS
+                <i class="bi bi-file-earmark-pdf"></i> {{ 'TRIPS.EMIT_SERVICE_ORDER' | translate }}
               </button>
             </div>
           }
@@ -77,7 +77,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'triplegs'"
                   (click)="activeTab = 'triplegs'"
-                  >Itinerário</a
+                  >{{ 'TRIPS.ITINERARY' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -85,7 +85,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'passengers'"
                   (click)="activeTab = 'passengers'"
-                  >Passageiros</a
+                  >{{ 'TRIPS.PASSENGERS_TAB' | translate }}</a
                 >
               </li>
               <li class="nav-item">

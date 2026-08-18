@@ -8,7 +8,7 @@
             <input
               formControlName="plate"
               type="text"
-              placeholder="Placa"
+              [placeholder]="'VEHICLES.PLATE' | translate"
               class="form-control"
               id="plate"
               [class.is-invalid]="isInvalid('plate')"
@@ -25,7 +25,7 @@
             <input
               formControlName="renavam"
               type="text"
-              placeholder="Renavam"
+              [placeholder]="'VEHICLES.RENAVAM' | translate"
               class="form-control"
               id="renavam"
             />
@@ -40,7 +40,7 @@
             <input
               formControlName="chassis"
               type="text"
-              placeholder="Chassi"
+              [placeholder]="'VEHICLES.CHASSIS' | translate"
               class="form-control"
               id="chassis"
             />
@@ -55,7 +55,7 @@
             <input
               formControlName="brand"
               type="text"
-              placeholder="Marca"
+              [placeholder]="'VEHICLES.BRAND' | translate"
               class="form-control"
               id="brand"
               [class.is-invalid]="isInvalid('brand')"
@@ -72,7 +72,7 @@
             <input
               formControlName="model"
               type="text"
-              placeholder="Modelo"
+              [placeholder]="'VEHICLES.MODEL' | translate"
               class="form-control"
               id="model"
               [class.is-invalid]="isInvalid('model')"
@@ -89,11 +89,11 @@
             <input
               formControlName="manufactureYear"
               type="number"
-              placeholder="Ano fabricação"
+              [placeholder]="'VEHICLES.MANUFACTURE_YEAR' | translate"
               class="form-control"
               id="manufactureYear"
             />
-            <label for="manufactureYear">Ano fabricação</label>
+            <label for="manufactureYear">{{ 'VEHICLES.MANUFACTURE_YEAR' | translate }}</label>
           </div>
         </div>
       </div>
@@ -103,11 +103,11 @@
             <input
               formControlName="modelYear"
               type="number"
-              placeholder="Ano modelo"
+              [placeholder]="'VEHICLES.MODEL_YEAR' | translate"
               class="form-control"
               id="modelYear"
             />
-            <label for="modelYear">Ano modelo</label>
+            <label for="modelYear">{{ 'VEHICLES.MODEL_YEAR' | translate }}</label>
           </div>
         </div>
       </div>
@@ -117,13 +117,13 @@
             <input
               formControlName="seatCapacity"
               type="number"
-              placeholder="Capacidade de lugares"
+              [placeholder]="'VEHICLES.SEAT_CAPACITY' | translate"
               class="form-control"
               id="seatCapacity"
               [class.is-invalid]="isInvalid('seatCapacity')"
               [class.is-valid]="isValid('seatCapacity')"
             />
-            <label for="seatCapacity">Lugares</label>
+            <label for="seatCapacity">{{ 'VEHICLES.SEATS' | translate }}</label>
           </div>
         </div>
       </div>
@@ -133,11 +133,11 @@
             <input
               formControlName="odometer"
               type="number"
-              placeholder="Odômetro (km)"
+              [placeholder]="'VEHICLES.ODOMETER' | translate"
               class="form-control"
               id="odometer"
             />
-            <label for="odometer">Odômetro (km)</label>
+            <label for="odometer">{{ 'VEHICLES.ODOMETER' | translate }}</label>
           </div>
         </div>
       </div>
@@ -155,7 +155,7 @@
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>
-            <label for="type">Tipo de veículo</label>
+            <label for="type">{{ 'VEHICLES.VEHICLE_TYPE' | translate }}</label>
           </div>
         </div>
       </div>
@@ -183,13 +183,13 @@
             <input
               formControlName="pricePerKmFormatted"
               type="text"
-              placeholder="Preço por km"
+              [placeholder]="'VEHICLES.PRICE_PER_KM' | translate"
               class="form-control"
               [class.is-invalid]="isInvalid('pricePerKmFormatted')"
               [class.is-valid]="isValid('pricePerKmFormatted')"
               (blur)="onPricePerKmBlur()"
             />
-            <label>R$ por km rodado</label>
+            <label>{{ 'VEHICLES.PRICE_PER_KM_LABEL' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
         </div>
@@ -200,13 +200,13 @@
             <input
               formControlName="dailyRateFormatted"
               type="text"
-              placeholder="Diária"
+              [placeholder]="'VEHICLES.DAILY_RATE' | translate"
               class="form-control"
               [class.is-invalid]="isInvalid('dailyRateFormatted')"
               [class.is-valid]="isValid('dailyRateFormatted')"
               (blur)="onDailyRateBlur()"
             />
-            <label>Diária</label>
+            <label>{{ 'VEHICLES.DAILY_RATE' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
         </div>

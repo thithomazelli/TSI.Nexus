@@ -1,8 +1,8 @@
 <div class="trip-leg-list">
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Itinerário</h5>
+    <h5 class="mb-0">{{ 'TRIPS.ITINERARY' | translate }}</h5>
     <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
-      <i class="bi bi-plus-lg"></i> Novo trecho
+      <i class="bi bi-plus-lg"></i> {{ 'TRIPS.NEW_LEG' | translate }}
     </button>
   </div>
 
@@ -10,9 +10,9 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Origem</th>
-        <th>Destino</th>
-        <th>Saída</th>
+        <th>{{ 'TRIPS.ORIGIN' | translate }}</th>
+        <th>{{ 'TRIPS.DESTINATION' | translate }}</th>
+        <th>{{ 'TRIPS.DEPARTURE' | translate }}</th>
         <th>{{ 'VEHICLES.KM' | translate }}</th>
         <th style="width: 60px"></th>
       </tr>
@@ -29,7 +29,7 @@
             <button
               type="button"
               class="btn btn-link btn-sm p-0 text-danger"
-              title="Remover"
+              [title]="'COMMON.REMOVE' | translate"
               (click)="removeTripLeg(leg)"
             >
               <i class="bi bi-trash"></i>
@@ -39,7 +39,7 @@
       } @empty {
         <tr>
           <td colspan="6" class="text-center text-muted small py-3">
-            Nenhum trecho cadastrado
+            {{ 'TRIPS.NO_LEGS_REGISTERED' | translate }}
           </td>
         </tr>
       }

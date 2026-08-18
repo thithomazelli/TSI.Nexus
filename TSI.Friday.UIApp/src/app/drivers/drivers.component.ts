@@ -5,6 +5,7 @@ import {
   ModalService,
   NotificationService,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import { Subscription, tap, Subject, takeUntil } from 'rxjs';
@@ -24,20 +25,27 @@ export class DriversComponent implements OnInit, OnDestroy {
 
   baseEndPoint = 'drivers';
 
-  employmentTypeMap: { [key: string]: string } = {
-    CLT: 'CLT',
-    Outsourced: 'Terceirizado',
-    Autonomous: 'Autônomo',
-  };
+  get employmentTypeMap(): { [key: string]: string } {
+    return {
+      CLT: 'CLT',
+      Outsourced: this.translationService.instant('DRIVERS.OUTSOURCED'),
+      Autonomous: this.translationService.instant('DRIVERS.AUTONOMOUS'),
+    };
+  }
 
-  statusMap: { [key: string]: { label: string; color: string } } = {
-    Active: { label: 'Ativo', color: 'success' },
-    Inactive: { label: 'Inativo', color: 'secondary' },
-    OnLeave: { label: 'Afastado', color: 'warning' },
-  };
+  get statusMap(): { [key: string]: { label: string; color: string } } {
+    return {
+      Active: { label: this.translationService.instant('DRIVERS.STATUS_ACTIVE'), color: 'success' },
+      Inactive: { label: this.translationService.instant('DRIVERS.STATUS_INACTIVE'), color: 'secondary' },
+      OnLeave: { label: this.translationService.instant('DRIVERS.STATUS_ON_LEAVE'), color: 'warning' },
+    };
+  }
 
   rowData: Driver[] = [];
-  columnDefs: ColDef[] = [
+  columnDefs: ColDef[] = [];
+
+  private buildColumnDefs(): void {
+    this.columnDefs = [
     {
       field: 'id',
       headerName: 'ID',
@@ -45,7 +53,7 @@ export class DriversComponent implements OnInit, OnDestroy {
     },
     {
       field: 'name',
-      headerName: 'Nome',
+      headerName: this.translationService.instant('COMMON.NAME'),
       flex: 1,
       minWidth: 200,
       cellRenderer: (params: ValueFormatterParams) => {
@@ -55,22 +63,22 @@ export class DriversComponent implements OnInit, OnDestroy {
     },
     {
       field: 'socialSecurityCard',
-      headerName: 'CPF',
+      headerName: this.translationService.instant('DRIVERS.CPF'),
       width: 140,
     },
     {
       field: 'licenseNumber',
-      headerName: 'CNH',
+      headerName: this.translationService.instant('DRIVERS.CNH'),
       width: 140,
     },
     {
       field: 'licenseCategory',
-      headerName: 'Categoria',
+      headerName: this.translationService.instant('VEHICLES.CATEGORY'),
       maxWidth: 110,
     },
     {
       field: 'licenseExpiryDate',
-      headerName: 'Validade CNH',
+      headerName: this.translationService.instant('DRIVERS.LICENSE_EXPIRY_SHORT'),
       maxWidth: 140,
       valueFormatter: (params: ValueFormatterParams) => {
         if (!params.value) {
@@ -81,14 +89,14 @@ export class DriversComponent implements OnInit, OnDestroy {
     },
     {
       field: 'employmentType',
-      headerName: 'Vínculo',
+      headerName: this.translationService.instant('DRIVERS.EMPLOYMENT_TYPE_SHORT'),
       maxWidth: 130,
       valueFormatter: (params: ValueFormatterParams) =>
         this.employmentTypeMap[params.value] ?? params.value ?? '',
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: this.translationService.instant('COMMON.STATUS'),
       maxWidth: 130,
       cellRenderer: (params: ICellRendererParams) => {
         const info = this.statusMap[params.value] ?? {
@@ -99,7 +107,7 @@ export class DriversComponent implements OnInit, OnDestroy {
       },
     },
     {
-      headerName: 'Ações',
+      headerName: this.translationService.instant('COMMON.ACTIONS'),
       minWidth: 150,
       sortable: false,
       filter: false,
@@ -117,13 +125,18 @@ export class DriversComponent implements OnInit, OnDestroy {
         `;
       },
     },
-  ];
+    ];
+  }
 
   constructor(
     private modalService: ModalService,
     private notificationService: NotificationService,
     private driverService: DriverService,
-  ) {}
+    private translationService: TranslationService,
+  ) {
+    this.buildColumnDefs();
+    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+  }
 
   ngOnInit(): void {
     this.getDrivers();
@@ -167,12 +180,12 @@ export class DriversComponent implements OnInit, OnDestroy {
           next: () =>
             this.notificationService.showMessage(
               ResponseStatus.Success,
-              'Motoristas atualizados com sucesso',
+              this.translationService.instant('DRIVERS.DRIVERS_REFRESHED'),
             ),
           error: () =>
             this.notificationService.showMessage(
               ResponseStatus.Error,
-              'Erro ao atualizar motoristas',
+              this.translationService.instant('DRIVERS.DRIVERS_REFRESH_ERROR'),
             ),
         }),
         takeUntil(this._destroy$),

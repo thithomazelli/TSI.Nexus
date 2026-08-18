@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { TranslationService } from '@friday/core';
 
 @Component({
   selector: 'app-alert-banner-component',
@@ -12,6 +13,8 @@ export class AlertBannerComponentComponent implements OnInit {
 
   @Input()
   entity: string = '';
+
+  constructor(private translationService: TranslationService) {}
 
   private _statusIconMap: { [key: string]: string } = {
     Pending: 'info',
@@ -45,6 +48,7 @@ export class AlertBannerComponentComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeMessages();
+    this.translationService.language$.subscribe(() => this.initializeMessages());
   }
 
   get statusIcon(): string {
@@ -64,27 +68,30 @@ export class AlertBannerComponentComponent implements OnInit {
   }
 
   private initializeMessages(): void {
+    const t = (key: string) =>
+      this.translationService.instant(key, { entity: this.entity });
+
     this._statusMessageMap = {
-      Approved: `Excelente! ${this.entity} concluído`,
-      Converted: `Excelente! ${this.entity} concluído`,
-      Closed: `Excelente! ${this.entity} concluído`,
-      Returned: `Excelente! ${this.entity} concluído`,
-      Pending: `Atenção: ${this.entity} em aberto`,
-      Open: `Atenção: ${this.entity} em aberto`,
-      WaitingPayment: `Atenção: ${this.entity} aguardando pagamento`,
-      InProgress: `Atenção: ${this.entity} em andamento`,
-      Delayed: `Urgente: ${this.entity} atrasado`,
-      MissingPayments: `Urgente: Total do Pedido é superior à soma dos pagamentos cadastrados na transação. Adicione novos pagamentos ou ajuste os existentes para resolver essa pendência.`,
+      Approved: t('ALERT_BANNER.COMPLETED_MASC'),
+      Converted: t('ALERT_BANNER.COMPLETED_MASC'),
+      Closed: t('ALERT_BANNER.COMPLETED_MASC'),
+      Returned: t('ALERT_BANNER.COMPLETED_MASC'),
+      Pending: t('ALERT_BANNER.OPEN_STATUS'),
+      Open: t('ALERT_BANNER.OPEN_STATUS'),
+      WaitingPayment: t('ALERT_BANNER.WAITING_PAYMENT'),
+      InProgress: t('ALERT_BANNER.IN_PROGRESS_STATUS'),
+      Delayed: t('ALERT_BANNER.DELAYED_MASC'),
+      MissingPayments: t('ALERT_BANNER.MISSING_PAYMENTS'),
     };
 
-    if (this.entity === 'Transação') {
+    if (this.entity === this.translationService.instant('TRANSACTIONS.SINGULAR')) {
       this._statusMessageMap = {
         ...this._statusMessageMap,
-        Approved: `Excelente! ${this.entity} concluída`,
-        Closed: `Excelente! ${this.entity} concluída`,
-        Converted: `Excelente! ${this.entity} concluída`,
-        Returned: `Excelente! ${this.entity} concluída`,
-        Delayed: `Urgente: ${this.entity} atrasada`,
+        Approved: t('ALERT_BANNER.COMPLETED_FEM'),
+        Closed: t('ALERT_BANNER.COMPLETED_FEM'),
+        Converted: t('ALERT_BANNER.COMPLETED_FEM'),
+        Returned: t('ALERT_BANNER.COMPLETED_FEM'),
+        Delayed: t('ALERT_BANNER.DELAYED_FEM'),
       };
     }
   }

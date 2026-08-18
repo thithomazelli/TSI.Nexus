@@ -1,9 +1,9 @@
 <div id="print-section">
   <app-header
-    title="Relatórios"
+    [title]="'REPORTS.TITLE' | translate"
     [navigationMenus]="[
       { label: 'COMMON.HOME' | translate, link: '/home' },
-      { label: 'Relatórios', link: '' },
+      { label: 'REPORTS.TITLE' | translate, link: '' },
     ]"
   ></app-header>
 
@@ -13,7 +13,7 @@
         <app-date-field
           [(ngModel)]="filterStartDate"
           (ngModelChange)="applyFilters()"
-          label="Início"
+          [label]="'COMMON.RANGE_START' | translate"
           class="w-100 p-0"
         ></app-date-field>
       </div>
@@ -21,7 +21,7 @@
         <app-date-field
           [(ngModel)]="filterEndDate"
           (ngModelChange)="applyFilters()"
-          label="Fim"
+          [label]="'COMMON.RANGE_END' | translate"
           class="w-100 p-0"
         ></app-date-field>
       </div>
@@ -37,7 +37,7 @@
                 [(ngModel)]="filterStatus.Approved"
                 (change)="applyFilters()"
               />
-              Pago
+              {{ 'REPORTS.STATUS_PAID' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -46,7 +46,7 @@
                 [(ngModel)]="filterStatus.Pending"
                 (change)="applyFilters()"
               />
-              Em Aberto
+              {{ 'REPORTS.STATUS_OPEN' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -55,7 +55,7 @@
                 [(ngModel)]="filterStatus.Delayed"
                 (change)="applyFilters()"
               />
-              Atrasado
+              {{ 'REPORTS.STATUS_DELAYED' | translate }}
             </label>
           </div>
         </div>
@@ -72,7 +72,7 @@
                 [(ngModel)]="filterType.Incoming"
                 (change)="applyFilters()"
               />
-              Entrada
+              {{ 'REPORTS.INCOMING' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -81,7 +81,7 @@
                 [(ngModel)]="filterType.Outgoing"
                 (change)="applyFilters()"
               />
-              Saída
+              {{ 'REPORTS.OUTGOING' | translate }}
             </label>
           </div>
         </div>
@@ -92,7 +92,7 @@
           class="btn btn-secondary w-100 mt-2 mt-md-0 ms-md-1 no-print"
           (click)="clearFilters()"
         >
-          Limpar
+          {{ 'COMMON.CLEAR' | translate }}
         </button>
       </div>
     </div>
@@ -105,8 +105,7 @@
           <div class="col-12">
             <div class="callout callout-info no-print">
               <h6>
-                <i class="fas fa-info"></i> Dica: use os botões de impressão na
-                parte inferior para imprimir o relatório.
+                <i class="fas fa-info"></i> {{ 'REPORTS.PRINT_HINT' | translate }}
               </h6>
             </div>
 
@@ -118,13 +117,13 @@
                   <table class="table table-striped">
                     <thead>
                       <tr>
-                        <th>Pedido</th>
-                        <th>Cliente / Fornecedor</th>
-                        <th>Descrição</th>
+                        <th>{{ 'REPORTS.ORDER_COLUMN' | translate }}</th>
+                        <th>{{ 'REPORTS.CLIENT_SUPPLIER' | translate }}</th>
+                        <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
                         <th>{{ 'COMMON.STATUS' | translate }}</th>
                         <th>{{ 'COMMON.DATE' | translate }}</th>
                         <th>{{ 'COMMON.TYPE' | translate }}</th>
-                        <th>Subtotal</th>
+                        <th>{{ 'REPORTS.SUBTOTAL' | translate }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -267,7 +266,7 @@
                     <table class="table">
                       <tbody>
                         <tr>
-                          <th class="col-8">Total Entrada:</th>
+                          <th class="col-8">{{ 'REPORTS.TOTAL_INCOMING' | translate }}</th>
                           <td>
                             <span class="fw-bold text-success"
                               >+{{ getTotalIncoming() | currency: "BRL" }}</span
@@ -275,7 +274,7 @@
                           </td>
                         </tr>
                         <tr>
-                          <th class="col-8">Total Saída:</th>
+                          <th class="col-8">{{ 'REPORTS.TOTAL_OUTGOING' | translate }}</th>
                           <td>
                             <span class="fw-bold text-danger"
                               >-{{ getTotalOutgoing() | currency: "BRL" }}</span
@@ -283,7 +282,7 @@
                           </td>
                         </tr>
                         <tr>
-                          <th class="col-8">Total:</th>
+                          <th class="col-8">{{ 'COMMON.TOTAL' | translate }}:</th>
                           <td>
                             <ng-container *ngIf="getTotal() > 0">
                               <span class="fw-bold text-success"
@@ -317,14 +316,14 @@
                     class="btn btn-default btn-print-border"
                     (click)="printSection()"
                   >
-                    <i class="fas fa-print"></i> Imprimir
+                    <i class="fas fa-print"></i> {{ 'REPORTS.PRINT' | translate }}
                   </button>
                   <button
                     type="button"
                     class="btn btn-primary"
                     (click)="generatePDF()"
                   >
-                    <i class="fas fa-download"></i> Gerar PDF
+                    <i class="fas fa-download"></i> {{ 'REPORTS.GENERATE_PDF' | translate }}
                   </button>
                 </div>
               </div>

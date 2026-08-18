@@ -1,7 +1,7 @@
 @if (isModal) {
   <div class="modal-header">
     <h5 class="modal-title">
-      {{ isEdit ? "Editar Imagem" : "Adicionar Imagem" }}
+      {{ (isEdit ? "COMMON.EDIT_ENTITY" : "COMMON.ADD_ENTITY") | translate: { entity: ("PHOTO.IMAGE" | translate) } }}
     </h5>
     <button type="button" class="btn-close" (click)="close()"></button>
   </div>
@@ -15,7 +15,7 @@
     (click)="onPhotoClick()"
     (keydown.enter)="onPhotoClick()"
     (keydown.space)="onPhotoClick()"
-    aria-label="Clique para alterar foto"
+    [attr.aria-label]="'PHOTO.CLICK_TO_CHANGE_PHOTO' | translate"
   >
     <!-- live camera when active -->
     @if (cameraActive) {
@@ -29,7 +29,7 @@
         ></video>
         @if (!isModal) {
           <div class="photo-hover-overlay">
-            <span>clique para alterar</span>
+            <span>{{ 'PHOTO.CLICK_TO_CHANGE' | translate }}</span>
           </div>
         }
       </div>
@@ -42,7 +42,7 @@
         />
         @if (!isModal) {
           <div class="photo-hover-overlay">
-            <span>clique para alterar</span>
+            <span>{{ 'PHOTO.CLICK_TO_CHANGE' | translate }}</span>
           </div>
         }
       </div>
@@ -75,7 +75,7 @@
             class="btn btn-outline-primary btn-sm"
             (click)="triggerFile()"
           >
-            Upload
+            {{ 'COMMON.UPLOAD' | translate }}
           </button>
 
           <button
@@ -83,7 +83,7 @@
             class="btn btn-outline-secondary btn-sm"
             (click)="startCamera()"
           >
-            Abrir Câmera
+            {{ 'PHOTO.OPEN_CAMERA' | translate }}
           </button>
         }
 
@@ -93,7 +93,7 @@
             class="btn btn-outline-success btn-sm"
             (click)="capturePhoto()"
           >
-            Tirar Foto
+            {{ 'PHOTO.TAKE_PHOTO' | translate }}
           </button>
         }
         @if (cameraActive) {
@@ -102,7 +102,7 @@
             class="btn btn-outline-danger btn-sm"
             (click)="stopCamera()"
           >
-            Fechar Câmera
+            {{ 'PHOTO.CLOSE_CAMERA' | translate }}
           </button>
         }
 

@@ -6,7 +6,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ModalService } from '@friday/core';
+import { ModalService, TranslationService } from '@friday/core';
 
 @Component({
   selector: 'app-date-field',
@@ -22,7 +22,10 @@ import { ModalService } from '@friday/core';
   ],
 })
 export class DateFieldComponent implements ControlValueAccessor {
-  constructor(private modalService: ModalService) {}
+  constructor(
+    private modalService: ModalService,
+    private translationService: TranslationService,
+  ) {}
   @ViewChild('dateInput')
   dateInput!: ElementRef<HTMLInputElement>;
 
@@ -94,8 +97,8 @@ export class DateFieldComponent implements ControlValueAccessor {
         this.clear();
         this.modalService.showNotification(
           false,
-          'Data inválida',
-          'A data informada é inválida.',
+          this.translationService.instant('COMMON.DATE_INVALID'),
+          this.translationService.instant('COMMON.DATE_INVALID_MESSAGE'),
         );
       }
     }

@@ -1,8 +1,8 @@
 <app-header
-  title="Templates de Documentos"
+  [title]="'DOCUMENT_TEMPLATES.TITLE' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Templates de Documentos', link: '' },
+    { label: 'DOCUMENT_TEMPLATES.TITLE' | translate, link: '' },
   ]"
 ></app-header>
 
@@ -10,18 +10,14 @@
   <div class="card card-secondary card-outline">
     <div class="card-body">
       <p class="text-muted">
-        Baixe o HTML de cada documento gerado pelo sistema, edite o texto,
-        logotipo ou informações de rodapé que quiser e envie de volta.
-        Trechos como tabelas de produtos, totais e assinaturas continuam
-        sendo montados automaticamente pelo sistema a partir dos dados de
-        cada pedido/viagem/orçamento.
+        {{ 'DOCUMENT_TEMPLATES.DESCRIPTION' | translate }}
       </p>
 
       <div *ngIf="loading" class="text-center py-4">
         <i class="bi bi-arrow-repeat"></i>{{ 'COMMON.LOADING' | translate }}</div>
 
       <div *ngIf="!loading && templates.length === 0" class="text-muted py-3">
-        Nenhum template encontrado.
+        {{ 'DOCUMENT_TEMPLATES.NO_TEMPLATES_FOUND' | translate }}
       </div>
 
       <ul *ngIf="!loading" class="list-group list-group-flush">
@@ -39,7 +35,7 @@
               class="btn btn-outline-primary btn-sm"
               (click)="download(template)"
             >
-              <i class="bi bi-download"></i> Baixar
+              <i class="bi bi-download"></i> {{ 'COMMON.DOWNLOAD' | translate }}
             </button>
             <button
               type="button"
@@ -47,7 +43,7 @@
               [disabled]="uploadingType === template.type"
               (click)="triggerUpload(fileInput)"
             >
-              <i class="bi bi-upload"></i> Enviar
+              <i class="bi bi-upload"></i> {{ 'COMMON.UPLOAD' | translate }}
             </button>
             <input
               #fileInput

@@ -1,8 +1,8 @@
 <div class="fuel-log-list">
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Abastecimentos</h5>
+    <h5 class="mb-0">{{ 'VEHICLES.REFUELINGS' | translate }}</h5>
     <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
-      <i class="bi bi-plus-lg"></i> Novo abastecimento
+      <i class="bi bi-plus-lg"></i> {{ 'VEHICLES.NEW_REFUELING' | translate }}
     </button>
   </div>
 
@@ -10,11 +10,11 @@
     <thead>
       <tr>
         <th>{{ 'COMMON.DATE' | translate }}</th>
-        <th>Odômetro</th>
-        <th>Litros</th>
-        <th>Preço/litro</th>
+        <th>{{ 'VEHICLES.ODOMETER_SHORT' | translate }}</th>
+        <th>{{ 'VEHICLES.LITERS' | translate }}</th>
+        <th>{{ 'VEHICLES.PRICE_PER_LITER' | translate }}</th>
         <th>{{ 'COMMON.TOTAL' | translate }}</th>
-        <th>Posto</th>
+        <th>{{ 'VEHICLES.GAS_STATION' | translate }}</th>
         <th style="width: 80px"></th>
       </tr>
     </thead>
@@ -31,7 +31,7 @@
             <button
               type="button"
               class="btn btn-link btn-sm p-0 me-2"
-              title="Editar"
+              [title]="'COMMON.EDIT' | translate"
               (click)="openModal(log)"
             >
               <i class="bi bi-pencil"></i>
@@ -39,7 +39,7 @@
             <button
               type="button"
               class="btn btn-link btn-sm p-0 text-danger"
-              title="Remover"
+              [title]="'COMMON.REMOVE' | translate"
               (click)="removeFuelLog(log)"
             >
               <i class="bi bi-trash"></i>
@@ -49,7 +49,7 @@
       } @empty {
         <tr>
           <td colspan="7" class="text-center text-muted small py-3">
-            Nenhum abastecimento registrado
+            {{ 'VEHICLES.NO_REFUELING_REGISTERED' | translate }}
           </td>
         </tr>
       }

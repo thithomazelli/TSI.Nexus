@@ -1,8 +1,8 @@
 <app-header
-  title="Módulos"
+  [title]="'FEATURE_TOGGLES.TITLE' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Módulos', link: '' },
+    { label: 'FEATURE_TOGGLES.TITLE' | translate, link: '' },
   ]"
 ></app-header>
 
@@ -10,10 +10,7 @@
   <div class="card card-secondary card-outline">
     <div class="card-body">
       <p class="text-muted">
-        Liga ou desliga módulos inteiros do sistema. Quando um módulo é
-        desligado, todos os seus dados somem de todas as telas e da API -
-        nada é apagado, e tudo volta a aparecer normalmente assim que o
-        módulo é religado.
+        {{ 'FEATURE_TOGGLES.DESCRIPTION' | translate }}
       </p>
 
       <ul class="nav nav-tabs mb-3">
@@ -24,7 +21,7 @@
             href="javascript:void(0)"
             (click)="activeTab = 'grouped'"
           >
-            Por Grupo
+            {{ 'FEATURE_TOGGLES.BY_GROUP' | translate }}
           </a>
         </li>
         <li class="nav-item">
@@ -34,7 +31,7 @@
             href="javascript:void(0)"
             (click)="activeTab = 'detailed'"
           >
-            Detalhada
+            {{ 'FEATURE_TOGGLES.DETAILED' | translate }}
           </a>
         </li>
       </ul>
@@ -43,7 +40,7 @@
         <i class="bi bi-arrow-repeat"></i>{{ 'COMMON.LOADING' | translate }}</div>
 
       <div *ngIf="!loading && toggles.length === 0" class="text-muted py-3">
-        Nenhum módulo encontrado.
+        {{ 'FEATURE_TOGGLES.NO_MODULES_FOUND' | translate }}
       </div>
 
       <!-- Grouped view: one switch per whole module -->

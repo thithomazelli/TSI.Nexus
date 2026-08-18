@@ -5,6 +5,7 @@ import {
   CanActivateChild,
 } from '@angular/router';
 import { AccountService, FeatureFlagService, ModalService } from '../services';
+import { TranslationService } from '../services/translation/translation.service';
 import { map, switchMap, Observable, of } from 'rxjs';
 import { User } from '../models/account/user';
 import { Injectable } from '@angular/core';
@@ -18,6 +19,7 @@ export class AuthorizationGuard implements CanActivateChild {
     private featureFlagService: FeatureFlagService,
     private modalService: ModalService,
     private router: Router,
+    private translationService: TranslationService,
   ) {}
 
   canActivate(
@@ -48,8 +50,8 @@ export class AuthorizationGuard implements CanActivateChild {
           if (!hasRole) {
             this.modalService.showNotification(
               false,
-              'Acesso negado',
-              'Você não tem permissão para acessar esta área.',
+              this.translationService.instant('ACCOUNT.ACCESS_DENIED'),
+              this.translationService.instant('ACCOUNT.ACCESS_DENIED_MESSAGE'),
             );
             this.router.navigate(['']);
             return of(false);

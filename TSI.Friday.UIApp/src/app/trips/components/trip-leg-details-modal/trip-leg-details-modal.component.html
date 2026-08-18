@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h5 class="modal-title">Novo Trecho</h5>
+  <h5 class="modal-title">{{ 'TRIPS.NEW_LEG' | translate }}</h5>
   <button type="button" class="btn-close" (click)="close()"></button>
 </div>
 
@@ -13,11 +13,11 @@
             <input
               formControlName="origin"
               type="text"
-              placeholder="Origem"
+              [placeholder]="'TRIPS.ORIGIN' | translate"
               class="form-control"
               id="origin"
             />
-            <label for="origin">Origem</label>
+            <label for="origin">{{ 'TRIPS.ORIGIN' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
         </div>
@@ -28,11 +28,11 @@
       @for (stop of stops.controls; track stop; let i = $index) {
         <div [formGroupName]="i" class="border rounded p-2 mb-2">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <b class="small">Destino {{ i + 1 }}</b>
+            <b class="small">{{ 'TRIPS.DESTINATION_NUM' | translate: { num: (i + 1) + '' } }}</b>
             <button
               type="button"
               class="btn btn-link btn-sm p-0 text-danger"
-              title="Remover destino"
+              [title]="'TRIPS.REMOVE_DESTINATION' | translate"
               [disabled]="stops.length === 1"
               (click)="removeStop(i)"
             >
@@ -46,11 +46,11 @@
                   <input
                     formControlName="destination"
                     type="text"
-                    placeholder="Destino"
+                    [placeholder]="'TRIPS.DESTINATION' | translate"
                     class="form-control"
                     [id]="'destination-' + i"
                   />
-                  <label [for]="'destination-' + i">Destino</label>
+                  <label [for]="'destination-' + i">{{ 'TRIPS.DESTINATION' | translate }}</label>
                 </div>
                 <div class="input-group-text"><i class="bi bi-geo-alt-fill"></i></div>
               </div>
@@ -58,7 +58,7 @@
             <div class="col-12 col-md-6">
               <app-date-field
                 formControlName="dateOnly"
-                [label]="'Data de saída'"
+                [label]="'TRIPS.DEPARTURE_DATE' | translate"
               ></app-date-field>
             </div>
             <div class="col-12 col-md-6">
@@ -67,11 +67,11 @@
                   <input
                     formControlName="time"
                     type="time"
-                    placeholder="Hora de saída"
+                    [placeholder]="'TRIPS.DEPARTURE_TIME' | translate"
                     class="form-control"
                     [id]="'time-' + i"
                   />
-                  <label [for]="'time-' + i">Hora de saída</label>
+                  <label [for]="'time-' + i">{{ 'TRIPS.DEPARTURE_TIME' | translate }}</label>
                 </div>
                 <div class="input-group-text"><i class="bi bi-clock"></i></div>
               </div>
@@ -83,11 +83,11 @@
                     formControlName="distanceKm"
                     type="number"
                     min="0"
-                    placeholder="Distância deste trecho (km)"
+                    [placeholder]="'TRIPS.LEG_DISTANCE_KM' | translate"
                     class="form-control"
                     [id]="'distanceKm-' + i"
                   />
-                  <label [for]="'distanceKm-' + i">Distância deste trecho (km)</label>
+                  <label [for]="'distanceKm-' + i">{{ 'TRIPS.LEG_DISTANCE_KM' | translate }}</label>
                 </div>
                 <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
               </div>
@@ -98,7 +98,7 @@
                   <input
                     formControlName="notes"
                     type="text"
-                    placeholder="Observações"
+                    [placeholder]="'COMMON.OBSERVATIONS' | translate"
                     class="form-control"
                     [id]="'notes-' + i"
                   />
@@ -112,7 +112,7 @@
     </div>
 
     <button type="button" class="btn btn-outline-primary btn-sm mb-3" (click)="addStop()">
-      <i class="bi bi-plus-lg"></i> Adicionar destino
+      <i class="bi bi-plus-lg"></i> {{ 'TRIPS.ADD_DESTINATION' | translate }}
     </button>
     </div>
 

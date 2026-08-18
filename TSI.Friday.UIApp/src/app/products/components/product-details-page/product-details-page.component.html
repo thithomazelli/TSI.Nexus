@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Produto' : 'Adicionar Produto'"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('PRODUCTS.SINGULAR' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Produtos', link: '/products' },
-    { label: isEdit ? 'Editar Produto' : 'Adicionar Produto', link: '' },
+    { label: 'SIDEBAR.PRODUTOS' | translate, link: '/products' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('PRODUCTS.SINGULAR' | translate) }, link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -23,13 +23,13 @@
                 <div class="text-center">
                   <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                      <b>Tipo: </b>
+                      <b>{{ 'COMMON.TYPE' | translate }}: </b>
                       <span class="float-right">{{
                         getProductTypeLabel()
                       }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Quantidade disponível: </b>
+                      <b>{{ 'PRODUCTS.QUANTITY_AVAILABLE' | translate }}: </b>
                       <span class="float-right">{{
                         data?.quantityInStock
                       }}</span>
@@ -64,7 +64,7 @@
                   [class.active]="activeTab === 'image'"
                   (click)="activeTab = 'image'"
                   data-toggle="tab"
-                  >Fotos</a
+                  >{{ 'PRODUCTS.PHOTOS_TAB' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -73,7 +73,7 @@
                   [class.active]="activeTab === 'history'"
                   (click)="activeTab = 'history'"
                   data-toggle="tab"
-                  >Histórico</a
+                  >{{ 'PRODUCTS.HISTORY_TAB' | translate }}</a
                 >
               </li>
               <li class="nav-item">

@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h5 class="modal-title">{{ isEdit ? 'Editar Manutenção' : 'Nova Manutenção' }}</h5>
+  <h5 class="modal-title">{{ (isEdit ? 'VEHICLES.EDIT_MAINTENANCE' : 'VEHICLES.NEW_MAINTENANCE') | translate }}</h5>
   <button type="button" class="btn-close" (click)="close()"></button>
 </div>
 
@@ -22,7 +22,7 @@
       <div class="col-12 col-md-6">
         <app-date-field
           formControlName="scheduledDate"
-          [label]="'Data agendada'"
+          [label]="'VEHICLES.SCHEDULED_DATE' | translate"
         ></app-date-field>
       </div>
       <div class="col-12">
@@ -46,11 +46,11 @@
               formControlName="cost"
               type="number"
               min="0"
-              placeholder="Custo"
+              [placeholder]="'VEHICLES.COST' | translate"
               class="form-control"
               id="maintenanceModalCost"
             />
-            <label for="maintenanceModalCost">Custo</label>
+            <label for="maintenanceModalCost">{{ 'VEHICLES.COST' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
         </div>
@@ -62,7 +62,7 @@
               formControlName="partQuantity"
               type="number"
               min="0"
-              placeholder="Quantidade"
+              [placeholder]="'COMMON.QUANTITY' | translate"
               class="form-control"
               id="maintenanceModalPartQuantity"
             />
@@ -74,14 +74,14 @@
         <div class="input-group">
           <div class="form-floating flex-fill select-floating">
             <select formControlName="productId" class="form-select" id="maintenanceModalProduct">
-              <option [ngValue]="null">Nenhuma</option>
+              <option [ngValue]="null">{{ 'VEHICLES.NONE' | translate }}</option>
               @for (product of products; track product.id) {
                 <option [ngValue]="product.id">
-                  {{ product.sku }} - {{ product.name }} (estoque: {{ product.quantityInStock }})
+                  {{ product.sku }} - {{ product.name }} ({{ 'VEHICLES.PRODUCT_STOCK' | translate: { qty: product.quantityInStock + '' } }})
                 </option>
               }
             </select>
-            <label for="maintenanceModalProduct">Peça consumida (opcional)</label>
+            <label for="maintenanceModalProduct">{{ 'VEHICLES.CONSUMED_PART' | translate }}</label>
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@
     <div class="d-flex justify-content-end mt-3">
       <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">
-        {{ isEdit ? 'Salvar' : 'Adicionar' }}
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

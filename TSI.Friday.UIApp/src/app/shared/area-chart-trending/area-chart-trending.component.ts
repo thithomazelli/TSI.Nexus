@@ -1,6 +1,6 @@
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { Component, Input, OnChanges, OnInit, ViewChild } from '@angular/core';
-import { ApiService, ApiType, WebApiResponse } from '@friday/core';
+import { ApiService, ApiType, TranslationService, WebApiResponse } from '@friday/core';
 
 @Component({
   selector: 'app-area-chart-trending',
@@ -19,7 +19,10 @@ export class AreaChartTrendingComponent implements OnInit, OnChanges {
   isCardCollapsed = false;
   chartOptions: any = {};
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private translationService: TranslationService,
+  ) {}
 
   ngOnInit(): void {
     this.loadChart();
@@ -39,26 +42,26 @@ export class AreaChartTrendingComponent implements OnInit, OnChanges {
       this.chartOptions = {
         series: [
           {
-            name: 'Entrada',
+            name: this.translationService.instant('REPORTS.INCOMING'),
             data: response.data.incoming,
             type: 'area',
             color: '#20c997',
           },
           {
-            name: 'Saída',
+            name: this.translationService.instant('REPORTS.OUTGOING'),
             data: response.data.outgoing,
             type: 'area',
             color: '#af4141',
           },
           {
-            name: 'Tendência Entrada',
+            name: this.translationService.instant('DASHBOARD.TREND_INCOMING'),
             data: tendenciaEntrada,
             type: 'line',
             color: '#08b481',
             opacity: 1,
           },
           {
-            name: 'Tendência Saída',
+            name: this.translationService.instant('DASHBOARD.TREND_OUTGOING'),
             data: tendenciaSaida,
             type: 'line',
             color: '#cf1b1b',

@@ -15,13 +15,13 @@
               <input
                 formControlName="name"
                 type="text"
-                placeholder="Nome do Produto"
+                [placeholder]="'PRODUCTS.PRODUCT_NAME' | translate"
                 class="form-control"
                 id="name"
                 [class.is-invalid]="isInvalid('name')"
                 [class.is-valid]="isValid('name')"
               />
-              <label for="name">Nome do Produto</label>
+              <label for="name">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-tag"></i></div>
           </div>

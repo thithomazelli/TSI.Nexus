@@ -14,14 +14,14 @@
               />
               <label for="firstName">{{ 'COMMON.NAME' | translate }}</label>
               @if (inputHasError("firstName", "required")) {
-                <span class="text-danger">Nome é obrigatório</span>
+                <span class="text-danger">{{ 'ACCOUNT.REGISTER.FIRST_NAME_REQUIRED' | translate }}</span>
               }
               @if (
                 inputHasError("firstName", "minlength") ||
                 inputHasError("firstName", "maxlength")
               ) {
                 <span class="text-danger"
-                  >Nome deve ter no mínimo 3 e no máximo 15 caracteres
+                  >{{ 'ACCOUNT.REGISTER.FIRST_NAME_LENGTH' | translate }}
                 </span>
               }
             </div>
@@ -40,14 +40,14 @@
               />
               <label for="lastName">{{ 'USERS.LAST_NAME' | translate }}</label>
               @if (inputHasError("lastName", "required")) {
-                <span class="text-danger">Sobrenome é obrigatório</span>
+                <span class="text-danger">{{ 'ACCOUNT.REGISTER.LAST_NAME_REQUIRED' | translate }}</span>
               }
               @if (
                 inputHasError("lastName", "minlength") ||
                 inputHasError("lastName", "maxlength")
               ) {
                 <span class="text-danger"
-                  >Sobrenome deve ter no mínimo 3 e no máximo 30 caracteres
+                  >{{ 'ACCOUNT.REGISTER.LAST_NAME_LENGTH' | translate }}
                 </span>
               }
             </div>
@@ -82,10 +82,10 @@
               />
               <label for="email">{{ 'COMMON.EMAIL' | translate }}</label>
               @if (inputHasError("email", "required")) {
-                <span class="text-danger">Email é obrigatório</span>
+                <span class="text-danger">{{ 'ACCOUNT.REGISTER.EMAIL_REQUIRED' | translate }}</span>
               }
               @if (inputHasError("email", "pattern")) {
-                <span class="text-danger">Endereço de email inválido </span>
+                <span class="text-danger">{{ 'ACCOUNT.REGISTER.EMAIL_INVALID' | translate }} </span>
               }
             </div>
             <div class="input-group-text"><i class="bi bi-envelope"></i></div>
@@ -102,7 +102,7 @@
                   <div
                     class="form-control bg-light d-flex align-items-center justify-content-between"
                   >
-                    <span>Email confirmado</span>
+                    <span>{{ 'USERS.EMAIL_CONFIRMED' | translate }}</span>
                     <input
                       class="form-check-input ms-2"
                       type="checkbox"
@@ -122,20 +122,20 @@
                 <input
                   formControlName="password"
                   type="password"
-                  placeholder="Senha"
+                  [placeholder]="'USERS.PASSWORD' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('password')"
                 />
                 <label for="password">{{ 'USERS.PASSWORD' | translate }}</label>
                 @if (inputHasError("password", "required")) {
-                  <span class="text-danger">Senha é obrigatória </span>
+                  <span class="text-danger">{{ 'ACCOUNT.REGISTER.PASSWORD_REQUIRED' | translate }} </span>
                 }
                 @if (
                   inputHasError("password", "minlength") ||
                   inputHasError("password", "maxlength")
                 ) {
                   <span class="text-primary"
-                    >A senha precisa ter no mínimo 6 e no máximo 15 caracteres.
+                    >{{ 'ACCOUNT.REGISTER.PASSWORD_LENGTH' | translate }}
                   </span>
                 }
               </div>
@@ -168,9 +168,9 @@
             [disabled]="isResendingEmail"
           >
             @if (isResendingEmail) {
-              Aguarde {{ resendEmailCountdown }}s para tentar novamente
+              {{ 'USERS.RESEND_WAIT' | translate: { seconds: resendEmailCountdown + '' } }}
             } @else {
-              Reenviar e-mail de confirmação
+              {{ 'ACCOUNT.SEND_EMAIL.RESEND_CONFIRMATION' | translate }}
             }
           </button>
         }
@@ -180,7 +180,7 @@
             type="button"
             (click)="forgotPassword()"
           >
-            Redefinir Senha
+            {{ 'USERS.RESET_PASSWORD_ACTION' | translate }}
           </button>
         }
       </div>

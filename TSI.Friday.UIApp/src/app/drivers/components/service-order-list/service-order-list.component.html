@@ -1,18 +1,17 @@
 <div class="service-order-list">
-  <h5 class="mb-2">Ordens de Serviço e Comissões</h5>
+  <h5 class="mb-2">{{ 'DRIVERS.SERVICE_ORDERS_TITLE' | translate }}</h5>
   <p class="text-muted small">
-    Geradas automaticamente quando uma viagem vinculada a este motorista é
-    marcada como Fechada.
+    {{ 'DRIVERS.SERVICE_ORDERS_HINT' | translate }}
   </p>
 
   <table class="table table-sm">
     <thead>
       <tr>
-        <th>OS</th>
-        <th>Emissão</th>
-        <th>Base</th>
+        <th>{{ 'DRIVERS.OS_COLUMN' | translate }}</th>
+        <th>{{ 'DRIVERS.ISSUE_DATE' | translate }}</th>
+        <th>{{ 'DRIVERS.BASE' | translate }}</th>
         <th>%</th>
-        <th>Comissão</th>
+        <th>{{ 'DRIVERS.COMMISSION_COLUMN' | translate }}</th>
         <th>{{ 'COMMON.STATUS' | translate }}</th>
         <th style="width: 120px"></th>
       </tr>
@@ -37,10 +36,10 @@
               <button
                 type="button"
                 class="btn btn-link btn-sm p-0"
-                title="Marcar como paga"
+                [title]="'DRIVERS.MARK_AS_PAID_TITLE' | translate"
                 (click)="markAsPaid(so.commission)"
               >
-                <i class="bi bi-check-circle text-success"></i> Pagar
+                <i class="bi bi-check-circle text-success"></i> {{ 'DRIVERS.PAY_BUTTON' | translate }}
               </button>
             }
           </td>
@@ -48,7 +47,7 @@
       } @empty {
         <tr>
           <td colspan="7" class="text-center text-muted small py-3">
-            Nenhuma Ordem de Serviço gerada ainda
+            {{ 'DRIVERS.NO_SERVICE_ORDERS' | translate }}
           </td>
         </tr>
       }

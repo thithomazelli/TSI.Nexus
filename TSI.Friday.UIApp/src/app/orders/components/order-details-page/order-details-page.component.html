@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Pedido' : 'Adicionar Pedido'"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('ORDERS.SINGULAR' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Pedidos', link: '/orders' },
-    { label: isEdit ? 'Editar Pedido' : 'Adicionar Pedido', link: '' },
+    { label: 'ORDERS.TITLE' | translate, link: '/orders' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('ORDERS.SINGULAR' | translate) }, link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -19,17 +19,17 @@
                 <div class="text-center">
                   <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                      <b>Número do Pedido: </b>
+                      <b>{{ 'ORDERS.ORDER_NUMBER' | translate }}: </b>
                       <span class="float-right">{{ data?.orderNumber }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Cliente: </b>
+                      <b>{{ 'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate }}: </b>
                       <span class="float-right">{{
                         data?.businessPartnerName
                       }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Status: </b>
+                      <b>{{ 'COMMON.STATUS' | translate }}: </b>
                       <span class="float-right">{{ getStatusLabel() }}</span>
                     </li>
                   </ul>
@@ -45,7 +45,7 @@
                 [disabled]="emittingSalesOrder"
                 (click)="emitSalesOrder()"
               >
-                <i class="bi bi-file-earmark-pdf"></i> Emitir Pedido de Venda
+                <i class="bi bi-file-earmark-pdf"></i> {{ 'ORDERS.EMIT_SALES_ORDER' | translate }}
               </button>
             </div>
           }

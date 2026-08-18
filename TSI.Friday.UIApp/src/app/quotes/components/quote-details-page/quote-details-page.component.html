@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Orçamento' : 'Adicionar Orçamento'"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.ORCAMENTOS' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Orçamentos', link: '/quotes' },
-    { label: isEdit ? 'Editar Orçamento' : 'Adicionar Orçamento', link: '' },
+    { label: 'SIDEBAR.ORCAMENTOS' | translate, link: '/quotes' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.ORCAMENTOS' | translate) }, link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -19,17 +19,17 @@
                 <div class="text-center">
                   <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                      <b>Número do Orçamento: </b>
+                      <b>{{ 'QUOTES.QUOTE_NUMBER' | translate }}: </b>
                       <span class="float-right">{{ data?.quoteNumber }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Cliente: </b>
+                      <b>{{ 'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate }}: </b>
                       <span class="float-right">{{
                         data?.businessPartnerName
                       }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Status: </b>
+                      <b>{{ 'COMMON.STATUS' | translate }}: </b>
                       <span class="float-right">{{ getStatusLabel() }}</span>
                     </li>
                   </ul>
@@ -45,7 +45,7 @@
                 [disabled]="emittingQuote"
                 (click)="emitQuote()"
               >
-                <i class="bi bi-file-earmark-pdf"></i> Emitir Orçamento
+                <i class="bi bi-file-earmark-pdf"></i> {{ 'QUOTES.EMIT_QUOTE' | translate }}
               </button>
             </div>
           }

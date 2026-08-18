@@ -1,23 +1,22 @@
 <div class="modal-header">
-  <h5 class="modal-title">Importar Lista de Passageiros</h5>
+  <h5 class="modal-title">{{ 'TRIPS.IMPORT_PASSENGERS_TITLE' | translate }}</h5>
   <button type="button" class="btn-close" (click)="close()"></button>
 </div>
 
 <div class="modal-body">
   <div class="modal-scrollable-area">
     <p class="text-muted small">
-      Envie um arquivo <b>.csv</b> ou <b>.txt</b> com uma linha por passageiro, no formato
-      <b>Nome, Documento, Assento, Telefone</b> (aceita vírgula ou tabulação como separador). O
-      arquivo enviado também fica disponível na aba <b>{{ 'COMMON.ATTACHMENTS' | translate }}</b> deste pedido.
+      {{ 'TRIPS.IMPORT_HINT_1' | translate }} <b>.csv</b> {{ 'TRIPS.IMPORT_HINT_OR' | translate }} <b>.txt</b> {{ 'TRIPS.IMPORT_HINT_2' | translate }}
+      <b>{{ 'TRIPS.IMPORT_HINT_FORMAT' | translate }}</b> {{ 'TRIPS.IMPORT_HINT_3' | translate }} <b>{{ 'COMMON.ATTACHMENTS' | translate }}</b> {{ 'TRIPS.IMPORT_HINT_4' | translate }}
     </p>
 
     <div class="border rounded p-3 mb-3">
       <div class="d-flex align-items-center gap-2">
         <label class="btn btn-sm btn-outline-secondary mb-0" for="passengerImportFile">
-          <i class="bi bi-upload"></i> Escolher arquivo
+          <i class="bi bi-upload"></i> {{ 'TRIPS.CHOOSE_FILE' | translate }}
         </label>
         <span class="text-muted small">{{
-          selectedFile?.name || 'Nenhum arquivo selecionado'
+          selectedFile?.name || ('TRIPS.NO_FILE_SELECTED' | translate)
         }}</span>
       </div>
       <input
@@ -32,17 +31,16 @@
     @if (previewPassengers.length > 0) {
       <div class="mb-3">
         <h6 class="text-muted mb-2">
-          Pré-visualização ({{ previewPassengers.length }} passageiro{{
-            previewPassengers.length === 1 ? '' : 's'
-          }})
+          {{ 'TRIPS.PREVIEW' | translate }} ({{ previewPassengers.length }}
+          {{ (previewPassengers.length === 1 ? 'TRIPS.PASSENGER' : 'TRIPS.PASSENGERS') | translate }})
         </h6>
         <table class="table table-sm">
           <thead>
             <tr>
-              <th>Nome</th>
-              <th>Documento</th>
-              <th>Assento</th>
-              <th>Telefone</th>
+              <th>{{ 'COMMON.NAME' | translate }}</th>
+              <th>{{ 'TRIPS.DOCUMENT' | translate }}</th>
+              <th>{{ 'TRIPS.SEAT' | translate }}</th>
+              <th>{{ 'COMMON.PHONE' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -59,8 +57,7 @@
       </div>
     } @else if (selectedFile) {
       <p class="text-danger small">
-        Não foi possível identificar passageiros neste arquivo. Confira o formato e tente
-        novamente.
+        {{ 'TRIPS.IMPORT_ERROR_HINT' | translate }}
       </p>
     }
   </div>
@@ -79,7 +76,7 @@
         [disabled]="importing"
         (click)="confirmImport()"
       >
-        Confirmar Importação
+        {{ 'TRIPS.CONFIRM_IMPORT' | translate }}
       </button>
     }
   </div>

@@ -12,11 +12,11 @@
   <table class="table table-sm table-borderless">
     <tbody>
       <tr>
-        <th class="text-muted" style="width: 120px">Nome</th>
+        <th class="text-muted" style="width: 120px">{{ 'COMMON.NAME' | translate }}</th>
         <td>{{ attachment.fileName }}</td>
       </tr>
       <tr>
-        <th class="text-muted">Pasta</th>
+        <th class="text-muted">{{ 'ATTACHMENTS_LIST.FOLDER' | translate }}</th>
         <td>{{ currentPath || "-" }}</td>
       </tr>
       <tr>
@@ -26,7 +26,7 @@
             class="btn btn-sm btn-outline-primary"
             (click)="download.emit(attachment)"
           >
-            <i class="pi pi-download me-1"></i> Baixar
+            <i class="pi pi-download me-1"></i> {{ 'COMMON.DOWNLOAD' | translate }}
           </button>
           <button
             class="btn btn-sm btn-outline-danger ms-2"

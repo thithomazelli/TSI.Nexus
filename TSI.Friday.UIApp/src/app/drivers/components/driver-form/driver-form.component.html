@@ -8,13 +8,13 @@
             <input
               formControlName="name"
               type="text"
-              placeholder="Nome do Motorista"
+              [placeholder]="'DRIVERS.DRIVER_NAME' | translate"
               class="form-control"
               id="name"
               [class.is-invalid]="isInvalid('name')"
               [class.is-valid]="isValid('name')"
             />
-            <label for="name">Nome do Motorista</label>
+            <label for="name">{{ 'DRIVERS.DRIVER_NAME' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-person"></i></div>
         </div>
@@ -25,7 +25,7 @@
             <input
               formControlName="socialSecurityCard"
               type="text"
-              placeholder="CPF"
+              [placeholder]="'DRIVERS.CPF' | translate"
               class="form-control"
               id="socialSecurityCard"
               mask="000.000.000-00"
@@ -33,7 +33,7 @@
               [class.is-valid]="isValid('socialSecurityCard')"
               (blur)="markAsTouched('socialSecurityCard')"
             />
-            <label for="socialSecurityCard">CPF</label>
+            <label for="socialSecurityCard">{{ 'DRIVERS.CPF' | translate }}</label>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
             <input
               formControlName="nationalIdCard"
               type="text"
-              placeholder="RG"
+              [placeholder]="'DRIVERS.RG' | translate"
               class="form-control"
               id="nationalIdCard"
               mask="00.000.000-C"
@@ -52,7 +52,7 @@
               [class.is-valid]="isValid('nationalIdCard')"
               (blur)="markAsTouched('nationalIdCard')"
             />
-            <label for="nationalIdCard">RG</label>
+            <label for="nationalIdCard">{{ 'DRIVERS.RG' | translate }}</label>
           </div>
         </div>
       </div>
@@ -62,13 +62,13 @@
             <input
               formControlName="email"
               type="email"
-              placeholder="E-mail"
+              [placeholder]="'COMMON.EMAIL' | translate"
               class="form-control"
               id="email"
               [class.is-invalid]="isInvalid('email')"
               [class.is-valid]="isValid('email')"
             />
-            <label for="email">E-mail</label>
+            <label for="email">{{ 'COMMON.EMAIL' | translate }}</label>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@
       <div class="col-12 col-md-6">
         <app-date-field
           formControlName="birthday"
-          [label]="'Nascimento'"
+          [label]="'DRIVERS.BIRTH' | translate"
         ></app-date-field>
       </div>
       <div class="col-12 col-md-6">
@@ -120,7 +120,7 @@
             <input
               formControlName="licenseNumber"
               type="text"
-              placeholder="Número da CNH"
+              [placeholder]="'DRIVERS.LICENSE_NUMBER' | translate"
               class="form-control"
               id="licenseNumber"
               mask="00000000000"
@@ -128,7 +128,7 @@
               [class.is-valid]="isValid('licenseNumber')"
               (blur)="markAsTouched('licenseNumber')"
             />
-            <label for="licenseNumber">Número da CNH</label>
+            <label for="licenseNumber">{{ 'DRIVERS.LICENSE_NUMBER' | translate }}</label>
           </div>
         </div>
       </div>
@@ -138,7 +138,7 @@
             <input
               formControlName="licenseCategory"
               type="text"
-              placeholder="Categoria"
+              [placeholder]="'VEHICLES.CATEGORY' | translate"
               class="form-control"
               id="licenseCategory"
               [class.is-invalid]="isInvalid('licenseCategory')"
@@ -151,7 +151,7 @@
       <div class="col-12 col-md-6">
         <app-date-field
           formControlName="licenseExpiryDate"
-          [label]="'Validade da CNH'"
+          [label]="'DRIVERS.LICENSE_EXPIRY' | translate"
         ></app-date-field>
       </div>
       <div class="col-12 col-md-6">
@@ -168,14 +168,14 @@
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>
-            <label for="employmentType">Vínculo empregatício</label>
+            <label for="employmentType">{{ 'DRIVERS.EMPLOYMENT_TYPE' | translate }}</label>
           </div>
         </div>
       </div>
       <div class="col-12 col-md-6">
         <app-date-field
           formControlName="admissionDate"
-          [label]="'Data de admissão'"
+          [label]="'DRIVERS.ADMISSION_DATE' | translate"
         ></app-date-field>
       </div>
       <div class="col-12 col-md-6">
@@ -186,11 +186,11 @@
               type="number"
               min="0"
               max="100"
-              placeholder="Comissão (%)"
+              [placeholder]="'DRIVERS.COMMISSION_PERCENTAGE' | translate"
               class="form-control"
               id="commissionPercentage"
             />
-            <label for="commissionPercentage">Comissão sobre viagem (%)</label>
+            <label for="commissionPercentage">{{ 'DRIVERS.COMMISSION_ON_TRIP' | translate }}</label>
           </div>
         </div>
       </div>

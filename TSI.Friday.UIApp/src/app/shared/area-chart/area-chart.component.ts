@@ -1,6 +1,6 @@
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { ApiService, ApiType, WebApiResponse } from '@friday/core';
+import { ApiService, ApiType, TranslationService, WebApiResponse } from '@friday/core';
 
 @Component({
   selector: 'app-area-chart',
@@ -19,7 +19,10 @@ export class AreaChartComponent implements OnInit, OnChanges {
   isCardCollapsed = false;
   chartOptions: any;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private translationService: TranslationService,
+  ) {}
 
   ngOnInit(): void {
     this.loadChart();
@@ -36,11 +39,11 @@ export class AreaChartComponent implements OnInit, OnChanges {
       this.chartOptions = {
         series: [
           {
-            name: 'Entrada',
+            name: this.translationService.instant('REPORTS.INCOMING'),
             data: response.data.incoming,
           },
           {
-            name: 'Saída',
+            name: this.translationService.instant('REPORTS.OUTGOING'),
             data: response.data.outgoing,
           },
         ],

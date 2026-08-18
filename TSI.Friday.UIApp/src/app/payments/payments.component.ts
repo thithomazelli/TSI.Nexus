@@ -22,6 +22,7 @@ import {
   PaymentType,
   ResponseStatus,
   NotificationService,
+  TranslationService,
 } from '@friday/core';
 import {
   ColDef,
@@ -58,21 +59,25 @@ export class PaymentsComponent implements OnInit, OnDestroy {
 
   rowData: Payment[] = [];
 
-  typeMap: { [key: string]: string } = {
-    Incoming: 'Entrada',
-    Outgoing: 'Saída',
-  };
+  get typeMap(): { [key: string]: string } {
+    return {
+      Incoming: this.translationService.instant('REPORTS.INCOMING'),
+      Outgoing: this.translationService.instant('REPORTS.OUTGOING'),
+    };
+  }
 
   typeIconMap: { [key: string]: string } = {
     Incoming: '<i class="bi bi-arrow-up-circle-fill text-success me-1"></i>',
     Outgoing: '<i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>',
   };
 
-  statusMap: { [key: string]: string } = {
-    Approved: 'Pago',
-    Pending: 'Em Aberto',
-    Delayed: 'Atrasado',
-  };
+  get statusMap(): { [key: string]: string } {
+    return {
+      Approved: this.translationService.instant('REPORTS.STATUS_PAID'),
+      Pending: this.translationService.instant('REPORTS.STATUS_OPEN'),
+      Delayed: this.translationService.instant('REPORTS.STATUS_DELAYED'),
+    };
+  }
 
   statusColorMap: { [key: string]: string } = {
     Approved: 'success',
@@ -98,10 +103,14 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private paymentService: PaymentService,
     private route: ActivatedRoute,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeColumnDefs());
     this.route.queryParams.subscribe((params) => {
       this.setFiltersFromQueryParams(params);
       this.showFiltersOnInit = this.hasInitialFilters();
@@ -167,7 +176,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     this.modalService
       .showSweetConfirmation(
         '',
-        'Tem certeza que deseja marcar este item como pago?',
+        this.translationService.instant('PAYMENTS.CONFIRM_MARK_PAID'),
       )
       .then((result: any) => {
         if (!result.isConfirmed) {
@@ -243,7 +252,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Pago?',
+        headerName: this.translationService.instant('PAYMENTS.PAID_QUESTION'),
         sortable: true,
         filter: true,
         maxWidth: 100,
@@ -256,7 +265,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'description',
-        headerName: 'Descrição',
+        headerName: this.translationService.instant('COMMON.DESCRIPTION'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -281,7 +290,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'type',
-        headerName: 'Tipo',
+        headerName: this.translationService.instant('COMMON.TYPE'),
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -296,7 +305,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'price',
-        headerName: 'Valor',
+        headerName: this.translationService.instant('COMMON.VALUE'),
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -322,7 +331,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -339,7 +348,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'date',
-        headerName: 'Data',
+        headerName: this.translationService.instant('COMMON.DATE'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -349,7 +358,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'businessPartnerName',
-        headerName: 'Cliente',
+        headerName: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -362,7 +371,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'orderNumber',
-        headerName: 'Pedido',
+        headerName: this.translationService.instant('ORDERS.SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -375,7 +384,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'tripNumber',
-        headerName: 'Viagem',
+        headerName: this.translationService.instant('TRIPS.SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -387,7 +396,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
         },
       },
       {
-        headerName: 'Ações',
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
         flex: 1,
         minWidth: 150,
         sortable: false,
@@ -431,7 +440,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(
             ResponseStatus.Success,
-            'Pagamentos atualizados com sucesso',
+            this.translationService.instant('PAYMENTS.PAYMENTS_REFRESHED'),
           );
         }
       });

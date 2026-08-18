@@ -6,6 +6,7 @@ import {
   NotificationService,
   QuoteProductService,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 
@@ -47,6 +48,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private quoteProductService: QuoteProductService,
     private route: ActivatedRoute,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -56,6 +58,9 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
         this.getQuoteProducts();
       });
     this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
   }
 
   ngOnDestroy(): void {
@@ -88,7 +93,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
         );
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Item excluído',
+          this.translationService.instant('QUOTES.ITEM_DELETED'),
           response.message,
           'success',
         );
@@ -125,7 +130,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(
             ResponseStatus.Success,
-            'Produtos do orçamento atualizados com sucesso',
+            this.translationService.instant('QUOTES.QUOTE_PRODUCTS_REFRESHED'),
           );
         }
       });
@@ -154,7 +159,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'productName',
-        headerName: 'Produto',
+        headerName: this.translationService.instant('PRODUCTS.SINGULAR'),
         sortable: true,
         filter: true,
         hide: this.isFromProductsView,
@@ -166,14 +171,14 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'quantity',
-        headerName: 'Quantidade',
+        headerName: this.translationService.instant('COMMON.QUANTITY'),
         sortable: true,
         filter: true,
         maxWidth: 120,
       },
       {
         field: 'totalPrice',
-        headerName: 'Valor Total',
+        headerName: this.translationService.instant('COMMON.TOTAL_VALUE'),
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -182,7 +187,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'orderNumber',
-        headerName: 'Orçamento',
+        headerName: this.translationService.instant('QUOTES.SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -191,7 +196,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'businessPartnerName',
-        headerName: 'Cliente',
+        headerName: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -199,7 +204,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
         hide: !this.isFullList,
       },
       {
-        headerName: 'Ações',
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
         flex: 1,
         minWidth: 150,
         sortable: false,

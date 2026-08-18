@@ -4,6 +4,7 @@ import {
   FeatureToggle,
   NotificationService,
   ResponseStatus,
+  TranslationService,
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
 
@@ -27,6 +28,7 @@ export class FeatureTogglesComponent implements OnInit {
   constructor(
     private featureFlagService: FeatureFlagService,
     private notificationService: NotificationService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -69,7 +71,7 @@ export class FeatureTogglesComponent implements OnInit {
         error: () => {
           this.notificationService.showMessage(
             'Error',
-            'Não foi possível atualizar o módulo.',
+            this.translationService.instant('FEATURE_TOGGLES.UPDATE_ERROR'),
           );
         },
       });

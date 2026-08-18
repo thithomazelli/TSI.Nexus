@@ -1,16 +1,16 @@
 <app-header
   *ngIf="!compact"
-  title="Pedidos"
+  [title]="'ORDERS.TITLE' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Pedidos', link: '' },
+    { label: 'ORDERS.TITLE' | translate, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
     [compactView]="compact"
-    [className]="'Pedidos'"
+    [className]="'ORDERS.TITLE' | translate"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
@@ -50,7 +50,7 @@
                 [(ngModel)]="filterStatus.Open"
                 (change)="applyFilters()"
               />
-              Em Aberto
+              {{ 'QUOTES.STATUS_OPEN' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -59,7 +59,7 @@
                 [(ngModel)]="filterStatus.WaitingPayment"
                 (change)="applyFilters()"
               />
-              Aguardando Pagamento
+              {{ 'QUOTES.STATUS_WAITING_PAYMENT' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -68,14 +68,14 @@
                 [(ngModel)]="filterStatus.Closed"
                 (change)="applyFilters()"
               />
-              Fechado
+              {{ 'QUOTES.STATUS_CLOSED' | translate }}
             </label>
           </div>
         </div>
       </div>
       <div class="col-12 col-md-auto d-flex align-items-end">
         <button class="btn btn-secondary w-100" (click)="clearFilters()">
-          Limpar
+          {{ 'COMMON.CLEAR' | translate }}
         </button>
       </div>
     </div>

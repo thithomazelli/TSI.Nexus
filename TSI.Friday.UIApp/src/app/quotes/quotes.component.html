@@ -1,9 +1,9 @@
 <app-header
   *ngIf="!compact"
-  title="Orçamentos"
+  [title]="'SIDEBAR.ORCAMENTOS' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Orçamentos', link: '' },
+    { label: 'SIDEBAR.ORCAMENTOS' | translate, link: '' },
   ]"
 ></app-header>
 
@@ -15,7 +15,7 @@
       (click)="openNewProductQuoteModal()"
     >
       <i class="bi bi-plus-lg"></i>
-      Novo Orçamento de Produto
+      {{ 'QUOTES.NEW_PRODUCT_QUOTE' | translate }}
     </button>
     <button
       *ngIf="isFleetModuleEnabled"
@@ -24,13 +24,13 @@
       (click)="openNewTripQuoteModal()"
     >
       <i class="bi bi-plus-lg"></i>
-      Novo Orçamento de Viagem
+      {{ 'QUOTES.NEW_TRIP_QUOTE' | translate }}
     </button>
   </div>
 
   <app-grid
     [compactView]="compact"
-    [className]="'Orçamentos'"
+    [className]="'SIDEBAR.ORCAMENTOS' | translate"
     [canAdd]="false"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
@@ -48,7 +48,7 @@
         <app-date-field
           [(ngModel)]="filterStartDate"
           (ngModelChange)="applyFilters()"
-          label="Início"
+          [label]="'COMMON.RANGE_START' | translate"
           class="w-100 p-0"
         ></app-date-field>
       </div>
@@ -56,7 +56,7 @@
         <app-date-field
           [(ngModel)]="filterEndDate"
           (ngModelChange)="applyFilters()"
-          label="Fim"
+          [label]="'COMMON.RANGE_END' | translate"
           class="w-100 p-0"
         ></app-date-field>
       </div>
@@ -71,7 +71,7 @@
                 [(ngModel)]="filterStatus.Open"
                 (change)="applyFilters()"
               />
-              Em Aberto
+              {{ 'QUOTES.STATUS_OPEN' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -80,7 +80,7 @@
                 [(ngModel)]="filterStatus.WaitingPayment"
                 (change)="applyFilters()"
               />
-              Aguardando Pagamento
+              {{ 'QUOTES.STATUS_WAITING_PAYMENT' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -89,14 +89,14 @@
                 [(ngModel)]="filterStatus.Closed"
                 (change)="applyFilters()"
               />
-              Fechado
+              {{ 'QUOTES.STATUS_CLOSED' | translate }}
             </label>
           </div>
         </div>
       </div>
       <div class="col-12 col-md-auto d-flex align-items-end">
         <button class="btn btn-secondary w-100" (click)="clearFilters()">
-          Limpar
+          {{ 'COMMON.CLEAR' | translate }}
         </button>
       </div>
     </div>

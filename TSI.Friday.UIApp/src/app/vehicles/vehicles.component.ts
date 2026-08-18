@@ -3,6 +3,7 @@ import {
   ModalService,
   NotificationService,
   ResponseStatus,
+  TranslationService,
   Vehicle,
   VehicleService,
   WebApiResponse,
@@ -24,23 +25,30 @@ export class VehiclesComponent implements OnInit, OnDestroy {
 
   baseEndPoint = 'vehicles';
 
-  typeMap: { [key: string]: string } = {
-    Bus: 'Ônibus',
-    MiniBus: 'Micro-ônibus',
-    Van: 'Van',
-    Car: 'Carro',
-    Other: 'Outro',
-  };
+  get typeMap(): { [key: string]: string } {
+    return {
+      Bus: this.translationService.instant('VEHICLES.BUS'),
+      MiniBus: this.translationService.instant('VEHICLES.MINI_BUS'),
+      Van: this.translationService.instant('VEHICLES.VAN'),
+      Car: this.translationService.instant('VEHICLES.CAR'),
+      Other: this.translationService.instant('VEHICLES.OTHER'),
+    };
+  }
 
-  statusMap: { [key: string]: { label: string; color: string } } = {
-    Available: { label: 'Disponível', color: 'success' },
-    InMaintenance: { label: 'Em manutenção', color: 'warning' },
-    Blocked: { label: 'Bloqueado', color: 'danger' },
-    Inactive: { label: 'Inativo', color: 'secondary' },
-  };
+  get statusMap(): { [key: string]: { label: string; color: string } } {
+    return {
+      Available: { label: this.translationService.instant('VEHICLES.STATUS_AVAILABLE'), color: 'success' },
+      InMaintenance: { label: this.translationService.instant('VEHICLES.STATUS_IN_MAINTENANCE'), color: 'warning' },
+      Blocked: { label: this.translationService.instant('VEHICLES.STATUS_BLOCKED'), color: 'danger' },
+      Inactive: { label: this.translationService.instant('VEHICLES.STATUS_INACTIVE'), color: 'secondary' },
+    };
+  }
 
   rowData: Vehicle[] = [];
-  columnDefs: ColDef[] = [
+  columnDefs: ColDef[] = [];
+
+  private buildColumnDefs(): void {
+    this.columnDefs = [
     {
       field: 'id',
       headerName: 'ID',
@@ -48,7 +56,7 @@ export class VehiclesComponent implements OnInit, OnDestroy {
     },
     {
       field: 'plate',
-      headerName: 'Placa',
+      headerName: this.translationService.instant('VEHICLES.PLATE'),
       width: 110,
       cellRenderer: (params: ValueFormatterParams) => {
         const value = params.value ?? '';
@@ -57,31 +65,31 @@ export class VehiclesComponent implements OnInit, OnDestroy {
     },
     {
       field: 'brand',
-      headerName: 'Marca',
+      headerName: this.translationService.instant('VEHICLES.BRAND'),
       flex: 1,
       minWidth: 150,
     },
     {
       field: 'model',
-      headerName: 'Modelo',
+      headerName: this.translationService.instant('VEHICLES.MODEL'),
       flex: 1,
       minWidth: 150,
     },
     {
       field: 'seatCapacity',
-      headerName: 'Lugares',
+      headerName: this.translationService.instant('VEHICLES.SEATS'),
       maxWidth: 110,
     },
     {
       field: 'type',
-      headerName: 'Tipo',
+      headerName: this.translationService.instant('COMMON.TYPE'),
       maxWidth: 140,
       valueFormatter: (params: ValueFormatterParams) =>
         this.typeMap[params.value] ?? params.value ?? '',
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: this.translationService.instant('COMMON.STATUS'),
       maxWidth: 150,
       cellRenderer: (params: ICellRendererParams) => {
         const info = this.statusMap[params.value] ?? {
@@ -93,20 +101,20 @@ export class VehiclesComponent implements OnInit, OnDestroy {
     },
     {
       field: 'pricePerKm',
-      headerName: 'R$/km',
+      headerName: this.translationService.instant('VEHICLES.PRICE_PER_KM_SHORT'),
       maxWidth: 110,
       valueFormatter: (params: ValueFormatterParams) =>
         this.formatCurrency(params.value),
     },
     {
       field: 'dailyRate',
-      headerName: 'Diária',
+      headerName: this.translationService.instant('VEHICLES.DAILY_RATE'),
       maxWidth: 110,
       valueFormatter: (params: ValueFormatterParams) =>
         this.formatCurrency(params.value),
     },
     {
-      headerName: 'Ações',
+      headerName: this.translationService.instant('COMMON.ACTIONS'),
       minWidth: 150,
       sortable: false,
       filter: false,
@@ -124,13 +132,18 @@ export class VehiclesComponent implements OnInit, OnDestroy {
         `;
       },
     },
-  ];
+    ];
+  }
 
   constructor(
     private modalService: ModalService,
     private notificationService: NotificationService,
     private vehicleService: VehicleService,
-  ) {}
+    private translationService: TranslationService,
+  ) {
+    this.buildColumnDefs();
+    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+  }
 
   openModal(initialState: any): void {
     this.modalService.showTemplateModal(
@@ -174,12 +187,12 @@ export class VehiclesComponent implements OnInit, OnDestroy {
           next: () =>
             this.notificationService.showMessage(
               ResponseStatus.Success,
-              'Veículos atualizados com sucesso',
+              this.translationService.instant('VEHICLES.VEHICLES_REFRESHED'),
             ),
           error: () =>
             this.notificationService.showMessage(
               ResponseStatus.Error,
-              'Erro ao atualizar veículos',
+              this.translationService.instant('VEHICLES.VEHICLES_REFRESH_ERROR'),
             ),
         }),
         takeUntil(this._destroy$),

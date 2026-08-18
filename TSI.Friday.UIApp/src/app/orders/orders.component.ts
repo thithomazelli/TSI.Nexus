@@ -8,6 +8,7 @@ import {
   Order,
   OrderService,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -55,11 +56,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private orderService: OrderService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
     this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
 
     this._orderChangedSub = this.orderService.orderChanged$
       .pipe(takeUntil(this._destroy$))
@@ -175,7 +180,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         field: 'orderNumber',
-        headerName: 'Número do Pedido',
+        headerName: this.translationService.instant('ORDERS.ORDER_NUMBER'),
         sortable: true,
         filter: true,
         width: 150,
@@ -189,7 +194,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         field: 'businessPartnerName',
-        headerName: 'Nome do Cliente',
+        headerName: this.translationService.instant('BUSINESS_PARTNER.CLIENT_NAME'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -202,7 +207,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         field: 'description',
-        headerName: 'Descrição',
+        headerName: this.translationService.instant('COMMON.DESCRIPTION'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -210,7 +215,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         field: 'totalPrice',
-        headerName: 'Valor Total',
+        headerName: this.translationService.instant('COMMON.TOTAL_VALUE'),
         sortable: true,
         filter: true,
         width: 120,
@@ -228,7 +233,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         field: 'date',
-        headerName: 'Data',
+        headerName: this.translationService.instant('COMMON.DATE'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -238,7 +243,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -250,19 +255,19 @@ export class OrdersComponent implements OnInit, OnDestroy {
           let label = value;
           if (value === 'Closed') {
             color = 'success';
-            label = 'Fechado';
+            label = this.translationService.instant('QUOTES.STATUS_CLOSED');
           } else if (value === 'Open') {
             color = 'info';
-            label = 'Em Aberto';
+            label = this.translationService.instant('QUOTES.STATUS_OPEN');
           } else if (value === 'WaitingPayment') {
             color = 'warning';
-            label = 'Aguardando Pagamento';
+            label = this.translationService.instant('QUOTES.STATUS_WAITING_PAYMENT');
           }
           return `<span class="badge bg-${color}">${label}</span>`;
         },
       },
       {
-        headerName: 'Ações',
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
         flex: 1,
         minWidth: 150,
         sortable: false,
@@ -304,7 +309,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(
             ResponseStatus.Success,
-            'Pedidos atualizados com sucesso',
+            this.translationService.instant('ORDERS.ORDERS_REFRESHED'),
           );
         }
       });

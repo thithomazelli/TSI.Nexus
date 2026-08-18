@@ -13,6 +13,7 @@ import {
   QuoteService,
   QuoteType,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 
@@ -62,11 +63,15 @@ export class QuotesComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private quoteService: QuoteService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
     this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
 
     this._quoteChangedSub = this.quoteService.quoteChanged$
       .pipe(takeUntil(this._destroy$))
@@ -209,7 +214,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
       },
       {
         field: 'quoteNumber',
-        headerName: 'Número do Orçamento',
+        headerName: this.translationService.instant('QUOTES.QUOTE_NUMBER'),
         sortable: true,
         filter: true,
         width: 150,
@@ -221,20 +226,22 @@ export class QuotesComponent implements OnInit, OnDestroy {
       },
       {
         field: 'type',
-        headerName: 'Tipo',
+        headerName: this.translationService.instant('COMMON.TYPE'),
         sortable: true,
         filter: true,
         width: 100,
         cellRenderer: (params: ICellRendererParams) => {
           const isTrip = params.value === 'Trip';
-          const label = isTrip ? 'Viagem' : 'Produto';
+          const label = isTrip
+            ? this.translationService.instant('TRIPS.SINGULAR')
+            : this.translationService.instant('PRODUCTS.SINGULAR');
           const color = isTrip ? 'info' : 'secondary';
           return `<span class="badge bg-${color}">${label}</span>`;
         },
       },
       {
         field: 'businessPartnerName',
-        headerName: 'Nome do Cliente',
+        headerName: this.translationService.instant('BUSINESS_PARTNER.CLIENT_NAME'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -246,7 +253,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
       },
       {
         field: 'description',
-        headerName: 'Descrição',
+        headerName: this.translationService.instant('COMMON.DESCRIPTION'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -254,7 +261,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
       },
       {
         field: 'totalPrice',
-        headerName: 'Valor Total',
+        headerName: this.translationService.instant('COMMON.TOTAL_VALUE'),
         sortable: true,
         filter: true,
         width: 120,
@@ -272,7 +279,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
       },
       {
         field: 'date',
-        headerName: 'Data',
+        headerName: this.translationService.instant('COMMON.DATE'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -282,7 +289,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -293,19 +300,19 @@ export class QuotesComponent implements OnInit, OnDestroy {
           let label = value;
           if (value === 'Closed') {
             color = 'success';
-            label = 'Fechado';
+            label = this.translationService.instant('QUOTES.STATUS_CLOSED');
           } else if (value === 'Open') {
             color = 'info';
-            label = 'Em Aberto';
+            label = this.translationService.instant('QUOTES.STATUS_OPEN');
           } else if (value === 'WaitingPayment') {
             color = 'warning';
-            label = 'Aguardando Pagamento';
+            label = this.translationService.instant('QUOTES.STATUS_WAITING_PAYMENT');
           }
           return `<span class="badge bg-${color}">${label}</span>`;
         },
       },
       {
-        headerName: 'Ações',
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
         minWidth: 150,
         sortable: false,
         filter: false,
@@ -347,7 +354,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(
             ResponseStatus.Success,
-            'Orçamentos atualizados com sucesso',
+            this.translationService.instant('QUOTES.QUOTES_REFRESHED'),
           );
         }
       });

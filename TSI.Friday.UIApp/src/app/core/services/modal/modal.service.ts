@@ -3,13 +3,17 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import Swal from 'sweetalert2';
 import { NotificationComponent } from '../../../shared/components/modals/notification/notification.component';
 import { ConfirmationComponent } from '../../../shared/components/modals/confirmation/confirmation.component';
+import { TranslationService } from '../translation/translation.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ModalService {
   // Removido suporte a ngx-bootstrap/modal
-  constructor(private dialog: MatDialog) {}
+  constructor(
+    private dialog: MatDialog,
+    private translationService: TranslationService,
+  ) {}
 
   showTemplateModal<T>(
     componentOrTemplate: TemplateRef<T> | Type<T>,
@@ -50,6 +54,7 @@ export class ModalService {
       text,
       icon: iconNormalized,
       confirmButtonText: 'OK',
+      // 'OK' is understood across pt-BR/en/es and is left untranslated intentionally.
     });
   }
 
@@ -67,8 +72,8 @@ export class ModalService {
     title: string,
     text: string,
     icon: 'warning' | 'question' = 'question',
-    confirmButtonText = 'Sim',
-    cancelButtonText = 'Cancelar',
+    confirmButtonText = this.translationService.instant('COMMON.YES'),
+    cancelButtonText = this.translationService.instant('COMMON.CANCEL'),
   ) {
     return Swal.fire({
       title,

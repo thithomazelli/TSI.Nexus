@@ -4,6 +4,7 @@ import {
   NotificationService,
   Product,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import { ProductService } from '../core/services/product/product.service';
@@ -28,33 +29,42 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   baseEndPoint = 'products';
 
-  categoryMap: { [key: string]: string } = {
-    Electric: 'Elétrica',
-    Hydraulics: 'Hidráulica',
-    Structure: 'Estrutura',
-    Drywall: 'Drywall',
-    Painting: 'Pintura',
-    Finishing: 'Acabamento',
-    Sanitary: 'Sanitário',
-    Equipment: 'Equipamento',
-    Fixing: 'Fixação',
-    Finish: 'Acabamento',
-  };
+  get categoryMap(): { [key: string]: string } {
+    return {
+      Electric: this.translationService.instant('PRODUCTS.CATEGORY_ELECTRIC'),
+      Hydraulics: this.translationService.instant('PRODUCTS.CATEGORY_HYDRAULICS'),
+      Structure: this.translationService.instant('PRODUCTS.CATEGORY_STRUCTURE'),
+      Drywall: this.translationService.instant('PRODUCTS.CATEGORY_DRYWALL'),
+      Painting: this.translationService.instant('PRODUCTS.CATEGORY_PAINTING'),
+      Finishing: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'),
+      Sanitary: this.translationService.instant('PRODUCTS.CATEGORY_SANITARY'),
+      Equipment: this.translationService.instant('PRODUCTS.CATEGORY_EQUIPMENT'),
+      Fixing: this.translationService.instant('PRODUCTS.CATEGORY_FIXING'),
+      Finish: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'),
+    };
+  }
 
-  unitMap: { [key: string]: string } = {
-    Unit: 'Unidade',
-    Kilogram: 'Quilograma',
-    Gram: 'Grama',
-  };
+  get unitMap(): { [key: string]: string } {
+    return {
+      Unit: this.translationService.instant('PRODUCTS.UNIT_UNIT'),
+      Kilogram: this.translationService.instant('PRODUCTS.UNIT_KILOGRAM'),
+      Gram: this.translationService.instant('PRODUCTS.UNIT_GRAM'),
+    };
+  }
 
-  typeMap: { [key: string]: string } = {
-    Sale: 'Venda',
-    Rental: 'Aluguel',
-    Service: 'Serviço',
-  };
+  get typeMap(): { [key: string]: string } {
+    return {
+      Sale: this.translationService.instant('PRODUCTS.TYPE_SALE'),
+      Rental: this.translationService.instant('PRODUCTS.TYPE_RENTAL'),
+      Service: this.translationService.instant('PRODUCTS.SINGULAR'),
+    };
+  }
 
   rowData: Product[] = [];
-  columnDefs: ColDef[] = [
+  columnDefs: ColDef[] = [];
+
+  private buildColumnDefs(): void {
+    this.columnDefs = [
     {
       field: 'id',
       headerName: 'ID',
@@ -77,7 +87,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
     },
     {
       field: 'name',
-      headerName: 'Nome',
+      headerName: this.translationService.instant('COMMON.NAME'),
       sortable: true,
       filter: true,
       flex: 1,
@@ -90,7 +100,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
     },
     {
       field: 'quantityInStock',
-      headerName: 'Status',
+      headerName: this.translationService.instant('COMMON.STATUS'),
       sortable: true,
       filter: true,
       maxWidth: 120,
@@ -102,27 +112,27 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
         if (type === 'Service') {
           color = 'success';
-          label = 'Disponível';
+          label = this.translationService.instant('PRODUCTS.STATUS_AVAILABLE');
         } else if (value === 0) {
           color = 'danger';
-          label = 'Indisponível';
+          label = this.translationService.instant('PRODUCTS.STATUS_UNAVAILABLE');
         } else {
           color = 'success';
-          label = 'Disponível';
+          label = this.translationService.instant('PRODUCTS.STATUS_AVAILABLE');
         }
         return `<span class="badge bg-${color}">${label}</span>`;
       },
     },
     {
       field: 'quantityInStock',
-      headerName: 'Estoque',
+      headerName: this.translationService.instant('PRODUCTS.STOCK'),
       sortable: true,
       filter: true,
       maxWidth: 120,
     },
     {
       field: 'price',
-      headerName: 'Preço',
+      headerName: this.translationService.instant('COMMON.PRICE'),
       sortable: true,
       filter: true,
       maxWidth: 120,
@@ -139,7 +149,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
     },
     {
       field: 'category',
-      headerName: 'Categoria',
+      headerName: this.translationService.instant('VEHICLES.CATEGORY'),
       sortable: true,
       filter: true,
       maxWidth: 120,
@@ -154,7 +164,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
     },
     {
       field: 'unit',
-      headerName: 'Unidade',
+      headerName: this.translationService.instant('PRODUCTS.UNIT_UNIT'),
       sortable: true,
       filter: true,
       maxWidth: 120,
@@ -167,7 +177,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
     },
     {
       field: 'type',
-      headerName: 'Tipo',
+      headerName: this.translationService.instant('COMMON.TYPE'),
       sortable: true,
       filter: true,
       maxWidth: 120,
@@ -179,7 +189,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
       },
     },
     {
-      headerName: 'Ações',
+      headerName: this.translationService.instant('COMMON.ACTIONS'),
       flex: 1,
       minWidth: 150,
       sortable: false,
@@ -199,13 +209,18 @@ export class ProductsComponent implements OnInit, OnDestroy {
         `;
       },
     },
-  ];
+    ];
+  }
 
   constructor(
     private modalService: ModalService,
     private notificationService: NotificationService,
     private productService: ProductService,
-  ) {}
+    private translationService: TranslationService,
+  ) {
+    this.buildColumnDefs();
+    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+  }
 
   ngOnInit(): void {
     this._productChangedSub = this.productService.productChanged$
@@ -255,12 +270,12 @@ export class ProductsComponent implements OnInit, OnDestroy {
           next: () =>
             this.notificationService.showMessage(
               ResponseStatus.Success,
-              'Produtos atualizados com sucesso',
+              this.translationService.instant('PRODUCTS.PRODUCTS_REFRESHED'),
             ),
           error: () =>
             this.notificationService.showMessage(
               ResponseStatus.Error,
-              'Erro ao atualizar produtos',
+              this.translationService.instant('PRODUCTS.PRODUCTS_REFRESH_ERROR'),
             ),
         }),
         takeUntil(this._destroy$),

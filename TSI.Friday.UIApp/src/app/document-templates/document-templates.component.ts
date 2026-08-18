@@ -5,6 +5,7 @@ import {
   DocumentTemplateType,
   NotificationService,
   ResponseStatus,
+  TranslationService,
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
 
@@ -22,6 +23,7 @@ export class DocumentTemplatesComponent implements OnInit {
   constructor(
     private documentTemplateService: DocumentTemplateService,
     private notificationService: NotificationService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -73,7 +75,7 @@ export class DocumentTemplatesComponent implements OnInit {
         error: () => {
           this.notificationService.showMessage(
             'Error',
-            'Não foi possível atualizar o template.',
+            this.translationService.instant('DOCUMENT_TEMPLATES.UPDATE_ERROR'),
           );
         },
       });

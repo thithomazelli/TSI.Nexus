@@ -1,16 +1,16 @@
 <app-header
   *ngIf="!compact"
-  title="Produtos do Orçamento"
+  [title]="'QUOTES.QUOTE_PRODUCTS_TITLE' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Produtos do Orçamento', link: '' },
+    { label: 'QUOTES.QUOTE_PRODUCTS_TITLE' | translate, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
     [compactView]="compact"
-    [className]="'Produtos do Orçamento'"
+    [className]="'QUOTES.QUOTE_PRODUCTS_TITLE' | translate"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"

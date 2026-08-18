@@ -1,8 +1,8 @@
 <app-header
-  title="Alertas"
+  [title]="'SIDEBAR.ALERTAS' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Alertas', link: '' },
+    { label: 'SIDEBAR.ALERTAS' | translate, link: '' },
   ]"
 ></app-header>
 
@@ -10,16 +10,14 @@
   <div class="card card-secondary card-outline">
     <div class="card-body">
       <p class="text-muted">
-        Liga ou desliga os alertas automáticos do sistema. Para alertas que avisam com
-        antecedência (ex.: licença a vencer), também é possível ajustar quantos dias antes o
-        aviso deve começar a aparecer.
+        {{ 'ALERT_CONFIGS.DESCRIPTION' | translate }}
       </p>
 
       <div *ngIf="loading" class="text-center py-4">
         <i class="bi bi-arrow-repeat"></i>{{ 'COMMON.LOADING' | translate }}</div>
 
       <div *ngIf="!loading && alerts.length === 0" class="text-muted py-3">
-        Nenhum alerta encontrado.
+        {{ 'ALERT_CONFIGS.NO_ALERTS_FOUND' | translate }}
       </div>
 
       <ul *ngIf="!loading" class="list-group list-group-flush">
@@ -44,7 +42,7 @@
                 [(ngModel)]="alertConfig.thresholdDays"
                 [disabled]="savingKey === alertConfig.key || !alertConfig.enabled"
               />
-              <span class="input-group-text">dias</span>
+              <span class="input-group-text">{{ 'ALERT_CONFIGS.DAYS_SUFFIX' | translate }}</span>
               <button
                 type="button"
                 class="btn btn-outline-secondary"

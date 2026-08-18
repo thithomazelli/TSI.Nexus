@@ -2,7 +2,7 @@
   @if (isEdit) {
     <app-alert-banner-component
       [status]="data?.status"
-      [entity]="'Pedido'"
+      [entity]="'ORDERS.SINGULAR' | translate"
     ></app-alert-banner-component>
   }
   <form [formGroup]="form" (ngSubmit)="submit()">
@@ -15,12 +15,12 @@
                 <input
                   formControlName="orderNumber"
                   type="text"
-                  placeholder="Order Number"
+                  [placeholder]="'ORDERS.ORDER_NUMBER' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('orderNumber')"
                   [class.is-valid]="isValid('orderNumber')"
                 />
-                <label for="orderNumber">Order Number</label>
+                <label for="orderNumber">{{ 'ORDERS.ORDER_NUMBER' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-hash"></i></div>
             </div>
@@ -38,7 +38,7 @@
                     #firstInput
                     [class.is-invalid]="isInvalid('businessPartnerName')"
                     [class.is-valid]="isValid('businessPartnerName')"
-                    placeholder="Cliente"
+                    [placeholder]="'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate"
                     (blur)="onClientBlur()"
                   />
                   <label for="businessPartnerName">{{ 'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate }}</label>
@@ -54,8 +54,8 @@
                   </mat-autocomplete>
                 } @else {
                   <app-link-field
-                    [placeHolder]="'Cliente'"
-                    [text]="form.get('businessPartnerName')?.value || 'Cliente'"
+                    [placeHolder]="'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate"
+                    [text]="form.get('businessPartnerName')?.value || ('BUSINESS_PARTNER.CLIENT_SINGULAR' | translate)"
                     [linkUrl]="[
                       '/clients',
                       form.get('businessPartnerId')?.value,
@@ -72,8 +72,8 @@
             <div class="input-group">
               <div class="form-floating">
                 <app-link-field
-                  [placeHolder]="'Orçamento'"
-                  [text]="form.get('quoteNumber')?.value || 'Orçamento'"
+                  [placeHolder]="'QUOTES.SINGULAR' | translate"
+                  [text]="form.get('quoteNumber')?.value || ('QUOTES.SINGULAR' | translate)"
                   [linkUrl]="['/quotes', form.get('quoteNumber')?.value]"
                 >
                 </app-link-field>
@@ -103,7 +103,7 @@
           <div class="col-12 col-md-4">
             <app-date-field
               formControlName="date"
-              [label]="'Data do Pedido'"
+              [label]="'ORDERS.ORDER_DATE' | translate"
             ></app-date-field>
           </div>
 
@@ -156,7 +156,7 @@
                 <input
                   formControlName="priceFormatted"
                   type="text"
-                  placeholder="Preço"
+                  [placeholder]="'COMMON.PRICE' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('priceFormatted')"
                   [class.is-valid]="isValid('priceFormatted')"
@@ -175,7 +175,7 @@
                 <input
                   formControlName="totalPriceFormatted"
                   type="text"
-                  placeholder="Preço Total"
+                  [placeholder]="'COMMON.TOTAL_PRICE_LABEL' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('totalPriceFormatted')"
                   [class.is-valid]="isValid('totalPriceFormatted')"
@@ -199,7 +199,7 @@
           <thead>
             <tr>
               <th class="table-header-title" scope="col">{{ 'PRODUCTS.SKU' | translate }}</th>
-              <th class="table-header-title" scope="col">Nome</th>
+              <th class="table-header-title" scope="col">{{ 'COMMON.NAME' | translate }}</th>
               <th class="table-header-title" scope="col">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</th>
               <th class="table-header-title" scope="col">{{ 'COMMON.QUANTITY' | translate }}</th>
               <th class="" scope="col" style="width: 40px">
@@ -219,7 +219,7 @@
                 <button
                   type="button"
                   class="btn btn-link p-0 text-danger"
-                  title="Remover"
+                  [title]="'COMMON.REMOVE' | translate"
                   (click)="removeProduct(i)"
                 >
                   <i class="bi bi-trash"></i>
@@ -231,7 +231,7 @@
               *ngIf="!data?.orderProducts || data?.orderProducts?.length === 0"
             >
               <td colspan="5" class="text-center text-muted small py-3">
-                Nenhum produto adicionado
+                {{ 'QUOTES.NO_PRODUCTS_ADDED' | translate }}
               </td>
             </tr>
           </tbody>

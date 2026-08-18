@@ -8,6 +8,7 @@ import {
   Trip,
   TripService,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import {
@@ -55,11 +56,15 @@ export class TripsComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private tripService: TripService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
     this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
 
     this._tripChangedSub = this.tripService.tripChanged$
       .pipe(takeUntil(this._destroy$))
@@ -171,7 +176,7 @@ export class TripsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'tripNumber',
-        headerName: 'Número da Viagem',
+        headerName: this.translationService.instant('TRIPS.TRIP_NUMBER'),
         sortable: true,
         filter: true,
         width: 150,
@@ -183,7 +188,7 @@ export class TripsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'businessPartnerName',
-        headerName: 'Nome do Cliente',
+        headerName: this.translationService.instant('BUSINESS_PARTNER.CLIENT_NAME'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -195,7 +200,7 @@ export class TripsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'route',
-        headerName: 'Roteiro',
+        headerName: this.translationService.instant('TRIPS.ROUTE'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -203,21 +208,21 @@ export class TripsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'vehiclePlate',
-        headerName: 'Veículo',
+        headerName: this.translationService.instant('VEHICLES.SINGULAR'),
         sortable: true,
         filter: true,
         width: 120,
       },
       {
         field: 'driverName',
-        headerName: 'Motorista',
+        headerName: this.translationService.instant('SIDEBAR.MOTORISTAS_SINGULAR'),
         sortable: true,
         filter: true,
         width: 150,
       },
       {
         field: 'totalPrice',
-        headerName: 'Valor Total',
+        headerName: this.translationService.instant('COMMON.TOTAL_VALUE'),
         sortable: true,
         filter: true,
         width: 120,
@@ -235,7 +240,7 @@ export class TripsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'date',
-        headerName: 'Data',
+        headerName: this.translationService.instant('COMMON.DATE'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -245,7 +250,7 @@ export class TripsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -256,19 +261,19 @@ export class TripsComponent implements OnInit, OnDestroy {
           let label = value;
           if (value === 'Closed') {
             color = 'success';
-            label = 'Fechado';
+            label = this.translationService.instant('QUOTES.STATUS_CLOSED');
           } else if (value === 'Open') {
             color = 'info';
-            label = 'Em Aberto';
+            label = this.translationService.instant('QUOTES.STATUS_OPEN');
           } else if (value === 'WaitingPayment') {
             color = 'warning';
-            label = 'Aguardando Pagamento';
+            label = this.translationService.instant('QUOTES.STATUS_WAITING_PAYMENT');
           }
           return `<span class="badge bg-${color}">${label}</span>`;
         },
       },
       {
-        headerName: 'Ações',
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
         flex: 1,
         minWidth: 150,
         sortable: false,
@@ -310,7 +315,7 @@ export class TripsComponent implements OnInit, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(
             ResponseStatus.Success,
-            'Viagens atualizadas com sucesso',
+            this.translationService.instant('TRIPS.TRIPS_REFRESHED'),
           );
         }
       });

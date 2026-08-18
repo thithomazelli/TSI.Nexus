@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h5 class="modal-title">{{ isEdit ? 'Editar Abastecimento' : 'Novo Abastecimento' }}</h5>
+  <h5 class="modal-title">{{ (isEdit ? 'VEHICLES.EDIT_REFUEL' : 'VEHICLES.NEW_REFUEL') | translate }}</h5>
   <button type="button" class="btn-close" (click)="close()"></button>
 </div>
 
@@ -8,7 +8,7 @@
     <div class="modal-scrollable-area">
     <div class="row g-2">
       <div class="col-12 col-md-6">
-        <app-date-field formControlName="date" [label]="'Data'"></app-date-field>
+        <app-date-field formControlName="date" [label]="'COMMON.DATE' | translate"></app-date-field>
       </div>
       <div class="col-12 col-md-6">
         <div class="input-group">
@@ -17,11 +17,11 @@
               formControlName="odometer"
               type="number"
               min="0"
-              placeholder="Odômetro"
+              [placeholder]="'VEHICLES.ODOMETER' | translate"
               class="form-control"
               id="fuelLogModalOdometer"
             />
-            <label for="fuelLogModalOdometer">Odômetro</label>
+            <label for="fuelLogModalOdometer">{{ 'VEHICLES.ODOMETER' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-speedometer2"></i></div>
         </div>
@@ -34,11 +34,11 @@
               type="number"
               min="0"
               step="0.01"
-              placeholder="Litros"
+              [placeholder]="'VEHICLES.LITERS' | translate"
               class="form-control"
               id="fuelLogModalLiters"
             />
-            <label for="fuelLogModalLiters">Litros</label>
+            <label for="fuelLogModalLiters">{{ 'VEHICLES.LITERS' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-droplet"></i></div>
         </div>
@@ -51,11 +51,11 @@
               type="number"
               min="0"
               step="0.01"
-              placeholder="Preço/litro"
+              [placeholder]="'VEHICLES.PRICE_PER_LITER' | translate"
               class="form-control"
               id="fuelLogModalPricePerLiter"
             />
-            <label for="fuelLogModalPricePerLiter">Preço/litro</label>
+            <label for="fuelLogModalPricePerLiter">{{ 'VEHICLES.PRICE_PER_LITER' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
         </div>
@@ -66,11 +66,11 @@
             <input
               formControlName="gasStation"
               type="text"
-              placeholder="Posto"
+              [placeholder]="'VEHICLES.GAS_STATION' | translate"
               class="form-control"
               id="fuelLogModalGasStation"
             />
-            <label for="fuelLogModalGasStation">Posto</label>
+            <label for="fuelLogModalGasStation">{{ 'VEHICLES.GAS_STATION' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-fuel-pump"></i></div>
         </div>
@@ -81,7 +81,7 @@
     <div class="d-flex justify-content-end mt-3">
       <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">
-        {{ isEdit ? 'Salvar' : 'Adicionar' }}
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

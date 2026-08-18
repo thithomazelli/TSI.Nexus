@@ -1,16 +1,16 @@
 <app-header
   *ngIf="!compact"
-  title="Transações"
+  [title]="'SIDEBAR.TRANSACOES' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Transações', link: '' },
+    { label: 'SIDEBAR.TRANSACOES' | translate, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
     [compactView]="compact"
-    [className]="'Transações'"
+    [className]="'SIDEBAR.TRANSACOES' | translate"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
@@ -27,14 +27,14 @@
         <app-date-field
           [(ngModel)]="filterStartDate"
           (ngModelChange)="applyFilters()"
-          label="Início"
+          [label]="'COMMON.RANGE_START' | translate"
         ></app-date-field>
       </div>
       <div class="date-filter-area col-12 col-md-auto mb-1 mb-md-0">
         <app-date-field
           [(ngModel)]="filterEndDate"
           (ngModelChange)="applyFilters()"
-          label="Fim"
+          [label]="'COMMON.RANGE_END' | translate"
         ></app-date-field>
       </div>
       <div class="col-12 col-md-auto ms-md-2">
@@ -48,7 +48,7 @@
                 [(ngModel)]="filterStatus.Approved"
                 (change)="applyFilters()"
               />
-              Pago
+              {{ 'REPORTS.STATUS_PAID' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -57,7 +57,7 @@
                 [(ngModel)]="filterStatus.Pending"
                 (change)="applyFilters()"
               />
-              Em Aberto
+              {{ 'REPORTS.STATUS_OPEN' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -66,7 +66,7 @@
                 [(ngModel)]="filterStatus.Delayed"
                 (change)="applyFilters()"
               />
-              Atrasado
+              {{ 'REPORTS.STATUS_DELAYED' | translate }}
             </label>
           </div>
         </div>
@@ -82,7 +82,7 @@
                 [(ngModel)]="filterType.Incoming"
                 (change)="applyFilters()"
               />
-              Entrada
+              {{ 'REPORTS.INCOMING' | translate }}
             </label>
             <label class="form-check-label ms-2">
               <input
@@ -91,14 +91,14 @@
                 [(ngModel)]="filterType.Outgoing"
                 (change)="applyFilters()"
               />
-              Saída
+              {{ 'REPORTS.OUTGOING' | translate }}
             </label>
           </div>
         </div>
       </div>
       <div class="col-12 col-md-auto d-flex align-items-end">
         <button class="btn btn-secondary w-100" (click)="clearFilters()">
-          Limpar
+          {{ 'COMMON.CLEAR' | translate }}
         </button>
       </div>
     </div>

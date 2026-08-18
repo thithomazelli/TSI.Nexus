@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Usuários' : 'Adicionar Usuários'"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.USUARIOS' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Usuários', link: '/users' },
-    { label: isEdit ? 'Editar Usuários' : 'Adicionar Usuários', link: '' },
+    { label: 'SIDEBAR.USUARIOS' | translate, link: '/users' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.USUARIOS' | translate) }, link: '' },
   ]"
 ></app-header>
 

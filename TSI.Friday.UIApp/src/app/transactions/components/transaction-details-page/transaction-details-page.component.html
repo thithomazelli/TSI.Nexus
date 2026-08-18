@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Transação' : 'Adicionar Transação'"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('TRANSACTIONS.SINGULAR' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Transações', link: '/transactions' },
-    { label: isEdit ? 'Editar Transação' : 'Adicionar Transação', link: '' },
+    { label: 'SIDEBAR.TRANSACOES' | translate, link: '/transactions' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('TRANSACTIONS.SINGULAR' | translate) }, link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -20,19 +20,19 @@
                   <i class="bi bi-cash-coin" style="font-size: 4rem"></i>
                   <ul class="list-group list-group-unbordered mb-3">
                     <li class="list-group-item">
-                      <b>Cliente: </b>
+                      <b>{{ 'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate }}: </b>
                       <span class="float-right">{{
                         data?.businessPartnerName
                       }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Tipo: </b>
+                      <b>{{ 'COMMON.TYPE' | translate }}: </b>
                       <span class="float-right">{{
                         getPaymentTypeLabel()
                       }}</span>
                     </li>
                     <li class="list-group-item">
-                      <b>Status: </b>
+                      <b>{{ 'COMMON.STATUS' | translate }}: </b>
                       <span class="float-right">{{
                         getTransactionStatusLabel()
                       }}</span>

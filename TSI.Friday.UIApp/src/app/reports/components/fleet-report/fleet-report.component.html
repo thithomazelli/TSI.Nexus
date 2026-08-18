@@ -1,9 +1,9 @@
 <app-header
-  title="Relatório de Frota"
+  [title]="'SIDEBAR.RELATORIO_FROTA' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Relatórios', link: '/reports' },
-    { label: 'Frota', link: '' },
+    { label: 'SIDEBAR.RELATORIOS' | translate, link: '/reports' },
+    { label: 'SIDEBAR.FROTA' | translate, link: '' },
   ]"
 ></app-header>
 
@@ -23,49 +23,49 @@
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0 text-success">{{ availableVehicles }}</div>
-          <small class="text-muted">Disponíveis</small>
+          <small class="text-muted">{{ 'REPORTS.AVAILABLE' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0 text-danger">{{ blockedVehicles }}</div>
-          <small class="text-muted">Bloqueados</small>
+          <small class="text-muted">{{ 'REPORTS.BLOCKED' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0">{{ activeDrivers }}/{{ totalDrivers }}</div>
-          <small class="text-muted">Motoristas ativos</small>
+          <small class="text-muted">{{ 'REPORTS.ACTIVE_DRIVERS' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0">{{ totalTrips }}</div>
-          <small class="text-muted">Viagens com veículo</small>
+          <small class="text-muted">{{ 'REPORTS.TRIPS_WITH_VEHICLE' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0">{{ totalRevenue | currency: 'BRL' }}</div>
-          <small class="text-muted">Receita das viagens</small>
+          <small class="text-muted">{{ 'REPORTS.TRIP_REVENUE' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0">{{ totalMaintenanceCost | currency: 'BRL' }}</div>
-          <small class="text-muted">Custo de manutenção</small>
+          <small class="text-muted">{{ 'REPORTS.MAINTENANCE_COST' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0">{{ totalCommissionPending | currency: 'BRL' }}</div>
-          <small class="text-muted">Comissões pendentes</small>
+          <small class="text-muted">{{ 'REPORTS.PENDING_COMMISSIONS' | translate }}</small>
         </div>
       </div>
     </div>
 
     <div class="card mb-3">
-      <div class="card-header">Por veículo</div>
+      <div class="card-header">{{ 'REPORTS.BY_VEHICLE' | translate }}</div>
       <div class="card-body p-0">
         <table class="table table-sm mb-0">
           <thead>
@@ -74,8 +74,8 @@
               <th>{{ 'VEHICLES.SINGULAR' | translate }}</th>
               <th>{{ 'COMMON.STATUS' | translate }}</th>
               <th>{{ 'SIDEBAR.VIAGENS' | translate }}</th>
-              <th>Receita</th>
-              <th>Custo manutenção</th>
+              <th>{{ 'REPORTS.REVENUE' | translate }}</th>
+              <th>{{ 'REPORTS.MAINTENANCE_COST' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -91,7 +91,7 @@
             } @empty {
               <tr>
                 <td colspan="6" class="text-center text-muted small py-3">
-                  Nenhum veículo cadastrado
+                  {{ 'REPORTS.NO_VEHICLES' | translate }}
                 </td>
               </tr>
             }
@@ -101,16 +101,16 @@
     </div>
 
     <div class="card">
-      <div class="card-header">Por motorista</div>
+      <div class="card-header">{{ 'REPORTS.BY_DRIVER' | translate }}</div>
       <div class="card-body p-0">
         <table class="table table-sm mb-0">
           <thead>
             <tr>
               <th>{{ 'SIDEBAR.MOTORISTAS_SINGULAR' | translate }}</th>
               <th>{{ 'COMMON.STATUS' | translate }}</th>
-              <th>OS geradas</th>
-              <th>Comissão paga</th>
-              <th>Comissão pendente</th>
+              <th>{{ 'REPORTS.SERVICE_ORDERS_GENERATED' | translate }}</th>
+              <th>{{ 'REPORTS.COMMISSION_PAID' | translate }}</th>
+              <th>{{ 'REPORTS.COMMISSION_PENDING' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -125,7 +125,7 @@
             } @empty {
               <tr>
                 <td colspan="5" class="text-center text-muted small py-3">
-                  Nenhum motorista cadastrado
+                  {{ 'REPORTS.NO_DRIVERS' | translate }}
                 </td>
               </tr>
             }

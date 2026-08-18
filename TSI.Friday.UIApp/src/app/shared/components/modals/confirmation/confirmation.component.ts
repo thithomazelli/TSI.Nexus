@@ -1,5 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { TranslationService } from '@friday/core';
 
 @Component({
   selector: 'app-confirmation',
@@ -17,12 +18,13 @@ export class ConfirmationComponent<T> {
   constructor(
     public dialogRef: MatDialogRef<ConfirmationComponent<T>>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
+    translationService: TranslationService,
   ) {
-    this.title = dialogData.title || 'Confirmação';
+    this.title = dialogData.title || translationService.instant('CONFIRMATION.DEFAULT_TITLE');
     this.message =
-      dialogData.message || 'Tem certeza que deseja excluir este item?';
+      dialogData.message || translationService.instant('CONFIRMATION.DEFAULT_MESSAGE');
     this.data = dialogData.data;
-    this.cancelButtonText = dialogData.cancelButtonText || 'Cancelar';
-    this.confirmButtonText = dialogData.confirmButtonText || 'Excluir';
+    this.cancelButtonText = dialogData.cancelButtonText || translationService.instant('COMMON.CANCEL');
+    this.confirmButtonText = dialogData.confirmButtonText || translationService.instant('CONFIRMATION.DELETE');
   }
 }

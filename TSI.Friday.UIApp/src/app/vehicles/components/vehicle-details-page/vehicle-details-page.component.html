@@ -1,9 +1,9 @@
 <app-header
-  [title]="isEdit ? 'Editar Veículo' : 'Adicionar Veículo'"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('VEHICLES.SINGULAR' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Frota', link: '/vehicles' },
-    { label: isEdit ? 'Editar Veículo' : 'Adicionar Veículo', link: '' },
+    { label: 'SIDEBAR.FROTA' | translate, link: '/vehicles' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('VEHICLES.SINGULAR' | translate) }, link: '' },
   ]"
 ></app-header>
 <section class="content">
@@ -18,7 +18,7 @@
                 [class.active]="activeTab === 'details'"
                 (click)="activeTab = 'details'"
                 data-toggle="tab"
-                >Dados</a
+                >{{ 'COMMON.DATA' | translate }}</a
               >
             </li>
             <li class="nav-item">
@@ -27,7 +27,7 @@
                 [class.active]="activeTab === 'maintenances'"
                 (click)="activeTab = 'maintenances'"
                 data-toggle="tab"
-                >Manutenções</a
+                >{{ 'VEHICLES.MAINTENANCES' | translate }}</a
               >
             </li>
             <li class="nav-item">

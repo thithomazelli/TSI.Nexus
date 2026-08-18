@@ -1,12 +1,12 @@
 <div class="passenger-list">
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">Passageiros</h5>
+    <h5 class="mb-0">{{ 'TRIPS.PASSENGERS_TAB' | translate }}</h5>
     <div class="d-flex gap-2">
       <button type="button" class="btn btn-outline-primary btn-sm" (click)="openImportModal()">
-        <i class="bi bi-upload"></i> Importar
+        <i class="bi bi-upload"></i> {{ 'TRIPS.IMPORT' | translate }}
       </button>
       <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
-        <i class="bi bi-plus-lg"></i> Novo passageiro
+        <i class="bi bi-plus-lg"></i> {{ 'TRIPS.NEW_PASSENGER' | translate }}
       </button>
     </div>
   </div>
@@ -14,10 +14,10 @@
   <table class="table table-sm">
     <thead>
       <tr>
-        <th>Nome</th>
-        <th>Documento</th>
-        <th>Assento</th>
-        <th>Telefone</th>
+        <th>{{ 'COMMON.NAME' | translate }}</th>
+        <th>{{ 'TRIPS.DOCUMENT' | translate }}</th>
+        <th>{{ 'TRIPS.SEAT' | translate }}</th>
+        <th>{{ 'COMMON.PHONE' | translate }}</th>
         <th style="width: 80px"></th>
       </tr>
     </thead>
@@ -32,7 +32,7 @@
             <button
               type="button"
               class="btn btn-link btn-sm p-0 me-2"
-              title="Editar"
+              [title]="'COMMON.EDIT' | translate"
               (click)="openModal(p)"
             >
               <i class="bi bi-pencil"></i>
@@ -40,7 +40,7 @@
             <button
               type="button"
               class="btn btn-link btn-sm p-0 text-danger"
-              title="Remover"
+              [title]="'COMMON.REMOVE' | translate"
               (click)="removePassenger(p)"
             >
               <i class="bi bi-trash"></i>
@@ -50,7 +50,7 @@
       } @empty {
         <tr>
           <td colspan="5" class="text-center text-muted small py-3">
-            Nenhum passageiro cadastrado
+            {{ 'TRIPS.NO_PASSENGERS_REGISTERED' | translate }}
           </td>
         </tr>
       }

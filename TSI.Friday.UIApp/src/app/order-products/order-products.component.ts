@@ -7,6 +7,7 @@ import {
   OrderProductService,
   OrderProductStatus,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 
@@ -57,6 +58,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private orderProductService: OrderProductService,
     private route: ActivatedRoute,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +73,9 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
           });
     });
     this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
   }
 
   ngOnDestroy(): void {
@@ -103,7 +108,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
         );
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Item excluído',
+          this.translationService.instant('ORDER_PRODUCTS.ITEM_DELETED'),
           response.message,
           'success',
         );
@@ -122,7 +127,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
     this.modalService
       .showSweetConfirmation(
         '',
-        'Tem certeza que deseja marcar este item como devolvido?',
+        this.translationService.instant('ORDER_PRODUCTS.CONFIRM_MARK_RETURNED'),
       )
       .then((result: any) => {
         if (!result.isConfirmed) {
@@ -211,7 +216,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(
             ResponseStatus.Success,
-            'Produtos do pedido atualizados com sucesso',
+            this.translationService.instant('ORDER_PRODUCTS.ORDER_PRODUCTS_REFRESHED'),
           );
         }
       });
@@ -251,7 +256,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Devolvido?',
+        headerName: this.translationService.instant('ORDER_PRODUCTS.RETURNED_QUESTION'),
         sortable: true,
         filter: true,
         maxWidth: 140,
@@ -276,7 +281,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'productName',
-        headerName: 'Produto',
+        headerName: this.translationService.instant('PRODUCTS.SINGULAR'),
         sortable: true,
         filter: true,
         hide: this.isFromProductsView,
@@ -288,7 +293,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'totalPrice',
-        headerName: 'Valor Total',
+        headerName: this.translationService.instant('COMMON.TOTAL_VALUE'),
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -297,7 +302,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'endDate',
-        headerName: 'Data de Retorno',
+        headerName: this.translationService.instant('ORDER_PRODUCTS.RETURN_DATE'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -307,7 +312,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
         sortable: true,
         filter: true,
         flex: 2,
@@ -319,20 +324,20 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
           let label = value;
           if (value === 'InProgress') {
             color = 'info';
-            label = 'Vigente';
+            label = this.translationService.instant('ORDER_PRODUCTS.STATUS_IN_PROGRESS');
           } else if (value === 'Delayed') {
             color = 'danger';
-            label = 'Atrasado';
+            label = this.translationService.instant('REPORTS.STATUS_DELAYED');
           } else if (value === 'Returned') {
             color = 'success';
-            label = 'Devolvido';
+            label = this.translationService.instant('ORDER_PRODUCTS.STATUS_RETURNED');
           }
           return `<span class="badge bg-${color}">${label}</span>`;
         },
       },
       {
         field: 'orderNumber',
-        headerName: 'Pedido',
+        headerName: this.translationService.instant('ORDERS.SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -345,7 +350,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'businessPartnerName',
-        headerName: 'Cliente',
+        headerName: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -357,7 +362,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
         },
       },
       {
-        headerName: 'Ações',
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
         flex: 1,
         minWidth: 150,
         sortable: false,

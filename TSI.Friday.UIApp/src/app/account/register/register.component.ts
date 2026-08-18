@@ -5,6 +5,7 @@ import {
   AccountService,
   FormBaseComponent,
   ModalService,
+  TranslationService,
   User,
   WebApiResponse,
 } from '@friday/core';
@@ -21,7 +22,8 @@ export class RegisterComponent extends FormBaseComponent implements OnInit {
     private accountService: AccountService,
     private modalService: ModalService,
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private translationService: TranslationService,
   ) {
     super();
     this.accountService.user$.pipe(take(1)).subscribe({
@@ -84,7 +86,7 @@ export class RegisterComponent extends FormBaseComponent implements OnInit {
     this.accountService.register(this.form.value).subscribe({
       next: (response: WebApiResponse<User>) => {
         this.modalService.showSweetNotification(
-          'Usuário registrado',
+          this.translationService.instant('ACCOUNT.USER_REGISTERED'),
           response.message,
           'success'
         );

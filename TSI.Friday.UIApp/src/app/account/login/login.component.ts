@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   AccountService,
   FormBaseComponent,
+  TranslationService,
   User,
   WebApiResponse,
 } from '@friday/core';
@@ -25,6 +26,7 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
     private formBuilder: FormBuilder,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private translationService: TranslationService,
   ) {
     super();
     this.accountService.user$.pipe(take(1)).subscribe({
@@ -80,7 +82,7 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
             this.errorMessages.push(response.error);
           } else {
             this.errorMessages = [
-              'Falha na comunicação com o servidor. Tente novamente mais tarde.',
+              this.translationService.instant('ACCOUNT.SERVER_ERROR'),
             ];
           }
         },

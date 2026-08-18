@@ -5,6 +5,7 @@ import {
   NotificationService,
   PhotoService,
   ResponseStatus,
+  TranslationService,
   User,
   UserService,
   WebApiResponse,
@@ -28,7 +29,10 @@ export class UsersComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Users;
 
   rowData: User[] = [];
-  columnDefs: ColDef[] = [
+  columnDefs: ColDef[] = [];
+
+  private buildColumnDefs(): void {
+    this.columnDefs = [
     {
       field: 'id',
       headerName: 'ID',
@@ -40,7 +44,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     },
     {
       field: 'photo',
-      headerName: 'Foto',
+      headerName: this.translationService.instant('PHOTO.LABEL'),
       sortable: true,
       filter: false,
       width: 70,
@@ -86,7 +90,7 @@ export class UsersComponent implements OnInit, OnDestroy {
       },
     },
     {
-      headerName: 'Nome Completo',
+      headerName: this.translationService.instant('USERS.FULL_NAME'),
       colId: 'fullName',
       sortable: true,
       filter: true,
@@ -106,7 +110,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     },
     {
       field: 'email',
-      headerName: 'Email',
+      headerName: this.translationService.instant('COMMON.EMAIL'),
       sortable: true,
       filter: true,
       width: 300,
@@ -114,14 +118,14 @@ export class UsersComponent implements OnInit, OnDestroy {
     },
     {
       field: 'emailConfirmed',
-      headerName: 'Email Confirmado',
+      headerName: this.translationService.instant('USERS.EMAIL_CONFIRMED'),
       sortable: true,
       filter: true,
       maxWidth: 200,
     },
     {
       field: 'role',
-      headerName: 'Perfil',
+      headerName: this.translationService.instant('USERS.PROFILE'),
       sortable: true,
       filter: true,
       resizable: true,
@@ -133,7 +137,7 @@ export class UsersComponent implements OnInit, OnDestroy {
       },
     },
     {
-      headerName: 'Ações',
+      headerName: this.translationService.instant('COMMON.ACTIONS'),
       flex: 1,
       minWidth: 150,
       sortable: false,
@@ -154,12 +158,15 @@ export class UsersComponent implements OnInit, OnDestroy {
         `;
       },
     },
-  ];
+    ];
+  }
 
-  roleMap: { [key: string]: string } = {
-    Admin: 'Administrador',
-    User: 'Usuário',
-  };
+  get roleMap(): { [key: string]: string } {
+    return {
+      Admin: this.translationService.instant('USERS.ROLE_ADMIN'),
+      User: this.translationService.instant('USERS.ROLE_USER'),
+    };
+  }
 
   private _userChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -169,7 +176,11 @@ export class UsersComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private userService: UserService,
     private photoService: PhotoService,
-  ) {}
+    private translationService: TranslationService,
+  ) {
+    this.buildColumnDefs();
+    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+  }
 
   ngOnInit(): void {
     this._userChangedSub = this.userService.userChanged$
@@ -219,12 +230,12 @@ export class UsersComponent implements OnInit, OnDestroy {
           next: () =>
             this.notificationService.showMessage(
               ResponseStatus.Success,
-              'Usuários atualizados com sucesso',
+              this.translationService.instant('USERS.USERS_REFRESHED'),
             ),
           error: () =>
             this.notificationService.showMessage(
               ResponseStatus.Error,
-              'Erro ao atualizar usuários',
+              this.translationService.instant('USERS.USERS_REFRESH_ERROR'),
             ),
         }),
         takeUntil(this._destroy$),

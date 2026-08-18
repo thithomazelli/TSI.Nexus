@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h5 class="modal-title">{{ isEdit ? 'Editar Passageiro' : 'Novo Passageiro' }}</h5>
+  <h5 class="modal-title">{{ (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('TRIPS.PASSENGERS_TAB' | translate) } }}</h5>
   <button type="button" class="btn-close" (click)="close()"></button>
 </div>
 
@@ -28,11 +28,11 @@
             <input
               formControlName="documentNumber"
               type="text"
-              placeholder="Documento"
+              [placeholder]="'TRIPS.DOCUMENT' | translate"
               class="form-control"
               id="passengerModalDocumentNumber"
             />
-            <label for="passengerModalDocumentNumber">Documento</label>
+            <label for="passengerModalDocumentNumber">{{ 'TRIPS.DOCUMENT' | translate }}</label>
           </div>
         </div>
       </div>
@@ -42,11 +42,11 @@
             <input
               formControlName="seat"
               type="text"
-              placeholder="Assento"
+              [placeholder]="'TRIPS.SEAT' | translate"
               class="form-control"
               id="passengerModalSeat"
             />
-            <label for="passengerModalSeat">Assento</label>
+            <label for="passengerModalSeat">{{ 'TRIPS.SEAT' | translate }}</label>
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@
     <div class="d-flex justify-content-end mt-3">
       <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
       <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">
-        {{ isEdit ? 'Salvar' : 'Adicionar' }}
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

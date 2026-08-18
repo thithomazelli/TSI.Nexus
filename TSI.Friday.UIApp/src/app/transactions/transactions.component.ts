@@ -8,6 +8,7 @@ import {
   WebApiResponse,
   TransactionService,
   NotificationService,
+  TranslationService,
 } from '@friday/core';
 import {
   ColDef,
@@ -37,21 +38,27 @@ export class TransactionsComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Transactions;
   rowData: Transaction[] = [];
 
-  typeMap: { [key: string]: string } = {
-    Incoming: 'Entrada',
-    Outgoing: 'Saída',
-  };
+  get typeMap(): { [key: string]: string } {
+    return {
+      Incoming: this.translationService.instant('REPORTS.INCOMING'),
+      Outgoing: this.translationService.instant('REPORTS.OUTGOING'),
+    };
+  }
 
-  conditionMap: { [key: string]: string } = {
-    FullPayment: 'À vista',
-    InPayments: 'Parcelado',
-  };
+  get conditionMap(): { [key: string]: string } {
+    return {
+      FullPayment: this.translationService.instant('TRANSACTIONS.FULL_PAYMENT'),
+      InPayments: this.translationService.instant('TRANSACTIONS.IN_PAYMENTS'),
+    };
+  }
 
-  statusMap: { [key: string]: string } = {
-    Approved: 'Pago',
-    Pending: 'Em Aberto',
-    Delayed: 'Atrasado',
-  };
+  get statusMap(): { [key: string]: string } {
+    return {
+      Approved: this.translationService.instant('REPORTS.STATUS_PAID'),
+      Pending: this.translationService.instant('REPORTS.STATUS_OPEN'),
+      Delayed: this.translationService.instant('REPORTS.STATUS_DELAYED'),
+    };
+  }
 
   statusColorMap: { [key: string]: string } = {
     Approved: 'success',
@@ -76,11 +83,15 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private transactionService: TransactionService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
     this.setFiltersFromQueryParams();
     this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
     this._transactionChangedSub = this.transactionService.transactionChanged$
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
@@ -190,7 +201,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'description',
-        headerName: 'Descrição',
+        headerName: this.translationService.instant('COMMON.DESCRIPTION'),
         sortable: true,
         filter: true,
         maxWidth: 400,
@@ -201,7 +212,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'paymentTotalPrice',
-        headerName: 'Pagamentos',
+        headerName: this.translationService.instant('SIDEBAR.PAGAMENTOS'),
         sortable: true,
         filter: true,
         maxWidth: 150,
@@ -221,7 +232,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'expenseTotalPrice',
-        headerName: 'Despesas',
+        headerName: this.translationService.instant('SIDEBAR.DESPESAS'),
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -241,7 +252,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'condition',
-        headerName: 'Condição',
+        headerName: this.translationService.instant('TRANSACTIONS.CONDITION'),
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -254,7 +265,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'date',
-        headerName: 'Data',
+        headerName: this.translationService.instant('COMMON.DATE'),
         sortable: true,
         filter: true,
         maxWidth: 120,
@@ -263,7 +274,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'status',
-        headerName: 'Status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
         sortable: true,
         filter: true,
         width: 100,
@@ -280,7 +291,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
 
       {
         field: 'businessPartnerName',
-        headerName: 'Cliente',
+        headerName: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -293,7 +304,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'orderNumber',
-        headerName: 'Pedido',
+        headerName: this.translationService.instant('ORDERS.SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
@@ -304,7 +315,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
         },
       },
       {
-        headerName: 'Ações',
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
         flex: 1,
         minWidth: 150,
         sortable: false,
@@ -346,7 +357,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(
             ResponseStatus.Success,
-            'Transações atualizadas com sucesso',
+            this.translationService.instant('TRANSACTIONS.TRANSACTIONS_REFRESHED'),
           );
         }
       });

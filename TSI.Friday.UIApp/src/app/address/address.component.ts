@@ -7,6 +7,7 @@ import {
   AddressService,
   NotificationService,
   ResponseStatus,
+  TranslationService,
 } from '@friday/core';
 
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
@@ -24,7 +25,10 @@ export class AddressComponent {
   parentData?: BusinessPartner | null = null;
 
   rowData: Address[] = [];
-  columnDefs: ColDef[] = [
+  columnDefs: ColDef[] = [];
+
+  private buildColumnDefs(): void {
+    this.columnDefs = [
     {
       field: 'id',
       headerName: 'ID',
@@ -33,7 +37,7 @@ export class AddressComponent {
       hide: true,
     },
     {
-      headerName: 'Endereço Padrão',
+      headerName: this.translationService.instant('ADDRESS.DEFAULT_ADDRESS'),
       field: 'isDefault',
       width: 140,
       sortable: false,
@@ -47,13 +51,13 @@ export class AddressComponent {
     },
     {
       field: 'name',
-      headerName: 'Nome',
+      headerName: this.translationService.instant('COMMON.NAME'),
       sortable: true,
       filter: true,
     },
     {
       field: 'type',
-      headerName: 'Tipo',
+      headerName: this.translationService.instant('COMMON.TYPE'),
       sortable: true,
       filter: true,
       width: 115,
@@ -82,7 +86,7 @@ export class AddressComponent {
       },
     },
     {
-      headerName: 'Endereço',
+      headerName: this.translationService.instant('COMMON.ADDRESS'),
       sortable: true,
       filter: true,
       width: 325,
@@ -99,20 +103,20 @@ export class AddressComponent {
     },
     {
       field: 'city',
-      headerName: 'Cidade',
+      headerName: this.translationService.instant('ADDRESS.CITY'),
       sortable: true,
       filter: true,
       width: 200,
     },
     {
       field: 'state',
-      headerName: 'Estado',
+      headerName: this.translationService.instant('ADDRESS.STATE'),
       sortable: true,
       filter: true,
       width: 100,
     },
     {
-      headerName: 'Ações',
+      headerName: this.translationService.instant('COMMON.ACTIONS'),
       flex: 1,
       minWidth: 150,
       sortable: false,
@@ -130,7 +134,8 @@ export class AddressComponent {
         `;
       },
     },
-  ];
+    ];
+  }
 
   private _addressChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -139,7 +144,11 @@ export class AddressComponent {
     private addressService: AddressService,
     private modalService: ModalService,
     private notificationService: NotificationService,
-  ) {}
+    private translationService: TranslationService,
+  ) {
+    this.buildColumnDefs();
+    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+  }
 
   ngOnInit(): void {
     this._addressChangedSub = this.addressService.addressChanged$
@@ -168,7 +177,7 @@ export class AddressComponent {
     if (address.isDefault === true) {
       this.modalService.showSweetNotification(
         '',
-        'Não é possível excluir o endereço padrão.',
+        this.translationService.instant('ADDRESS.CANNOT_DELETE_DEFAULT'),
         'warning',
       );
       return;
@@ -181,7 +190,7 @@ export class AddressComponent {
         this.rowData = this.rowData.filter((p) => p.id !== address.id);
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Endereço excluído',
+          this.translationService.instant('ADDRESS.ADDRESS_DELETED'),
           response.message,
           'success',
         );
@@ -196,12 +205,12 @@ export class AddressComponent {
           next: () =>
             this.notificationService.showMessage(
               ResponseStatus.Success,
-              'Endereços atualizados com sucesso',
+              this.translationService.instant('ADDRESS.ADDRESSES_REFRESHED'),
             ),
           error: () =>
             this.notificationService.showMessage(
               ResponseStatus.Error,
-              'Erro ao atualizar endereços',
+              this.translationService.instant('ADDRESS.ADDRESSES_REFRESH_ERROR'),
             ),
         }),
         takeUntil(this._destroy$),
@@ -220,7 +229,7 @@ export class AddressComponent {
         this.getAddresses();
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
-          'Endereço atualizado',
+          this.translationService.instant('ADDRESS.ADDRESS_UPDATED'),
           response.message,
           'success',
         );

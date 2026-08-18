@@ -2,7 +2,7 @@
   @if (isEdit) {
     <app-alert-banner-component
       [status]="data?.status"
-      [entity]="'Pedido'"
+      [entity]="'ORDERS.SINGULAR' | translate"
     ></app-alert-banner-component>
   }
   <form [formGroup]="form" (ngSubmit)="submit()">
@@ -15,8 +15,8 @@
                 <app-link-field
                   [placeHolder]="
                     form.get('tripNumber')?.value
-                      ? 'Número da Viagem'
-                      : 'Número do Pedido'
+                      ? ('TRIPS.TRIP_NUMBER' | translate)
+                      : ('ORDERS.ORDER_NUMBER' | translate)
                   "
                   [text]="
                     form.get('tripNumber')?.value ||
@@ -41,7 +41,7 @@
             <div class="input-group">
               <div class="form-floating">
                 <app-link-field
-                  [placeHolder]="'Cliente'"
+                  [placeHolder]="'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate"
                   [text]="form.get('businessPartnerName')?.value || 'N/A'"
                   [linkUrl]="
                     form.get('businessPartnerName')?.value
@@ -60,7 +60,7 @@
           <div class="input-group">
             <div class="form-floating">
               <app-link-field
-                [placeHolder]="'Transação'"
+                [placeHolder]="'TRANSACTIONS.SINGULAR' | translate"
                 [text]="form.get('transactionDescription')?.value || 'N/A'"
                 [linkUrl]="
                   form.get('transactionDescription')?.value
@@ -147,7 +147,7 @@
                   <input
                     formControlName="businessPartnerName"
                     type="text"
-                    placeholder="Cliente"
+                    [placeholder]="'BUSINESS_PARTNER.CLIENT_SINGULAR' | translate"
                     class="form-control"
                     id="businessPartnerName"
                   />
@@ -162,11 +162,11 @@
                   <input
                     formControlName="orderNumber"
                     type="text"
-                    placeholder="Número do Pedido"
+                    [placeholder]="'ORDERS.ORDER_NUMBER' | translate"
                     class="form-control"
                     id="orderNumber"
                   />
-                  <label for="orderNumber">Número do Pedido</label>
+                  <label for="orderNumber">{{ 'ORDERS.ORDER_NUMBER' | translate }}</label>
                 </div>
                 <div class="input-group-text"><i class="bi bi-hash"></i></div>
               </div>
@@ -245,7 +245,7 @@
         <div class="col-6">
           <app-date-field
             formControlName="date"
-            [label]="'Data Pagamento'"
+            [label]="'TRANSACTIONS.PAYMENT_DATE' | translate"
             [isDisabled]="data?.status === 'Approved'"
           ></app-date-field>
         </div>
@@ -256,13 +256,13 @@
               <input
                 formControlName="priceFormatted"
                 type="text"
-                placeholder="Valor"
+                [placeholder]="'COMMON.VALUE' | translate"
                 class="form-control"
                 [class.is-invalid]="isInvalid('priceFormatted')"
                 [class.is-valid]="isValid('priceFormatted')"
                 (blur)="onCurrencyBlur('price')"
               />
-              <label for="price">Valor</label>
+              <label for="price">{{ 'COMMON.VALUE' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
           </div>
@@ -277,13 +277,13 @@
                   type="number"
                   min="1"
                   step="1"
-                  placeholder="Total de pagamentos"
+                  [placeholder]="'TRANSACTIONS.TOTAL_OF_PAYMENTS' | translate"
                   class="form-control"
                   id="totalOfPayments"
                   [class.is-invalid]="isInvalid('totalOfPayments')"
                   [class.is-valid]="isValid('totalOfPayments')"
                 />
-                <label for="totalOfPayments">Total de pagamentos</label>
+                <label for="totalOfPayments">{{ 'TRANSACTIONS.TOTAL_OF_PAYMENTS' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-list-ol"></i>
@@ -296,13 +296,13 @@
                 <input
                   formControlName="priceFormatted"
                   type="text"
-                  placeholder="Valor"
+                  [placeholder]="'COMMON.VALUE' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('priceFormatted')"
                   [class.is-valid]="isValid('priceFormatted')"
                   (blur)="onCurrencyBlur('price')"
                 />
-                <label for="priceFormatted">Valor</label>
+                <label for="priceFormatted">{{ 'COMMON.VALUE' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-cash"></i></div>
             </div>

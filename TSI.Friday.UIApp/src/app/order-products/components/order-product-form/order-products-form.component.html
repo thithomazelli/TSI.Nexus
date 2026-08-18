@@ -2,14 +2,14 @@
   @if (isEdit) {
     <app-alert-banner-component
       [status]="data?.status"
-      [entity]="'Item do pedido'"
+      [entity]="'ORDER_PRODUCTS.ITEM_ENTITY' | translate"
     ></app-alert-banner-component>
   }
   <form [formGroup]="form">
     <div class="modal-scrollable-area">
       <!-- Sessão 1: Informações do Produto -->
       <section>
-        <h5 class="mt-3 mb-2">Informações do Produto</h5>
+        <h5 class="mt-3 mb-2">{{ 'PRODUCTS.PRODUCT_INFO' | translate }}</h5>
         <div class="row g-1 mb-1">
           <div class="col-6">
             <div class="input-group position-relative">
@@ -38,9 +38,9 @@
                       {{ product.sku }}
                       <span class="ms-2 text-muted">
                         @if (product.alreadyUsed) {
-                          (já utilizado)
+                          {{ 'PRODUCTS.ALREADY_USED' | translate }}
                         } @else if (product.disabled) {
-                          indisponível
+                          {{ 'PRODUCTS.UNAVAILABLE' | translate }}
                         }
                       </span>
                     </mat-option>
@@ -66,11 +66,11 @@
                     formControlName="productName"
                     class="form-control"
                     [class.is-invalid]="isInvalid('productName')"
-                    placeholder="Nome do Produto"
+                    [placeholder]="'PRODUCTS.PRODUCT_NAME' | translate"
                     [matAutocomplete]="nameAuto"
                     (blur)="onProductNameBlur()"
                   />
-                  <label for="productName">Nome do Produto</label>
+                  <label for="productName">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
                   <mat-autocomplete
                     #nameAuto="matAutocomplete"
                     (optionSelected)="selectProduct($event.option.value)"
@@ -85,17 +85,17 @@
                     >
                       {{ product.name }}
                       <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
-                        >(já utilizado)</span
+                        >{{ 'PRODUCTS.ALREADY_USED' | translate }}</span
                       >
                       <span *ngIf="product.disabled" class="ms-2 text-muted"
-                        >(sem estoque)</span
+                        >{{ 'PRODUCTS.OUT_OF_STOCK' | translate }}</span
                       >
                     </mat-option>
                   </mat-autocomplete>
                 } @else {
                   <app-link-field
-                    [placeHolder]="'Nome do Produto'"
-                    [text]="form.get('productName')?.value || 'Nome do Produto'"
+                    [placeHolder]="'PRODUCTS.PRODUCT_NAME' | translate"
+                    [text]="form.get('productName')?.value || ('PRODUCTS.PRODUCT_NAME' | translate)"
                     [linkUrl]="['/products', form.get('productId')?.value]"
                   >
                   </app-link-field>
@@ -151,20 +151,20 @@
       <!-- Sessão 2: Dados (apenas para Rental) -->
       <ng-container>
         <section>
-          <h5 class="mt-4 mb-2">Dados</h5>
+          <h5 class="mt-4 mb-2">{{ 'ORDER_PRODUCTS.DATA_SECTION' | translate }}</h5>
           <!-- Datas -->
           <div class="row g-1 mb-1">
             <div class="col-6">
               <app-date-field
                 formControlName="startDate"
-                [label]="'Data Retirada'"
+                [label]="'ORDER_PRODUCTS.PICKUP_DATE' | translate"
                 [isDisabled]="data?.status === 'Returned'"
               ></app-date-field>
             </div>
             <div class="col-6">
               <app-date-field
                 formControlName="endDate"
-                [label]="'Data Entrega'"
+                [label]="'ORDER_PRODUCTS.RETURN_DATE' | translate"
                 [isDisabled]="data?.status === 'Returned'"
               ></app-date-field>
             </div>
@@ -174,7 +174,7 @@
 
       <!-- Sessão 3: Painel de Preços -->
       <section>
-        <h5 class="mt-4 mb-2">Painel de Preços</h5>
+        <h5 class="mt-4 mb-2">{{ 'PRODUCTS.PRICE_PANEL' | translate }}</h5>
         <div class="row g-1 mb-1">
           <div class="col-6">
             <div class="input-group">
@@ -183,7 +183,7 @@
                   formControlName="quantity"
                   type="number"
                   min="1"
-                  placeholder="Quantidade"
+                  [placeholder]="'COMMON.QUANTITY' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('quantity')"
                   (blur)="onQuantityBlur()"
@@ -218,12 +218,12 @@
                 <input
                   formControlName="priceFormatted"
                   type="text"
-                  placeholder="Preço Sugerido"
+                  [placeholder]="'PRODUCTS.SUGGESTED_PRICE' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('priceFormatted')"
                   (blur)="onPriceBlur()"
                 />
-                <label for="price">Preço Sugerido</label>
+                <label for="price">{{ 'PRODUCTS.SUGGESTED_PRICE' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-cash-coin"></i>
@@ -236,7 +236,7 @@
                 <input
                   formControlName="totalPriceFormatted"
                   type="text"
-                  placeholder="Preço Total"
+                  [placeholder]="'COMMON.TOTAL_PRICE_LABEL' | translate"
                   class="form-control"
                   [class.is-invalid]="isInvalid('totalPriceFormatted')"
                 />

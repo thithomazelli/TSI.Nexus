@@ -10,63 +10,63 @@
     <p-button
       *ngIf="!isAtRoot()"
       icon="pi pi-arrow-left"
-      label="Voltar"
+      [label]="'COMMON.BACK' | translate"
       severity="secondary"
       [outlined]="true"
       size="small"
       (onClick)="navigateUp()"
-      pTooltip="Voltar para pasta anterior"
+      [pTooltip]="'ATTACHMENTS_LIST.BACK_TOOLTIP' | translate"
     />
     <p-button
       icon="pi pi-upload"
-      label="Adicionar Anexo"
+      [label]="'ATTACHMENTS_LIST.ADD_ATTACHMENT' | translate"
       severity="secondary"
       [outlined]="true"
       size="small"
       (onClick)="openAddDialog()"
-      pTooltip="Adicionar arquivo nesta pasta"
+      [pTooltip]="'ATTACHMENTS_LIST.ADD_FILE_TOOLTIP' | translate"
       class="ms-2"
     />
     <p-button
       icon="pi pi-folder-plus"
-      label="Nova Pasta"
+      [label]="'ATTACHMENTS_LIST.NEW_FOLDER' | translate"
       severity="secondary"
       [outlined]="true"
       size="small"
       (onClick)="openFolderDialog()"
-      pTooltip="Criar nova pasta"
+      [pTooltip]="'ATTACHMENTS_LIST.NEW_FOLDER_TOOLTIP' | translate"
       class="ms-2"
     />
     <p-button
       icon="pi pi-refresh"
-      label="Atualizar"
+      [label]="'GRID.REFRESH' | translate"
       severity="secondary"
       [outlined]="true"
       size="small"
       (onClick)="refresh()"
-      pTooltip="Atualizar anexos"
+      [pTooltip]="'ATTACHMENTS_LIST.REFRESH_TOOLTIP' | translate"
       class="ms-2"
     />
     <p-button
       *ngIf="selectedFile"
       icon="pi pi-info-circle"
-      label="Detalhes"
+      [label]="'COMMON.DETAILS' | translate"
       severity="info"
       [outlined]="true"
       size="small"
       (onClick)="openDetailsDialog()"
-      pTooltip="Ver detalhes do arquivo"
+      [pTooltip]="'ATTACHMENTS_LIST.DETAILS_TOOLTIP' | translate"
       class="ms-2"
     />
     <p-button
       *ngIf="selectedFile"
       icon="pi pi-trash"
-      label="Remover"
+      [label]="'COMMON.REMOVE' | translate"
       severity="danger"
       [outlined]="true"
       size="small"
       (onClick)="removeFile()"
-      pTooltip="Remover arquivo selecionado"
+      [pTooltip]="'ATTACHMENTS_LIST.REMOVE_TOOLTIP' | translate"
       class="ms-2"
     />
 
@@ -77,7 +77,7 @@
         [outlined]="viewMode !== 'list'"
         size="small"
         (onClick)="viewMode = 'list'"
-        pTooltip="Exibir em lista"
+        [pTooltip]="'ATTACHMENTS_LIST.LIST_VIEW_TOOLTIP' | translate"
         tooltipPosition="top"
       />
       <p-button
@@ -86,7 +86,7 @@
         [outlined]="viewMode !== 'grid'"
         size="small"
         (onClick)="viewMode = 'grid'"
-        pTooltip="Exibir em grade"
+        [pTooltip]="'ATTACHMENTS_LIST.GRID_VIEW_TOOLTIP' | translate"
         tooltipPosition="left"
       />
     </span>
@@ -157,9 +157,8 @@
   <!-- Files list -->
   <div *ngIf="!loading" class="files-section">
     <h6 *ngIf="currentFolder.files.length > 0" class="text-muted mb-2">
-      <i class="pi pi-file me-1"></i> Arquivos ({{
-        currentFolder.files.length
-      }})
+      <i class="pi pi-file me-1"></i>
+      {{ 'ATTACHMENTS_LIST.FILES_COUNT' | translate: { count: currentFolder.files.length + '' } }}
     </h6>
 
     <div
@@ -169,7 +168,7 @@
       class="empty-state text-center py-4"
     >
       <i class="pi pi-inbox" style="font-size: 2.5rem; color: #ccc"></i>
-      <p class="text-muted mt-2 mb-0">Nenhum arquivo nesta pasta</p>
+      <p class="text-muted mt-2 mb-0">{{ 'ATTACHMENTS_LIST.NO_FILES_IN_FOLDER' | translate }}</p>
     </div>
 
     <!-- List view -->
@@ -189,7 +188,7 @@
           <span class="file-actions">
             <button
               class="btn btn-sm btn-link p-0"
-              pTooltip="Detalhes"
+              [pTooltip]="'COMMON.DETAILS' | translate"
               tooltipPosition="top"
               (click)="
                 selectFile(file); openDetailsDialog(); $event.stopPropagation()
@@ -199,7 +198,7 @@
             </button>
             <button
               class="btn btn-sm btn-link p-0 ms-1"
-              pTooltip="Baixar"
+              [pTooltip]="'COMMON.DOWNLOAD' | translate"
               tooltipPosition="top"
               (click)="downloadFile(file); $event.stopPropagation()"
             >
@@ -232,7 +231,7 @@
   <!-- Drop zone overlay -->
   <div *ngIf="isDraggingOver && !dragOverFolder" class="drop-zone-hint">
     <i class="pi pi-cloud-upload"></i>
-    <span>Solte o arquivo aqui para adicionar nesta pasta</span>
+    <span>{{ 'ATTACHMENTS_LIST.DROP_HINT' | translate }}</span>
   </div>
 
   <!-- Context Menu -->
@@ -240,7 +239,7 @@
 
   <!-- Dialog: Detalhes do Arquivo -->
   <p-dialog
-    header="Detalhes do Arquivo"
+    [header]="'ATTACHMENTS_LIST.FILE_DETAILS_HEADER' | translate"
     [(visible)]="showDetailsDialog"
     [modal]="true"
     [style]="{ width: '450px' }"
@@ -256,20 +255,20 @@
 
   <!-- Dialog: Adicionar Anexo -->
   <p-dialog
-    header="Adicionar Anexo"
+    [header]="'ATTACHMENTS_LIST.ADD_ATTACHMENT' | translate"
     [(visible)]="showAddDialog"
     [modal]="true"
     [style]="{ width: '500px' }"
     (onHide)="addFile = null"
   >
     <div class="mb-3">
-      <label class="form-label">Arquivo</label>
+      <label class="form-label">{{ 'ATTACHMENTS_LIST.FILE_LABEL' | translate }}</label>
       <div class="d-flex align-items-center gap-2">
         <label class="btn btn-sm btn-outline-secondary mb-0" for="addFile">
-          <i class="pi pi-upload me-1"></i> Escolher arquivo
+          <i class="pi pi-upload me-1"></i> {{ 'TRIPS.CHOOSE_FILE' | translate }}
         </label>
         <span class="text-muted small">{{
-          addFile?.name || "Nenhum arquivo selecionado"
+          addFile?.name || ('TRIPS.NO_FILE_SELECTED' | translate)
         }}</span>
       </div>
       <input
@@ -281,7 +280,7 @@
       />
     </div>
     <div class="mb-3">
-      <label for="addPath" class="form-label">Diretório</label>
+      <label for="addPath" class="form-label">{{ 'ATTACHMENTS_LIST.DIRECTORY' | translate }}</label>
       <input
         id="addPath"
         type="text"
@@ -290,7 +289,7 @@
         class="w-100"
         placeholder="Ex: BusinessPartners/ClienteX/Orders"
       />
-      <small class="text-muted">Pasta onde o arquivo será salvo</small>
+      <small class="text-muted">{{ 'ATTACHMENTS_LIST.DIRECTORY_HINT' | translate }}</small>
     </div>
     <ng-template #footer>
       <div class="d-flex justify-content-end mt-3">
@@ -302,7 +301,7 @@
           class="me-2"
         />
         <p-button
-          label="Remover"
+          [label]="'COMMON.REMOVE' | translate"
           severity="danger"
           [outlined]="true"
           (onClick)="removeFile()"
@@ -333,13 +332,13 @@
 
   <!-- Dialog: Nova Pasta -->
   <p-dialog
-    header="Nova Pasta"
+    [header]="'ATTACHMENTS_LIST.NEW_FOLDER' | translate"
     [(visible)]="showFolderDialog"
     [modal]="true"
     [style]="{ width: '400px' }"
   >
     <div class="mb-3">
-      <label for="folderName" class="form-label">Nome da pasta</label>
+      <label for="folderName" class="form-label">{{ 'ATTACHMENTS_LIST.FOLDER_NAME' | translate }}</label>
       <input
         id="folderName"
         type="text"
@@ -352,14 +351,14 @@
     <ng-template #footer>
       <div class="d-flex justify-content-end">
         <p-button
-          label="Cancelar"
+          [label]="'COMMON.CANCEL' | translate"
           severity="secondary"
           [outlined]="true"
           (onClick)="showFolderDialog = false"
           class="me-2"
         />
         <p-button
-          label="Criar"
+          [label]="'ATTACHMENTS_LIST.CREATE' | translate"
           icon="pi pi-check"
           (onClick)="addFolder()"
           [disabled]="!newFolderName.trim()"
