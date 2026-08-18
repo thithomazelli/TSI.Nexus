@@ -116,7 +116,11 @@ a:hover {
 
 /* Aplica estilos diretamente ao container do Angular Material MDC Dialog.
    O panelClass "custom-modal" (definido em ModalService) é aplicado ao .cdk-overlay-pane,
-   não ao .mat-mdc-dialog-container - por isso o seletor precisa começar por ali. */
+   não ao .mat-mdc-dialog-container - por isso o seletor precisa começar por ali.
+   A surface vira um container flex limitado à altura da viewport: título/banner e botões
+   (qualquer filho direto que não seja .modal-scrollable-area) mantêm sua altura natural e
+   ficam sempre visíveis, e só a área central (.modal-scrollable-area) ganha scroll próprio
+   quando o conteúdo não cabe. */
 .cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface,
 .cdk-overlay-pane.custom-modal .mdc-dialog__surface {
   border-radius: 12px !important;
@@ -124,10 +128,13 @@ a:hover {
   min-width: 400px !important;
   max-width: 600px !important;
   width: 100% !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
   background: #fff !important;
   font-family: inherit !important;
-  overflow-x: hidden !important;
+  overflow: hidden !important;
 }
 
 /* Garante que o conteúdo do modal não tenha padding duplicado */
@@ -135,6 +142,35 @@ a:hover {
   padding: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+/* O componente de cada formulário renderiza como filho único direto da surface (nenhum form
+   em modal usa <mat-dialog-content>/<mat-dialog-actions>) - precisa virar coluna flex também
+   pra repassar a altura disponível pro <form> e, por fim, pra .modal-scrollable-area. */
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface > *,
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface form {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Título/alert-banner e a linha de botões de ação são sempre filhos diretos do <form> (ou
+   irmãos dele) ao lado de .modal-scrollable-area - mantêm altura natural e nunca encolhem,
+   só a área central rola. */
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface form > *:not(.modal-scrollable-area),
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface > app-alert-banner-component {
+  flex-shrink: 0;
+}
+
+/* Dentro do modal a área central ocupa o espaço restante da surface (já limitada a 90vh) e
+   rola sozinha - substitui o max-height fixo em vh usado fora de modal (telas de detalhe). */
+.cdk-overlay-pane.custom-modal .modal-scrollable-area {
+  max-height: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* You can add global styles to this file, and also import other style files */
@@ -236,6 +272,15 @@ mat-calendar {
 @media (max-width: 599.98px) {
   .modal-scrollable-area {
     max-height: 55dvh;
+  }
+
+  /* Telas pequenas: o modal ocupa quase toda a viewport em vez de ficar preso a um
+     min-width que não cabe na tela do celular. */
+  .cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface,
+  .cdk-overlay-pane.custom-modal .mdc-dialog__surface {
+    min-width: 0 !important;
+    max-width: 95vw !important;
+    max-height: 95vh !important;
   }
 }
 
