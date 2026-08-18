@@ -7,6 +7,11 @@ import {
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
 
+export interface FeatureToggleGroupView {
+  group: FeatureToggle;
+  entities: FeatureToggle[];
+}
+
 @Component({
   selector: 'app-feature-toggles',
   templateUrl: './feature-toggles.component.html',
@@ -17,6 +22,7 @@ export class FeatureTogglesComponent implements OnInit {
   toggles: FeatureToggle[] = [];
   loading = false;
   savingKey: string | null = null;
+  activeTab: 'grouped' | 'detailed' = 'grouped';
 
   constructor(
     private featureFlagService: FeatureFlagService,
@@ -25,6 +31,19 @@ export class FeatureTogglesComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  get groupToggles(): FeatureToggle[] {
+    return this.toggles.filter((t) => !t.groupKey);
+  }
+
+  get detailedGroups(): FeatureToggleGroupView[] {
+    return this.groupToggles
+      .map((group) => ({
+        group,
+        entities: this.toggles.filter((t) => t.groupKey === group.key),
+      }))
+      .filter((g) => g.entities.length > 0);
   }
 
   toggle(featureToggle: FeatureToggle): void {

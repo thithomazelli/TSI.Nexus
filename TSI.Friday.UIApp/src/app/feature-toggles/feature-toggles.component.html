@@ -16,6 +16,29 @@
         módulo é religado.
       </p>
 
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="activeTab === 'grouped'"
+            href="javascript:void(0)"
+            (click)="activeTab = 'grouped'"
+          >
+            Por Grupo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="activeTab === 'detailed'"
+            href="javascript:void(0)"
+            (click)="activeTab = 'detailed'"
+          >
+            Detalhada
+          </a>
+        </li>
+      </ul>
+
       <div *ngIf="loading" class="text-center py-4">
         <i class="bi bi-arrow-repeat"></i> Carregando...
       </div>
@@ -24,9 +47,13 @@
         Nenhum módulo encontrado.
       </div>
 
-      <ul *ngIf="!loading" class="list-group list-group-flush">
+      <!-- Grouped view: one switch per whole module -->
+      <ul
+        *ngIf="!loading && activeTab === 'grouped'"
+        class="list-group list-group-flush"
+      >
         <li
-          *ngFor="let featureToggle of toggles"
+          *ngFor="let featureToggle of groupToggles"
           class="list-group-item d-flex justify-content-between align-items-center"
         >
           <div>
@@ -45,6 +72,41 @@
           </div>
         </li>
       </ul>
+
+      <!-- Detailed view: entity-by-entity switches, grouped under their parent module -->
+      <div *ngIf="!loading && activeTab === 'detailed'">
+        <div *ngFor="let groupView of detailedGroups" class="mb-4">
+          <h6 class="fw-bold border-bottom pb-2">
+            {{ groupView.group.name }}
+          </h6>
+          <ul class="list-group list-group-flush">
+            <li
+              *ngFor="let featureToggle of groupView.entities"
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <div>
+                <div class="fw-bold">{{ featureToggle.name }}</div>
+                <div class="text-muted small">
+                  {{ featureToggle.description }}
+                </div>
+              </div>
+              <div class="form-check form-switch fs-4 mb-0">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  role="switch"
+                  [checked]="featureToggle.enabled"
+                  [disabled]="
+                    savingKey === featureToggle.key ||
+                    !groupView.group.enabled
+                  "
+                  (change)="toggle(featureToggle)"
+                />
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </div>

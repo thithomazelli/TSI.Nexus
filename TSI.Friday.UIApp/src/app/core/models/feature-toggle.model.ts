@@ -6,8 +6,13 @@ export interface FeatureToggle extends BaseModel {
   name?: string;
   description?: string;
   enabled?: boolean;
+  groupKey?: string | null;
 }
 
 export const FeatureToggleKeys = {
   FleetModule: 'FleetModule',
+  FinanceModule: 'FinanceModule',
+  QuotesModule: 'QuotesModule',
+  SalesOrdersModule: 'SalesOrdersModule',
+  AttachmentsModule: 'AttachmentsModule',
 } as const;
