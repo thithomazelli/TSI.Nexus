@@ -142,20 +142,26 @@ jobs:
           cp TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.Serodio.xml publish/backend/web.config
 
       - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.SERODIO_FTP_SERVER }}
-          username: ${{ secrets.SERODIO_FTP_USERNAME }}
-          password: ${{ secrets.SERODIO_FTP_PASSWORD }}
-          # Action defaults to plain "ftp" (no encryption); this host's FTP account only accepts
-          # explicit FTPS logins (confirmed manually via FileZilla), so it's forced here.
-          protocol: ftps
-          local-dir: publish/backend/
-          server-dir: /www/serodio-api/
-          # Preserva dados gerados em runtime no servidor que não existem no build (anexos
-          # enviados pelos usuários e logs do processo) e o appsettings.json mantido manualmente
-          # no servidor com os dados sensíveis reais -- nunca deve ser sobrescrito por um deploy.
-          exclude: |
-            **/attachments/**
-            **/stdout*
-            **/appsettings.json
+        # SamKirkland/FTP-Deploy-Action (Node/basic-ftp) hits the same "ECONNRESET (data socket)"
+        # this host gave the frontend job -- intermittent, not 100% reproducible here (this job had
+        # succeeded twice before failing), but the frontend's fix (switch to lftp) removes the whole
+        # class of flakiness, so applying it here too instead of just hoping a retry gets lucky.
+        # lftp's mirror doesn't delete remote-only files unless --delete is passed (not used here),
+        # so attachments/ and stdout* are naturally preserved with no extra flag; appsettings.json
+        # DOES need an explicit exclude since dotnet publish copies it into publish/backend/ and it
+        # would otherwise overwrite the real secrets kept manually on the server.
+        env:
+          LFTP_FTP_SERVER: ${{ secrets.SERODIO_FTP_SERVER }}
+          LFTP_FTP_USERNAME: ${{ secrets.SERODIO_FTP_USERNAME }}
+          LFTP_FTP_PASSWORD: ${{ secrets.SERODIO_FTP_PASSWORD }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          lftp -u "$LFTP_FTP_USERNAME","$LFTP_FTP_PASSWORD" "ftp://$LFTP_FTP_SERVER" -e "
+            set ftp:ssl-force true;
+            set ftp:ssl-protect-data true;
+            set ssl:verify-certificate no;
+            set net:max-retries 3;
+            set net:reconnect-interval-base 5;
+            mirror -R --verbose --parallel=1 --no-perms --exclude-glob appsettings.json publish/backend/ /www/serodio-api/;
+            bye
+          "
