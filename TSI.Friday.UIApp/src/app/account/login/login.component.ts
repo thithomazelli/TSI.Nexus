@@ -20,6 +20,7 @@ export class LoginComponent extends FormBaseComponent implements OnInit {
   returnUrl: string | null = null;
   // toggle show/hide password
   passwordVisible = false;
+  rememberMe = false;
 
   constructor(
     private accountService: AccountService,

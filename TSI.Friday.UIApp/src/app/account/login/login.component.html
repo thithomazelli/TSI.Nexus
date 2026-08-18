@@ -1,17 +1,21 @@
-<div class="login-split">
-  <div class="login-visual">
-    <img
-      src="assets/img/nexus/login_background.png"
-      alt="Nexus"
-      class="login-visual-image"
-    />
-  </div>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-visual">
+      <img
+        src="assets/img/nexus/login_background.png"
+        alt="Nexus"
+        class="login-visual-image"
+      />
+      <div class="login-visual-content">
+        <p class="login-visual-title">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
+        <p class="login-visual-subtitle">{{ 'ACCOUNT.LOGIN.TAGLINE' | translate }}</p>
+      </div>
+    </div>
 
-  <div class="login-panel">
-    <div class="login-panel-inner">
-      <p class="login-welcome">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
+    <div class="login-panel">
+      <div class="login-panel-inner">
+        <h2 class="login-heading">{{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}</h2>
 
-      <div class="login-card">
         <form [formGroup]="form" (ngSubmit)="login()" novalidate>
           <div class="login-field" [class.is-invalid]="isInvalid('userName')">
             <i class="bi bi-person login-field-icon"></i>
@@ -49,6 +53,17 @@
             </button>
           </div>
 
+          <div class="login-row">
+            <label class="login-remember">
+              <input type="checkbox" [(ngModel)]="rememberMe" [ngModelOptions]="{ standalone: true }" />
+              <span>{{ 'ACCOUNT.LOGIN.REMEMBER_ME' | translate }}</span>
+            </label>
+
+            <a class="login-forgot" routerLink="/account/reset-password">{{
+              'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
+            }}</a>
+          </div>
+
           @if (errorMessages) {
             <app-validation-messages
               [errorMessages]="errorMessages"
@@ -63,10 +78,6 @@
             {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
           </button>
         </form>
-
-        <a class="login-forgot" routerLink="/account/reset-password">{{
-          'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
-        }}</a>
       </div>
     </div>
   </div>
