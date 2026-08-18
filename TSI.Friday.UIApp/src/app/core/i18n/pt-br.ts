@@ -1,5 +1,5 @@
 export const PT_BR = {
-  APP_TITLE: 'TSI Friday | Gestão de Fretamento',
+  APP_TITLE: 'Nexus | Gestão Empresarial',
   FEATURE_TOGGLES: {
     TITLE: 'Módulos',
     DESCRIPTION:

@@ -1,5 +1,5 @@
 export const EN = {
-  APP_TITLE: 'TSI Friday | Charter Fleet Management',
+  APP_TITLE: 'Nexus | Business Management',
   FEATURE_TOGGLES: {
     TITLE: 'Modules',
     DESCRIPTION:
