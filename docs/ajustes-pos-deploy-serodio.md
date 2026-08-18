@@ -53,12 +53,17 @@ título e botões ficam sempre fixos/visíveis, nunca saem de tela.
 
 Primeira correção (no `quote-form`, já commitada) mexeu só na extensão do
 `.modal-scrollable-area` daquele componente — insuficiente, porque o problema é estrutural/CSS
-no nível do container do dialog do Angular Material, não só daquele formulário. Fix real:
-- CSS global no container do `mat-dialog`/`.custom-modal`: `max-height` relativo à viewport,
-  layout flex com header e footer fixos e só a área do meio (`.modal-scrollable-area`) rolando.
-- Auditar cada formulário em modal (Orçamento, Viagem, Pedido, Cliente, etc.) pra garantir que
-  todos os campos — incluindo pagamento/transação — fiquem dentro de `.modal-scrollable-area`,
-  e os botões de ação sempre fora, no rodapé fixo.
+no nível do container do dialog do Angular Material, não só daquele formulário.
+
+**Fix aplicado (`styles.scss`):** a `.mat-mdc-dialog-surface` de todo modal com `panelClass:
+"custom-modal"` virou um container flex-column limitado a `max-height: 90vh` (95vh/full-width em
+telas < 600px). Dentro dela, qualquer filho direto que não seja `.modal-scrollable-area` (título,
+alert-banner, linha de botões Cancelar/Salvar) ganhou `flex-shrink: 0` — mantém altura natural e
+nunca some da tela. Só `.modal-scrollable-area` cresce pra ocupar o espaço restante e rola por
+conta própria quando o conteúdo não cabe. Validado com um teste estático (Playwright, DOM
+replicando a estrutura real) confirmando que o botão de ação continua visível e a área central
+ganha scroll interno mesmo com conteúdo bem maior que a viewport. Escopo global — cobre todos os
+~19 formulários em modal do app, não só Orçamento/Pedido.
 
 ## 4. Campo de data não permite digitar (regressão)
 
