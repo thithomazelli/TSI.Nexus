@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import {
   AppLanguage,
+  AppTheme,
   NotificationService,
   PreferencesService,
   ThemeService,
@@ -27,12 +28,18 @@ export class UserPreferencesComponent {
     private notificationService: NotificationService,
   ) {}
 
-  onThemeToggle(): void {
-    this.themeService.toggle();
+  onThemeSelect(theme: AppTheme): void {
+    if (theme === this.themeService.current) {
+      return;
+    }
+    this.themeService.apply(theme);
     this.persist();
   }
 
   onLanguageChange(language: AppLanguage): void {
+    if (language === this.translationService.current) {
+      return;
+    }
     this.translationService.use(language);
     this.persist();
   }

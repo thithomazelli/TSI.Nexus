@@ -3,19 +3,38 @@
     {{ 'PREFERENCES.TITLE' | translate }}
   </div>
 
-  <div class="d-flex align-items-center justify-content-between mb-2">
+  <div
+    *ngIf="themeService.theme$ | async as currentTheme"
+    class="d-flex align-items-center justify-content-between mb-2"
+  >
     <label class="mb-0 small text-muted">{{
       'PREFERENCES.THEME_LABEL' | translate
     }}</label>
-    <div class="form-check form-switch mb-0">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        role="switch"
-        [checked]="(themeService.theme$ | async) === 'dark'"
+    <div class="btn-group btn-group-sm theme-switch" role="radiogroup">
+      <button
+        type="button"
+        class="btn"
+        role="radio"
+        [class.active]="currentTheme === 'light'"
+        [attr.aria-checked]="currentTheme === 'light'"
         [disabled]="saving"
-        (change)="onThemeToggle()"
-      />
+        [title]="'PREFERENCES.THEME_LIGHT' | translate"
+        (click)="onThemeSelect('light')"
+      >
+        <i class="bi bi-sun-fill"></i>
+      </button>
+      <button
+        type="button"
+        class="btn"
+        role="radio"
+        [class.active]="currentTheme === 'dark'"
+        [attr.aria-checked]="currentTheme === 'dark'"
+        [disabled]="saving"
+        [title]="'PREFERENCES.THEME_DARK' | translate"
+        (click)="onThemeSelect('dark')"
+      >
+        <i class="bi bi-moon-stars-fill"></i>
+      </button>
     </div>
   </div>
 
@@ -23,15 +42,43 @@
     <label class="mb-0 small text-muted">{{
       'PREFERENCES.LANGUAGE_LABEL' | translate
     }}</label>
-    <select
-      class="form-select form-select-sm w-auto"
-      [disabled]="saving"
-      [ngModel]="translationService.current"
-      (ngModelChange)="onLanguageChange($event)"
-    >
-      <option value="pt-BR">Português</option>
-      <option value="en">English</option>
-      <option value="es">Español</option>
-    </select>
+    <div class="btn-group btn-group-sm language-switch" role="radiogroup">
+      <button
+        type="button"
+        class="btn"
+        role="radio"
+        [class.active]="translationService.current === 'pt-BR'"
+        [attr.aria-checked]="translationService.current === 'pt-BR'"
+        [disabled]="saving"
+        title="Português"
+        (click)="onLanguageChange('pt-BR')"
+      >
+        <span aria-hidden="true">🇧🇷</span>
+      </button>
+      <button
+        type="button"
+        class="btn"
+        role="radio"
+        [class.active]="translationService.current === 'en'"
+        [attr.aria-checked]="translationService.current === 'en'"
+        [disabled]="saving"
+        title="English"
+        (click)="onLanguageChange('en')"
+      >
+        <span aria-hidden="true">🇺🇸</span>
+      </button>
+      <button
+        type="button"
+        class="btn"
+        role="radio"
+        [class.active]="translationService.current === 'es'"
+        [attr.aria-checked]="translationService.current === 'es'"
+        [disabled]="saving"
+        title="Español"
+        (click)="onLanguageChange('es')"
+      >
+        <span aria-hidden="true">🇪🇸</span>
+      </button>
+    </div>
   </div>
 </div>

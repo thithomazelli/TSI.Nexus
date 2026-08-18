@@ -614,9 +614,7 @@ export class BusinessPartnerFormComponent
         ? false
         : true;
     } else {
-      // Add mode: show the "add address" link instead of forcing the address form open --
-      // clicking it reveals the form without requiring the client fields above to validate first.
-      this.canDisplayAddressForm = false;
+      // Add mode: address is required, so the form starts open rather than hidden behind a link.
       this.canDisplayNewAddressLink = true;
     }
   }
