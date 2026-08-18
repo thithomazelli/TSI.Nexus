@@ -102,7 +102,7 @@ jobs:
           username: ${{ secrets.SERODIO_FTP_USERNAME }}
           password: ${{ secrets.SERODIO_FTP_PASSWORD }}
           local-dir: TSI.Friday.UIApp/dist/tsi.friday.uiapp/browser/
-          server-dir: /www/app/
+          server-dir: /www/serodio-app/
 
   deploy-backend-serodio:
     if: github.ref == 'refs/heads/serodioturismo'
@@ -138,7 +138,7 @@ jobs:
           username: ${{ secrets.SERODIO_FTP_USERNAME }}
           password: ${{ secrets.SERODIO_FTP_PASSWORD }}
           local-dir: publish/backend/
-          server-dir: /www/api/
+          server-dir: /www/serodio-api/
           # Preserva dados gerados em runtime no servidor que não existem no build:
           # anexos enviados pelos usuários e logs do processo.
           exclude: |
