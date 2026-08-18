@@ -101,6 +101,9 @@ jobs:
           server: ${{ secrets.SERODIO_FTP_SERVER }}
           username: ${{ secrets.SERODIO_FTP_USERNAME }}
           password: ${{ secrets.SERODIO_FTP_PASSWORD }}
+          # Action defaults to plain "ftp" (no encryption); this host's FTP account only accepts
+          # explicit FTPS logins (confirmed manually via FileZilla), so it's forced here.
+          protocol: ftps
           local-dir: TSI.Friday.UIApp/dist/tsi.friday.uiapp/browser/
           server-dir: /www/serodio-app/
 
@@ -135,6 +138,9 @@ jobs:
           server: ${{ secrets.SERODIO_FTP_SERVER }}
           username: ${{ secrets.SERODIO_FTP_USERNAME }}
           password: ${{ secrets.SERODIO_FTP_PASSWORD }}
+          # Action defaults to plain "ftp" (no encryption); this host's FTP account only accepts
+          # explicit FTPS logins (confirmed manually via FileZilla), so it's forced here.
+          protocol: ftps
           local-dir: publish/backend/
           server-dir: /www/serodio-api/
           # Preserva dados gerados em runtime no servidor que não existem no build (anexos
