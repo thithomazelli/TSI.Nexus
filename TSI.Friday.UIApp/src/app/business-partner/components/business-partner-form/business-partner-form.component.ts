@@ -143,6 +143,11 @@ export class BusinessPartnerFormComponent
     this.submitted = true;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      // Invalid fields still show red via markAllAsTouched() above. Reset `submitted` right
+      // away so this rejected attempt doesn't permanently disable the address section's own
+      // links/buttons (they're gated on `submitted`, meant to block them only while a save is
+      // actually in flight) for the rest of the component's lifetime.
+      this.submitted = false;
       return of(null);
     }
 

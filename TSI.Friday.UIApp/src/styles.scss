@@ -174,6 +174,28 @@ a:hover {
   overflow-x: hidden;
 }
 
+/* Vários modais (business-partner, user, trip, order, quote, etc.) não colocam o form
+   diretamente na surface - intercalam .modal-header/.modal-body (ex.:
+   business-partner-details-modal.component.html), com o componente de form e o seu próprio
+   div wrapper entre .modal-body e o <form>. Sem altura/flex explícitos nesses dois níveis
+   extras, a cadeia de altura da surface não chega até .modal-scrollable-area: ela para de
+   rolar e o conteúdo que passa de 90vh é cortado pelo overflow:hidden da surface (em vez de
+   aparecer com scroll). .modal-header mantém altura natural; .modal-body e os dois níveis
+   dentro dele (o elemento do componente de form e o div raiz do seu template) repassam a
+   altura disponível, igual ao ".mat-mdc-dialog-surface > *" logo acima. */
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-header {
+  flex-shrink: 0;
+}
+
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body,
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body > *,
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body > * > * {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 /* You can add global styles to this file, and also import other style files */
 
 /* entrada: slide do topo para posição final */

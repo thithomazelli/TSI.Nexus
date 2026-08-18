@@ -53,7 +53,11 @@
         title="Português"
         (click)="onLanguageChange('pt-BR')"
       >
-        <span aria-hidden="true">🇧🇷</span>
+        <svg viewBox="0 0 20 14" width="20" height="14" aria-hidden="true">
+          <rect width="20" height="14" fill="#009739" />
+          <polygon points="10,2 18,7 10,12 2,7" fill="#FEDD00" />
+          <circle cx="10" cy="7" r="3.2" fill="#012169" />
+        </svg>
       </button>
       <button
         type="button"
@@ -65,7 +69,18 @@
         title="English"
         (click)="onLanguageChange('en')"
       >
-        <span aria-hidden="true">🇺🇸</span>
+        <svg viewBox="0 0 20 14" width="20" height="14" aria-hidden="true">
+          <rect width="20" height="14" fill="#B22234" />
+          <g fill="#fff">
+            <rect y="1.08" width="20" height="1.08" />
+            <rect y="3.23" width="20" height="1.08" />
+            <rect y="5.38" width="20" height="1.08" />
+            <rect y="7.54" width="20" height="1.08" />
+            <rect y="9.69" width="20" height="1.08" />
+            <rect y="11.85" width="20" height="1.08" />
+          </g>
+          <rect width="8" height="7.54" fill="#3C3B6E" />
+        </svg>
       </button>
       <button
         type="button"
@@ -77,7 +92,10 @@
         title="Español"
         (click)="onLanguageChange('es')"
       >
-        <span aria-hidden="true">🇪🇸</span>
+        <svg viewBox="0 0 20 14" width="20" height="14" aria-hidden="true">
+          <rect width="20" height="14" fill="#AA151B" />
+          <rect y="3.5" width="20" height="7" fill="#F1BF00" />
+        </svg>
       </button>
     </div>
   </div>

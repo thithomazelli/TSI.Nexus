@@ -13,16 +13,27 @@
     border-color: var(--bs-border-color);
     color: var(--bs-secondary-color);
     background-color: transparent;
-
-    &.active {
-      background-color: var(--bs-primary);
-      border-color: var(--bs-primary);
-      color: #fff;
-    }
   }
 }
 
-.language-switch .btn span {
-  font-size: 1rem;
-  line-height: 1;
+.theme-switch .btn.active {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
+
+.language-switch .btn {
+  svg {
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) inset;
+  }
+
+  &.active {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 2px var(--bs-primary-bg-subtle, var(--bs-primary));
+
+    svg {
+      box-shadow: 0 0 0 1px var(--bs-primary) inset;
+    }
+  }
 }

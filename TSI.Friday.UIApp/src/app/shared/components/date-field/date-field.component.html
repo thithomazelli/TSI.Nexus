@@ -13,6 +13,25 @@
       [disabled]="isDisabled"
     />
     <label [for]="formControlName">{{ label }}</label>
+    <!--
+      matDatepicker lives on this proxy input, not the visible one above: MatDatepickerInput
+      attaches its own native `input` listener that reformats/clears the element's value as the
+      user types (it tries to parse each partial keystroke as a full date), which fought with the
+      manual DD/MM/AAAA mask on the same element and made typing look completely blocked.
+      Splitting them keeps typed input free of Material's interference while calendar-picked
+      dates still flow through (dateChange) exactly as before.
+      It has to stay a real (if invisible) box rather than display:none: the calendar overlay is
+      positioned against this element's bounding rect, and a display:none element always reports
+      an all-zero rect, which sends the calendar to the top-left of the viewport instead of next
+      to the field. Absolutely positioned to exactly cover the visible input (form-floating is
+      the positioning context here) so the calendar opens right under the field instead.
+    -->
+    <input
+      #pickerInput
+      class="date-picker-proxy"
+      [matDatepicker]="picker"
+      (dateChange)="onDateChange($event)"
+    />
   </div>
   <button
     type="button"
@@ -22,19 +41,5 @@
   >
     <i class="bi bi-calendar3"></i>
   </button>
-  <!--
-    matDatepicker lives on this hidden proxy input, not the visible one above: MatDatepickerInput
-    attaches its own native `input` listener that reformats/clears the element's value as the user
-    types (it tries to parse each partial keystroke as a full date), which fought with the manual
-    DD/MM/AAAA mask on the same element and made typing look completely blocked. Splitting them
-    keeps typed input free of Material's interference while calendar-picked dates still flow
-    through (dateChange) exactly as before.
-  -->
-  <input
-    #pickerInput
-    class="d-none"
-    [matDatepicker]="picker"
-    (dateChange)="onDateChange($event)"
-  />
   <mat-datepicker #picker panelClass="pt-br-datepicker"></mat-datepicker>
 </div>
