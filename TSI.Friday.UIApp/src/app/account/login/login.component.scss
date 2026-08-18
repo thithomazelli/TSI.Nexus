@@ -22,7 +22,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  // Not clipped: the wavy edge (a child, see .login-visual-wave) deliberately
+  // bleeds outside this box into the light panel. The rays SVG below is
+  // sized to exactly fill this box and clips itself (default SVG overflow),
+  // so nothing else needs the clip.
+  overflow: visible;
   background: radial-gradient(
       120% 90% at 30% 45%,
       #123055 0%,
@@ -51,25 +55,29 @@
   width: 100%;
 }
 
-// Wavy decorative edge attached to whichever side of the overlay currently
-// faces the light panel: it flips (mirrors) instantly the moment the class
-// toggles, while sliding smoothly to the new seam over the same duration as
-// the panel swap (see the `animate` on the path's `d` attribute for the
-// shape morph itself).
+// Wavy decorative edge, positioned relative to the overlay itself (its
+// parent) rather than the page — so it rides along automatically as the
+// overlay's `left` transitions, instead of animating on its own separate
+// (and previously mismatched) timeline. By default it hangs off the
+// overlay's right edge, bulging into the light panel to its right; once
+// revealed the overlay is on the right side of the screen, so the wave
+// flips to hang off the overlay's left edge instead, mirrored so it still
+// bulges into the (now left-side) light panel.
 .login-visual-wave {
   position: absolute;
-  left: calc(45% - 80px);
   top: 0;
+  right: -80px;
+  left: auto;
   width: 160px;
   height: 100%;
   z-index: 3;
   pointer-events: none;
   transform: scaleX(1);
-  transition: left 1.1s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .login-split.revealed .login-visual-wave {
-  left: calc(55% - 80px);
+  left: -80px;
+  right: auto;
   transform: scaleX(-1);
 }
 
