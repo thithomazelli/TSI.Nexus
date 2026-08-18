@@ -10,8 +10,8 @@
 // -------- Left panel: dark visual with brand mark --------
 .login-visual {
   position: relative;
-  flex: 0 0 45%;
-  max-width: 45%;
+  flex: 0 0 58%;
+  max-width: 58%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,6 +24,13 @@
       #060f21 100%
     ),
     #060f21;
+  transition: flex-basis 1.1s cubic-bezier(0.65, 0, 0.35, 1),
+    max-width 1.1s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.login-split.revealed .login-visual {
+  flex-basis: 45%;
+  max-width: 45%;
 }
 
 .login-visual-rays {
@@ -39,12 +46,17 @@
 // path's `d` attribute in the template).
 .login-visual-wave {
   position: absolute;
-  left: calc(45% - 80px);
+  left: calc(58% - 80px);
   top: 0;
   width: 160px;
   height: 100%;
   z-index: 1;
   pointer-events: none;
+  transition: left 1.1s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.login-split.revealed .login-visual-wave {
+  left: calc(45% - 80px);
 }
 
 .login-brand {
