@@ -7,7 +7,7 @@
 
 ## 1. Card "Devoluções em Atraso" com acentuação quebrada
 
-**Causa raiz:** 5 arquivos C# do repo estavam salvos em Latin-1/CP1252 em vez de UTF-8
+**Implementado.** **Causa raiz:** 5 arquivos C# do repo estavam salvos em Latin-1/CP1252 em vez de UTF-8
 (`DashboardService.cs`, `QuoteProductService.cs`, e 3 arquivos de teste correspondentes) — os
 bytes de "ç"/"õ"/"á" etc. ficaram fisicamente errados no arquivo-fonte, não é um problema de
 transmissão/runtime. `DashboardService.cs` é exatamente a origem do título "Devoluções em Atraso"
@@ -18,7 +18,7 @@ testes conferidos depois da conversão.
 
 ## 2. Master deve enxergar TUDO no sidebar (mudança de desenho)
 
-**Contexto:** o desenho original (`docs/feature-toggle-design.md`, seção 2) definia Master como
+**Implementado.** **Contexto:** o desenho original (`docs/feature-toggle-design.md`, seção 2) definia Master como
 papel **não hierárquico** com Admin — só o painel de toggle, nada mais. Isso mudou agora: Master
 deve ver e acessar tudo que Admin vê, mais o painel de Módulos.
 
@@ -42,7 +42,7 @@ especificamente o role Admin.
 
 ## 3. Modais (Angular Material `mat-dialog-container`) — tamanho/scroll quebrado
 
-**Atualizado (screenshots confirmam):** não é só o modal de Orçamento de Viagem — o mesmo padrão
+**Implementado.** **Atualizado (screenshots confirmam):** não é só o modal de Orçamento de Viagem — o mesmo padrão
 quebrado aparece no modal "Adicionar Pedido" e outros. Em telas menores o conteúdo estoura o
 modal, o scroll não entra, e os botões Cancelar/Salvar somem completamente (nem ficam visíveis
 rolando).
@@ -67,30 +67,32 @@ ganha scroll interno mesmo com conteúdo bem maior que a viewport. Escopo global
 
 ## 4. Campo de data não permite digitar (regressão)
 
-**Causa raiz provável:** commit `87463e0` ("Corrige app-date-field não atualizar o formulário ao
+**Causa raiz confirmada:** commit `87463e0` ("Corrige app-date-field não atualizar o formulário ao
 digitar a data") passou a chamar `this.onChange(formatted)` a cada tecla digitada dentro de
-`onDateInput()`. O input nativo tem **dois** controladores de valor simultâneos no mesmo
+`onDateInput()`. O input nativo tinha **dois** controladores de valor simultâneos no mesmo
 elemento: o `[value]="value"` + handlers manuais deste componente, e a diretiva
 `[matDatepicker]="picker"` do Angular Material (que também escuta `input` nativamente pra tentar
-parsear a data digitada com o `DateAdapter`). Nomeio como hipótese principal a ser confirmada
-com teste real no navegador: o parser do Material rejeita o valor parcial (ex.: "12/") e força o
-campo de volta pra um estado vazio/anterior, dando a impressão de "não deixa digitar".
+parsear a data digitada com o `DateAdapter`) — o parser do Material rejeitava o valor parcial
+(ex.: "12/") e forçava o campo de volta pra um estado vazio/anterior.
 
-**Fix:** validar a hipótese rodando o form real (Playwright) e, confirmado, desacoplar a
-digitação manual do parsing do `MatDatepickerInput` (ex.: não usar `[matDatepicker]` diretamente
-no mesmo `<input>` que já tem máscara manual — plugar o datepicker num input oculto/proxy, ou
-usar `[matDatepickerFilter]`/parse config compatível com o formato `DD/MM/AAAA` mascarado).
+**Fix (implementado):** `[matDatepicker]="picker"` foi movido do `<input>` visível mascarado para
+um `<input>` proxy oculto dedicado só ao fluxo de seleção via calendário
+(`date-field.component.html`). O input visível agora só é controlado pela máscara manual do
+componente, sem o parser do Material competindo por ele.
 
 ## 5. Calendário (date picker) sem os dias — CSS quebrado
 
-A ser confirmado com Playwright antes de mexer — o painel abre (mês/ano aparecem) mas a grade de
-dias não renderiza. Provável CSS custom (`panelClass="pt-br-datepicker"`) conflitando com as
-classes internas do Angular Material que desenham a grade (`mat-calendar-body`, etc.), ou um
-`overflow`/`display` cortando o conteúdo.
+**Causa raiz confirmada:** o app não carregava nenhum tema do Angular Material — sem
+`@include mat.theme(...)`, os estilos internos que desenham a grade de dias
+(`mat-calendar-body` etc.) não existiam, então o painel abria com mês/ano mas sem os dias.
+
+**Fix (implementado):** adicionado `@use "@angular/material" as mat;` + `@include mat.theme(...)`
+no `styles.scss` (paleta azure, tipografia Roboto, density 0), namespaced sob `.mat-*`/`.mdc-*`
+então convive sem conflito com Bootstrap/AdminLTE.
 
 ## 6. Modal "Adicionar Cliente" sem opção de adicionar endereço
 
-**Causa raiz:** `canDisplayNewAddressLink` (controla se aparece o link "adicionar endereço" em
+**Implementado.** **Causa raiz:** `canDisplayNewAddressLink` (controla se aparece o link "adicionar endereço" em
 vez do form de endereço já aberto) só é setado em `setCanDisplayAddressFormAndAddressLink()`
 dentro de `if (this.isEdit)` — no modo Add (criar cliente novo) o método não faz nada, e os
 valores default (`canDisplayAddressForm = true`, `canDisplayNewAddressLink = false`) fazem o
@@ -103,7 +105,7 @@ Modo edit não muda.
 
 ## 7. Painel "Módulos" (dentro de "Configuração", ver item 10) — granularidade por entidade + por grupo
 
-Hoje só existe 1 toggle (`FleetModule`) controlando um bloco monolítico de entidades. Pedido:
+**Implementado.** Antes só existia 1 toggle (`FleetModule`) controlando um bloco monolítico de entidades. Pedido:
 listar **todas** as entidades do sistema, com duas visões em tabs:
 
 - **Visão agrupada** (a atual): liga/desliga por grupo (ex.: "Frota/Viagens" = Trip, TripLeg,
@@ -154,12 +156,21 @@ login.
 
 ## 10. Área "Master" do sidebar vira "Configuração"
 
-Renomeia o item/grupo do sidebar de "Master" pra "Configuração". Dentro dela:
-- Painel de módulos (item 7 acima), como já planejado.
-- **Controle de alertas** (novo escopo): quais alertas o sistema dispara e sob quais condições —
-  a ser mapeado a partir do que já existe (ex.: manutenção de veículo vencida/a vencer,
-  "Devoluções em Atraso" do dashboard, licença de transporte a vencer) e transformado em
-  configuração editável em vez de fixo no código.
+**Implementado.** Sidebar renomeado de "Master" pra "Configuração", com dois itens dentro:
+"Módulos" (item 7) e o novo "Alertas".
+
+**Controle de alertas:** nova entidade `AlertConfig` (Key/Name/Description/Enabled/
+ThresholdDays), mesmo padrão do `FeatureToggle` — editável só por Master, em
+`/alert-configs`. Mapeou os 3 alertas automáticos que já existiam hardcoded:
+
+| Alerta | Antes | Agora |
+|---|---|---|
+| Manutenção de veículo vencida (bloqueia o veículo) | Sempre roda | `Enabled` liga/desliga o job |
+| "Devoluções em Atraso" (dashboard) | Sempre roda | `Enabled` liga/desliga o job |
+| Licença de motorista a vencer | `daysAhead=60` fixo no controller e no front (navbar) | `ThresholdDays` editável (60 por padrão); controller resolve o valor configurado quando o chamador não especifica `daysAhead` |
+
+Todos os 3 falham "aberto" (comportamento atual preservado) se a config não existir ainda.
+Sem alertas novos inventados — só os 3 que já existiam viraram configuráveis, como pedido.
 
 ---
 
