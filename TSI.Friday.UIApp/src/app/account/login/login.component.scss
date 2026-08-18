@@ -34,6 +34,19 @@
   pointer-events: none;
 }
 
+// Sits on the seam between the two panels, straddling it so its wavy right
+// edge breathes in and out over the light panel (see the `animate` on the
+// path's `d` attribute in the template).
+.login-visual-wave {
+  position: absolute;
+  left: calc(45% - 80px);
+  top: 0;
+  width: 160px;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .login-brand {
   position: relative;
   z-index: 1;
