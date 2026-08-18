@@ -31,13 +31,11 @@ namespace TSI.Friday.Data.Migrations
                 name: "FK_TripLeg_Order_OrderId",
                 table: "TripLeg");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Order_DriverId",
-                table: "Order");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Order_VehicleId",
-                table: "Order");
+            // MySql.EntityFrameworkCore 8.0.5's DropIndex generator emits the table name
+            // unquoted ("DROP INDEX x ON Order;"), which fails because Order is a reserved SQL
+            // keyword. Raw SQL with the table properly backtick-quoted works around it.
+            migrationBuilder.Sql("DROP INDEX `IX_Order_DriverId` ON `Order`;");
+            migrationBuilder.Sql("DROP INDEX `IX_Order_VehicleId` ON `Order`;");
 
             migrationBuilder.DropColumn(
                 name: "TransportLicenseExpiryDate",
