@@ -587,7 +587,7 @@ export class QuoteFormComponent
     this.dialogRef?.close(response);
     this.modalService.showNotification(
       response.status == ResponseStatus.Success,
-      'Orçamento adicionado',
+      this.translationService.instant('QUOTES.QUOTE_ADDED'),
       response.message,
     );
   }

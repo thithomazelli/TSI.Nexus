@@ -1,4 +1,5 @@
 export const EN = {
+  APP_TITLE: 'TSI Friday | Charter Fleet Management',
   FEATURE_TOGGLES: {
     TITLE: 'Modules',
     DESCRIPTION:
@@ -304,6 +305,7 @@ export const EN = {
     STATUS_AVAILABLE: 'Available',
     STATUS_UNAVAILABLE: 'Unavailable',
     STOCK: 'Stock',
+    QUANTITY_IN_STOCK: 'Quantity in Stock',
     PRODUCTS_REFRESHED: 'Products refreshed successfully',
     PRODUCTS_REFRESH_ERROR: 'Error refreshing products',
     STOCK_EXCEEDED_TITLE: 'Quantity greater than stock',
@@ -327,7 +329,7 @@ export const EN = {
     CONFIRM_MARK_RETURNED: 'Are you sure you want to mark this item as returned?',
     ORDER_PRODUCTS_REFRESHED: 'Order products refreshed successfully',
     RETURNED_QUESTION: 'Returned?',
-    RETURN_DATE: 'Return Date',
+    RETURN_DATE_COLUMN: 'Return Date',
   },
   USERS: {
     PROFILE: 'Profile',
@@ -368,6 +370,7 @@ export const EN = {
     STATUS_CANCELED: 'Canceled',
     STATUS_CONVERTED: 'Converted',
     STATUS_EXPIRED: 'Expired',
+    QUOTE_ADDED: 'Quote added',
   },
   TRIPS: {
     TRIP_DATA: 'Trip Data',
@@ -556,6 +559,8 @@ export const EN = {
     UPDATE_ERROR: 'Could not update the template.',
   },
   ALERT_CONFIGS: {
+    UPDATE_ERROR: 'Could not update the alert.',
+    UPDATE_THRESHOLD_ERROR: 'Could not update the alert lead time.',
     DESCRIPTION: 'Turns automatic system alerts on or off. For alerts that warn in advance (e.g. license expiring), you can also adjust how many days beforehand the warning should start appearing.',
     NO_ALERTS_FOUND: 'No alerts found.',
     DAYS_SUFFIX: 'days',

@@ -1,5 +1,6 @@
 import { Component, OnInit, Renderer2, OnDestroy, NgZone } from '@angular/core';
-import { AccountService } from './core';
+import { Title } from '@angular/platform-browser';
+import { AccountService, TranslationService } from './core';
 import { filter, map, Observable, Subscription } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
 import { environment } from '../environments/environment';
@@ -35,6 +36,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private ngZone: NgZone,
     private swUpdate: SwUpdate,
+    private titleService: Title,
+    private translationService: TranslationService,
   ) {
     this.isLoggedIn$ = this.accountService.user$.pipe(map((u) => !!u));
 
@@ -44,6 +47,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.titleService.setTitle(this.translationService.instant('APP_TITLE'));
+    this.translationService.language$.subscribe(() =>
+      this.titleService.setTitle(this.translationService.instant('APP_TITLE')),
+    );
+
     // Ativa automaticamente uma nova versão publicada assim que o service worker a detecta,
     // em vez de deixar o usuário preso na versão antiga em cache até fechar todas as abas.
     if (this.swUpdate.isEnabled) {

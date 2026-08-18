@@ -158,13 +158,13 @@
               <input
                 formControlName="quantityInStock"
                 type="number"
-                placeholder="Quantidade em Estoque"
+                [placeholder]="'PRODUCTS.QUANTITY_IN_STOCK' | translate"
                 class="form-control"
                 id="quantityInStock"
                 [class.is-invalid]="isInvalid('quantityInStock')"
                 [class.is-valid]="isValid('quantityInStock')"
               />
-              <label for="quantityInStock">Quantidade em Estoque</label>
+              <label for="quantityInStock">{{ 'PRODUCTS.QUANTITY_IN_STOCK' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-box-seam"></i></div>
           </div>

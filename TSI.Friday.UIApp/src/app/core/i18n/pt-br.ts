@@ -1,4 +1,5 @@
 export const PT_BR = {
+  APP_TITLE: 'TSI Friday | Gestão de Fretamento',
   FEATURE_TOGGLES: {
     TITLE: 'Módulos',
     DESCRIPTION:
@@ -304,6 +305,7 @@ export const PT_BR = {
     STATUS_AVAILABLE: 'Disponível',
     STATUS_UNAVAILABLE: 'Indisponível',
     STOCK: 'Estoque',
+    QUANTITY_IN_STOCK: 'Quantidade em Estoque',
     PRODUCTS_REFRESHED: 'Produtos atualizados com sucesso',
     PRODUCTS_REFRESH_ERROR: 'Erro ao atualizar produtos',
     STOCK_EXCEEDED_TITLE: 'Quantidade maior que estoque',
@@ -327,7 +329,7 @@ export const PT_BR = {
     CONFIRM_MARK_RETURNED: 'Tem certeza que deseja marcar este item como devolvido?',
     ORDER_PRODUCTS_REFRESHED: 'Produtos do pedido atualizados com sucesso',
     RETURNED_QUESTION: 'Devolvido?',
-    RETURN_DATE: 'Data de Retorno',
+    RETURN_DATE_COLUMN: 'Data de Retorno',
   },
   USERS: {
     PROFILE: 'Perfil',
@@ -368,6 +370,7 @@ export const PT_BR = {
     STATUS_CANCELED: 'Cancelado',
     STATUS_CONVERTED: 'Convertido',
     STATUS_EXPIRED: 'Expirado',
+    QUOTE_ADDED: 'Orçamento adicionado',
   },
   TRIPS: {
     TRIP_DATA: 'Dados da Viagem',
@@ -556,6 +559,8 @@ export const PT_BR = {
     UPDATE_ERROR: 'Não foi possível atualizar o template.',
   },
   ALERT_CONFIGS: {
+    UPDATE_ERROR: 'Não foi possível atualizar o alerta.',
+    UPDATE_THRESHOLD_ERROR: 'Não foi possível atualizar o prazo do alerta.',
     DESCRIPTION: 'Liga ou desliga os alertas automáticos do sistema. Para alertas que avisam com antecedência (ex.: licença a vencer), também é possível ajustar quantos dias antes o aviso deve começar a aparecer.',
     NO_ALERTS_FOUND: 'Nenhum alerta encontrado.',
     DAYS_SUFFIX: 'dias',

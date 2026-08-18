@@ -302,7 +302,7 @@ export class OrderProductsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'endDate',
-        headerName: this.translationService.instant('ORDER_PRODUCTS.RETURN_DATE'),
+        headerName: this.translationService.instant('ORDER_PRODUCTS.RETURN_DATE_COLUMN'),
         sortable: true,
         filter: true,
         flex: 2,

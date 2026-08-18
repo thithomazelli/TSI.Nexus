@@ -4,6 +4,7 @@ import {
   AlertConfigService,
   NotificationService,
   ResponseStatus,
+  TranslationService,
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
 
@@ -21,6 +22,7 @@ export class AlertConfigsComponent implements OnInit {
   constructor(
     private alertConfigService: AlertConfigService,
     private notificationService: NotificationService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -50,7 +52,7 @@ export class AlertConfigsComponent implements OnInit {
         error: () => {
           this.notificationService.showMessage(
             'Error',
-            'Não foi possível atualizar o alerta.',
+            this.translationService.instant('ALERT_CONFIGS.UPDATE_ERROR'),
           );
         },
       });
@@ -83,7 +85,7 @@ export class AlertConfigsComponent implements OnInit {
         error: () => {
           this.notificationService.showMessage(
             'Error',
-            'Não foi possível atualizar o prazo do alerta.',
+            this.translationService.instant('ALERT_CONFIGS.UPDATE_THRESHOLD_ERROR'),
           );
         },
       });

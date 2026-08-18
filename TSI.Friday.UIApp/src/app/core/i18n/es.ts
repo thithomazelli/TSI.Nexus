@@ -1,4 +1,5 @@
 export const ES = {
+  APP_TITLE: 'TSI Friday | Gestión de Fletamento',
   FEATURE_TOGGLES: {
     TITLE: 'Módulos',
     DESCRIPTION:
@@ -304,6 +305,7 @@ export const ES = {
     STATUS_AVAILABLE: 'Disponible',
     STATUS_UNAVAILABLE: 'No disponible',
     STOCK: 'Stock',
+    QUANTITY_IN_STOCK: 'Cantidad en Stock',
     PRODUCTS_REFRESHED: 'Productos actualizados con éxito',
     PRODUCTS_REFRESH_ERROR: 'Error al actualizar productos',
     STOCK_EXCEEDED_TITLE: 'Cantidad mayor que el stock',
@@ -327,7 +329,7 @@ export const ES = {
     CONFIRM_MARK_RETURNED: '¿Estás seguro de que deseas marcar este ítem como devuelto?',
     ORDER_PRODUCTS_REFRESHED: 'Productos del pedido actualizados con éxito',
     RETURNED_QUESTION: '¿Devuelto?',
-    RETURN_DATE: 'Fecha de Devolución',
+    RETURN_DATE_COLUMN: 'Fecha de Devolución',
   },
   USERS: {
     PROFILE: 'Perfil',
@@ -368,6 +370,7 @@ export const ES = {
     STATUS_CANCELED: 'Cancelado',
     STATUS_CONVERTED: 'Convertido',
     STATUS_EXPIRED: 'Expirado',
+    QUOTE_ADDED: 'Presupuesto agregado',
   },
   TRIPS: {
     TRIP_DATA: 'Datos del Viaje',
@@ -556,6 +559,8 @@ export const ES = {
     UPDATE_ERROR: 'No fue posible actualizar la plantilla.',
   },
   ALERT_CONFIGS: {
+    UPDATE_ERROR: 'No fue posible actualizar la alerta.',
+    UPDATE_THRESHOLD_ERROR: 'No fue posible actualizar el plazo de la alerta.',
     DESCRIPTION: 'Activa o desactiva las alertas automáticas del sistema. Para las alertas que avisan con anticipación (ej.: licencia por vencer), también es posible ajustar cuántos días antes debe comenzar a aparecer el aviso.',
     NO_ALERTS_FOUND: 'Ninguna alerta encontrada.',
     DAYS_SUFFIX: 'días',
