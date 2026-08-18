@@ -12,12 +12,12 @@ const routes: Routes = [
       {
         path: '',
         component: UsersComponent,
-        data: { roles: ['Admin'] },
+        data: { roles: ['Admin', 'Master'] },
       },
       {
         path: 'new',
         component: UserDetailsPageComponent,
-        data: { roles: ['Admin'] },
+        data: { roles: ['Admin', 'Master'] },
       },
       {
         path: ':id',

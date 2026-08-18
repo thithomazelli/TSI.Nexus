@@ -18,7 +18,7 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         [HttpPost("run")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Master")]
         public async Task<ActionResult<OverdueResult>> Run()
         {
             var result = await _overdueService.RunOverdueUpdateAsync();

@@ -20,7 +20,7 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         [HttpPost("add")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Master")]
         public async Task<ActionResult<WebApiResponse<User>>> Add(RegisterDto model)
         {
             return await _userManagerService.Register(model);
@@ -51,7 +51,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("Remove")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Master")]
         public async Task<IActionResult> Remove([FromBody] User user)
         {
             var webApiResponse = await _userManagerService.Remove(user);
@@ -64,7 +64,7 @@ namespace TSI.Friday.WebAPI.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetAll")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Master")]
         public async Task<IActionResult> GetAll()
         {
             var webApiResponse = await _userManagerService.FindAll();

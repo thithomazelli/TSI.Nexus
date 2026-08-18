@@ -112,7 +112,9 @@ builder
 // Add authorization policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("Admin"));
+    // Master sees/does everything Admin does, plus the toggle panel (RequireMaster below) --
+    // so every Admin-gated endpoint accepts Master too.
+    options.AddPolicy("RequireAdmin", policy => policy.RequireRole("Admin", "Master"));
     options.AddPolicy("RequireMaster", policy => policy.RequireRole("Master"));
 });
 

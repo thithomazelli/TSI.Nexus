@@ -8,13 +8,13 @@ const routes: Routes = [
     path: '',
     runGuardsAndResolvers: 'always',
     component: ReportsComponent,
-    data: { roles: ['Admin'] },
+    data: { roles: ['Admin', 'Master'] },
   },
   {
     path: 'fleet',
     runGuardsAndResolvers: 'always',
     component: FleetReportComponent,
-    data: { roles: ['Admin'] },
+    data: { roles: ['Admin', 'Master'] },
   },
 ];
 

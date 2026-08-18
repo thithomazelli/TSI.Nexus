@@ -7,7 +7,7 @@ const routes: Routes = [
   {
     path: '',
     component: DocumentTemplatesComponent,
-    data: { roles: ['Admin'] },
+    data: { roles: ['Admin', 'Master'] },
   },
 ];
 

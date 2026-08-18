@@ -613,6 +613,11 @@ export class BusinessPartnerFormComponent
       this.canDisplayNewAddressLink = this.canDisplayNewAddressLink
         ? false
         : true;
+    } else {
+      // Add mode: show the "add address" link instead of forcing the address form open --
+      // clicking it reveals the form without requiring the client fields above to validate first.
+      this.canDisplayAddressForm = false;
+      this.canDisplayNewAddressLink = true;
     }
   }
 
