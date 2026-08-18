@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -192,12 +193,29 @@ else
 Directory.CreateDirectory(attachmentsPath);
 
 // Configure the HTTP request pipeline.
+// UseCors must run before UseExceptionHandler: middleware registered earlier wraps
+// middleware registered later, so an unhandled exception caught by UseExceptionHandler still
+// unwinds back out through UseCors's response header logic. With the order reversed, error
+// responses (500s) go out with no Access-Control-Allow-Origin header, and the browser reports
+// a misleading CORS failure instead of the real error.
 app.UseCors(opt =>
     opt.AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials()
         .WithOrigins(builder.Configuration["JWT:ClientUrl"])
 );
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(
+            new { message = "An unexpected error occurred. Please try again later." }
+        );
+    });
+});
 
 if (app.Environment.IsDevelopment())
 {
