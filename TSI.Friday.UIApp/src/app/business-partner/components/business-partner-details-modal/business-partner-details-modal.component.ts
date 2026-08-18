@@ -44,8 +44,8 @@ export class BusinessPartnerDetailsModalComponent implements OnInit {
   initializeTitle(): void {
     const type = this.translationService.instant(
       this.data?.type === BusinessPartnerType.Client
-        ? 'SIDEBAR.CLIENTES'
-        : 'SIDEBAR.FORNECEDORES',
+        ? 'SIDEBAR.CLIENTS'
+        : 'SIDEBAR.SUPPLIERS',
     );
 
     this.title = this.translationService.instant(

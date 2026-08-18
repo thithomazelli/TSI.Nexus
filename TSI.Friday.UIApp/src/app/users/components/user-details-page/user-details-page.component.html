@@ -1,9 +1,9 @@
 <app-header
-  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.USUARIOS' | translate) }"
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.USERS' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.USUARIOS' | translate, link: '/users' },
-    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.USUARIOS' | translate) }, link: '' },
+    { label: 'SIDEBAR.USERS' | translate, link: '/users' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('SIDEBAR.USERS' | translate) }, link: '' },
   ]"
 ></app-header>
 

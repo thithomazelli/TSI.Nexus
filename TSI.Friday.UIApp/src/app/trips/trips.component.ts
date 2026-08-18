@@ -215,7 +215,7 @@ export class TripsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'driverName',
-        headerName: this.translationService.instant('SIDEBAR.MOTORISTAS_SINGULAR'),
+        headerName: this.translationService.instant('SIDEBAR.DRIVER'),
         sortable: true,
         filter: true,
         width: 150,

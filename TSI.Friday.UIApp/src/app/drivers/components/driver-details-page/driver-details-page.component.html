@@ -1,15 +1,15 @@
 <app-header
   [title]="
     (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY')
-      | translate: { entity: ('SIDEBAR.MOTORISTAS_SINGULAR' | translate) }
+      | translate: { entity: ('SIDEBAR.DRIVER' | translate) }
   "
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.MOTORISTAS' | translate, link: '/drivers' },
+    { label: 'SIDEBAR.DRIVERS' | translate, link: '/drivers' },
     {
       label:
         (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY')
-        | translate: { entity: ('SIDEBAR.MOTORISTAS_SINGULAR' | translate) },
+        | translate: { entity: ('SIDEBAR.DRIVER' | translate) },
       link: ''
     },
   ]"

@@ -2,7 +2,7 @@
   [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('TRIPS.SINGULAR' | translate) }"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.VIAGENS' | translate, link: '/trips' },
+    { label: 'SIDEBAR.TRIPS' | translate, link: '/trips' },
     { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('TRIPS.SINGULAR' | translate) }, link: '' },
   ]"
 ></app-header>
@@ -93,7 +93,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'payments'"
                   (click)="activeTab = 'payments'"
-                  >{{ 'SIDEBAR.PAGAMENTOS' | translate }}</a
+                  >{{ 'SIDEBAR.PAYMENTS' | translate }}</a
                 >
               </li>
               <li class="nav-item">

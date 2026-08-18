@@ -212,7 +212,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'paymentTotalPrice',
-        headerName: this.translationService.instant('SIDEBAR.PAGAMENTOS'),
+        headerName: this.translationService.instant('SIDEBAR.PAYMENTS'),
         sortable: true,
         filter: true,
         maxWidth: 150,
@@ -232,7 +232,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
       },
       {
         field: 'expenseTotalPrice',
-        headerName: this.translationService.instant('SIDEBAR.DESPESAS'),
+        headerName: this.translationService.instant('SIDEBAR.EXPENSES'),
         sortable: true,
         filter: true,
         maxWidth: 120,

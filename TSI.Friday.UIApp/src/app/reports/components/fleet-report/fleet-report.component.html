@@ -1,9 +1,9 @@
 <app-header
-  [title]="'SIDEBAR.RELATORIO_FROTA' | translate"
+  [title]="'SIDEBAR.FLEET_REPORT' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.RELATORIOS' | translate, link: '/reports' },
-    { label: 'SIDEBAR.FROTA' | translate, link: '' },
+    { label: 'SIDEBAR.REPORTS' | translate, link: '/reports' },
+    { label: 'SIDEBAR.FLEET' | translate, link: '' },
   ]"
 ></app-header>
 
@@ -17,7 +17,7 @@
       <div class="col-6 col-md-3">
         <div class="card card-body text-center">
           <div class="h4 mb-0">{{ totalVehicles }}</div>
-          <small class="text-muted">{{ 'SIDEBAR.VEICULOS' | translate }}</small>
+          <small class="text-muted">{{ 'SIDEBAR.VEHICLES' | translate }}</small>
         </div>
       </div>
       <div class="col-6 col-md-3">
@@ -73,7 +73,7 @@
               <th>{{ 'VEHICLES.PLATE' | translate }}</th>
               <th>{{ 'VEHICLES.SINGULAR' | translate }}</th>
               <th>{{ 'COMMON.STATUS' | translate }}</th>
-              <th>{{ 'SIDEBAR.VIAGENS' | translate }}</th>
+              <th>{{ 'SIDEBAR.TRIPS' | translate }}</th>
               <th>{{ 'REPORTS.REVENUE' | translate }}</th>
               <th>{{ 'REPORTS.MAINTENANCE_COST' | translate }}</th>
             </tr>
@@ -106,7 +106,7 @@
         <table class="table table-sm mb-0">
           <thead>
             <tr>
-              <th>{{ 'SIDEBAR.MOTORISTAS_SINGULAR' | translate }}</th>
+              <th>{{ 'SIDEBAR.DRIVER' | translate }}</th>
               <th>{{ 'COMMON.STATUS' | translate }}</th>
               <th>{{ 'REPORTS.SERVICE_ORDERS_GENERATED' | translate }}</th>
               <th>{{ 'REPORTS.COMMISSION_PAID' | translate }}</th>

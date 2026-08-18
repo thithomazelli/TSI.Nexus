@@ -277,10 +277,10 @@ export class BusinessPartnersComponent {
     const url = this.routerService.url;
     if (url.includes('clients')) {
       this.baseEndPoint = 'clients';
-      this.title = this.translationService.instant('SIDEBAR.CLIENTES');
+      this.title = this.translationService.instant('SIDEBAR.CLIENTS');
     } else if (url.includes('suppliers')) {
       this.baseEndPoint = 'suppliers';
-      this.title = this.translationService.instant('SIDEBAR.FORNECEDORES');
+      this.title = this.translationService.instant('SIDEBAR.SUPPLIERS');
     } else {
       this.baseEndPoint = '';
       this.title = '';

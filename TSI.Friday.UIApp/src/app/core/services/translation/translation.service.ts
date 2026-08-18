@@ -50,7 +50,7 @@ export class TranslationService {
 
   /**
    * Resolves a key to its translated string. Pass `params` to substitute `{name}` placeholders
-   * in the resolved value, e.g. instant('GRID.EDIT_ENTITY', { entity: t('SIDEBAR.CLIENTES') }).
+   * in the resolved value, e.g. instant('GRID.EDIT_ENTITY', { entity: t('SIDEBAR.CLIENTS') }).
    */
   instant(key: string, params?: Record<string, string>): string {
     const dictionary = DICTIONARIES[this.current] ?? DICTIONARIES[DEFAULT_LANGUAGE];

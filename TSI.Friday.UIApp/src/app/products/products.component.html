@@ -1,15 +1,15 @@
 <app-header
-  [title]="'SIDEBAR.PRODUTOS' | translate"
+  [title]="'SIDEBAR.PRODUCTS' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.PRODUTOS' | translate, link: '' },
+    { label: 'SIDEBAR.PRODUCTS' | translate, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
     [baseEndPoint]="baseEndPoint"
-    [className]="'SIDEBAR.PRODUTOS' | translate"
+    [className]="'SIDEBAR.PRODUCTS' | translate"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [refresh]="refreshProducts.bind(this)"

@@ -1,15 +1,15 @@
 <app-header
-  [title]="'SIDEBAR.USUARIOS' | translate"
+  [title]="'SIDEBAR.USERS' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.USUARIOS' | translate, link: '' },
+    { label: 'SIDEBAR.USERS' | translate, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
     [baseEndPoint]="baseEndPoint"
-    [className]="'SIDEBAR.USUARIOS' | translate"
+    [className]="'SIDEBAR.USERS' | translate"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [refresh]="refreshUsers.bind(this)"

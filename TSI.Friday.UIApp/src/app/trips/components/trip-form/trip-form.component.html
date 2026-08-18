@@ -2,7 +2,7 @@
   @if (isEdit) {
     <app-alert-banner-component
       [status]="data?.status"
-      [entity]="'SIDEBAR.VIAGENS' | translate"
+      [entity]="'SIDEBAR.TRIPS' | translate"
     ></app-alert-banner-component>
   }
   <form [formGroup]="form" (ngSubmit)="submit()">
@@ -75,10 +75,10 @@
             <div class="input-group">
               <div class="form-floating">
                 <app-link-field
-                  [placeHolder]="'SIDEBAR.ORCAMENTOS' | translate"
+                  [placeHolder]="'SIDEBAR.QUOTES' | translate"
                   [text]="
                     form.get('quoteNumber')?.value ||
-                    ('SIDEBAR.ORCAMENTOS' | translate)
+                    ('SIDEBAR.QUOTES' | translate)
                   "
                   [linkUrl]="['/quotes', form.get('quoteNumber')?.value]"
                 >
@@ -208,7 +208,7 @@
                     {{ d.name }} ({{ d.status }})
                   </option>
                 </select>
-                <label>{{ 'SIDEBAR.MOTORISTAS_SINGULAR' | translate }}</label>
+                <label>{{ 'SIDEBAR.DRIVER' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-person-vcard"></i></div>
             </div>

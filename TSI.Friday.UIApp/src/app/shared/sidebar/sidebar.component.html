@@ -52,7 +52,7 @@
             class="nav-link"
           >
             <i class="nav-icon bi bi-people"></i>
-            <p>{{ 'SIDEBAR.CLIENTES' | translate }}</p>
+            <p>{{ 'SIDEBAR.CLIENTS' | translate }}</p>
           </a>
         </li>
 
@@ -64,7 +64,7 @@
             class="nav-link"
           >
             <i class="nav-icon bi bi-truck"></i>
-            <p>{{ 'SIDEBAR.FORNECEDORES' | translate }}</p>
+            <p>{{ 'SIDEBAR.SUPPLIERS' | translate }}</p>
           </a>
         </li>
 
@@ -76,7 +76,7 @@
             class="nav-link"
           >
             <i class="nav-icon bi bi-box-seam"></i>
-            <p>{{ 'SIDEBAR.PRODUTOS' | translate }}</p>
+            <p>{{ 'SIDEBAR.PRODUCTS' | translate }}</p>
           </a>
         </li>
 
@@ -89,7 +89,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-bus-front"></i>
-              <p>{{ 'SIDEBAR.FROTA' | translate }}</p>
+              <p>{{ 'SIDEBAR.FLEET' | translate }}</p>
             </a>
           </li>
 
@@ -101,7 +101,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-person-vcard"></i>
-              <p>{{ 'SIDEBAR.MOTORISTAS' | translate }}</p>
+              <p>{{ 'SIDEBAR.DRIVERS' | translate }}</p>
             </a>
           </li>
         </ng-container>
@@ -114,7 +114,7 @@
             class="nav-link"
           >
             <i class="nav-icon bi bi-receipt-cutoff"></i>
-            <p>{{ 'SIDEBAR.ORCAMENTOS' | translate }}</p>
+            <p>{{ 'SIDEBAR.QUOTES' | translate }}</p>
           </a>
         </li>
 
@@ -126,7 +126,7 @@
             class="nav-link"
           >
             <i class="nav-icon bi bi-receipt-cutoff"></i>
-            <p>{{ 'SIDEBAR.PEDIDOS_VENDA' | translate }}</p>
+            <p>{{ 'SIDEBAR.SALES_ORDERS' | translate }}</p>
           </a>
         </li>
 
@@ -138,7 +138,7 @@
             class="nav-link"
           >
             <i class="nav-icon bi bi-signpost-split"></i>
-            <p>{{ 'SIDEBAR.VIAGENS' | translate }}</p>
+            <p>{{ 'SIDEBAR.TRIPS' | translate }}</p>
           </a>
         </li>
 
@@ -150,12 +150,12 @@
             class="nav-link"
           >
             <i class="nav-icon bi bi-receipt-cutoff"></i>
-            <p>{{ 'SIDEBAR.RELATORIO_LOCACOES' | translate }}</p>
+            <p>{{ 'SIDEBAR.RENTAL_REPORT' | translate }}</p>
           </a>
         </li>
 
         <ng-container *ngIf="isAdmin || isMaster">
-          <li class="nav-header">{{ 'SIDEBAR.FINANCEIRO' | translate }}</li>
+          <li class="nav-header">{{ 'SIDEBAR.FINANCE' | translate }}</li>
           <li class="nav-item">
             <a
               routerLink="/transactions"
@@ -164,7 +164,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-cash-stack"></i>
-              <p>{{ 'SIDEBAR.TRANSACOES' | translate }}</p>
+              <p>{{ 'SIDEBAR.TRANSACTIONS' | translate }}</p>
             </a>
           </li>
           <li class="nav-item">
@@ -176,7 +176,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-file-earmark-text"></i>
-              <p>{{ 'SIDEBAR.PAGAMENTOS' | translate }}</p>
+              <p>{{ 'SIDEBAR.PAYMENTS' | translate }}</p>
             </a>
           </li>
           <li class="nav-item">
@@ -188,7 +188,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-bag-dash"></i>
-              <p>{{ 'SIDEBAR.DESPESAS' | translate }}</p>
+              <p>{{ 'SIDEBAR.EXPENSES' | translate }}</p>
             </a>
           </li>
           <li class="nav-item">
@@ -200,7 +200,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-bar-chart"></i>
-              <p>{{ 'SIDEBAR.RELATORIOS' | translate }}</p>
+              <p>{{ 'SIDEBAR.REPORTS' | translate }}</p>
             </a>
           </li>
           <li class="nav-item" *ngIf="isFleetModuleEnabled">
@@ -211,7 +211,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-graph-up"></i>
-              <p>{{ 'SIDEBAR.RELATORIO_FROTA' | translate }}</p>
+              <p>{{ 'SIDEBAR.FLEET_REPORT' | translate }}</p>
             </a>
           </li>
           <li class="nav-header">{{ 'SIDEBAR.ADMIN' | translate }}</li>
@@ -223,7 +223,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-person-badge"></i>
-              <p>{{ 'SIDEBAR.USUARIOS' | translate }}</p>
+              <p>{{ 'SIDEBAR.USERS' | translate }}</p>
             </a>
           </li>
           <li class="nav-item">
@@ -234,13 +234,13 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-file-earmark-richtext"></i>
-              <p>{{ 'SIDEBAR.TEMPLATES_DOCUMENTOS' | translate }}</p>
+              <p>{{ 'SIDEBAR.DOCUMENT_TEMPLATES' | translate }}</p>
             </a>
           </li>
         </ng-container>
 
         <ng-container *ngIf="isMaster">
-          <li class="nav-header">{{ 'SIDEBAR.CONFIGURACAO' | translate }}</li>
+          <li class="nav-header">{{ 'SIDEBAR.SETTINGS' | translate }}</li>
           <li class="nav-item">
             <a
               routerLink="/feature-toggles"
@@ -249,7 +249,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-toggles"></i>
-              <p>{{ 'SIDEBAR.MODULOS' | translate }}</p>
+              <p>{{ 'SIDEBAR.MODULES' | translate }}</p>
             </a>
           </li>
           <li class="nav-item">
@@ -260,7 +260,7 @@
               class="nav-link"
             >
               <i class="nav-icon bi bi-bell"></i>
-              <p>{{ 'SIDEBAR.ALERTAS' | translate }}</p>
+              <p>{{ 'SIDEBAR.ALERTS' | translate }}</p>
             </a>
           </li>
         </ng-container>

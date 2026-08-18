@@ -1,9 +1,9 @@
 <app-header
   *ngIf="!compact"
-  [title]="'SIDEBAR.ORCAMENTOS' | translate"
+  [title]="'SIDEBAR.QUOTES' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.ORCAMENTOS' | translate, link: '' },
+    { label: 'SIDEBAR.QUOTES' | translate, link: '' },
   ]"
 ></app-header>
 
@@ -30,7 +30,7 @@
 
   <app-grid
     [compactView]="compact"
-    [className]="'SIDEBAR.ORCAMENTOS' | translate"
+    [className]="'SIDEBAR.QUOTES' | translate"
     [canAdd]="false"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"

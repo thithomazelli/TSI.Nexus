@@ -1,16 +1,16 @@
 <app-header
   *ngIf="!compact"
-  [title]="'SIDEBAR.TRANSACOES' | translate"
+  [title]="'SIDEBAR.TRANSACTIONS' | translate"
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'SIDEBAR.TRANSACOES' | translate, link: '' },
+    { label: 'SIDEBAR.TRANSACTIONS' | translate, link: '' },
   ]"
 ></app-header>
 
 <div class="app-content">
   <app-grid
     [compactView]="compact"
-    [className]="'SIDEBAR.TRANSACOES' | translate"
+    [className]="'SIDEBAR.TRANSACTIONS' | translate"
     [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
