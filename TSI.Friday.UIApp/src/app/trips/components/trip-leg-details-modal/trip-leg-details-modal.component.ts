@@ -6,6 +6,7 @@ import {
   ResponseStatus,
   TripLeg,
   TripLegService,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import { forkJoin, Observable } from 'rxjs';
@@ -30,6 +31,7 @@ export class TripLegDetailsModalComponent {
     private formBuilder: FormBuilder,
     private tripLegService: TripLegService,
     private notificationService: NotificationService,
+    private translationService: TranslationService,
   ) {
     this.tripId = dialogData?.tripId ?? '';
     this._nextSequenceNumber = dialogData?.nextSequenceNumber ?? 1;
@@ -101,8 +103,8 @@ export class TripLegDetailsModalComponent {
         this.notificationService.showMessage(
           ResponseStatus.Success,
           legs.length === 1
-            ? 'Trecho adicionado com sucesso.'
-            : `${legs.length} trechos adicionados com sucesso.`,
+            ? this.translationService.instant('TRIPS.LEG_ADDED_SINGLE')
+            : this.translationService.instant('TRIPS.LEG_ADDED_PLURAL', { count: legs.length + '' }),
         );
         this.dialogRef.close(responses);
       },
@@ -110,7 +112,7 @@ export class TripLegDetailsModalComponent {
         this.saving = false;
         this.notificationService.showMessage(
           ResponseStatus.Error,
-          'Erro ao salvar os trechos do itinerário.',
+          this.translationService.instant('TRIPS.SAVE_LEGS_ERROR'),
         );
       },
     });

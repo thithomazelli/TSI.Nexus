@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Product, ProductService, ProductType } from '@friday/core';
+import { Product, ProductService, ProductType, TranslationService } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -16,11 +16,13 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
   loading = false;
   activeTab: 'details' | 'image' | 'history' | 'attachments' = 'details';
 
-  productTypeOptions: Record<ProductType, string> = {
-    [ProductType.Rental]: 'Aluguel',
-    [ProductType.Sale]: 'Venda',
-    [ProductType.Service]: 'Serviço',
-  };
+  get productTypeOptions(): Record<ProductType, string> {
+    return {
+      [ProductType.Rental]: this.translationService.instant('PRODUCTS.TYPE_RENTAL'),
+      [ProductType.Sale]: this.translationService.instant('PRODUCTS.TYPE_SALE'),
+      [ProductType.Service]: this.translationService.instant('PRODUCTS.SINGULAR'),
+    };
+  }
 
   private _destroy$ = new Subject<void>();
 
@@ -28,6 +30,7 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private productService: ProductService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {

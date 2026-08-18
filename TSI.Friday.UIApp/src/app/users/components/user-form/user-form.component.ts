@@ -20,6 +20,7 @@ import {
   ResponseStatus,
   User,
   UserService,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 
@@ -54,10 +55,12 @@ export class UserFormComponent
   @Input()
   dialogRef?: MatDialogRef<UserDetailsModalComponent>;
 
-  roleOptions = [
-    { label: 'Administrador', value: 'Admin' },
-    { label: 'Usuário', value: 'User' },
-  ];
+  get roleOptions() {
+    return [
+      { label: this.translationService.instant('USERS.ROLE_ADMIN'), value: 'Admin' },
+      { label: this.translationService.instant('USERS.ROLE_USER'), value: 'User' },
+    ];
+  }
 
   isResendingEmail = false;
   resendEmailCountdown = 0;
@@ -74,6 +77,7 @@ export class UserFormComponent
     private notificationService: NotificationService,
     private routerService: Router,
     private userService: UserService,
+    private translationService: TranslationService,
   ) {
     super();
   }

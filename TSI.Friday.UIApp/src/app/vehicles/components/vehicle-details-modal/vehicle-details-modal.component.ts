@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Vehicle } from '@friday/core';
+import { TranslationService, Vehicle } from '@friday/core';
 
 @Component({
   selector: 'app-vehicle-details-modal',
@@ -18,6 +18,7 @@ export class VehicleDetailsModalComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<VehicleDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
+    private translationService: TranslationService,
   ) {
     if (dialogData) {
       this.isEdit = dialogData.isEdit ?? false;
@@ -27,7 +28,10 @@ export class VehicleDetailsModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.title = this.isEdit ? 'Editar Veículo' : 'Adicionar Veículo';
+    this.title = this.translationService.instant(
+      this.isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY',
+      { entity: this.translationService.instant('VEHICLES.SINGULAR') },
+    );
   }
 
   close(): void {

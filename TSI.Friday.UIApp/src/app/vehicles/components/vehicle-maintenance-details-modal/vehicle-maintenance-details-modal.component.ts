@@ -10,6 +10,7 @@ import {
   ResponseStatus,
   VehicleMaintenance,
   VehicleMaintenanceService,
+  TranslationService,
 } from '@friday/core';
 
 @Component({
@@ -29,10 +30,12 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
 
   form: FormGroup;
 
-  typeOptions = [
-    { label: 'Preventiva', value: MaintenanceType.Preventive },
-    { label: 'Corretiva', value: MaintenanceType.Corrective },
-  ];
+  get typeOptions() {
+    return [
+      { label: this.translationService.instant('VEHICLES.PREVENTIVE'), value: MaintenanceType.Preventive },
+      { label: this.translationService.instant('VEHICLES.CORRECTIVE'), value: MaintenanceType.Corrective },
+    ];
+  }
 
   constructor(
     public dialogRef: MatDialogRef<VehicleMaintenanceDetailsModalComponent>,
@@ -41,6 +44,7 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
     private productService: ProductService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private notificationService: NotificationService,
+    private translationService: TranslationService,
   ) {
     const existing: VehicleMaintenance | null = dialogData?.data ?? null;
     this.vehicleId = dialogData?.vehicleId ?? '';
@@ -105,7 +109,7 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
         this.saving = false;
         this.notificationService.showMessage(
           ResponseStatus.Error,
-          'Erro ao salvar a manutenção.',
+          this.translationService.instant('VEHICLES.SAVE_MAINTENANCE_ERROR'),
         );
       },
     });

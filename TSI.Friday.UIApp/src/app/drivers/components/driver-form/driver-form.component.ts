@@ -21,6 +21,7 @@ import {
   ModalService,
   NotificationService,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 
@@ -54,17 +55,21 @@ export class DriverFormComponent
   @Input()
   dialogRef?: MatDialogRef<DriverDetailsModalComponent>;
 
-  employmentTypeOptions = [
-    { label: 'CLT', value: EmploymentType.CLT },
-    { label: 'Terceirizado', value: EmploymentType.Outsourced },
-    { label: 'Autônomo', value: EmploymentType.Autonomous },
-  ];
+  get employmentTypeOptions() {
+    return [
+      { label: 'CLT', value: EmploymentType.CLT },
+      { label: this.translationService.instant('DRIVERS.OUTSOURCED'), value: EmploymentType.Outsourced },
+      { label: this.translationService.instant('DRIVERS.AUTONOMOUS'), value: EmploymentType.Autonomous },
+    ];
+  }
 
-  statusOptions = [
-    { label: 'Ativo', value: DriverStatus.Active },
-    { label: 'Inativo', value: DriverStatus.Inactive },
-    { label: 'Afastado', value: DriverStatus.OnLeave },
-  ];
+  get statusOptions() {
+    return [
+      { label: this.translationService.instant('DRIVERS.STATUS_ACTIVE'), value: DriverStatus.Active },
+      { label: this.translationService.instant('DRIVERS.STATUS_INACTIVE'), value: DriverStatus.Inactive },
+      { label: this.translationService.instant('DRIVERS.STATUS_ON_LEAVE'), value: DriverStatus.OnLeave },
+    ];
+  }
 
   // Dígito verificador do RG varia por estado: alguns não têm, e em SP costuma ser "X" em vez
   // de número. "C" é um placeholder customizado opcional que aceita dígito ou X/x, mesclado com
@@ -83,6 +88,7 @@ export class DriverFormComponent
     private driverService: DriverService,
     private businessPartnerService: BusinessPartnerService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {
     super();
   }

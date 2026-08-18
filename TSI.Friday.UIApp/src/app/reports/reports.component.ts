@@ -7,6 +7,7 @@ import {
   Payment,
   PaymentStatus,
   PaymentType,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 
@@ -31,16 +32,20 @@ export class ReportsComponent implements OnInit {
 
   private _baseEndPoint = ApiType.Payments;
 
-  typeMap: { [key in PaymentType]: string } = {
-    [PaymentType.Incoming]: 'Entrada',
-    [PaymentType.Outgoing]: 'Saída',
-  };
+  get typeMap(): { [key in PaymentType]: string } {
+    return {
+      [PaymentType.Incoming]: this.translationService.instant('REPORTS.INCOMING'),
+      [PaymentType.Outgoing]: this.translationService.instant('REPORTS.OUTGOING'),
+    };
+  }
 
-  statusMap: { [key in PaymentStatus]: string } = {
-    [PaymentStatus.Approved]: 'Pago',
-    [PaymentStatus.Pending]: 'Em Aberto',
-    [PaymentStatus.Delayed]: 'Atrasado',
-  };
+  get statusMap(): { [key in PaymentStatus]: string } {
+    return {
+      [PaymentStatus.Approved]: this.translationService.instant('REPORTS.STATUS_PAID'),
+      [PaymentStatus.Pending]: this.translationService.instant('REPORTS.STATUS_OPEN'),
+      [PaymentStatus.Delayed]: this.translationService.instant('REPORTS.STATUS_DELAYED'),
+    };
+  }
 
   statusColorMap: { [key: string]: string } = {
     Approved: 'success',
@@ -52,6 +57,7 @@ export class ReportsComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private modalService: ModalService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -215,7 +221,7 @@ export class ReportsComponent implements OnInit {
     const dateRow = document.createElement('div');
     dateRow.style.fontWeight = 'bold';
     dateRow.style.marginBottom = '0.5rem';
-    dateRow.textContent = `Data Início: ${startDate || '-'}   |   Data Fim: ${endDate || '-'}`;
+    dateRow.textContent = this.translationService.instant('REPORTS.DATE_RANGE', { start: startDate || '-', end: endDate || '-' });
 
     // Insere a linha de datas no topo da área de filtros
     const appContent = clone.querySelector('.app-content');

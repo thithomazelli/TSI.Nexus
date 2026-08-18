@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { ModalService, OrderProductService } from '@friday/core';
+import { ModalService, OrderProductService, TranslationService } from '@friday/core';
 import { OrderProductsDetailsModalComponent } from '../../../order-products/components/order-product-details-modal/order-products-details-modal.component';
 import {
   ApiType,
@@ -26,11 +26,13 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
     [OrderProductStatus.Returned]: 'bi bi-arrow-counterclockwise text-success',
   };
 
-  private _statusTextMap: Record<OrderProductStatus, string> = {
-    [OrderProductStatus.Delayed]: 'Entrega atrasada',
-    [OrderProductStatus.InProgress]: 'Entrega em andamento',
-    [OrderProductStatus.Returned]: 'Produto devolvido',
-  };
+  private get _statusTextMap(): Record<OrderProductStatus, string> {
+    return {
+      [OrderProductStatus.Delayed]: this.translationService.instant('NAVBAR.DELIVERY_DELAYED'),
+      [OrderProductStatus.InProgress]: this.translationService.instant('NAVBAR.DELIVERY_IN_PROGRESS'),
+      [OrderProductStatus.Returned]: this.translationService.instant('NAVBAR.PRODUCT_RETURNED'),
+    };
+  }
 
   private _orderProductChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -39,6 +41,7 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
     private orderProductService: OrderProductService,
     private modalService: ModalService,
     private router: Router,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -81,7 +84,7 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
   }
 
   getStatusText(orderProduct: OrderProduct): string {
-    return this._statusTextMap[orderProduct.status] || 'Status desconhecido';
+    return this._statusTextMap[orderProduct.status] || this.translationService.instant('NAVBAR.UNKNOWN_STATUS');
   }
 
   getRelativeDate(date?: Date): string {
@@ -98,12 +101,12 @@ export class OrderProductNotificationComponent implements OnInit, OnDestroy {
     const diffMs = now.getTime() - d.getTime();
     const diffDays = Math.abs(Math.floor(diffMs / (1000 * 60 * 60 * 24)));
     if (diffDays === 0) {
-      return 'Hoje';
+      return this.translationService.instant('NAVBAR.TODAY');
     }
     if (diffDays === 1) {
-      return 'Ontem';
+      return this.translationService.instant('NAVBAR.YESTERDAY');
     }
-    return `${diffDays} dias atrás`;
+    return this.translationService.instant('NAVBAR.DAYS_AGO', { days: diffDays + '' });
   }
 
   openModal(orderProduct: OrderProduct) {

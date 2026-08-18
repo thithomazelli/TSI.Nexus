@@ -21,6 +21,7 @@ import {
   VehicleStatus,
   VehicleType,
   WebApiResponse,
+  TranslationService,
 } from '@friday/core';
 
 import { Observable, of } from 'rxjs';
@@ -53,20 +54,24 @@ export class VehicleFormComponent
   @Input()
   dialogRef?: MatDialogRef<VehicleDetailsModalComponent>;
 
-  typeOptions = [
-    { label: 'Ônibus', value: VehicleType.Bus },
-    { label: 'Micro-ônibus', value: VehicleType.MiniBus },
-    { label: 'Van', value: VehicleType.Van },
-    { label: 'Carro', value: VehicleType.Car },
-    { label: 'Outro', value: VehicleType.Other },
-  ];
+  get typeOptions() {
+    return [
+      { label: this.translationService.instant('VEHICLES.BUS'), value: VehicleType.Bus },
+      { label: this.translationService.instant('VEHICLES.MINI_BUS'), value: VehicleType.MiniBus },
+      { label: this.translationService.instant('VEHICLES.VAN'), value: VehicleType.Van },
+      { label: this.translationService.instant('VEHICLES.CAR'), value: VehicleType.Car },
+      { label: this.translationService.instant('VEHICLES.OTHER'), value: VehicleType.Other },
+    ];
+  }
 
-  statusOptions = [
-    { label: 'Disponível', value: VehicleStatus.Available },
-    { label: 'Em manutenção', value: VehicleStatus.InMaintenance },
-    { label: 'Bloqueado', value: VehicleStatus.Blocked },
-    { label: 'Inativo', value: VehicleStatus.Inactive },
-  ];
+  get statusOptions() {
+    return [
+      { label: this.translationService.instant('VEHICLES.STATUS_AVAILABLE'), value: VehicleStatus.Available },
+      { label: this.translationService.instant('VEHICLES.STATUS_IN_MAINTENANCE'), value: VehicleStatus.InMaintenance },
+      { label: this.translationService.instant('VEHICLES.STATUS_BLOCKED'), value: VehicleStatus.Blocked },
+      { label: this.translationService.instant('VEHICLES.STATUS_INACTIVE'), value: VehicleStatus.Inactive },
+    ];
+  }
 
   private _baseEndPoint: ApiType = ApiType.Vehicles;
 
@@ -77,6 +82,7 @@ export class VehicleFormComponent
     private notificationService: NotificationService,
     private vehicleService: VehicleService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -252,7 +258,7 @@ export class VehicleFormComponent
     if (response.status === ResponseStatus.Success) {
       this.modalService.showNotification(
         true,
-        this.isEdit ? 'Veículo atualizado' : 'Veículo adicionado',
+        this.isEdit ? this.translationService.instant('VEHICLES.VEHICLE_UPDATED') : this.translationService.instant('VEHICLES.VEHICLE_ADDED'),
         response.message,
       );
       return;

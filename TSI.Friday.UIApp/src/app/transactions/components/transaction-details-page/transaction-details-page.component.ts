@@ -7,6 +7,7 @@ import {
   WebApiResponse,
   PaymentService,
   TransactionService,
+  TranslationService,
 } from '@friday/core';
 import { merge, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 
@@ -23,16 +24,20 @@ export class TransactionDetailsPageComponent {
   loading = false;
   activeTab: 'details' | 'payments' | 'attachments' = 'details';
 
-  paymentTypeOptions: Record<PaymentType, string> = {
-    [PaymentType.Incoming]: 'Entrada',
-    [PaymentType.Outgoing]: 'Saída',
-  };
+  get paymentTypeOptions(): Record<PaymentType, string> {
+    return {
+      [PaymentType.Incoming]: this.translationService.instant('REPORTS.INCOMING'),
+      [PaymentType.Outgoing]: this.translationService.instant('REPORTS.OUTGOING'),
+    };
+  }
 
-  transactionStatusOptions: Record<PaymentStatus, string> = {
-    [PaymentStatus.Approved]: 'Aprovado',
-    [PaymentStatus.Delayed]: 'Atrasado',
-    [PaymentStatus.Pending]: 'Pendente',
-  };
+  get transactionStatusOptions(): Record<PaymentStatus, string> {
+    return {
+      [PaymentStatus.Approved]: this.translationService.instant('TRANSACTIONS.STATUS_APPROVED'),
+      [PaymentStatus.Delayed]: this.translationService.instant('REPORTS.STATUS_DELAYED'),
+      [PaymentStatus.Pending]: this.translationService.instant('TRANSACTIONS.STATUS_PENDING'),
+    };
+  }
 
   private _transactionChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -42,6 +47,7 @@ export class TransactionDetailsPageComponent {
     private paymentService: PaymentService,
     private routerService: Router,
     private transactionService: TransactionService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {

@@ -26,6 +26,7 @@ import {
   NotificationService,
   PaymentService,
   ModalService,
+  TranslationService,
 } from '@friday/core';
 
 import { Observable, of, Subscription, tap } from 'rxjs';
@@ -65,37 +66,47 @@ export class PaymentFormComponent
   isInstallment = false;
   showClientAndOrder = false;
 
-  statusOptions = [
-    { label: 'Em aberto', value: PaymentStatus.Pending },
-    { label: 'Pago', value: PaymentStatus.Approved },
-    { label: 'Atrasado', value: PaymentStatus.Delayed },
-  ];
+  get statusOptions() {
+    return [
+      { label: this.translationService.instant('REPORTS.STATUS_OPEN'), value: PaymentStatus.Pending },
+      { label: this.translationService.instant('REPORTS.STATUS_PAID'), value: PaymentStatus.Approved },
+      { label: this.translationService.instant('REPORTS.STATUS_DELAYED'), value: PaymentStatus.Delayed },
+    ];
+  }
 
-  typeOptions = [
-    { label: 'Entrada', value: PaymentType.Incoming },
-    { label: 'Saída', value: PaymentType.Outgoing },
-  ];
+  get typeOptions() {
+    return [
+      { label: this.translationService.instant('REPORTS.INCOMING'), value: PaymentType.Incoming },
+      { label: this.translationService.instant('REPORTS.OUTGOING'), value: PaymentType.Outgoing },
+    ];
+  }
 
-  methodOptions = [
-    { label: 'Dinheiro', value: PaymentMethod.Cash },
-    { label: 'Pix', value: PaymentMethod.Pix },
-    { label: 'Cartão de Crédito', value: PaymentMethod.CreditCard },
-  ];
+  get methodOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_CASH'), value: PaymentMethod.Cash },
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_PIX'), value: PaymentMethod.Pix },
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_CREDIT_CARD'), value: PaymentMethod.CreditCard },
+    ];
+  }
 
-  conditionOptions = [
-    { label: 'À Vista', value: PaymentCondition.FullPayment },
-    { label: 'Parcelado', value: PaymentCondition.InInstallments },
-  ];
+  get conditionOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.FULL_PAYMENT'), value: PaymentCondition.FullPayment },
+      { label: this.translationService.instant('TRANSACTIONS.IN_PAYMENTS'), value: PaymentCondition.InInstallments },
+    ];
+  }
 
-  categoryOptions = [
-    { label: 'Combustível', value: 'Combustível' },
-    { label: 'Despesas Fixas', value: 'Despesas Fixas' },
-    { label: 'Despesas Variáveis', value: 'Despesas Variáveis' },
-    { label: 'Despesas Veículos', value: 'Despesas Veículos' },
-    { label: 'Diversos', value: 'Diversos' },
-    { label: 'Funcionários', value: 'Funcionários' },
-    { label: 'Recebimentos', value: 'Recebimentos' },
-  ];
+  get categoryOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FUEL'), value: 'Combustível' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FIXED_EXPENSES'), value: 'Despesas Fixas' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VARIABLE_EXPENSES'), value: 'Despesas Variáveis' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VEHICLE_EXPENSES'), value: 'Despesas Veículos' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_MISC'), value: 'Diversos' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_EMPLOYEES'), value: 'Funcionários' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_RECEIVABLES'), value: 'Recebimentos' },
+    ];
+  }
 
   businessPartners$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
@@ -111,6 +122,7 @@ export class PaymentFormComponent
     private modalService: ModalService,
     private notificationService: NotificationService,
     private paymentService: PaymentService,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -181,7 +193,7 @@ export class PaymentFormComponent
           );
         },
         error: (err) => {
-          this.notificationService.showMessage('Error', 'Erro ao salvar');
+          this.notificationService.showMessage('Error', this.translationService.instant('COMMON.SAVE_ERROR'));
         },
       }),
     );
@@ -196,7 +208,7 @@ export class PaymentFormComponent
     this.modalService
       .showSweetConfirmation(
         '',
-        'Deseja realmente excluir este registro?',
+        this.translationService.instant('GRID.CONFIRM_DELETE'),
         'question',
       )
       .then((result: any) => {
@@ -224,7 +236,7 @@ export class PaymentFormComponent
                 error: (err) => {
                   this.notificationService.showMessage(
                     'error',
-                    'Erro ao remover',
+                    this.translationService.instant('ORDERS.REMOVE_ERROR'),
                   );
                 },
               }),

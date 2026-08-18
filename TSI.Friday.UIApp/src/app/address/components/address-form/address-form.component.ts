@@ -17,6 +17,7 @@ import {
   ModalService,
   NotificationService,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import { HttpClient } from '@angular/common/http';
@@ -69,6 +70,7 @@ export class AddressFormComponent
     private http: HttpClient,
     private modalService: ModalService,
     private notificationService: NotificationService,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -437,14 +439,14 @@ export class AddressFormComponent
         } else {
           this.notificationService.showMessage(
             ResponseStatus.Error,
-            'CEP não encontrado: O CEP informado não foi localizado.',
+            this.translationService.instant('ADDRESS.CEP_NOT_FOUND'),
           );
         }
       },
       error: () => {
         this.notificationService.showMessage(
           ResponseStatus.Error,
-          'Erro ao buscar CEP: Não foi possível consultar o CEP.',
+          this.translationService.instant('ADDRESS.CEP_LOOKUP_ERROR'),
         );
       },
       complete: () => {

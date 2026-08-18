@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription, Subject, takeUntil, switchMap } from 'rxjs';
 import { Router } from '@angular/router';
-import { ModalService, PaymentService } from '@friday/core';
+import { ModalService, PaymentService, TranslationService } from '@friday/core';
 import { PaymentDetailsModalComponent } from '../../../payments/components/payment-details-modal/payment-details-modal.component';
 
 import { Payment, PaymentStatus, WebApiResponse } from '@friday/core';
@@ -22,11 +22,13 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
     [PaymentStatus.Approved]: 'bi bi-check-circle-fill text-success',
   };
 
-  private _statusTextMap: Record<PaymentStatus, string> = {
-    [PaymentStatus.Delayed]: 'Pagamento atrasado',
-    [PaymentStatus.Pending]: 'Pagamento pendente',
-    [PaymentStatus.Approved]: 'Pagamento aprovado',
-  };
+  private get _statusTextMap(): Record<PaymentStatus, string> {
+    return {
+      [PaymentStatus.Delayed]: this.translationService.instant('NAVBAR.PAYMENT_DELAYED'),
+      [PaymentStatus.Pending]: this.translationService.instant('NAVBAR.PAYMENT_PENDING'),
+      [PaymentStatus.Approved]: this.translationService.instant('NAVBAR.PAYMENT_APPROVED'),
+    };
+  }
 
   private _paymentChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -35,6 +37,7 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private paymentService: PaymentService,
     private router: Router,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
@@ -74,7 +77,7 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
   }
 
   getStatusText(payment: Payment): string {
-    return this._statusTextMap[payment.status!] || 'Status desconhecido';
+    return this._statusTextMap[payment.status!] || this.translationService.instant('NAVBAR.UNKNOWN_STATUS');
   }
 
   getRelativeDate(date?: Date): string {
@@ -90,12 +93,12 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
     const diffMs = now.getTime() - d.getTime();
     const diffDays = Math.abs(Math.floor(diffMs / (1000 * 60 * 60 * 24)));
     if (diffDays === 0) {
-      return 'Hoje';
+      return this.translationService.instant('NAVBAR.TODAY');
     }
     if (diffDays === 1) {
-      return 'Ontem';
+      return this.translationService.instant('NAVBAR.YESTERDAY');
     }
-    return `${diffDays} dias atrás`;
+    return this.translationService.instant('NAVBAR.DAYS_AGO', { days: diffDays + '' });
   }
 
   openModal(payment: Payment) {

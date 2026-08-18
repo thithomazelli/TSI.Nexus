@@ -22,6 +22,7 @@ import {
   ProductType,
   ProductUnit,
   ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 
@@ -55,30 +56,36 @@ export class ProductFormComponent
   @Input()
   dialogRef?: MatDialogRef<ProductDetailsModalComponent>;
 
-  categories = [
-    { label: 'Elétrica', value: 'Electric' },
-    { label: 'Hidráulica', value: 'Hydraulics' },
-    { label: 'Estrutura', value: 'Structure' },
-    { label: 'Drywall', value: 'Drywall' },
-    { label: 'Pintura', value: 'Painting' },
-    { label: 'Acabamento', value: 'Finishing' },
-    { label: 'Sanitário', value: 'Sanitary' },
-    { label: 'Equipamento', value: 'Equipment' },
-    { label: 'Fixação', value: 'Fixing' },
-    { label: 'Acabamento', value: 'Finish' },
-  ];
+  get categories() {
+    return [
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_ELECTRIC'), value: 'Electric' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_HYDRAULICS'), value: 'Hydraulics' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_STRUCTURE'), value: 'Structure' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_DRYWALL'), value: 'Drywall' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_PAINTING'), value: 'Painting' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'), value: 'Finishing' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_SANITARY'), value: 'Sanitary' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_EQUIPMENT'), value: 'Equipment' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_FIXING'), value: 'Fixing' },
+      { label: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'), value: 'Finish' },
+    ];
+  }
 
-  unitOptions = [
-    { label: 'Unidade', value: ProductUnit.Unit },
-    { label: 'Quilograma', value: ProductUnit.Kilogram },
-    { label: 'Grama', value: ProductUnit.Gram },
-  ];
+  get unitOptions() {
+    return [
+      { label: this.translationService.instant('PRODUCTS.UNIT_UNIT'), value: ProductUnit.Unit },
+      { label: this.translationService.instant('PRODUCTS.UNIT_KILOGRAM'), value: ProductUnit.Kilogram },
+      { label: this.translationService.instant('PRODUCTS.UNIT_GRAM'), value: ProductUnit.Gram },
+    ];
+  }
 
-  productTypeOptions = [
-    { label: 'Venda', value: ProductType.Sale },
-    { label: 'Aluguel', value: ProductType.Rental },
-    { label: 'Serviço', value: ProductType.Service },
-  ];
+  get productTypeOptions() {
+    return [
+      { label: this.translationService.instant('PRODUCTS.TYPE_SALE'), value: ProductType.Sale },
+      { label: this.translationService.instant('PRODUCTS.TYPE_RENTAL'), value: ProductType.Rental },
+      { label: this.translationService.instant('PRODUCTS.SINGULAR'), value: ProductType.Service },
+    ];
+  }
 
   private _baseEndPoint: ApiType = ApiType.Products;
   private _subscriptions: Subscription[] = [];
@@ -90,6 +97,7 @@ export class ProductFormComponent
     private notificationService: NotificationService,
     private productService: ProductService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {
     super();
   }

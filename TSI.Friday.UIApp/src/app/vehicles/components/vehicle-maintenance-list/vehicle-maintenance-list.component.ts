@@ -12,6 +12,7 @@ import {
   NotificationService,
   VehicleMaintenance,
   VehicleMaintenanceService,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
@@ -32,13 +33,15 @@ export class VehicleMaintenanceListComponent
 
   maintenances: VehicleMaintenance[] = [];
 
-  statusMap: { [key: string]: { label: string; color: string } } = {
-    Scheduled: { label: 'Agendada', color: 'info' },
-    InProgress: { label: 'Em andamento', color: 'warning' },
-    Completed: { label: 'Concluída', color: 'success' },
-    Overdue: { label: 'Vencida', color: 'danger' },
-    Cancelled: { label: 'Cancelada', color: 'secondary' },
-  };
+  get statusMap(): { [key: string]: { label: string; color: string } } {
+    return {
+      Scheduled: { label: this.translationService.instant('VEHICLES.MAINTENANCE_SCHEDULED'), color: 'info' },
+      InProgress: { label: this.translationService.instant('VEHICLES.MAINTENANCE_IN_PROGRESS'), color: 'warning' },
+      Completed: { label: this.translationService.instant('VEHICLES.MAINTENANCE_COMPLETED'), color: 'success' },
+      Overdue: { label: this.translationService.instant('VEHICLES.MAINTENANCE_OVERDUE'), color: 'danger' },
+      Cancelled: { label: this.translationService.instant('VEHICLES.MAINTENANCE_CANCELLED'), color: 'secondary' },
+    };
+  }
 
   private _destroy$ = new Subject<void>();
 
@@ -46,6 +49,7 @@ export class VehicleMaintenanceListComponent
     private notificationService: NotificationService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private modalService: ModalService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
