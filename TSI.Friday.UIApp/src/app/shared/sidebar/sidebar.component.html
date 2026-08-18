@@ -10,8 +10,12 @@
     >
       <!--begin::Brand Image-->
       <img
-        src="./assets/img/serodio/logo.png"
-        alt="Serodio Turismo"
+        [src]="
+          (themeService.theme$ | async) === 'dark'
+            ? './assets/img/nexus/logo-full-dark.png'
+            : './assets/img/nexus/logo-full.png'
+        "
+        alt="Nexus"
         class="brand-image-full"
       />
       <!--end::Brand Image-->

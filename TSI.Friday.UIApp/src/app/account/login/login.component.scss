@@ -114,6 +114,32 @@
   box-shadow: 0 10px 30px rgba(15, 35, 65, 0.08);
 }
 
+.login-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 22px;
+}
+
+.login-reveal-btn {
+  min-width: 220px;
+}
+
+@keyframes login-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-fade-in {
+  animation: login-fade-in 0.5s ease both;
+}
+
 .login-field {
   position: relative;
   display: flex;

@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -22,16 +16,16 @@ import { Observable, of, take, tap } from 'rxjs';
   styleUrl: './login.component.scss',
   standalone: false,
 })
-export class LoginComponent
-  extends FormBaseComponent
-  implements OnInit, AfterViewInit
-{
+export class LoginComponent extends FormBaseComponent implements OnInit {
   returnUrl: string | null = null;
   // toggle show/hide password
   passwordVisible = false;
+  // login form starts hidden behind a single "Entrar" prompt; clicking it triggers the wave's
+  // reveal morph (see waveReveal in the template) and swaps in the real form.
+  revealed = false;
 
-  @ViewChild('waveSvg')
-  waveSvg?: ElementRef<SVGSVGElement>;
+  @ViewChild('waveReveal')
+  waveReveal?: ElementRef<SVGAnimateElement>;
 
   constructor(
     private accountService: AccountService,
@@ -62,14 +56,9 @@ export class LoginComponent
     this.initializeForm();
   }
 
-  ngAfterViewInit(): void {
-    // Chromium sometimes leaves the SMIL <animate> on the wave path parked on its first
-    // keyframe forever - the SVG timeline clock runs (getCurrentTime() ticks normally), but the
-    // animated attribute never advances - unless the timeline is explicitly restarted once the
-    // view has settled. The restart has to happen after the browser's own initial SMIL autostart
-    // pass, not synchronously in this hook, or it has no effect. Harmless no-op on browsers
-    // where the animation already autostarts correctly.
-    setTimeout(() => this.waveSvg?.nativeElement.setCurrentTime(0), 50);
+  reveal(): void {
+    this.revealed = true;
+    this.waveReveal?.nativeElement.beginElement();
   }
 
   initializeForm(): void {
