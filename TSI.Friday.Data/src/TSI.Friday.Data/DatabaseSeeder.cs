@@ -57,7 +57,7 @@ namespace TSI.Friday.Data
                         FirstName: "Thiago",
                         LastName: "Thomazelli",
                         Role: "Admin",
-                        PasswordPrefix: "thiago"
+                        PasswordPrefix: "tsi"
                     ),
                     (
                         UserName: "Leonardo",
@@ -65,7 +65,7 @@ namespace TSI.Friday.Data
                         FirstName: "Leonardo",
                         LastName: "Thomazelli",
                         Role: "Admin",
-                        PasswordPrefix: "leonardo"
+                        PasswordPrefix: "tsi"
                     ),
                 };
 
