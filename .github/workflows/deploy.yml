@@ -96,16 +96,25 @@ jobs:
         run: npm run build
 
       - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.SERODIO_FTP_SERVER }}
-          username: ${{ secrets.SERODIO_FTP_USERNAME }}
-          password: ${{ secrets.SERODIO_FTP_PASSWORD }}
-          # Action defaults to plain "ftp" (no encryption); this host's FTP account only accepts
-          # explicit FTPS logins (confirmed manually via FileZilla), so it's forced here.
-          protocol: ftps
-          local-dir: TSI.Friday.UIApp/dist/tsi.friday.uiapp/browser/
-          server-dir: /www/serodio-app/
+        # SamKirkland/FTP-Deploy-Action (Node/basic-ftp) reliably hit "ECONNRESET (data socket)"
+        # on this host's very first data-connection operation of a sync, regardless of whether
+        # the target directory already existed -- reproduced 4/4 times. Switched to lftp (mature,
+        # battle-tested FTPS client) which handles this host's data channel correctly.
+        env:
+          LFTP_FTP_SERVER: ${{ secrets.SERODIO_FTP_SERVER }}
+          LFTP_FTP_USERNAME: ${{ secrets.SERODIO_FTP_USERNAME }}
+          LFTP_FTP_PASSWORD: ${{ secrets.SERODIO_FTP_PASSWORD }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          lftp -u "$LFTP_FTP_USERNAME","$LFTP_FTP_PASSWORD" "ftpes://$LFTP_FTP_SERVER" -e "
+            set ftp:ssl-force true;
+            set ftp:ssl-protect-data true;
+            set ssl:verify-certificate no;
+            set net:max-retries 3;
+            set net:reconnect-interval-base 5;
+            mirror -R --verbose --parallel=1 dist/tsi.friday.uiapp/browser/ /www/serodio-app/;
+            bye
+          "
 
   deploy-backend-serodio:
     if: github.ref == 'refs/heads/serodioturismo'
