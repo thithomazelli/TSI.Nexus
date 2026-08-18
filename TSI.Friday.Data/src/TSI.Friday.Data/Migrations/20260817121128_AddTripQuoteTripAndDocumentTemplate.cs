@@ -67,35 +67,29 @@ namespace TSI.Friday.Data.Migrations
                 name: "VehicleId",
                 table: "Order");
 
-            migrationBuilder.RenameColumn(
-                name: "OrderId",
-                table: "TripLeg",
-                newName: "TripId");
+            // Plain RenameColumn/RenameIndex trigger a NullReferenceException in
+            // MySql.EntityFrameworkCore 8.0.5's MySQLMigrationsSqlGenerator, so the equivalent raw
+            // SQL is used instead to work around the provider bug.
+            migrationBuilder.Sql(
+                "ALTER TABLE `TripLeg` CHANGE COLUMN `OrderId` `TripId` char(36) NOT NULL;"
+            );
+            migrationBuilder.Sql(
+                "ALTER TABLE `TripLeg` RENAME INDEX `IX_TripLeg_OrderId` TO `IX_TripLeg_TripId`;"
+            );
 
-            migrationBuilder.RenameIndex(
-                name: "IX_TripLeg_OrderId",
-                table: "TripLeg",
-                newName: "IX_TripLeg_TripId");
+            migrationBuilder.Sql(
+                "ALTER TABLE `ServiceOrder` CHANGE COLUMN `OrderId` `TripId` char(36) NOT NULL;"
+            );
+            migrationBuilder.Sql(
+                "ALTER TABLE `ServiceOrder` RENAME INDEX `IX_ServiceOrder_OrderId` TO `IX_ServiceOrder_TripId`;"
+            );
 
-            migrationBuilder.RenameColumn(
-                name: "OrderId",
-                table: "ServiceOrder",
-                newName: "TripId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_ServiceOrder_OrderId",
-                table: "ServiceOrder",
-                newName: "IX_ServiceOrder_TripId");
-
-            migrationBuilder.RenameColumn(
-                name: "OrderId",
-                table: "Passenger",
-                newName: "TripId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_Passenger_OrderId",
-                table: "Passenger",
-                newName: "IX_Passenger_TripId");
+            migrationBuilder.Sql(
+                "ALTER TABLE `Passenger` CHANGE COLUMN `OrderId` `TripId` char(36) NOT NULL;"
+            );
+            migrationBuilder.Sql(
+                "ALTER TABLE `Passenger` RENAME INDEX `IX_Passenger_OrderId` TO `IX_Passenger_TripId`;"
+            );
 
             migrationBuilder.AddColumn<Guid>(
                 name: "TripId",
@@ -445,35 +439,28 @@ namespace TSI.Friday.Data.Migrations
                 name: "TripId",
                 table: "Attachment");
 
-            migrationBuilder.RenameColumn(
-                name: "TripId",
-                table: "TripLeg",
-                newName: "OrderId");
+            // See the matching comment in Up(): raw SQL works around a NullReferenceException in
+            // MySql.EntityFrameworkCore 8.0.5's RenameColumn/RenameIndex SQL generator.
+            migrationBuilder.Sql(
+                "ALTER TABLE `TripLeg` CHANGE COLUMN `TripId` `OrderId` char(36) NOT NULL;"
+            );
+            migrationBuilder.Sql(
+                "ALTER TABLE `TripLeg` RENAME INDEX `IX_TripLeg_TripId` TO `IX_TripLeg_OrderId`;"
+            );
 
-            migrationBuilder.RenameIndex(
-                name: "IX_TripLeg_TripId",
-                table: "TripLeg",
-                newName: "IX_TripLeg_OrderId");
+            migrationBuilder.Sql(
+                "ALTER TABLE `ServiceOrder` CHANGE COLUMN `TripId` `OrderId` char(36) NOT NULL;"
+            );
+            migrationBuilder.Sql(
+                "ALTER TABLE `ServiceOrder` RENAME INDEX `IX_ServiceOrder_TripId` TO `IX_ServiceOrder_OrderId`;"
+            );
 
-            migrationBuilder.RenameColumn(
-                name: "TripId",
-                table: "ServiceOrder",
-                newName: "OrderId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_ServiceOrder_TripId",
-                table: "ServiceOrder",
-                newName: "IX_ServiceOrder_OrderId");
-
-            migrationBuilder.RenameColumn(
-                name: "TripId",
-                table: "Passenger",
-                newName: "OrderId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_Passenger_TripId",
-                table: "Passenger",
-                newName: "IX_Passenger_OrderId");
+            migrationBuilder.Sql(
+                "ALTER TABLE `Passenger` CHANGE COLUMN `TripId` `OrderId` char(36) NOT NULL;"
+            );
+            migrationBuilder.Sql(
+                "ALTER TABLE `Passenger` RENAME INDEX `IX_Passenger_TripId` TO `IX_Passenger_OrderId`;"
+            );
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "TransportLicenseExpiryDate",
