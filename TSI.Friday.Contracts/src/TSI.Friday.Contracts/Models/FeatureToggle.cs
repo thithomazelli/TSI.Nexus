@@ -18,5 +18,11 @@ namespace TSI.Friday.Contracts.Models
         public string Description { get; set; } = string.Empty;
 
         public bool Enabled { get; set; }
+
+        /// <summary>
+        /// Key of the group this toggle belongs to (see <see cref="FeatureToggleKeys"/>), used to
+        /// render the grouped admin view. Null for group-level toggles themselves.
+        /// </summary>
+        public string? GroupKey { get; set; }
     }
 }

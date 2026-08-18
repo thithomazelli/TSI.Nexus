@@ -18,6 +18,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<Transaction> _repository;
         private readonly IRepository<Payment> _paymentRepository;
         private readonly IMapper _mapper;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
@@ -32,12 +33,14 @@ namespace TSI.Friday.Services
             IRepository<Transaction> repository,
             IRepository<Payment> paymentRepository,
             IMapper mapper,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
             _repository = repository;
             _paymentRepository = paymentRepository;
             _mapper = mapper;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -287,6 +290,19 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Transaction,
+                        FeatureToggleKeys.FinanceModule
+                    )
+                )
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var transactions = await _repository.GetAllAsync(
                     c => c.BusinessPartner,
                     o => o.Order,
@@ -327,6 +343,18 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Transaction,
+                        FeatureToggleKeys.FinanceModule
+                    )
+                )
+                {
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhuma Transação com o ID {id} foi encontrada";
+                    return result;
+                }
+
                 var transaction = await _repository.GetByIdAsync(
                     id,
                     c => c.BusinessPartner,

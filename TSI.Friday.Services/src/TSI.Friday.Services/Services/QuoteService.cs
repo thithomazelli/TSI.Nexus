@@ -197,6 +197,16 @@ namespace TSI.Friday.Services
                     quotes = quotes.Where(q => q.Type != QuoteType.Trip).ToList();
                 }
 
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Quote,
+                        FeatureToggleKeys.QuotesModule
+                    )
+                )
+                {
+                    quotes = quotes.Where(q => q.Type != QuoteType.Product).ToList();
+                }
+
                 result.Data = _mapper.Map<IEnumerable<QuoteDto>>(quotes);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -230,6 +240,17 @@ namespace TSI.Friday.Services
                 if (
                     quote?.Type == QuoteType.Trip
                     && !await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule)
+                )
+                {
+                    quote = null;
+                }
+
+                if (
+                    quote?.Type == QuoteType.Product
+                    && !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Quote,
+                        FeatureToggleKeys.QuotesModule
+                    )
                 )
                 {
                     quote = null;
@@ -273,6 +294,17 @@ namespace TSI.Friday.Services
                     quote = null;
                 }
 
+                if (
+                    quote?.Type == QuoteType.Product
+                    && !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Quote,
+                        FeatureToggleKeys.QuotesModule
+                    )
+                )
+                {
+                    quote = null;
+                }
+
                 result.Data = _mapper.Map<QuoteDto>(quote);
                 result.Status = ResponseStatus.Success;
                 result.Message =
@@ -309,6 +341,16 @@ namespace TSI.Friday.Services
                     quotes = quotes.Where(q => q.Type != QuoteType.Trip).ToList();
                 }
 
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Quote,
+                        FeatureToggleKeys.QuotesModule
+                    )
+                )
+                {
+                    quotes = quotes.Where(q => q.Type != QuoteType.Product).ToList();
+                }
+
                 result.Data = _mapper.Map<IEnumerable<QuoteDto>>(quotes);
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
@@ -342,6 +384,16 @@ namespace TSI.Friday.Services
                 if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
                 {
                     quotes = quotes.Where(q => q.Type != QuoteType.Trip).ToList();
+                }
+
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Quote,
+                        FeatureToggleKeys.QuotesModule
+                    )
+                )
+                {
+                    quotes = quotes.Where(q => q.Type != QuoteType.Product).ToList();
                 }
 
                 result.Data = _mapper.Map<IEnumerable<QuoteDto>>(quotes);

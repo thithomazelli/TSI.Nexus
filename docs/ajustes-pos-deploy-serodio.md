@@ -40,11 +40,25 @@ especificamente o role Admin.
 - `Transactions`/`Payments` controllers já são só `[Authorize]` (qualquer autenticado) — não
   precisam de mudança.
 
-## 3. Modal "Adicionar Orçamento" (Viagem) sem scroll
+## 3. Modais (Angular Material `mat-dialog-container`) — tamanho/scroll quebrado
 
-A ser confirmado/corrigido olhando o CSS do modal em tela real (Playwright) antes de mexer —
-provavelmente falta `max-height` + `overflow-y: auto` no container do modal quando o conteúdo
-(seção "Dados da Viagem" nova) ultrapassa a altura da viewport.
+**Atualizado (screenshots confirmam):** não é só o modal de Orçamento de Viagem — o mesmo padrão
+quebrado aparece no modal "Adicionar Pedido" e outros. Em telas menores o conteúdo estoura o
+modal, o scroll não entra, e os botões Cancelar/Salvar somem completamente (nem ficam visíveis
+rolando).
+
+**Padrão esperado:** o modal cresce proporcionalmente ao conteúdo até um limite baseado no
+tamanho da tela; ao atingir esse limite, só a área central (os campos) ganha scroll vertical —
+título e botões ficam sempre fixos/visíveis, nunca saem de tela.
+
+Primeira correção (no `quote-form`, já commitada) mexeu só na extensão do
+`.modal-scrollable-area` daquele componente — insuficiente, porque o problema é estrutural/CSS
+no nível do container do dialog do Angular Material, não só daquele formulário. Fix real:
+- CSS global no container do `mat-dialog`/`.custom-modal`: `max-height` relativo à viewport,
+  layout flex com header e footer fixos e só a área do meio (`.modal-scrollable-area`) rolando.
+- Auditar cada formulário em modal (Orçamento, Viagem, Pedido, Cliente, etc.) pra garantir que
+  todos os campos — incluindo pagamento/transação — fiquem dentro de `.modal-scrollable-area`,
+  e os botões de ação sempre fora, no rodapé fixo.
 
 ## 4. Campo de data não permite digitar (regressão)
 
@@ -82,7 +96,7 @@ form de endereço aparecer sempre aberto, sem a opção de link.
 salvar um endereço (linha 298: `canDisplayAddressForm = canDisplayNewAddressLink ? true : false`).
 Modo edit não muda.
 
-## 7. Painel "Módulos" (Master) — granularidade por entidade + por grupo
+## 7. Painel "Módulos" (dentro de "Configuração", ver item 10) — granularidade por entidade + por grupo
 
 Hoje só existe 1 toggle (`FleetModule`) controlando um bloco monolítico de entidades. Pedido:
 listar **todas** as entidades do sistema, com duas visões em tabs:
@@ -133,7 +147,16 @@ login.
 - Ambas as preferências (`theme`, `language`) ficam no `User` (backend) e no perfil retornado no
   login/refresh-token, aplicadas no bootstrap do app.
 
+## 10. Área "Master" do sidebar vira "Configuração"
+
+Renomeia o item/grupo do sidebar de "Master" pra "Configuração". Dentro dela:
+- Painel de módulos (item 7 acima), como já planejado.
+- **Controle de alertas** (novo escopo): quais alertas o sistema dispara e sob quais condições —
+  a ser mapeado a partir do que já existe (ex.: manutenção de veículo vencida/a vencer,
+  "Devoluções em Atraso" do dashboard, licença de transporte a vencer) e transformado em
+  configuração editável em vez de fixo no código.
+
 ---
 
-**Status:** implementação em andamento, sem interrupções, conforme pedido. Reporto só ao
-finalizar tudo (ou se encontrar algo que exija uma decisão sua que eu não possa tomar sozinho).
+**Status:** implementação em andamento, sem interrupções, conforme pedido. Ao final, entrego uma
+tabela completa com todos os itens e o status de cada um pra você conferir.

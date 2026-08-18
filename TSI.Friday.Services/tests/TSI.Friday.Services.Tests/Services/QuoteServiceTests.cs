@@ -62,6 +62,9 @@ namespace TSI.Friday.Services.Tests.Services
             _featureToggleService
                 .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
                 .ReturnsAsync(true);
+            _featureToggleService
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
         }
 
         [Fact]
@@ -147,6 +150,97 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Single(result.Data);
             Assert.All(result.Data, q => Assert.Equal(QuoteType.Product, q.Type));
+        }
+
+        [Fact]
+        public async Task QuoteService_FindByBusinessPartnerId_ShouldFilterOutProductQuotes_WhenQuotesModuleDisabled()
+        {
+            // Arrange
+            var businessPartnerId = Guid.NewGuid();
+            var quotes = new List<Quote>
+            {
+                new() { Id = Guid.NewGuid(), Type = QuoteType.Product },
+                new() { Id = Guid.NewGuid(), Type = QuoteType.Trip },
+            };
+
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Quote, bool>>>()))
+                .ReturnsAsync(quotes);
+            _featureToggleService
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.Quote, FeatureToggleKeys.QuotesModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _quoteService.FindByBusinessPartnerId(businessPartnerId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data);
+            Assert.All(result.Data, q => Assert.Equal(QuoteType.Trip, q.Type));
+        }
+
+        [Fact]
+        public async Task QuoteService_FindByProductId_ShouldFilterOutProductQuotes_WhenQuotesModuleDisabled()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            var quotes = new List<Quote>
+            {
+                new() { Id = Guid.NewGuid(), Type = QuoteType.Product },
+                new() { Id = Guid.NewGuid(), Type = QuoteType.Trip },
+            };
+
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Quote, bool>>>()))
+                .ReturnsAsync(quotes);
+            _featureToggleService
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.Quote, FeatureToggleKeys.QuotesModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _quoteService.FindByProductId(productId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data);
+            Assert.All(result.Data, q => Assert.Equal(QuoteType.Trip, q.Type));
+        }
+
+        [Fact]
+        public async Task QuoteService_FindByQuoteNumber_ShouldReturnNoData_WhenProductQuoteAndQuotesModuleDisabled()
+        {
+            // Arrange
+            var quote = new Quote
+            {
+                Id = Guid.NewGuid(),
+                QuoteNumber = "SER-Q00001",
+                Type = QuoteType.Product,
+            };
+
+            _repository
+                .Setup(_ =>
+                    _.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Quote, bool>>>(),
+                        It.IsAny<Expression<Func<Quote, object>>[]>()
+                    )
+                )
+                .ReturnsAsync(quote);
+            _featureToggleService
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.Quote, FeatureToggleKeys.QuotesModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _quoteService.FindByQuoteNumber("SER-Q00001");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
         }
 
         [Fact]

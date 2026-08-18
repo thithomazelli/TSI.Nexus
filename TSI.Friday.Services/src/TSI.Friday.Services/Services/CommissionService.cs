@@ -64,7 +64,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Commission, FeatureToggleKeys.FleetModule))
                 {
                     result.Data = null;
                     result.Status = ResponseStatus.Success;
@@ -98,7 +98,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Commission, FeatureToggleKeys.FleetModule))
                 {
                     result.Data = [];
                     result.Status = ResponseStatus.Success;

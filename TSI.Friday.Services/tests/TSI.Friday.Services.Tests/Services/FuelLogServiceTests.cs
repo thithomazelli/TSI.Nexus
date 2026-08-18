@@ -24,6 +24,9 @@ namespace TSI.Friday.Services.Tests.Services
             _featureToggleServiceMock
                 .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
                 .ReturnsAsync(true);
+            _featureToggleServiceMock
+                            .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
+                            .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _service = new FuelLogService(
                 _repository.Object,

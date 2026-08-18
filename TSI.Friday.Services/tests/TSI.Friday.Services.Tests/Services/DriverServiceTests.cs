@@ -24,6 +24,9 @@ namespace TSI.Friday.Services.Tests.Services
             _featureToggleServiceMock
                 .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
                 .ReturnsAsync(true);
+            _featureToggleServiceMock
+                            .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
+                            .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _driverService = new DriverService(
                 _repository.Object,
@@ -275,7 +278,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             _featureToggleServiceMock
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act
@@ -291,7 +294,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             _featureToggleServiceMock
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act
@@ -307,7 +310,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             _featureToggleServiceMock
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act

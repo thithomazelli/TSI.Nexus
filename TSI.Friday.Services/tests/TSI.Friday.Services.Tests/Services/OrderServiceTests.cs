@@ -22,6 +22,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly Mock<ITransactionService> _transactionService;
         private readonly Mock<ISequenceService> _sequenceService;
         private readonly Mock<ICurrentUserService> _currentUserService;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logService;
         private readonly IList<OrderDto> _orderListMock;
         private readonly IMapper _mapper;
@@ -41,6 +42,13 @@ namespace TSI.Friday.Services.Tests.Services
             _transactionService = new Mock<ITransactionService>();
             _sequenceService = new Mock<ISequenceService>();
             _currentUserService = new Mock<ICurrentUserService>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logService = new Mock<ILogService>();
             _mapper = config.CreateMapper();
             _orderService = new OrderService(
@@ -50,6 +58,7 @@ namespace TSI.Friday.Services.Tests.Services
                 _sequenceService.Object,
                 _currentUserService.Object,
                 _mapper,
+                _featureToggleServiceMock.Object,
                 _logService.Object
             );
 

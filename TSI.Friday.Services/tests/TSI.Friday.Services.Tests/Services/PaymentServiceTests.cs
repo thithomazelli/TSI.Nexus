@@ -16,6 +16,7 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly PaymentService _paymentService;
         private readonly Mock<IRepository<Payment>> _repository;
+        private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
         private readonly Mock<ILogService> _logService;
         private readonly IList<Payment> _paymentsMock;
         private readonly IMapper _mapper;
@@ -23,6 +24,13 @@ namespace TSI.Friday.Services.Tests.Services
         public PaymentServiceTests()
         {
             _repository = new Mock<IRepository<Payment>>();
+            _featureToggleServiceMock = new Mock<IFeatureToggleService>();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logService = new Mock<ILogService>();
             var config = new MapperConfiguration(
                 cfg =>
@@ -33,7 +41,12 @@ namespace TSI.Friday.Services.Tests.Services
                 new LoggerFactory()
             );
             _mapper = config.CreateMapper();
-            _paymentService = new PaymentService(_repository.Object, _mapper, _logService.Object);
+            _paymentService = new PaymentService(
+                _repository.Object,
+                _mapper,
+                _featureToggleServiceMock.Object,
+                _logService.Object
+            );
 
             _paymentsMock = new List<Payment>
             {

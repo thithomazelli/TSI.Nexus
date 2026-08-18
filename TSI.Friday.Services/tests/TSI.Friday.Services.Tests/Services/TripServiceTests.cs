@@ -66,6 +66,9 @@ namespace TSI.Friday.Services.Tests.Services
             _featureToggleService
                 .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
                 .ReturnsAsync(true);
+            _featureToggleService
+                            .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
+                            .ReturnsAsync(true);
 
             // Default: no vehicle found, so the vehicle-assignment check is safely skipped unless a
             // test overrides this.
@@ -428,7 +431,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
             _featureToggleService
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Trip, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act
@@ -483,7 +486,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             _featureToggleService
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Trip, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act
@@ -598,7 +601,7 @@ namespace TSI.Friday.Services.Tests.Services
         {
             // Arrange
             _featureToggleService
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Trip, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act
@@ -623,7 +626,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var businessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             _featureToggleService
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Trip, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act
@@ -640,7 +643,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var driverId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             _featureToggleService
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Trip, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act
@@ -657,7 +660,7 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000001");
             _featureToggleService
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Trip, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act

@@ -147,7 +147,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 {
                     result.Data = [];
                     result.Status = ResponseStatus.Success;
@@ -178,7 +178,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 {
                     result.Data = null;
                     result.Status = ResponseStatus.Success;
@@ -214,7 +214,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 {
                     result.Data = null;
                     result.Status = ResponseStatus.Success;
@@ -254,7 +254,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 {
                     result.Data = [];
                     result.Status = ResponseStatus.Success;
@@ -287,7 +287,7 @@ namespace TSI.Friday.Services
 
             try
             {
-                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
                 {
                     result.Data = [];
                     result.Status = ResponseStatus.Success;

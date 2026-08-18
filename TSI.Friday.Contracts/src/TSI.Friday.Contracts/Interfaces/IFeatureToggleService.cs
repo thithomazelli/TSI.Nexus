@@ -42,5 +42,16 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="key">The Key of the module being checked. See <see cref="FeatureToggleKeys"/>.</param>
         /// <returns>Whether the module is currently enabled.</returns>
         Task<bool> IsEnabledAsync(string key);
+
+        /// <summary>
+        /// Same as <see cref="IsEnabledAsync(string)"/>, but also requires the entity's group
+        /// toggle to be enabled: the entity is only enabled if BOTH its own toggle and the group's
+        /// toggle are enabled. An entity-level toggle can turn one entity off within an enabled
+        /// group, but can't turn it back on while the whole group is off.
+        /// </summary>
+        /// <param name="key">The entity Key being checked. See <see cref="FeatureToggleKeys"/>.</param>
+        /// <param name="groupKey">The Key of the group this entity belongs to.</param>
+        /// <returns>Whether the entity is currently enabled.</returns>
+        Task<bool> IsEnabledAsync(string key, string groupKey);
     }
 }

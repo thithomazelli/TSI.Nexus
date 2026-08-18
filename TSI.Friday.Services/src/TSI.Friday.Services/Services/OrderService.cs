@@ -21,6 +21,7 @@ namespace TSI.Friday.Services
         private readonly ISequenceService _sequenceService;
         private readonly ICurrentUserService _currentUserService;
         private readonly IMapper _mapper;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         #endregion Properties
@@ -38,6 +39,7 @@ namespace TSI.Friday.Services
             ISequenceService sequenceService,
             ICurrentUserService currentUserService,
             IMapper mapper,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
@@ -47,6 +49,7 @@ namespace TSI.Friday.Services
             _sequenceService = sequenceService;
             _currentUserService = currentUserService;
             _mapper = mapper;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -243,6 +246,19 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Order,
+                        FeatureToggleKeys.SalesOrdersModule
+                    )
+                )
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var orders = await _repository.GetAllAsync(
                     o => o.BusinessPartner,
                     o => o.OrderProducts,
@@ -272,6 +288,18 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Order,
+                        FeatureToggleKeys.SalesOrdersModule
+                    )
+                )
+                {
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhum Pedido com o ID {id} foi encontrado";
+                    return result;
+                }
+
                 var order = await _repository.GetByIdAsync(
                     id,
                     o => o.BusinessPartner,

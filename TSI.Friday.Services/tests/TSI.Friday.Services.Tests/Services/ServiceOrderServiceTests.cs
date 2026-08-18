@@ -27,6 +27,9 @@ namespace TSI.Friday.Services.Tests.Services
             _featureToggleServiceMock
                 .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
                 .ReturnsAsync(true);
+            _featureToggleServiceMock
+                            .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
+                            .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _service = new ServiceOrderService(
                 _repository.Object,
@@ -67,7 +70,7 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             _featureToggleServiceMock
-                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FleetModule))
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.ServiceOrder, FeatureToggleKeys.FleetModule))
                 .ReturnsAsync(false);
 
             // Act

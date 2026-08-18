@@ -214,27 +214,85 @@ namespace TSI.Friday.Data
                     }
                 }
 
-                // ensure the fleet module feature toggle exists. Enabled by default, so this
-                // never changes the behaviour of a database that already has real fleet data.
+                // Ensure every group + entity feature toggle exists. All enabled by default, so
+                // this never changes the behaviour of a database that already has real data --
+                // it only ever fills in rows that don't exist yet.
                 var context = provider.GetRequiredService<MyDBContextEF>();
-                var fleetModuleExists = await context.FeatureToggle.AnyAsync(f =>
-                    f.Key == FeatureToggleKeys.FleetModule
-                );
-                if (!fleetModuleExists)
+                var featureToggles = new[]
                 {
-                    await context.FeatureToggle.AddAsync(
-                        new FeatureToggle
-                        {
-                            Key = FeatureToggleKeys.FleetModule,
-                            Name = "Módulo de Frota / Viagens",
-                            Description =
-                                "Controla a exibição de Viagens, Veículos, Motoristas, Ordens de Serviço e demais dados de frota em todo o sistema.",
-                            Enabled = true,
-                        }
-                    );
-                    await context.SaveChangesAsync();
-                    logger?.LogInformation("FeatureToggle 'FleetModule' created (enabled)");
+                    // Groups
+                    (
+                        Key: FeatureToggleKeys.FleetModule,
+                        Name: "Módulo de Frota / Viagens",
+                        Description: "Controla a exibição de Viagens, Veículos, Motoristas, Ordens de Serviço e demais dados de frota em todo o sistema.",
+                        GroupKey: (string?)null
+                    ),
+                    (
+                        Key: FeatureToggleKeys.FinanceModule,
+                        Name: "Financeiro / Relatórios",
+                        Description: "Controla a exibição de Transações, Pagamentos e Relatórios em todo o sistema.",
+                        GroupKey: (string?)null
+                    ),
+                    (
+                        Key: FeatureToggleKeys.QuotesModule,
+                        Name: "Orçamentos",
+                        Description: "Controla a exibição de Orçamentos do tipo Produto em todo o sistema.",
+                        GroupKey: (string?)null
+                    ),
+                    (
+                        Key: FeatureToggleKeys.SalesOrdersModule,
+                        Name: "Pedidos de Venda",
+                        Description: "Controla a exibição de Pedidos de Venda em todo o sistema.",
+                        GroupKey: (string?)null
+                    ),
+                    (
+                        Key: FeatureToggleKeys.AttachmentsModule,
+                        Name: "Anexos",
+                        Description: "Controla a exibição de Anexos em todo o sistema.",
+                        GroupKey: (string?)null
+                    ),
+                    // Fleet/Viagens entities
+                    (Key: FeatureToggleKeys.Trip, Name: "Viagens", Description: "Controla a exibição de Viagens.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.TripLeg, Name: "Trechos de Viagem", Description: "Controla a exibição de Trechos de Viagem.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.Passenger, Name: "Passageiros", Description: "Controla a exibição de Passageiros.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.Driver, Name: "Motoristas", Description: "Controla a exibição de Motoristas.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.Vehicle, Name: "Veículos", Description: "Controla a exibição de Veículos.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.FuelLog, Name: "Abastecimentos", Description: "Controla a exibição de Abastecimentos.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.VehicleMaintenance, Name: "Manutenções", Description: "Controla a exibição de Manutenções de Veículo.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.ServiceOrder, Name: "Ordens de Serviço", Description: "Controla a exibição de Ordens de Serviço.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.Commission, Name: "Comissões", Description: "Controla a exibição de Comissões de Motorista.", GroupKey: FeatureToggleKeys.FleetModule),
+                    // Financeiro entities
+                    (Key: FeatureToggleKeys.Transaction, Name: "Transações", Description: "Controla a exibição de Transações.", GroupKey: FeatureToggleKeys.FinanceModule),
+                    (Key: FeatureToggleKeys.Payment, Name: "Pagamentos", Description: "Controla a exibição de Pagamentos.", GroupKey: FeatureToggleKeys.FinanceModule),
+                    // Orçamentos entities
+                    (Key: FeatureToggleKeys.Quote, Name: "Orçamentos (Produto)", Description: "Controla a exibição de Orçamentos do tipo Produto.", GroupKey: FeatureToggleKeys.QuotesModule),
+                    // Pedidos de Venda entities
+                    (Key: FeatureToggleKeys.Order, Name: "Pedidos de Venda", Description: "Controla a exibição de Pedidos de Venda.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
+                    (Key: FeatureToggleKeys.OrderProduct, Name: "Itens de Pedido", Description: "Controla a exibição de Itens de Pedido.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
+                    // Anexos entities
+                    (Key: FeatureToggleKeys.Attachment, Name: "Anexos", Description: "Controla a exibição de Anexos.", GroupKey: FeatureToggleKeys.AttachmentsModule),
+                };
+
+                foreach (var toggle in featureToggles)
+                {
+                    var exists = await context.FeatureToggle.AnyAsync(f => f.Key == toggle.Key);
+                    if (!exists)
+                    {
+                        await context.FeatureToggle.AddAsync(
+                            new FeatureToggle
+                            {
+                                Key = toggle.Key,
+                                Name = toggle.Name,
+                                Description = toggle.Description,
+                                GroupKey = toggle.GroupKey,
+                                Enabled = true,
+                            }
+                        );
+                        logger?.LogInformation("FeatureToggle '{Key}' created (enabled)", toggle.Key);
+                    }
                 }
+
+                await context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

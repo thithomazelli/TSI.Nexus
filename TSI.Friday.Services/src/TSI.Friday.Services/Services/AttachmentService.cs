@@ -19,6 +19,7 @@ namespace TSI.Friday.Services
         private readonly MyDBContextEF _db;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
 
         private readonly string _downloadUrlTemplate;
@@ -32,6 +33,7 @@ namespace TSI.Friday.Services
             MyDBContextEF db,
             IMapper mapper,
             IConfiguration config,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
@@ -39,6 +41,8 @@ namespace TSI.Friday.Services
             _db = db ?? throw new ArgumentNullException(nameof(db));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _config = config ?? throw new ArgumentNullException(nameof(config));
+            _featureToggleService =
+                featureToggleService ?? throw new ArgumentNullException(nameof(featureToggleService));
             _logService = logService ?? throw new ArgumentNullException(nameof(logService));
 
             var baseUrl = _config["JWT:Issuer"]?.TrimEnd('/') ?? string.Empty;
@@ -260,6 +264,18 @@ namespace TSI.Friday.Services
             var response = new WebApiResponse<AttachmentResponseDto>();
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Attachment,
+                        FeatureToggleKeys.AttachmentsModule
+                    )
+                )
+                {
+                    response.Status = ResponseStatus.Success;
+                    response.Message = "Não encontrado";
+                    return response;
+                }
+
                 var data = await _db.Attachments.FindAsync(id);
                 if (data == null)
                 {
@@ -287,6 +303,18 @@ namespace TSI.Friday.Services
             var response = new WebApiResponse<AttachmentFileResult>();
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Attachment,
+                        FeatureToggleKeys.AttachmentsModule
+                    )
+                )
+                {
+                    response.Status = ResponseStatus.Error;
+                    response.Message = "Anexo não encontrado.";
+                    return response;
+                }
+
                 var attachment = await _db.Attachments.FindAsync(id);
                 if (attachment == null)
                 {

@@ -119,8 +119,26 @@ namespace TSI.Friday.Services
         {
             try
             {
-                var featureToggle = await _repository.FirstOrDefaultAsync(f => f.Key == key);
-                return featureToggle?.Enabled ?? true;
+                return await IsToggleEnabledOrDefaultAsync(key);
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "FeatureToggleService.IsEnabledAsync", key);
+                return true;
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> IsEnabledAsync(string key, string groupKey)
+        {
+            try
+            {
+                if (!await IsToggleEnabledOrDefaultAsync(key))
+                {
+                    return false;
+                }
+
+                return await IsToggleEnabledOrDefaultAsync(groupKey);
             }
             catch (Exception ex)
             {
@@ -130,5 +148,15 @@ namespace TSI.Friday.Services
         }
 
         #endregion Public methods
+
+        #region Private methods
+
+        private async Task<bool> IsToggleEnabledOrDefaultAsync(string key)
+        {
+            var featureToggle = await _repository.FirstOrDefaultAsync(f => f.Key == key);
+            return featureToggle?.Enabled ?? true;
+        }
+
+        #endregion Private methods
     }
 }

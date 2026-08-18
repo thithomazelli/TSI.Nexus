@@ -17,6 +17,7 @@ namespace TSI.Friday.Services
         /// </summary>
         private readonly IRepository<Payment> _repository;
         private readonly IMapper _mapper;
+        private readonly IFeatureToggleService _featureToggleService;
         private readonly ILogService _logService;
         private readonly string[] _monthNamesAbbr =
         {
@@ -60,11 +61,13 @@ namespace TSI.Friday.Services
         public PaymentService(
             IRepository<Payment> repository,
             IMapper mapper,
+            IFeatureToggleService featureToggleService,
             ILogService logService
         )
         {
             _repository = repository;
             _mapper = mapper;
+            _featureToggleService = featureToggleService;
             _logService = logService;
         }
 
@@ -154,6 +157,19 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Payment,
+                        FeatureToggleKeys.FinanceModule
+                    )
+                )
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
                 var payments = await _repository.GetAllAsync(
                     t => t.Transaction,
                     c => c.BusinessPartner,
@@ -181,6 +197,19 @@ namespace TSI.Friday.Services
 
             try
             {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.Payment,
+                        FeatureToggleKeys.FinanceModule
+                    )
+                )
+                {
+                    result.Data = null;
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhuma Parcela de pagamento com o ID {id} foi encontrada";
+                    return result;
+                }
+
                 var payment = await _repository.GetByIdAsync(id);
                 result.Data = _mapper.Map<PaymentDto>(payment);
                 result.Status = ResponseStatus.Success;
