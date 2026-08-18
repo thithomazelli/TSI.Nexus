@@ -31,6 +31,7 @@ import {
   ResponseStatus,
   NotificationService,
   TripService,
+  TranslationService,
 } from '@friday/core';
 
 import { MatDialogRef } from '@angular/material/dialog';
@@ -94,6 +95,7 @@ export class TripFormComponent
     private tripService: TripService,
     private vehicleService: VehicleService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -253,10 +255,10 @@ export class TripFormComponent
         const found = clients.find((c) => c.name === businessPartnerName);
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Cliente não encontrado',
-            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR') }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR').toLowerCase(), name: businessPartnerName }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           const confirmSub = confirmRef
             .afterClosed()

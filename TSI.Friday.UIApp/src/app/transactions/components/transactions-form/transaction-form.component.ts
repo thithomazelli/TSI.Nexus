@@ -27,6 +27,7 @@ import {
   NotificationService,
   TransactionService,
   ResponseStatus,
+  TranslationService,
 } from '@friday/core';
 
 import {
@@ -78,37 +79,47 @@ export class TransactionFormComponent
   isPayment = false;
   showClientAndOrder = false;
 
-  statusOptions = [
-    { label: 'Em aberto', value: PaymentStatus.Pending },
-    { label: 'Pago', value: PaymentStatus.Approved },
-    { label: 'Atrasado', value: PaymentStatus.Delayed },
-  ];
+  get statusOptions() {
+    return [
+      { label: this.translationService.instant('REPORTS.STATUS_OPEN'), value: PaymentStatus.Pending },
+      { label: this.translationService.instant('REPORTS.STATUS_PAID'), value: PaymentStatus.Approved },
+      { label: this.translationService.instant('REPORTS.STATUS_DELAYED'), value: PaymentStatus.Delayed },
+    ];
+  }
 
-  typeOptions = [
-    { label: 'Cliente', value: PaymentType.Incoming },
-    { label: 'Fornecedor', value: PaymentType.Outgoing },
-  ];
+  get typeOptions() {
+    return [
+      { label: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR'), value: PaymentType.Incoming },
+      { label: this.translationService.instant('BUSINESS_PARTNER.SUPPLIER_SINGULAR'), value: PaymentType.Outgoing },
+    ];
+  }
 
-  methodOptions = [
-    { label: 'Dinheiro', value: PaymentMethod.Cash },
-    { label: 'Pix', value: PaymentMethod.Pix },
-    { label: 'Cartão de Crédito', value: PaymentMethod.CreditCard },
-  ];
+  get methodOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_CASH'), value: PaymentMethod.Cash },
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_PIX'), value: PaymentMethod.Pix },
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_CREDIT_CARD'), value: PaymentMethod.CreditCard },
+    ];
+  }
 
-  conditionOptions = [
-    { label: 'À Vista', value: PaymentCondition.FullPayment },
-    { label: 'Parcelado', value: PaymentCondition.InInstallments },
-  ];
+  get conditionOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.FULL_PAYMENT'), value: PaymentCondition.FullPayment },
+      { label: this.translationService.instant('TRANSACTIONS.IN_PAYMENTS'), value: PaymentCondition.InInstallments },
+    ];
+  }
 
-  categoryOptions = [
-    { label: 'Combustível', value: 'Combustível' },
-    { label: 'Despesas Fixas', value: 'Despesas Fixas' },
-    { label: 'Despesas Variáveis', value: 'Despesas Variáveis' },
-    { label: 'Despesas Veículos', value: 'Despesas Veículos' },
-    { label: 'Diversos', value: 'Diversos' },
-    { label: 'Funcionários', value: 'Funcionários' },
-    { label: 'Recebimentos', value: 'Recebimentos' },
-  ];
+  get categoryOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FUEL'), value: 'Combustível' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FIXED_EXPENSES'), value: 'Despesas Fixas' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VARIABLE_EXPENSES'), value: 'Despesas Variáveis' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VEHICLE_EXPENSES'), value: 'Despesas Veículos' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_MISC'), value: 'Diversos' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_EMPLOYEES'), value: 'Funcionários' },
+      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_RECEIVABLES'), value: 'Recebimentos' },
+    ];
+  }
 
   private _subscriptions: Subscription[] = [];
   private _baseEndPoint = ApiType.Transactions;
@@ -128,6 +139,7 @@ export class TransactionFormComponent
     private notificationService: NotificationService,
     private routerService: Router,
     private transactionService: TransactionService,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -222,7 +234,7 @@ export class TransactionFormComponent
           }
         },
         error: (err) => {
-          this.notificationService.showMessage('Error', 'Erro ao salvar');
+          this.notificationService.showMessage('Error', this.translationService.instant('COMMON.SAVE_ERROR'));
         },
       }),
     );
@@ -241,7 +253,7 @@ export class TransactionFormComponent
     this.modalService
       .showSweetConfirmation(
         '',
-        'Deseja realmente excluir este registro?',
+        this.translationService.instant('GRID.CONFIRM_DELETE'),
         'question',
       )
       .then((result: any) => {
@@ -274,7 +286,7 @@ export class TransactionFormComponent
                 error: (err) => {
                   this.notificationService.showMessage(
                     'error',
-                    'Erro ao remover',
+                    this.translationService.instant('ORDERS.REMOVE_ERROR'),
                   );
                 },
               }),
@@ -323,7 +335,9 @@ export class TransactionFormComponent
         return;
       }
       const isClient = this.form.get('type')?.value === PaymentType.Incoming;
-      const entityLabel = isClient ? 'Cliente' : 'Fornecedor';
+      const entityLabel = isClient
+        ? this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR')
+        : this.translationService.instant('BUSINESS_PARTNER.SUPPLIER_SINGULAR');
       // Sempre checa a lista de clientes ou fornecedores, mesmo se businessPartnerId estiver vazio
       const sub = this.businessPartnersArray$.subscribe((businessPartners) => {
         const found = businessPartners.find(
@@ -331,10 +345,10 @@ export class TransactionFormComponent
         );
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: `${entityLabel} não encontrado`,
-            message: `O ${entityLabel.toLowerCase()} "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: entityLabel }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: entityLabel.toLowerCase(), name: businessPartnerName }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           const confirmSub = confirmRef
             .afterClosed()
@@ -557,10 +571,10 @@ export class TransactionFormComponent
           if (newStatus === PaymentStatus.Approved && hasOpenedPayments) {
             const confirmed = await this.modalService
               .showConfirmation({
-                title: 'Fechar pagamento',
-                message: 'Deseja marcar todos os pagamentos como aprovados?',
-                confirmButtonText: 'Sim',
-                cancelButtonText: 'Não',
+                title: this.translationService.instant('TRANSACTIONS.CLOSE_PAYMENT'),
+                message: this.translationService.instant('TRANSACTIONS.CONFIRM_APPROVE_ALL'),
+                confirmButtonText: this.translationService.instant('COMMON.YES'),
+                cancelButtonText: this.translationService.instant('COMMON.NO'),
               })
               .afterClosed()
               .toPromise();

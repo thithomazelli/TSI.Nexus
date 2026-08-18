@@ -20,6 +20,7 @@ import {
   WebApiResponse,
   NotificationService,
   OrderProductService,
+  TranslationService,
 } from '@friday/core';
 import {
   Observable,
@@ -74,17 +75,21 @@ export class OrderProductsFormComponent
   filteredProductsSku$!: Observable<Product[]>;
   filteredProductsName$!: Observable<Product[]>;
 
-  productTypeOptions = [
-    { label: 'Aluguel', value: ProductType.Rental },
-    { label: 'Venda', value: ProductType.Sale },
-    { label: 'Serviço', value: ProductType.Service },
-  ];
+  get productTypeOptions() {
+    return [
+      { label: this.translationService.instant('PRODUCTS.TYPE_RENTAL'), value: ProductType.Rental },
+      { label: this.translationService.instant('PRODUCTS.TYPE_SALE'), value: ProductType.Sale },
+      { label: this.translationService.instant('PRODUCTS.SINGULAR'), value: ProductType.Service },
+    ];
+  }
 
-  orderProductStatusOptions = [
-    { label: 'Vigente', value: OrderProductStatus.InProgress },
-    { label: 'Atrasado', value: OrderProductStatus.Delayed },
-    { label: 'Devolvido', value: OrderProductStatus.Returned },
-  ];
+  get orderProductStatusOptions() {
+    return [
+      { label: this.translationService.instant('ORDER_PRODUCTS.STATUS_IN_PROGRESS'), value: OrderProductStatus.InProgress },
+      { label: this.translationService.instant('REPORTS.STATUS_DELAYED'), value: OrderProductStatus.Delayed },
+      { label: this.translationService.instant('ORDER_PRODUCTS.STATUS_RETURNED'), value: OrderProductStatus.Returned },
+    ];
+  }
 
   orderProductInfo = [
     {
@@ -110,6 +115,7 @@ export class OrderProductsFormComponent
     private notificationService: NotificationService,
     private orderProductService: OrderProductService,
     private productService: ProductService,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -178,7 +184,7 @@ export class OrderProductsFormComponent
           }
         },
         error: (err) => {
-          this.notificationService.showMessage('Error', 'Erro ao salvar');
+          this.notificationService.showMessage('Error', this.translationService.instant('COMMON.SAVE_ERROR'));
         },
       }),
     );
@@ -193,7 +199,7 @@ export class OrderProductsFormComponent
     this.modalService
       .showSweetConfirmation(
         '',
-        'Deseja realmente excluir este registro?',
+        this.translationService.instant('GRID.CONFIRM_DELETE'),
         'question',
       )
       .then((result: any) => {
@@ -221,7 +227,7 @@ export class OrderProductsFormComponent
                 error: (err) => {
                   this.notificationService.showMessage(
                     'error',
-                    'Erro ao remover',
+                    this.translationService.instant('ORDERS.REMOVE_ERROR'),
                   );
                 },
               }),
@@ -254,10 +260,10 @@ export class OrderProductsFormComponent
         const found = products.find((p) => p.sku === productSku);
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Produto não encontrado',
-            message: `O produto "${productSku}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('PRODUCTS.SINGULAR') }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('PRODUCTS.SINGULAR').toLowerCase(), name: productSku }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           confirmRef.afterClosed().subscribe((confirmed: boolean) => {
             if (confirmed) {
@@ -304,10 +310,10 @@ export class OrderProductsFormComponent
         const found = products.find((p) => p.name === productName);
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Produto não encontrado',
-            message: `O produto "${productName}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('PRODUCTS.SINGULAR') }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('PRODUCTS.SINGULAR').toLowerCase(), name: productName }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           confirmRef.afterClosed().subscribe((confirmed: boolean) => {
             if (confirmed) {
@@ -361,8 +367,8 @@ export class OrderProductsFormComponent
     if (quantity > product.quantityInStock) {
       this.modalService.showNotification(
         false,
-        'Quantidade maior que estoque',
-        `A quantidade acrescentada (${quantity}) é maior do que o estoque disponível (${product.quantityInStock}).`,
+        this.translationService.instant('PRODUCTS.STOCK_EXCEEDED_TITLE'),
+        this.translationService.instant('PRODUCTS.STOCK_EXCEEDED_MESSAGE', { qty: quantity + '', stock: product.quantityInStock + '' }),
       );
       quantityControl.setValue(this.data?.previousQuantity);
     }
@@ -394,8 +400,8 @@ export class OrderProductsFormComponent
     ) {
       this.modalService.showNotification(
         false,
-        'Produto sem estoque',
-        `O produto "${product.name}" está sem estoque!`,
+        this.translationService.instant('PRODUCTS.OUT_OF_STOCK_TITLE'),
+        this.translationService.instant('PRODUCTS.OUT_OF_STOCK_MESSAGE', { name: product.name + '' }),
       );
       // Limpa seleção para forçar nova escolha
       this.form.get('productSku')?.setValue('');
@@ -446,8 +452,8 @@ export class OrderProductsFormComponent
         }
         this.modalService.showNotification(
           false,
-          'Data inválida',
-          'A data de entrega não pode ser menor que a data de retirada.',
+          this.translationService.instant('COMMON.DATE_INVALID'),
+          this.translationService.instant('ORDER_PRODUCTS.INVALID_END_DATE'),
         );
       }
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiType, ResponseStatus } from '../../enums';
 import { QuoteProduct } from '../../models';
-import { ApiService, WebApiResponse } from '@friday/core';
+import { ApiService, TranslationService, WebApiResponse } from '@friday/core';
 import { BehaviorSubject, Observable, of, Subject, tap } from 'rxjs';
 
 @Injectable({
@@ -16,7 +16,10 @@ export class QuoteProductService {
   quoteProductChanged$ = this._quoteProductChangedSubject.asObservable();
   quoteProductAdded$ = this._quoteProductAdded$.asObservable();
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private translationService: TranslationService,
+  ) {}
 
   getAll(): Observable<WebApiResponse<QuoteProduct[]>> {
     return this.apiService
@@ -69,7 +72,7 @@ export class QuoteProductService {
     this._quoteProductAdded$.next(quoteProduct);
     return of({
       data: quoteProduct,
-      message: 'Item de orçamento adicionado temporariamente',
+      message: this.translationService.instant('QUOTES.ITEM_ADDED_TEMPORARILY'),
       status: ResponseStatus.Success,
     });
   }

@@ -21,6 +21,7 @@ import {
   NotificationService,
   QuoteProductService,
   QuoteService,
+  TranslationService,
 } from '@friday/core';
 import {
   Observable,
@@ -73,11 +74,13 @@ export class QuoteProductFormComponent
   filteredProductsSku$!: Observable<Product[]>;
   filteredProductsName$!: Observable<Product[]>;
 
-  productTypeOptions = [
-    { label: 'Aluguel', value: ProductType.Rental },
-    { label: 'Venda', value: ProductType.Sale },
-    { label: 'Serviço', value: ProductType.Service },
-  ];
+  get productTypeOptions() {
+    return [
+      { label: this.translationService.instant('PRODUCTS.TYPE_RENTAL'), value: ProductType.Rental },
+      { label: this.translationService.instant('PRODUCTS.TYPE_SALE'), value: ProductType.Sale },
+      { label: this.translationService.instant('PRODUCTS.SINGULAR'), value: ProductType.Service },
+    ];
+  }
 
   private _subscriptions: Subscription[] = [];
   private _quoteData: Quote | null = null;
@@ -90,6 +93,7 @@ export class QuoteProductFormComponent
     private quoteService: QuoteService,
     private quoteProductService: QuoteProductService,
     private productService: ProductService,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -133,7 +137,7 @@ export class QuoteProductFormComponent
           }
         },
         error: (err) => {
-          this.notificationService.showMessage('Error', 'Erro ao salvar');
+          this.notificationService.showMessage('Error', this.translationService.instant('COMMON.SAVE_ERROR'));
         },
       }),
     );
@@ -148,7 +152,7 @@ export class QuoteProductFormComponent
     this.modalService
       .showSweetConfirmation(
         '',
-        'Deseja realmente excluir este registro?',
+        this.translationService.instant('GRID.CONFIRM_DELETE'),
         'question',
       )
       .then((result: any) => {
@@ -176,7 +180,7 @@ export class QuoteProductFormComponent
                 error: (err) => {
                   this.notificationService.showMessage(
                     'error',
-                    'Erro ao remover',
+                    this.translationService.instant('ORDERS.REMOVE_ERROR'),
                   );
                 },
               }),
@@ -223,10 +227,10 @@ export class QuoteProductFormComponent
         const found = products.find((p) => p.sku === productSku);
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Produto não encontrado',
-            message: `O produto "${productSku}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('PRODUCTS.SINGULAR') }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('PRODUCTS.SINGULAR').toLowerCase(), name: productSku }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           confirmRef.afterClosed().subscribe((confirmed: boolean) => {
             if (confirmed) {
@@ -273,10 +277,10 @@ export class QuoteProductFormComponent
         const found = products.find((p) => p.name === productName);
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Produto não encontrado',
-            message: `O produto "${productName}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('PRODUCTS.SINGULAR') }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('PRODUCTS.SINGULAR').toLowerCase(), name: productName }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           confirmRef.afterClosed().subscribe((confirmed: boolean) => {
             if (confirmed) {

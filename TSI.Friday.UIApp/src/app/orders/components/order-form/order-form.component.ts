@@ -28,6 +28,7 @@ import {
   NotificationService,
   OrderService,
   OrderProductService,
+  TranslationService,
 } from '@friday/core';
 
 import { MatDialogRef } from '@angular/material/dialog';
@@ -71,11 +72,13 @@ export class OrderFormComponent
   businessPartnersArray$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
-  orderStatusOptions = [
-    { value: OrderStatus.Open, label: 'Em Aberto' },
-    { value: OrderStatus.Closed, label: 'Fechado' },
-    { value: OrderStatus.WaitingPayment, label: 'Aguardando Pagamento' },
-  ];
+  get orderStatusOptions() {
+    return [
+      { value: OrderStatus.Open, label: this.translationService.instant('QUOTES.STATUS_OPEN') },
+      { value: OrderStatus.Closed, label: this.translationService.instant('QUOTES.STATUS_CLOSED') },
+      { value: OrderStatus.WaitingPayment, label: this.translationService.instant('QUOTES.STATUS_WAITING_PAYMENT') },
+    ];
+  }
 
   private _subscriptions: Subscription[] = [];
   private _baseEndPoint = ApiType.Orders;
@@ -91,6 +94,7 @@ export class OrderFormComponent
     private orderService: OrderService,
     private orderProductService: OrderProductService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -113,7 +117,7 @@ export class OrderFormComponent
           this.modalService.showNotification(
             true,
             '',
-            'Produto adicionado ao pedido com sucesso.',
+            this.translationService.instant('ORDERS.PRODUCT_ADDED_SUCCESS'),
           );
         }
       }),
@@ -188,7 +192,7 @@ export class OrderFormComponent
           }
         },
         error: (err) => {
-          this.notificationService.showMessage('Error', 'Erro ao salvar');
+          this.notificationService.showMessage('Error', this.translationService.instant('COMMON.SAVE_ERROR'));
         },
       }),
     );
@@ -207,7 +211,7 @@ export class OrderFormComponent
     this.modalService
       .showSweetConfirmation(
         '',
-        'Deseja realmente excluir este registro?',
+        this.translationService.instant('GRID.CONFIRM_DELETE'),
         'question',
       )
       .then((result: any) => {
@@ -240,7 +244,7 @@ export class OrderFormComponent
                 error: (err) => {
                   this.notificationService.showMessage(
                     'error',
-                    'Erro ao remover',
+                    this.translationService.instant('ORDERS.REMOVE_ERROR'),
                   );
                 },
               }),
@@ -285,7 +289,7 @@ export class OrderFormComponent
       this.modalService.showNotification(
         false,
         '',
-        'Por favor, selecione um cliente antes de adicionar produtos ao pedido.',
+        this.translationService.instant('ORDERS.SELECT_CLIENT_HINT'),
       );
       return;
     }
@@ -314,10 +318,10 @@ export class OrderFormComponent
         const found = clients.find((c) => c.name === businessPartnerName);
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Cliente não encontrado',
-            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR') }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR').toLowerCase(), name: businessPartnerName }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           const confirmSub = confirmRef
             .afterClosed()
@@ -568,10 +572,10 @@ export class OrderFormComponent
         if (newStatus === OrderStatus.Closed) {
           const confirmed = await this.modalService
             .showConfirmation({
-              title: 'Fechar pedido',
-              message: 'Deseja marcar todos os produtos como retornados?',
-              confirmButtonText: 'Sim',
-              cancelButtonText: 'Não',
+              title: this.translationService.instant('ORDERS.CLOSE_ORDER'),
+              message: this.translationService.instant('ORDERS.CONFIRM_RETURN_ALL'),
+              confirmButtonText: this.translationService.instant('COMMON.YES'),
+              cancelButtonText: this.translationService.instant('COMMON.NO'),
             })
             .afterClosed()
             .toPromise();
@@ -613,7 +617,7 @@ export class OrderFormComponent
     this.dialogRef?.close(response);
     this.modalService.showNotification(
       response.status == ResponseStatus.Success,
-      'Pedido adicionado',
+      this.translationService.instant('ORDERS.ORDER_ADDED'),
       response.message,
     );
   }

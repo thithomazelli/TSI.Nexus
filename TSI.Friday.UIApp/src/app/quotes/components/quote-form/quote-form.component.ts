@@ -31,6 +31,7 @@ import {
   QuoteProductService,
   PaymentCondition,
   PaymentMethod,
+  TranslationService,
 } from '@friday/core';
 
 import { MatDialogRef } from '@angular/material/dialog';
@@ -76,23 +77,29 @@ export class QuoteFormComponent
   vehicles: Vehicle[] = [];
   drivers: Driver[] = [];
 
-  quoteStatusOptions = [
-    { value: QuoteStatus.Open, label: 'Em Aberto' },
-    { value: QuoteStatus.Canceled, label: 'Cancelado' },
-    { value: QuoteStatus.Converted, label: 'Convertido' },
-    { value: QuoteStatus.Expired, label: 'Expirado' },
-  ];
+  get quoteStatusOptions() {
+    return [
+      { value: QuoteStatus.Open, label: this.translationService.instant('QUOTES.STATUS_OPEN') },
+      { value: QuoteStatus.Canceled, label: this.translationService.instant('QUOTES.STATUS_CANCELED') },
+      { value: QuoteStatus.Converted, label: this.translationService.instant('QUOTES.STATUS_CONVERTED') },
+      { value: QuoteStatus.Expired, label: this.translationService.instant('QUOTES.STATUS_EXPIRED') },
+    ];
+  }
 
-  methodOptions = [
-    { label: 'Dinheiro', value: PaymentMethod.Cash },
-    { label: 'Pix', value: PaymentMethod.Pix },
-    { label: 'Cartão de Crédito', value: PaymentMethod.CreditCard },
-  ];
+  get methodOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_CASH'), value: PaymentMethod.Cash },
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_PIX'), value: PaymentMethod.Pix },
+      { label: this.translationService.instant('TRANSACTIONS.METHOD_CREDIT_CARD'), value: PaymentMethod.CreditCard },
+    ];
+  }
 
-  conditionOptions = [
-    { label: 'À Vista', value: PaymentCondition.FullPayment },
-    { label: 'Parcelado', value: PaymentCondition.InInstallments },
-  ];
+  get conditionOptions() {
+    return [
+      { label: this.translationService.instant('TRANSACTIONS.FULL_PAYMENT'), value: PaymentCondition.FullPayment },
+      { label: this.translationService.instant('TRANSACTIONS.IN_PAYMENTS'), value: PaymentCondition.InInstallments },
+    ];
+  }
 
   private _subscriptions: Subscription[] = [];
   private _baseEndPoint = ApiType.Quotes;
@@ -108,6 +115,7 @@ export class QuoteFormComponent
     private quoteProductService: QuoteProductService,
     private vehicleService: VehicleService,
     private routerService: Router,
+    private translationService: TranslationService,
   ) {
     super();
   }
@@ -137,7 +145,7 @@ export class QuoteFormComponent
           this.modalService.showNotification(
             true,
             '',
-            'Produto adicionado ao orçamento com sucesso.',
+            this.translationService.instant('QUOTES.PRODUCT_ADDED_SUCCESS'),
           );
         }
       }),
@@ -180,7 +188,7 @@ export class QuoteFormComponent
           }
         },
         error: (err) => {
-          this.notificationService.showMessage('Error', 'Erro ao salvar');
+          this.notificationService.showMessage('Error', this.translationService.instant('COMMON.SAVE_ERROR'));
         },
       }),
     );
@@ -202,7 +210,7 @@ export class QuoteFormComponent
     if (!this.data) {
       this.notificationService?.showMessage(
         'Error',
-        'Orçamento não encontrado.',
+        this.translationService.instant('QUOTES.NOT_FOUND'),
       );
       return;
     }
@@ -216,10 +224,10 @@ export class QuoteFormComponent
         // Se status for Warning, exibe confirmação
         if (response.status === 'Warning') {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Atenção',
+            title: this.translationService.instant('COMMON.ATTENTION'),
             message: response.message,
-            confirmButtonText: 'Confirmar',
-            cancelButtonText: 'Cancelar',
+            confirmButtonText: this.translationService.instant('COMMON.CONFIRM'),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
           });
           confirmRef.afterClosed().subscribe((confirmed: boolean) => {
             if (confirmed) {
@@ -234,14 +242,14 @@ export class QuoteFormComponent
                   } else {
                     this.notificationService?.showMessage(
                       response.status,
-                      response.message || 'Falha ao converter orçamento.',
+                      response.message || this.translationService.instant('QUOTES.CONVERT_FAILED'),
                     );
                   }
                 },
                 error: () => {
                   this.notificationService?.showMessage(
                     ResponseStatus.Error,
-                    'Erro ao converter orçamento.',
+                    this.translationService.instant('QUOTES.CONVERT_ERROR'),
                   );
                 },
               });
@@ -258,14 +266,14 @@ export class QuoteFormComponent
         } else {
           this.notificationService?.showMessage(
             ResponseStatus.Error,
-            response.message || 'Falha ao converter orçamento.',
+            response.message || this.translationService.instant('QUOTES.CONVERT_FAILED'),
           );
         }
       },
       error: () => {
         this.notificationService?.showMessage(
           ResponseStatus.Error,
-          'Erro ao converter orçamento.',
+          this.translationService.instant('QUOTES.CONVERT_ERROR'),
         );
       },
     });
@@ -284,10 +292,10 @@ export class QuoteFormComponent
         const found = clients.find((c) => c.name === businessPartnerName);
         if (!found) {
           const confirmRef = this.modalService.showConfirmation({
-            title: 'Cliente não encontrado',
-            message: `O cliente "${businessPartnerName}" não existe. Deseja adicioná-lo?`,
-            cancelButtonText: 'Cancelar',
-            confirmButtonText: 'Sim',
+            title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR') }),
+            message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('BUSINESS_PARTNER.CLIENT_SINGULAR').toLowerCase(), name: businessPartnerName }),
+            cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+            confirmButtonText: this.translationService.instant('COMMON.YES'),
           });
           const confirmSub = confirmRef
             .afterClosed()
