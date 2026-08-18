@@ -106,7 +106,7 @@ jobs:
           LFTP_FTP_PASSWORD: ${{ secrets.SERODIO_FTP_PASSWORD }}
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          lftp -u "$LFTP_FTP_USERNAME","$LFTP_FTP_PASSWORD" "ftpes://$LFTP_FTP_SERVER" -e "
+          lftp -u "$LFTP_FTP_USERNAME","$LFTP_FTP_PASSWORD" "ftp://$LFTP_FTP_SERVER" -e "
             set ftp:ssl-force true;
             set ftp:ssl-protect-data true;
             set ssl:verify-certificate no;
