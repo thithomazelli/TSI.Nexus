@@ -13,7 +13,7 @@
 -->
 <configuration>
   <system.webServer>
-    <handlers>
+    <handlers accessPolicy="Read, Write, Script">
       <add
         name="aspNetCore"
         path="*"
@@ -23,9 +23,14 @@
       />
     </handlers>
 
+    <!--
+      processPath/arguments match the proven-working bianchinegocios production config: IIS
+      launches the app via the shared "dotnet" runtime already installed on the host, pointed at
+      the published .dll, rather than the self-contained .exe apphost.
+    -->
     <aspNetCore
-      processPath=".\TSI.Friday.WebAPI.exe"
-      arguments=""
+      processPath="dotnet"
+      arguments=".\TSI.Friday.WebAPI.dll"
       stdoutLogEnabled="false"
       stdoutLogFile=".\stdout"
       hostingModel="OutOfProcess"
@@ -39,5 +44,20 @@
         <environmentVariable name="MailJet__SecretKey" value="${MailJet__SecretKey}" />
       </environmentVariables>
     </aspNetCore>
+
+    <directoryBrowse enabled="false" />
+    <urlCompression doDynamicCompression="false" />
+    <defaultDocument enabled="true">
+      <files>
+        <clear />
+        <add value="index.htm" />
+        <add value="index.html" />
+        <add value="index.php" />
+        <add value="index.asp" />
+        <add value="default.asp" />
+        <add value="index.aspx" />
+        <add value="default.aspx" />
+      </files>
+    </defaultDocument>
   </system.webServer>
 </configuration>

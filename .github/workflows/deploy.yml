@@ -114,11 +114,13 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish API (self-contained win-x64)
+      - name: Publish API (framework-dependent)
+        # win-x64 self-contained isn't needed: the host already has the ASP.NET Core runtime
+        # installed and launches via the shared "dotnet" command (see web.config.Production.example.xml).
         run: >
           dotnet publish
           TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/TSI.Friday.WebAPI.csproj
-          -c Release -r win-x64 --self-contained true
+          -c Release
           -o publish/backend
 
       - name: Generate production web.config with secrets
