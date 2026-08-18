@@ -40,43 +40,67 @@ namespace TSI.Friday.Data
                     }
                 }
 
-                // ensure initial users: Admin (Master role) plus the named Admin-role accounts.
+                // Ensure initial users: Admin (Master role) plus the named Admin-role accounts.
+                // UserName always equals Email, matching the self-registration flow's own convention.
+                var year = DateTime.UtcNow.Year;
                 var initialUsers = new[]
                 {
                     (
-                        UserName: "Admin",
+                        UserName: "admin@local",
                         Email: "admin@local",
                         FirstName: "Admin",
                         LastName: "",
                         Role: "Master",
-                        PasswordPrefix: "admin@master"
+                        Password: $"!tsi@{year}",
+                        // Earlier seed revisions created this account as "Admin".
+                        LegacyUserNames: new[] { "Admin" }
                     ),
                     (
-                        UserName: "Thiago",
+                        UserName: "thiago.thomazelli@gmail.com",
                         Email: "thiago.thomazelli@gmail.com",
                         FirstName: "Thiago",
                         LastName: "Thomazelli",
                         Role: "Admin",
-                        PasswordPrefix: "tsi"
+                        Password: $"tsi@{year}",
+                        // Earlier seed revisions created this account as "Thiago" with password "tsi".
+                        LegacyUserNames: new[] { "Thiago" }
                     ),
                     (
-                        UserName: "Leonardo",
+                        UserName: "leonardothomazellif@gmail.com",
                         Email: "leonardothomazellif@gmail.com",
                         FirstName: "Leonardo",
                         LastName: "Thomazelli",
                         Role: "Admin",
-                        PasswordPrefix: "tsi"
+                        Password: $"tsi@{year}",
+                        // Earlier seed revisions created this account as "Leonardo" with password "tsi".
+                        LegacyUserNames: new[] { "Leonardo" }
                     ),
                 };
 
                 foreach (var initialUser in initialUsers)
                 {
                     var existing = await userManager.FindByNameAsync(initialUser.UserName);
+
+                    // One-time migration: find an account created under an earlier seed revision's
+                    // username so it gets renamed/repaired in place instead of duplicated. Once
+                    // renamed, the lookup above matches directly on future runs and this is skipped
+                    // -- so a password the person later changes themselves is never touched again.
+                    var isMigration = false;
                     if (existing == null)
                     {
-                        var year = DateTime.UtcNow.Year;
-                        var password = $"{initialUser.PasswordPrefix}@{year}";
+                        foreach (var legacyUserName in initialUser.LegacyUserNames)
+                        {
+                            existing = await userManager.FindByNameAsync(legacyUserName);
+                            if (existing != null)
+                            {
+                                isMigration = true;
+                                break;
+                            }
+                        }
+                    }
 
+                    if (existing == null)
+                    {
                         var user = new User
                         {
                             UserName = initialUser.UserName,
@@ -86,7 +110,7 @@ namespace TSI.Friday.Data
                             LastName = initialUser.LastName,
                         };
 
-                        var result = await userManager.CreateAsync(user, password);
+                        var result = await userManager.CreateAsync(user, initialUser.Password);
                         if (!result.Succeeded)
                         {
                             logger?.LogError(
@@ -97,12 +121,7 @@ namespace TSI.Friday.Data
                             continue;
                         }
 
-                        logger?.LogInformation(
-                            "User '{UserName}' created with password '{PasswordPrefix}@{Year}'",
-                            initialUser.UserName,
-                            initialUser.PasswordPrefix,
-                            year
-                        );
+                        logger?.LogInformation("User '{UserName}' created", initialUser.UserName);
 
                         var addRoleResult = await userManager.AddToRoleAsync(user, initialUser.Role);
                         if (!addRoleResult.Succeeded)
@@ -113,6 +132,65 @@ namespace TSI.Friday.Data
                                 initialUser.Role,
                                 string.Join(';', addRoleResult.Errors)
                             );
+                        }
+                    }
+                    else if (isMigration)
+                    {
+                        var setUserNameResult = await userManager.SetUserNameAsync(
+                            existing,
+                            initialUser.UserName
+                        );
+                        var setEmailResult = await userManager.SetEmailAsync(
+                            existing,
+                            initialUser.Email
+                        );
+                        existing.EmailConfirmed = true;
+                        var updateResult = await userManager.UpdateAsync(existing);
+
+                        if (await userManager.HasPasswordAsync(existing))
+                        {
+                            await userManager.RemovePasswordAsync(existing);
+                        }
+                        var addPasswordResult = await userManager.AddPasswordAsync(
+                            existing,
+                            initialUser.Password
+                        );
+
+                        if (
+                            !setUserNameResult.Succeeded
+                            || !setEmailResult.Succeeded
+                            || !updateResult.Succeeded
+                            || !addPasswordResult.Succeeded
+                        )
+                        {
+                            logger?.LogError(
+                                "Failed to migrate legacy user onto '{UserName}'",
+                                initialUser.UserName
+                            );
+                        }
+                        else
+                        {
+                            logger?.LogInformation(
+                                "Migrated legacy user onto '{UserName}'",
+                                initialUser.UserName
+                            );
+                        }
+
+                        if (!await userManager.IsInRoleAsync(existing, initialUser.Role))
+                        {
+                            var addRoleResult = await userManager.AddToRoleAsync(
+                                existing,
+                                initialUser.Role
+                            );
+                            if (!addRoleResult.Succeeded)
+                            {
+                                logger?.LogError(
+                                    "Failed to add migrated user '{UserName}' to role '{Role}': {Errors}",
+                                    initialUser.UserName,
+                                    initialUser.Role,
+                                    string.Join(';', addRoleResult.Errors)
+                                );
+                            }
                         }
                     }
                     else

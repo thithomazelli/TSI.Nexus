@@ -8,6 +8,7 @@ const path = require("path");
 const argv = process.argv.join(" ");
 let env = "production";
 if (/--configuration=homolog/i.test(argv)) env = "homolog";
+if (/--configuration=serodio/i.test(argv)) env = "serodio";
 if (/--configuration=development|--configuration=dev/i.test(argv))
   env = "development";
 
@@ -20,6 +21,11 @@ if (env === "homolog") {
 } else if (env === "production") {
   baseHref = "/cacambas/web/";
   faviconPath = "/cacambas/web/favicon.ico";
+} else if (env === "serodio") {
+  // serodio-app.nexusoperations.com.br serves straight from its FTP docroot (/www/serodio-app/),
+  // not from a subpath -- unlike the "production"/"homolog" targets above.
+  baseHref = "/";
+  faviconPath = "/favicon.ico";
 } else if (env === "development") {
   baseHref = "/";
   faviconPath = "/favicon.ico";

@@ -93,7 +93,7 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: npm run build:serodio
 
       - name: Deploy to FTP
         # SamKirkland/FTP-Deploy-Action (Node/basic-ftp) reliably hit "ECONNRESET (data socket)"
