@@ -535,6 +535,43 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public async Task<WebApiResponse<UserDto>> UpdatePreferences(
+            string userId,
+            UpdatePreferencesDto model
+        )
+        {
+            var result = new WebApiResponse<UserDto>();
+
+            try
+            {
+                var userToUpdate = await _repository.GetByIdAsync(userId);
+                if (userToUpdate == null)
+                {
+                    result.Status = ResponseStatus.Error;
+                    result.Message = "Usuário não encontrado.";
+                    return result;
+                }
+
+                userToUpdate.Theme = model.Theme;
+                userToUpdate.Language = model.Language;
+
+                await _repository.UpdateAsync(userToUpdate);
+
+                result.Data = await CreateApplicationUserDto(userToUpdate, false);
+                result.Status = ResponseStatus.Success;
+                result.Message = "Preferências atualizadas com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "UserManagerService.UpdatePreferences", userId);
+                result.Status = ResponseStatus.Error;
+                result.Message = $"Não foi possível atualizar as preferências. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
         public async Task<WebApiResponse<UserDto>> Remove(User user)
         {
             var result = new WebApiResponse<UserDto>();
@@ -652,6 +689,8 @@ namespace TSI.Friday.Services
                 JWT = includeJwt ? _jwtService.CreateJWT(user, roles) : null,
                 Photo = user.Photo,
                 Role = roles.FirstOrDefault(),
+                Theme = user.Theme,
+                Language = user.Language,
             };
         }
 

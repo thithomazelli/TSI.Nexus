@@ -16,6 +16,12 @@ namespace TSI.Friday.Contracts.Models
 
         public string Photo { get; set; }
 
+        /// <summary>UI theme preference ("light" or "dark"). Null defaults to "light".</summary>
+        public string Theme { get; set; }
+
+        /// <summary>UI language preference ("pt-BR", "en" or "es"). Null defaults to "pt-BR".</summary>
+        public string Language { get; set; }
+
         // NotMapped so EF won't create a dedicated column for this helper property.
         [NotMapped]
         public string Role { get; set; }

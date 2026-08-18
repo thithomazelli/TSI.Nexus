@@ -81,6 +81,14 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<UserDto>> Update(User user);
 
         /// <summary>
+        /// Updates the authenticated user's own theme/language preferences.
+        /// </summary>
+        /// <param name="userId">Id of the authenticated user, resolved from the JWT claim.</param>
+        /// <param name="model">The new theme/language values.</param>
+        /// <returns>Return an WebApiReponse with the results for this operation.</returns>
+        Task<WebApiResponse<UserDto>> UpdatePreferences(string userId, UpdatePreferencesDto model);
+
+        /// <summary>
         /// Remove an User based on the object received.
         /// </summary>
         /// <param name="user">The user object to be removed.</param>

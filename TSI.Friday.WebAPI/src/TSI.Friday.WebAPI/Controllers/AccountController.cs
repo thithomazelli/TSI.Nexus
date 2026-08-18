@@ -35,6 +35,19 @@ namespace TSI.Friday.WebAPI.Controllers
             return await _userManagerService.Login(model);
         }
 
+        /// <summary>
+        /// Updates the authenticated user's own theme/language preferences (profile dropdown or
+        /// profile page). Always targets the caller's own account, never another user's.
+        /// </summary>
+        [Authorize]
+        [HttpPut("preferences")]
+        public async Task<IActionResult> UpdatePreferences(UpdatePreferencesDto model)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            var webApiResponse = await _userManagerService.UpdatePreferences(userId, model);
+            return Ok(webApiResponse);
+        }
+
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<ActionResult<WebApiResponse<User>>> Register(RegisterDto model)
