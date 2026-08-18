@@ -53,17 +53,17 @@ namespace TSI.Friday.Data
                     ),
                     (
                         UserName: "Thiago",
-                        Email: "thiago@local",
+                        Email: "thiago.thomazelli@gmail.com",
                         FirstName: "Thiago",
-                        LastName: "",
+                        LastName: "Thomazelli",
                         Role: "Admin",
                         PasswordPrefix: "thiago"
                     ),
                     (
                         UserName: "Leonardo",
-                        Email: "leonardo@local",
+                        Email: "leonardothomazellif@gmail.com",
                         FirstName: "Leonardo",
-                        LastName: "",
+                        LastName: "Thomazelli",
                         Role: "Admin",
                         PasswordPrefix: "leonardo"
                     ),
