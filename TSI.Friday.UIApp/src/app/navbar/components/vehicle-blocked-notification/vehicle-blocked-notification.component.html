@@ -1,4 +1,9 @@
-<a class="nav-link" data-bs-toggle="dropdown" href="#" title="Veículos bloqueados por manutenção">
+<a
+  class="nav-link"
+  data-bs-toggle="dropdown"
+  href="#"
+  [title]="'NAVBAR.VEHICLES_BLOCKED_TITLE' | translate"
+>
   <i class="bi bi-cone-striped"></i>
   <span *ngIf="showBadge" class="navbar-badge badge text-bg-warning">{{
     total
@@ -6,7 +11,7 @@
 </a>
 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
   <span class="dropdown-item dropdown-header"
-    >{{ total }} veículo(s) bloqueado(s) por manutenção</span
+    >{{ total }} {{ 'NAVBAR.VEHICLES_BLOCKED_HEADER' | translate }}</span
   >
   <div class="dropdown-divider" *ngIf="showBadge"></div>
   <ng-container *ngFor="let vehicle of vehicles">
@@ -23,6 +28,6 @@
     <div class="dropdown-divider"></div>
   </ng-container>
   <a href="#" class="dropdown-item dropdown-footer" routerLink="/vehicles"
-    >Ver frota</a
+    >{{ 'NAVBAR.SEE_FLEET' | translate }}</a
   >
 </div>

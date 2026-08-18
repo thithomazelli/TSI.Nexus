@@ -28,6 +28,14 @@ export const EN = {
   NAVBAR: {
     PROFILE: 'Profile',
     LOGOUT: 'Log out',
+    NOTIFICATIONS: 'Notifications',
+    SEE_MORE: 'See more',
+    VEHICLES_BLOCKED_TITLE: 'Vehicles blocked for maintenance',
+    VEHICLES_BLOCKED_HEADER: 'vehicle(s) blocked for maintenance',
+    SEE_FLEET: 'View fleet',
+    LICENSE_EXPIRY_TITLE: 'Driver license expiring',
+    LICENSE_EXPIRY_HEADER: 'license(s) expiring',
+    SEE_DRIVERS: 'View drivers',
   },
   PREFERENCES: {
     TITLE: 'Preferences',
@@ -73,6 +81,11 @@ export const EN = {
     EDIT_ENTITY: 'Edit {entity}',
     ADD_ENTITY: 'Add {entity}',
     TOTAL_PRICE_LABEL: 'Total Price',
+    TYPE: 'Type',
+    RANGE_START: 'Start',
+    RANGE_END: 'End',
+    ACTION: 'Action',
+    DATA: 'Data',
   },
   ACCOUNT: {
     LOGIN: {
@@ -153,9 +166,23 @@ export const EN = {
   },
   VEHICLES: {
     SINGULAR: 'Vehicle',
+    PLATE: 'Plate',
+    MODEL: 'Model',
+    BRAND: 'Brand',
+    CHASSIS: 'Chassis',
+    RENAVAM: 'Renavam',
+    KM: 'Km',
+    FUEL: 'Fuel',
+    CATEGORY: 'Category',
   },
   PRODUCTS: {
     SINGULAR: 'Product',
+    SKU: 'SKU',
+  },
+  USERS: {
+    PROFILE: 'Profile',
+    PASSWORD: 'Password',
+    LAST_NAME: 'Last Name',
   },
   QUOTES: {
     QUOTE_NUMBER: 'Quote Number',
@@ -163,6 +190,7 @@ export const EN = {
     NO_PRODUCTS_ADDED: 'No products added',
     CONVERT_TO_TRIP: 'Convert to Trip',
     CONVERT_TO_ORDER: 'Convert to Order',
+    QUOTE_PRODUCT: 'Quote Product',
   },
   TRIPS: {
     TRIP_DATA: 'Trip Data',
@@ -188,6 +216,16 @@ export const EN = {
     TOTAL_OF_EXPENSES: 'Total Expenses',
     EXPENSE_TOTAL_PRICE: 'Total Expense Amount',
     ADVANCE_PAYMENT_HINT: 'Great! This client already has an advance payment!',
+  },
+  DASHBOARD: {
+    TITLE: 'Dashboard',
+    PERIOD: 'Period',
+  },
+  FOOTER: {
+    ALL_RIGHTS_RESERVED: 'All rights reserved.',
+  },
+  DRIVERS: {
+    SERVICE_ORDERS_TAB: 'Service Orders & Commissions',
   },
   ADDRESS: {
     SELECT_TYPE: 'Select the type',

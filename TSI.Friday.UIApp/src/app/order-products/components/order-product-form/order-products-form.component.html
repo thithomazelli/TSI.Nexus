@@ -24,7 +24,7 @@
                     placeholder="SKU"
                     (blur)="onProductSkuBlur()"
                   />
-                  <label for="productSku">SKU</label>
+                  <label for="productSku">{{ 'PRODUCTS.SKU' | translate }}</label>
                   <mat-autocomplete
                     #skuAuto="matAutocomplete"
                     (optionSelected)="selectProduct($event.option.value)"
@@ -109,7 +109,7 @@
             <div class="input-group">
               <div class="form-floating flex-grow-1">
                 <select formControlName="productType" class="form-select">
-                  <option value="" disabled selected>Tipo</option>
+                  <option value="" disabled selected>{{ 'COMMON.TYPE' | translate }}</option>
                   <option
                     *ngFor="let option of productTypeOptions"
                     [value]="option.value"
@@ -117,7 +117,7 @@
                     {{ option.label }}
                   </option>
                 </select>
-                <label for="productType">Tipo</label>
+                <label for="productType">{{ 'COMMON.TYPE' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-tag"></i></div>
             </div>
@@ -130,7 +130,7 @@
                   class="form-select"
                   id="status"
                 >
-                  <option value="" disabled selected>Status</option>
+                  <option value="" disabled selected>{{ 'COMMON.STATUS' | translate }}</option>
                   <option
                     *ngFor="let option of orderProductStatusOptions"
                     [value]="option.value"

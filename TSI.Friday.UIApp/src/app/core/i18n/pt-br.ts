@@ -28,6 +28,14 @@ export const PT_BR = {
   NAVBAR: {
     PROFILE: 'Perfil',
     LOGOUT: 'Sair',
+    NOTIFICATIONS: 'Notificações',
+    SEE_MORE: 'Saiba mais',
+    VEHICLES_BLOCKED_TITLE: 'Veículos bloqueados por manutenção',
+    VEHICLES_BLOCKED_HEADER: 'veículo(s) bloqueado(s) por manutenção',
+    SEE_FLEET: 'Ver frota',
+    LICENSE_EXPIRY_TITLE: 'CNH de motorista a vencer',
+    LICENSE_EXPIRY_HEADER: 'CNH a vencer',
+    SEE_DRIVERS: 'Ver motoristas',
   },
   PREFERENCES: {
     TITLE: 'Preferências',
@@ -73,6 +81,11 @@ export const PT_BR = {
     EDIT_ENTITY: 'Editar {entity}',
     ADD_ENTITY: 'Adicionar {entity}',
     TOTAL_PRICE_LABEL: 'Preço Total',
+    TYPE: 'Tipo',
+    RANGE_START: 'Início',
+    RANGE_END: 'Fim',
+    ACTION: 'Ação',
+    DATA: 'Dados',
   },
   ACCOUNT: {
     LOGIN: {
@@ -153,9 +166,23 @@ export const PT_BR = {
   },
   VEHICLES: {
     SINGULAR: 'Veículo',
+    PLATE: 'Placa',
+    MODEL: 'Modelo',
+    BRAND: 'Marca',
+    CHASSIS: 'Chassi',
+    RENAVAM: 'Renavam',
+    KM: 'Km',
+    FUEL: 'Combustível',
+    CATEGORY: 'Categoria',
   },
   PRODUCTS: {
     SINGULAR: 'Produto',
+    SKU: 'SKU',
+  },
+  USERS: {
+    PROFILE: 'Perfil',
+    PASSWORD: 'Senha',
+    LAST_NAME: 'Sobrenome',
   },
   QUOTES: {
     QUOTE_NUMBER: 'Número do Orçamento',
@@ -163,6 +190,7 @@ export const PT_BR = {
     NO_PRODUCTS_ADDED: 'Nenhum produto adicionado',
     CONVERT_TO_TRIP: 'Converter em Viagem',
     CONVERT_TO_ORDER: 'Converter em Pedido',
+    QUOTE_PRODUCT: 'Produto do Orçamento',
   },
   TRIPS: {
     TRIP_DATA: 'Dados da Viagem',
@@ -188,6 +216,16 @@ export const PT_BR = {
     TOTAL_OF_EXPENSES: 'Total de Despesas',
     EXPENSE_TOTAL_PRICE: 'Preço Total Despesas',
     ADVANCE_PAYMENT_HINT: 'Excelente! Cliente informado já tem pagamento antecipado!',
+  },
+  DASHBOARD: {
+    TITLE: 'Dashboard',
+    PERIOD: 'Período',
+  },
+  FOOTER: {
+    ALL_RIGHTS_RESERVED: 'Todos os direitos reservados.',
+  },
+  DRIVERS: {
+    SERVICE_ORDERS_TAB: 'OS e Comissões',
   },
   ADDRESS: {
     SELECT_TYPE: 'Selecione o tipo',

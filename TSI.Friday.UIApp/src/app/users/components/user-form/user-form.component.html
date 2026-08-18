@@ -38,7 +38,7 @@
                 class="form-control"
                 [class.is-invalid]="isInvalid('lastName')"
               />
-              <label for="lastName">Sobrenome</label>
+              <label for="lastName">{{ 'USERS.LAST_NAME' | translate }}</label>
               @if (inputHasError("lastName", "required")) {
                 <span class="text-danger">Sobrenome é obrigatório</span>
               }
@@ -63,7 +63,7 @@
                   {{ opt.label }}
                 </option>
               </select>
-              <label for="role">Perfil</label>
+              <label for="role">{{ 'USERS.PROFILE' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi-key-fill"></i></div>
           </div>
@@ -126,7 +126,7 @@
                   class="form-control"
                   [class.is-invalid]="isInvalid('password')"
                 />
-                <label for="password">Senha</label>
+                <label for="password">{{ 'USERS.PASSWORD' | translate }}</label>
                 @if (inputHasError("password", "required")) {
                   <span class="text-danger">Senha é obrigatória </span>
                 }

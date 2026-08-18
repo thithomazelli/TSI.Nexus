@@ -135,12 +135,12 @@
                   [class.is-valid]="isValid('type')"
                   (blur)="onTypeChanges()"
                 >
-                  <option value="" disabled selected>Tipo</option>
+                  <option value="" disabled selected>{{ 'COMMON.TYPE' | translate }}</option>
                   @for (option of typeOptions; track option) {
                     <option [value]="option.value">{{ option.label }}</option>
                   }
                 </select>
-                <label for="type">Tipo</label>
+                <label for="type">{{ 'COMMON.TYPE' | translate }}</label>
               </div>
               <div class="input-group-text">
                 <i class="bi bi-credit-card-2-front"></i>
@@ -159,7 +159,7 @@
                 [class.is-invalid]="isInvalid('status')"
                 [class.is-valid]="isValid('status')"
               >
-                <option value="" disabled selected>Status</option>
+                <option value="" disabled selected>{{ 'COMMON.STATUS' | translate }}</option>
                 @for (option of statusOptions; track option) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
@@ -183,12 +183,12 @@
                   [class.is-invalid]="isInvalid('category')"
                   [class.is-valid]="isValid('category')"
                 >
-                  <option value="" disabled selected>Categoria</option>
+                  <option value="" disabled selected>{{ 'VEHICLES.CATEGORY' | translate }}</option>
                   @for (option of categoryOptions; track option) {
                     <option [value]="option.value">{{ option.label }}</option>
                   }
                 </select>
-                <label for="category">Categoria</label>
+                <label for="category">{{ 'VEHICLES.CATEGORY' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-tags"></i></div>
             </div>

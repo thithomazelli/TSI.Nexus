@@ -1,7 +1,8 @@
 <div class="modal-header">
   <h5 class="modal-title">
     {{
-      isEdit ? "Editar Produto do Orçamento" : "Adicionar Produto ao Orçamento"
+      (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY')
+        | translate: { entity: ('QUOTES.QUOTE_PRODUCT' | translate) }
     }}
   </h5>
   <button type="button" class="btn-close" (click)="close()"></button>

@@ -1,11 +1,16 @@
-<a class="nav-link" data-bs-toggle="dropdown" href="#" title="CNH de motorista a vencer">
+<a
+  class="nav-link"
+  data-bs-toggle="dropdown"
+  href="#"
+  [title]="'NAVBAR.LICENSE_EXPIRY_TITLE' | translate"
+>
   <i class="bi bi-person-vcard"></i>
   <span *ngIf="showBadge" class="navbar-badge badge text-bg-danger">{{
     total
   }}</span>
 </a>
 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-  <span class="dropdown-item dropdown-header">{{ total }} CNH a vencer</span>
+  <span class="dropdown-item dropdown-header">{{ total }} {{ 'NAVBAR.LICENSE_EXPIRY_HEADER' | translate }}</span>
   <div class="dropdown-divider" *ngIf="showBadge"></div>
   <ng-container *ngFor="let driver of drivers">
     <a
@@ -23,6 +28,6 @@
     <div class="dropdown-divider"></div>
   </ng-container>
   <a href="#" class="dropdown-item dropdown-footer" routerLink="/drivers"
-    >Ver motoristas</a
+    >{{ 'NAVBAR.SEE_DRIVERS' | translate }}</a
   >
 </div>

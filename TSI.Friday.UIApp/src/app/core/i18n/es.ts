@@ -28,6 +28,14 @@ export const ES = {
   NAVBAR: {
     PROFILE: 'Perfil',
     LOGOUT: 'Salir',
+    NOTIFICATIONS: 'Notificaciones',
+    SEE_MORE: 'Ver más',
+    VEHICLES_BLOCKED_TITLE: 'Vehículos bloqueados por mantenimiento',
+    VEHICLES_BLOCKED_HEADER: 'vehículo(s) bloqueado(s) por mantenimiento',
+    SEE_FLEET: 'Ver flota',
+    LICENSE_EXPIRY_TITLE: 'Licencia de conductor por vencer',
+    LICENSE_EXPIRY_HEADER: 'licencia(s) por vencer',
+    SEE_DRIVERS: 'Ver conductores',
   },
   PREFERENCES: {
     TITLE: 'Preferencias',
@@ -73,6 +81,11 @@ export const ES = {
     EDIT_ENTITY: 'Editar {entity}',
     ADD_ENTITY: 'Agregar {entity}',
     TOTAL_PRICE_LABEL: 'Precio Total',
+    TYPE: 'Tipo',
+    RANGE_START: 'Inicio',
+    RANGE_END: 'Fin',
+    ACTION: 'Acción',
+    DATA: 'Datos',
   },
   ACCOUNT: {
     LOGIN: {
@@ -153,9 +166,23 @@ export const ES = {
   },
   VEHICLES: {
     SINGULAR: 'Vehículo',
+    PLATE: 'Placa',
+    MODEL: 'Modelo',
+    BRAND: 'Marca',
+    CHASSIS: 'Chasis',
+    RENAVAM: 'Renavam',
+    KM: 'Km',
+    FUEL: 'Combustible',
+    CATEGORY: 'Categoría',
   },
   PRODUCTS: {
     SINGULAR: 'Producto',
+    SKU: 'SKU',
+  },
+  USERS: {
+    PROFILE: 'Perfil',
+    PASSWORD: 'Contraseña',
+    LAST_NAME: 'Apellido',
   },
   QUOTES: {
     QUOTE_NUMBER: 'Número del Presupuesto',
@@ -163,6 +190,7 @@ export const ES = {
     NO_PRODUCTS_ADDED: 'Ningún producto agregado',
     CONVERT_TO_TRIP: 'Convertir en Viaje',
     CONVERT_TO_ORDER: 'Convertir en Pedido',
+    QUOTE_PRODUCT: 'Producto del Presupuesto',
   },
   TRIPS: {
     TRIP_DATA: 'Datos del Viaje',
@@ -188,6 +216,16 @@ export const ES = {
     TOTAL_OF_EXPENSES: 'Total de Gastos',
     EXPENSE_TOTAL_PRICE: 'Precio Total de Gastos',
     ADVANCE_PAYMENT_HINT: '¡Excelente! ¡El cliente informado ya tiene un pago anticipado!',
+  },
+  DASHBOARD: {
+    TITLE: 'Panel',
+    PERIOD: 'Período',
+  },
+  FOOTER: {
+    ALL_RIGHTS_RESERVED: 'Todos los derechos reservados.',
+  },
+  DRIVERS: {
+    SERVICE_ORDERS_TAB: 'OS y Comisiones',
   },
   ADDRESS: {
     SELECT_TYPE: 'Selecciona el tipo',

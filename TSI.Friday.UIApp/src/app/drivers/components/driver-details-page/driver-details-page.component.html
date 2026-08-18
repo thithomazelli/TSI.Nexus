@@ -1,9 +1,17 @@
 <app-header
-  [title]="isEdit ? 'Editar Motorista' : 'Adicionar Motorista'"
+  [title]="
+    (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY')
+      | translate: { entity: ('SIDEBAR.MOTORISTAS_SINGULAR' | translate) }
+  "
   [navigationMenus]="[
     { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'Motoristas', link: '/drivers' },
-    { label: isEdit ? 'Editar Motorista' : 'Adicionar Motorista', link: '' },
+    { label: 'SIDEBAR.MOTORISTAS' | translate, link: '/drivers' },
+    {
+      label:
+        (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY')
+        | translate: { entity: ('SIDEBAR.MOTORISTAS_SINGULAR' | translate) },
+      link: ''
+    },
   ]"
 ></app-header>
 <section class="content">
@@ -18,7 +26,7 @@
                 [class.active]="activeTab === 'details'"
                 (click)="activeTab = 'details'"
                 data-toggle="tab"
-                >Dados</a
+                >{{ 'COMMON.DATA' | translate }}</a
               >
             </li>
             <li class="nav-item">
@@ -27,7 +35,7 @@
                 [class.active]="activeTab === 'serviceOrders'"
                 (click)="activeTab = 'serviceOrders'"
                 data-toggle="tab"
-                >OS e Comissões</a
+                >{{ 'DRIVERS.SERVICE_ORDERS_TAB' | translate }}</a
               >
             </li>
           </ul>

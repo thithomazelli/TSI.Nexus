@@ -13,10 +13,10 @@
 </div>
 <div *ngIf="!loading">
   <div class="dashboard-toolbar mt-3 mb-3">
-    <h3 class="dashboard-title mb-0 fw-bold">Dashboard</h3>
+    <h3 class="dashboard-title mb-0 fw-bold">{{ 'DASHBOARD.TITLE' | translate }}</h3>
     <div class="dashboard-period-filter border rounded p-2 position-relative">
       <span class="position-absolute bg-white px-2 fw-semibold title-area"
-        >Período</span
+        >{{ 'DASHBOARD.PERIOD' | translate }}</span
       >
       <div
         class="dashboard-period-options d-flex flex-row gap-3 align-items-center mt-2"
@@ -60,7 +60,7 @@
           (click)="onViewDetails(card); $event.preventDefault()"
           href="javascript:void(0);"
         >
-          Saiba mais <i class="bi bi-link-45deg"></i>
+          {{ 'NAVBAR.SEE_MORE' | translate }} <i class="bi bi-link-45deg"></i>
         </a>
       </div>
     </div>

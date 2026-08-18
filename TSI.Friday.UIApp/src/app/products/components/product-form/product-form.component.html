@@ -38,7 +38,7 @@
                 [class.is-invalid]="isInvalid('sku')"
                 [class.is-valid]="isValid('sku')"
               />
-              <label for="sku">SKU</label>
+              <label for="sku">{{ 'PRODUCTS.SKU' | translate }}</label>
             </div>
             <div class="input-group-text"><i class="bi bi bi-upc"></i></div>
           </div>
@@ -71,14 +71,14 @@
                 [class.is-invalid]="isInvalid('category')"
                 [class.is-valid]="isValid('category')"
               >
-                <option value="" disabled selected>Categoria</option>
+                <option value="" disabled selected>{{ 'VEHICLES.CATEGORY' | translate }}</option>
                 @for (option of categories; track option) {
                   <option [value]="option.value">
                     {{ option.label }}
                   </option>
                 }
               </select>
-              <label for="unit">Categoria</label>
+              <label for="unit">{{ 'VEHICLES.CATEGORY' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-arrows-move"></i>
@@ -119,14 +119,14 @@
                 [class.is-invalid]="isInvalid('type')"
                 [class.is-valid]="isValid('type')"
               >
-                <option value="" disabled selected>Tipo</option>
+                <option value="" disabled selected>{{ 'COMMON.TYPE' | translate }}</option>
                 @for (option of productTypeOptions; track option) {
                   <option [value]="option.value">
                     {{ option.label }}
                   </option>
                 }
               </select>
-              <label for="type">Tipo</label>
+              <label for="type">{{ 'COMMON.TYPE' | translate }}</label>
             </div>
             <div class="input-group-text">
               <i class="bi bi-layers"></i>
@@ -139,7 +139,7 @@
               <input
                 formControlName="priceFormatted"
                 type="text"
-                placeholder="Preço"
+                [placeholder]="'COMMON.PRICE' | translate"
                 class="form-control"
                 [class.is-invalid]="isInvalid('priceFormatted')"
                 [class.is-valid]="isValid('priceFormatted')"

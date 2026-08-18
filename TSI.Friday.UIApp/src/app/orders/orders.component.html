@@ -27,7 +27,7 @@
         <app-date-field
           [(ngModel)]="filterStartDate"
           (ngModelChange)="applyFilters()"
-          label="Início"
+          [label]="'COMMON.RANGE_START' | translate"
           class="w-100 p-0"
         ></app-date-field>
       </div>
@@ -35,13 +35,13 @@
         <app-date-field
           [(ngModel)]="filterEndDate"
           (ngModelChange)="applyFilters()"
-          label="Fim"
+          [label]="'COMMON.RANGE_END' | translate"
           class="w-100 p-0"
         ></app-date-field>
       </div>
       <div class="col-12 col-md-auto ms-md-2">
         <div class="filter-group-box position-relative mb-2 mb-md-0">
-          <span class="filter-group-label">Status</span>
+          <span class="filter-group-label">{{ 'COMMON.STATUS' | translate }}</span>
           <div class="d-flex flex-wrap align-items-center pt-2 gap-2">
             <label class="form-check-label ms-2">
               <input

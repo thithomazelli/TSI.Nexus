@@ -5,7 +5,7 @@
   }}</span>
 </a>
 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-  <span class="dropdown-item dropdown-header">{{ total }} Notificações</span>
+  <span class="dropdown-item dropdown-header">{{ total }} {{ 'NAVBAR.NOTIFICATIONS' | translate }}</span>
   <div class="dropdown-divider" *ngIf="showBadge"></div>
   <ng-container *ngFor="let payment of displayPayments">
     <a
@@ -47,6 +47,6 @@
     href="#"
     class="dropdown-item dropdown-footer"
     (click)="onSeeMore(); $event.preventDefault()"
-    >Saiba mais</a
+    >{{ 'NAVBAR.SEE_MORE' | translate }}</a
   >
 </div>
