@@ -123,15 +123,11 @@ jobs:
           -c Release
           -o publish/backend
 
-      - name: Generate production web.config with secrets
-        env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.SERODIO_CONNECTIONSTRINGS_DEFAULT }}
-          ConnectionStrings__HomologConnection: ${{ secrets.SERODIO_CONNECTIONSTRINGS_HOMOLOG }}
-          JWT__Key: ${{ secrets.SERODIO_JWT_KEY }}
-          MailJet__ApiKey: ${{ secrets.SERODIO_MAILJET_API_KEY }}
-          MailJet__SecretKey: ${{ secrets.SERODIO_MAILJET_SECRET_KEY }}
+      - name: Copy production web.config
+        # Sem secrets, sem envsubst: ConnectionStrings/JWT/MailJet vivem só no appsettings.json
+        # mantido manualmente no servidor (veja o exclude abaixo).
         run: |
-          envsubst < TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.example.xml > publish/backend/web.config
+          cp TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.Serodio.xml publish/backend/web.config
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -141,8 +137,10 @@ jobs:
           password: ${{ secrets.SERODIO_FTP_PASSWORD }}
           local-dir: publish/backend/
           server-dir: /www/serodio-api/
-          # Preserva dados gerados em runtime no servidor que não existem no build:
-          # anexos enviados pelos usuários e logs do processo.
+          # Preserva dados gerados em runtime no servidor que não existem no build (anexos
+          # enviados pelos usuários e logs do processo) e o appsettings.json mantido manualmente
+          # no servidor com os dados sensíveis reais -- nunca deve ser sobrescrito por um deploy.
           exclude: |
             **/attachments/**
             **/stdout*
+            **/appsettings.json
