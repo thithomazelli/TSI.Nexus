@@ -1,3 +1,23 @@
+// Angular Material's structural CSS (mat.core) was never included -- mat-datepicker/
+// mat-autocomplete rendered with no layout rules at all (the calendar grid, notably, is a plain
+// <table> with no styling to size/lay out its day cells, so it opened with the month header
+// visible but no day grid). Scoped to `:root` -- Material's generated CSS is namespaced under
+// its own .mat-*/.mdc-* classes, so this coexists with the Bootstrap/AdminLTE styling elsewhere.
+@use "@angular/material" as mat;
+
+:root {
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$azure-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
 @media print {
   .no-print,
   .btn-print,
