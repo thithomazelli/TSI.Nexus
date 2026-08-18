@@ -1,186 +1,101 @@
-<div class="login-bg">
-  <div class="blur-bg-overlay"></div>
-  <div class="login-page-bg">
-    <div class="form-popup">
-      <div class="form-box login">
-        <div class="form-details"></div>
-        <div class="form-content">
-          <h2>{{ 'ACCOUNT.LOGIN.TITLE' | translate }}</h2>
-          <form [formGroup]="form" (ngSubmit)="login()" novalidate>
-            <div class="input-group mb-1">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="userName"
-                  type="text"
-                  [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('userName')"
-                />
-                <label for="userName">{{ 'ACCOUNT.LOGIN.EMAIL_LABEL' | translate }}</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-envelope"></i></div>
-            </div>
-
-            <div class="input-group mb-1">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="password"
-                  [type]="passwordVisible ? 'text' : 'password'"
-                  [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('password')"
-                />
-                <label for="password">{{ 'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate }}</label>
-              </div>
-              <button
-                type="button"
-                class="btn btn-outline-secondary"
-                (click)="togglePasswordVisibility()"
-                [attr.aria-pressed]="passwordVisible"
-                [title]="
-                  (passwordVisible
-                    ? 'ACCOUNT.LOGIN.HIDE_PASSWORD'
-                    : 'ACCOUNT.LOGIN.SHOW_PASSWORD'
-                  ) | translate
-                "
-              >
-                <i
-                  [ngClass]="passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"
-                ></i>
-              </button>
-            </div>
-
-            @if (errorMessages) {
-              <div class="form-floating">
-                <app-validation-messages
-                  [errorMessages]="errorMessages"
-                ></app-validation-messages>
-              </div>
-            }
-
-            <div class="d-grid mb-2">
-              <button
-                [appClick]="login.bind(this)"
-                type="submit"
-                class="btn btn-info text-white"
-              >
-                {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
-              </button>
-            </div>
-          </form>
-
-          <!-- <div class="col-8 d-inline-flex align-items-center">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="remember" />
-              <label class="form-check-label">Lembre-se de mim</label>
-            </div>
-          </div> -->
-          <p class="mb-1">
-            <a routerLink="/account/reset-password">{{
-              'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
-            }}</a>
-          </p>
-        </div>
+<div class="login-split">
+  <div class="login-visual">
+    <div class="login-visual-rays"></div>
+    <div class="login-brand">
+      <div class="login-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" width="56" height="56">
+          <defs>
+            <linearGradient id="loginBrandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#5ec8e0" />
+              <stop offset="55%" stop-color="#2f7fd6" />
+              <stop offset="100%" stop-color="#1a4f8c" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M50 6 C50 26 34 34 18 34 C34 34 50 42 50 62 C50 42 66 34 82 34 C66 34 50 26 50 6 Z"
+            fill="url(#loginBrandGradient)"
+          />
+          <path
+            d="M50 38 C50 58 34 66 18 66 C34 66 50 74 50 94 C50 74 66 66 82 66 C66 66 50 58 50 38 Z"
+            fill="url(#loginBrandGradient)"
+            opacity="0.55"
+          />
+        </svg>
       </div>
+      <div class="login-brand-name">Nexus</div>
+      <div class="login-brand-tagline">{{ 'ACCOUNT.LOGIN.TAGLINE' | translate }}</div>
     </div>
+    <div class="login-visual-sparkle" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20">
+        <path
+          d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z"
+          fill="#ffffff"
+          opacity="0.85"
+        />
+      </svg>
+    </div>
+  </div>
 
-    <div class="login-box" hidden>
-      <div class="card card-outline card-primary">
-        <div class="card-header">
-          <div class="company-brand">
-            <img
-              src="assets/img/serodio/logo.png"
-              alt="Serodio Turismo"
-              class="company-logo"
+  <div class="login-panel">
+    <div class="login-panel-inner">
+      <p class="login-welcome">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
+
+      <div class="login-card">
+        <form [formGroup]="form" (ngSubmit)="login()" novalidate>
+          <div class="login-field" [class.is-invalid]="isInvalid('userName')">
+            <i class="bi bi-person login-field-icon"></i>
+            <input
+              formControlName="userName"
+              type="text"
+              [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
+              [attr.aria-label]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
+              class="login-input"
             />
-            <span class="company-name"><b>Serodio Turismo</b></span>
           </div>
-        </div>
 
-        <div class="card-body login-card-body">
-          <p class="login-box-msg">{{ 'ACCOUNT.LOGIN.WELCOME' | translate }}</p>
+          <div class="login-field" [class.is-invalid]="isInvalid('password')">
+            <i class="bi bi-lock login-field-icon"></i>
+            <input
+              formControlName="password"
+              [type]="passwordVisible ? 'text' : 'password'"
+              [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
+              [attr.aria-label]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
+              class="login-input"
+            />
+            <button
+              type="button"
+              class="login-field-toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-pressed]="passwordVisible"
+              [title]="
+                (passwordVisible
+                  ? 'ACCOUNT.LOGIN.HIDE_PASSWORD'
+                  : 'ACCOUNT.LOGIN.SHOW_PASSWORD'
+                ) | translate
+              "
+            >
+              <i [ngClass]="passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+            </button>
+          </div>
 
-          <form [formGroup]="form" (ngSubmit)="login()" novalidate>
-            <div class="input-group mb-1">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="userName"
-                  type="text"
-                  [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('userName')"
-                />
-                <label for="userName">{{ 'ACCOUNT.LOGIN.EMAIL_LABEL' | translate }}</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-envelope"></i></div>
-            </div>
+          @if (errorMessages) {
+            <app-validation-messages
+              [errorMessages]="errorMessages"
+            ></app-validation-messages>
+          }
 
-            <div class="input-group mb-1">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="password"
-                  [type]="passwordVisible ? 'text' : 'password'"
-                  [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('password')"
-                />
-                <label for="password">{{ 'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate }}</label>
-              </div>
-              <button
-                type="button"
-                class="btn btn-outline-secondary"
-                (click)="togglePasswordVisibility()"
-                [attr.aria-pressed]="passwordVisible"
-                [title]="
-                  (passwordVisible
-                    ? 'ACCOUNT.LOGIN.HIDE_PASSWORD'
-                    : 'ACCOUNT.LOGIN.SHOW_PASSWORD'
-                  ) | translate
-                "
-              >
-                <i
-                  [ngClass]="passwordVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"
-                ></i>
-              </button>
-            </div>
+          <button
+            [appClick]="login.bind(this)"
+            type="submit"
+            class="login-submit"
+          >
+            {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
+          </button>
+        </form>
 
-            @if (errorMessages) {
-              <div class="form-floating">
-                <app-validation-messages
-                  [errorMessages]="errorMessages"
-                ></app-validation-messages>
-              </div>
-            }
-
-            <div class="row mb-2">
-              <div class="col-8 d-inline-flex align-items-center">
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    id="remember"
-                  />
-                  <label class="form-check-label">{{
-                    'ACCOUNT.LOGIN.REMEMBER_ME' | translate
-                  }}</label>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="d-grid">
-                  <button type="submit" class="btn btn-primary">
-                    {{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
-
-          <p class="mb-1">
-            <a routerLink="/account/reset-password">{{
-              'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
-            }}</a>
-          </p>
-        </div>
+        <a class="login-forgot" routerLink="/account/reset-password">{{
+          'ACCOUNT.LOGIN.FORGOT_PASSWORD' | translate
+        }}</a>
       </div>
     </div>
   </div>

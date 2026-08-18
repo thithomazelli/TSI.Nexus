@@ -124,9 +124,10 @@ export const ES = {
       SHOW_PASSWORD: 'Mostrar contraseña',
       HIDE_PASSWORD: 'Ocultar contraseña',
       SUBMIT: 'Entrar',
-      FORGOT_PASSWORD: 'Olvidé mi contraseña',
+      FORGOT_PASSWORD: '¿Olvidaste tu contraseña?',
       REMEMBER_ME: 'Recuérdame',
-      WELCOME: 'Inicia tu sesión',
+      WELCOME: '¡Bienvenido de nuevo a Nexus!',
+      TAGLINE: 'Gestión y Control Empresarial',
     },
     REGISTER: {
       SUBTITLE: 'Regístrate',

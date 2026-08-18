@@ -124,9 +124,10 @@ export const EN = {
       SHOW_PASSWORD: 'Show password',
       HIDE_PASSWORD: 'Hide password',
       SUBMIT: 'Sign in',
-      FORGOT_PASSWORD: 'Forgot my password',
+      FORGOT_PASSWORD: 'Forgot your password?',
       REMEMBER_ME: 'Remember me',
-      WELCOME: 'Sign in to start your session',
+      WELCOME: 'Welcome back to Nexus!',
+      TAGLINE: 'Business Management & Control',
     },
     REGISTER: {
       SUBTITLE: 'Register a new membership',

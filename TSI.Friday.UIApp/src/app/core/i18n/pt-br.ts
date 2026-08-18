@@ -124,9 +124,10 @@ export const PT_BR = {
       SHOW_PASSWORD: 'Mostrar senha',
       HIDE_PASSWORD: 'Ocultar senha',
       SUBMIT: 'Entrar',
-      FORGOT_PASSWORD: 'Esqueci minha senha',
+      FORGOT_PASSWORD: 'Esqueceu sua senha?',
       REMEMBER_ME: 'Lembre-se de mim',
-      WELCOME: 'Inicie a sua sessão',
+      WELCOME: 'Bem-vindo de volta ao Nexus!',
+      TAGLINE: 'Gestão e Controle Empresarial',
     },
     REGISTER: {
       SUBTITLE: 'Cadastre-se',
