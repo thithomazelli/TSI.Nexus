@@ -41,19 +41,20 @@ namespace TSI.Friday.Data
                 }
 
                 // Ensure initial users: Admin (Master role) plus the named Admin-role accounts.
-                // UserName always equals Email, matching the self-registration flow's own convention.
+                // UserName always equals Email, except "admin" itself: it's a technical/system
+                // account with no real mailbox, so its "email" is just the literal string "admin".
                 var year = DateTime.UtcNow.Year;
                 var initialUsers = new[]
                 {
                     (
-                        UserName: "admin@local",
-                        Email: "admin@local",
+                        UserName: "admin",
+                        Email: "admin",
                         FirstName: "Admin",
                         LastName: "",
                         Role: "Master",
                         Password: $"!tsi@{year}",
-                        // Earlier seed revisions created this account as "Admin".
-                        LegacyUserNames: new[] { "Admin" }
+                        // Earlier seed revisions created this account as "Admin" or "admin@local".
+                        LegacyUserNames: new[] { "Admin", "admin@local" }
                     ),
                     (
                         UserName: "thiago.thomazelli@gmail.com",
