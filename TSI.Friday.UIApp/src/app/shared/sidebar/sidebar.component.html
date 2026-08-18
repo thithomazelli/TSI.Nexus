@@ -240,7 +240,7 @@
         </ng-container>
 
         <ng-container *ngIf="isMaster">
-          <li class="nav-header">Master</li>
+          <li class="nav-header">Configuração</li>
           <li class="nav-item">
             <a
               routerLink="/feature-toggles"
@@ -250,6 +250,17 @@
             >
               <i class="nav-icon bi bi-toggles"></i>
               <p>Módulos</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              routerLink="/alert-configs"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-bell"></i>
+              <p>Alertas</p>
             </a>
           </li>
         </ng-container>

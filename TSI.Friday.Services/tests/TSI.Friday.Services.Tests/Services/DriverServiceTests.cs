@@ -13,6 +13,7 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly Mock<IRepository<Driver>> _repository;
         private readonly Mock<IRepository<Trip>> _tripRepositoryMock;
         private readonly Mock<IFeatureToggleService> _featureToggleServiceMock;
+        private readonly Mock<IAlertConfigService> _alertConfigServiceMock;
         private readonly Mock<ILogService> _logServiceMock;
         private readonly IList<Driver> _driverListMock;
 
@@ -27,11 +28,16 @@ namespace TSI.Friday.Services.Tests.Services
             _featureToggleServiceMock
                             .Setup(_ => _.IsEnabledAsync(It.IsAny<string>(), It.IsAny<string>()))
                             .ReturnsAsync(true);
+            _alertConfigServiceMock = new Mock<IAlertConfigService>();
+            _alertConfigServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _logServiceMock = new Mock<ILogService>();
             _driverService = new DriverService(
                 _repository.Object,
                 _tripRepositoryMock.Object,
                 _featureToggleServiceMock.Object,
+                _alertConfigServiceMock.Object,
                 _logServiceMock.Object
             );
 
@@ -311,6 +317,22 @@ namespace TSI.Friday.Services.Tests.Services
             // Arrange
             _featureToggleServiceMock
                 .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _driverService.FindWithExpiringLicense(60);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task DriverService_FindWithExpiringLicense_ShouldReturnEmpty_WhenDriverLicenseExpiryAlertDisabled()
+        {
+            // Arrange
+            _alertConfigServiceMock
+                .Setup(_ => _.IsEnabledAsync(AlertConfigKeys.DriverLicenseExpiry))
                 .ReturnsAsync(false);
 
             // Act

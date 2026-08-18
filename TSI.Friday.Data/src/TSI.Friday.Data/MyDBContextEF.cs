@@ -72,6 +72,8 @@ namespace TSI.Friday.Data
 
         public DbSet<FeatureToggle> FeatureToggle { get; set; }
 
+        public DbSet<AlertConfig> AlertConfig { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -353,6 +355,9 @@ namespace TSI.Friday.Data
 
             // One FeatureToggle row per Key - see FeatureToggleKeys for the known values.
             modelBuilder.Entity<FeatureToggle>().HasIndex(f => f.Key).IsUnique();
+
+            // One AlertConfig row per Key - see AlertConfigKeys for the known values.
+            modelBuilder.Entity<AlertConfig>().HasIndex(a => a.Key).IsUnique();
 
             base.OnModelCreating(modelBuilder);
         }

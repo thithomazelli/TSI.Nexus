@@ -12,6 +12,7 @@ namespace TSI.Friday.Services
         private readonly IRepository<Driver> _repository;
         private readonly IRepository<Trip> _tripRepository;
         private readonly IFeatureToggleService _featureToggleService;
+        private readonly IAlertConfigService _alertConfigService;
         private readonly ILogService _logService;
 
         #endregion Properties
@@ -22,12 +23,14 @@ namespace TSI.Friday.Services
             IRepository<Driver> repository,
             IRepository<Trip> tripRepository,
             IFeatureToggleService featureToggleService,
+            IAlertConfigService alertConfigService,
             ILogService logService
         )
         {
             _repository = repository;
             _tripRepository = tripRepository;
             _featureToggleService = featureToggleService;
+            _alertConfigService = alertConfigService;
             _logService = logService;
         }
 
@@ -288,6 +291,14 @@ namespace TSI.Friday.Services
             try
             {
                 if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
+                if (!await _alertConfigService.IsEnabledAsync(AlertConfigKeys.DriverLicenseExpiry))
                 {
                     result.Data = [];
                     result.Status = ResponseStatus.Success;

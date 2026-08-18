@@ -9,6 +9,7 @@ namespace TSI.Friday.Services
     {
         private readonly IRepository<VehicleMaintenance> _maintenanceRepository;
         private readonly IRepository<Vehicle> _vehicleRepository;
+        private readonly IAlertConfigService _alertConfigService;
         private readonly string _systemUserId;
 
         #region Public methods
@@ -16,17 +17,28 @@ namespace TSI.Friday.Services
         public VehicleMaintenanceOverdueService(
             IRepository<VehicleMaintenance> maintenanceRepository,
             IRepository<Vehicle> vehicleRepository,
+            IAlertConfigService alertConfigService,
             IConfiguration configuration
         )
         {
             _maintenanceRepository = maintenanceRepository;
             _vehicleRepository = vehicleRepository;
+            _alertConfigService = alertConfigService;
             _systemUserId = configuration["OverdueSystemUserId"] ?? "overdue-batch";
         }
 
         /// <inheritdoc />
         public async Task<VehicleMaintenanceOverdueResult> RunOverdueUpdateAsync()
         {
+            if (!await _alertConfigService.IsEnabledAsync(AlertConfigKeys.VehicleMaintenanceOverdue))
+            {
+                return new VehicleMaintenanceOverdueResult
+                {
+                    MaintenancesUpdated = 0,
+                    VehiclesBlocked = 0,
+                };
+            }
+
             var today = DateTime.UtcNow.Date;
 
             var overdueMaintenances = await _maintenanceRepository.QueryAsync(m =>

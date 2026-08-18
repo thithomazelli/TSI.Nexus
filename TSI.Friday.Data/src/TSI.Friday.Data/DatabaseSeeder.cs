@@ -293,6 +293,52 @@ namespace TSI.Friday.Data
                 }
 
                 await context.SaveChangesAsync();
+
+                // Ensure every alert config exists. All enabled by default, with the current
+                // hardcoded lead time as the initial ThresholdDays, so seeding never changes the
+                // alert's real-world behaviour - it only makes it editable from now on.
+                var alertConfigs = new[]
+                {
+                    (
+                        Key: AlertConfigKeys.VehicleMaintenanceOverdue,
+                        Name: "Manutenção de Veículo Vencida",
+                        Description: "Alerta disparado quando a data agendada de uma manutenção de veículo passa sem ela ser concluída; o veículo é bloqueado automaticamente.",
+                        ThresholdDays: (int?)null
+                    ),
+                    (
+                        Key: AlertConfigKeys.DashboardOverdueReturns,
+                        Name: "Devoluções em Atraso",
+                        Description: "Alerta disparado quando itens de pedido (aluguel) ou pagamentos passam da data de vencimento sem serem concluídos.",
+                        ThresholdDays: (int?)null
+                    ),
+                    (
+                        Key: AlertConfigKeys.DriverLicenseExpiry,
+                        Name: "Licença de Motorista a Vencer",
+                        Description: "Alerta disparado quando a licença de transporte (CNH) de um motorista já expirou ou expira dentro do prazo configurado.",
+                        ThresholdDays: (int?)60
+                    ),
+                };
+
+                foreach (var alertConfig in alertConfigs)
+                {
+                    var exists = await context.AlertConfig.AnyAsync(a => a.Key == alertConfig.Key);
+                    if (!exists)
+                    {
+                        await context.AlertConfig.AddAsync(
+                            new AlertConfig
+                            {
+                                Key = alertConfig.Key,
+                                Name = alertConfig.Name,
+                                Description = alertConfig.Description,
+                                ThresholdDays = alertConfig.ThresholdDays,
+                                Enabled = true,
+                            }
+                        );
+                        logger?.LogInformation("AlertConfig '{Key}' created (enabled)", alertConfig.Key);
+                    }
+                }
+
+                await context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

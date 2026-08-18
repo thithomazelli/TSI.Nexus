@@ -12,11 +12,19 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
     {
         private readonly DriversController _driversController;
         private readonly Mock<IDriverService> _driverServiceMock;
+        private readonly Mock<IAlertConfigService> _alertConfigServiceMock;
 
         public DriversControllerTests()
         {
             _driverServiceMock = new Mock<IDriverService>();
-            _driversController = new DriversController(_driverServiceMock.Object);
+            _alertConfigServiceMock = new Mock<IAlertConfigService>();
+            _alertConfigServiceMock
+                .Setup(_ => _.GetThresholdDaysAsync(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(60);
+            _driversController = new DriversController(
+                _driverServiceMock.Object,
+                _alertConfigServiceMock.Object
+            );
         }
 
         [Fact]
@@ -294,6 +302,33 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             Assert.Equal(driverMock, response.Data);
 
             _driverServiceMock.Verify(_ => _.FindWithExpiringLicense(60), Times.Once);
+        }
+
+        [Fact]
+        public async Task DriversController_GetExpiringLicenses_ShouldUseConfiguredThreshold_WhenDaysAheadIsOmitted()
+        {
+            // Arrange
+            var expectedResult = new WebApiResponse<IEnumerable<Driver>>
+            {
+                Data = new List<Driver>(),
+                Status = ResponseStatus.Success,
+                Message = "0 registro(s) encontrado(s).",
+            };
+
+            _alertConfigServiceMock
+                .Setup(_ =>
+                    _.GetThresholdDaysAsync(AlertConfigKeys.DriverLicenseExpiry, It.IsAny<int>())
+                )
+                .ReturnsAsync(90);
+            _driverServiceMock
+                .Setup(_ => _.FindWithExpiringLicense(It.IsAny<int>()))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            await _driversController.GetExpiringLicenses();
+
+            // Assert
+            _driverServiceMock.Verify(_ => _.FindWithExpiringLicense(90), Times.Once);
         }
     }
 }

@@ -12,18 +12,24 @@ namespace TSI.Friday.Services.Tests.Services
         private readonly VehicleMaintenanceOverdueService _service;
         private readonly Mock<IRepository<VehicleMaintenance>> _maintenanceRepository;
         private readonly Mock<IRepository<Vehicle>> _vehicleRepository;
+        private readonly Mock<IAlertConfigService> _alertConfigServiceMock;
         private readonly Mock<IConfiguration> _configuration;
 
         public VehicleMaintenanceOverdueServiceTests()
         {
             _maintenanceRepository = new Mock<IRepository<VehicleMaintenance>>();
             _vehicleRepository = new Mock<IRepository<Vehicle>>();
+            _alertConfigServiceMock = new Mock<IAlertConfigService>();
+            _alertConfigServiceMock
+                .Setup(_ => _.IsEnabledAsync(It.IsAny<string>()))
+                .ReturnsAsync(true);
             _configuration = new Mock<IConfiguration>();
             _configuration.Setup(_ => _[It.IsAny<string>()]).Returns((string)null);
 
             _service = new VehicleMaintenanceOverdueService(
                 _maintenanceRepository.Object,
                 _vehicleRepository.Object,
+                _alertConfigServiceMock.Object,
                 _configuration.Object
             );
         }
@@ -117,6 +123,26 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(0, result.VehiclesBlocked);
             _vehicleRepository.Verify(
                 _ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task RunOverdueUpdateAsync_ShouldReturnZero_WhenAlertDisabled()
+        {
+            // Arrange
+            _alertConfigServiceMock
+                .Setup(_ => _.IsEnabledAsync(AlertConfigKeys.VehicleMaintenanceOverdue))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.RunOverdueUpdateAsync();
+
+            // Assert
+            Assert.Equal(0, result.MaintenancesUpdated);
+            Assert.Equal(0, result.VehiclesBlocked);
+            _maintenanceRepository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<VehicleMaintenance, bool>>>()),
                 Times.Never
             );
         }

@@ -25,4 +25,5 @@ export * from './fuel-log/fuel-log.service';
 export * from './service-order/service-order.service';
 export * from './commission/commission.service';
 export * from './feature-flag/feature-flag.service';
+export * from './alert-config/alert-config.service';
 export * from './document-template/document-template.service';

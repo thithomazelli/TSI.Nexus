@@ -19,7 +19,7 @@ export class DriverLicenseNotificationComponent implements OnInit {
 
   ngOnInit(): void {
     this.driverService
-      .getExpiringLicenses(60)
+      .getExpiringLicenses()
       .subscribe((response: WebApiResponse<Driver[]>) => {
         this.drivers = response?.data || [];
         this.total = this.drivers.length;

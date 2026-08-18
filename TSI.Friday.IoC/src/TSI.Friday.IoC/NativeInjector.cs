@@ -99,6 +99,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<ICommissionService, CommissionService>();
             services.AddScoped<IDocumentTemplateService, DocumentTemplateService>();
             services.AddScoped<IFeatureToggleService, FeatureToggleService>();
+            services.AddScoped<IAlertConfigService, AlertConfigService>();
 
             #endregion Services
 
@@ -116,6 +117,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<QuoteTrip>, Repository<QuoteTrip>>();
             services.AddScoped<IRepository<DocumentTemplate>, Repository<DocumentTemplate>>();
             services.AddScoped<IRepository<FeatureToggle>, Repository<FeatureToggle>>();
+            services.AddScoped<IRepository<AlertConfig>, Repository<AlertConfig>>();
             services.AddScoped<IRepository<Transaction>, Repository<Transaction>>();
             services.AddScoped<IRepository<Payment>, Repository<Payment>>();
             services.AddScoped<IRepository<Product>, Repository<Product>>();

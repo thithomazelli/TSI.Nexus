@@ -24,5 +24,6 @@ export enum ApiType {
   ServiceOrders = 'serviceorders',
   Commissions = 'commissions',
   FeatureToggles = 'featuretoggles',
+  AlertConfigs = 'alertconfigs',
   DocumentTemplates = 'documenttemplates',
 }

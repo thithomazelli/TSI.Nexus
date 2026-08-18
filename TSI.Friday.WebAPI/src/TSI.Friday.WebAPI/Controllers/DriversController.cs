@@ -16,14 +16,17 @@ namespace TSI.Friday.WebAPI.Controllers
         /// DriverService object created to access the service model.
         /// </summary>
         private readonly IDriverService _driverService;
+        private readonly IAlertConfigService _alertConfigService;
 
         /// <summary>
         /// DriversController constructor create to initialize the "_driverService" using Dependency Injection.
         /// </summary>
         /// <param name="driverService">IDriverService object used to initialize the internal variable using Dependency Injection.</param>
-        public DriversController(IDriverService driverService)
+        /// <param name="alertConfigService">Used to resolve the configured lead time when the caller doesn't pass one explicitly.</param>
+        public DriversController(IDriverService driverService, IAlertConfigService alertConfigService)
         {
             _driverService = driverService;
+            _alertConfigService = alertConfigService;
         }
 
         /// <summary>
@@ -126,14 +129,21 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
-        /// Get drivers whose CNH is expired or expiring within the given number of days
-        /// (defaults to 60, the lead time recommended in the sector).
+        /// Get drivers whose CNH is expired or expiring within the given number of days. When
+        /// omitted, the lead time configured for the "DriverLicenseExpiry" alert is used
+        /// (60 days by default - see <see cref="TSI.Friday.Contracts.Models.AlertConfigKeys"/>).
         /// </summary>
         [HttpGet]
         [Route("GetExpiringLicenses")]
-        public async Task<IActionResult> GetExpiringLicenses([FromQuery] int daysAhead = 60)
+        public async Task<IActionResult> GetExpiringLicenses([FromQuery] int? daysAhead = null)
         {
-            var webApiResponse = await _driverService.FindWithExpiringLicense(daysAhead);
+            var effectiveDaysAhead =
+                daysAhead
+                ?? await _alertConfigService.GetThresholdDaysAsync(
+                    AlertConfigKeys.DriverLicenseExpiry,
+                    60
+                );
+            var webApiResponse = await _driverService.FindWithExpiringLicense(effectiveDaysAhead);
             return Ok(webApiResponse);
         }
     }

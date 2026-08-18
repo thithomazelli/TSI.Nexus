@@ -51,6 +51,14 @@ const routes: Routes = [
       ),
   },
   {
+    path: 'alert-configs',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./alert-configs/alert-configs.module').then(
+        (m) => m.AlertConfigsModule,
+      ),
+  },
+  {
     path: 'not-found',
     canActivate: [AuthorizationGuard],
     component: NotFoundComponent,

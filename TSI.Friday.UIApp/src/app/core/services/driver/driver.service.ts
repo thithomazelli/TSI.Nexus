@@ -30,9 +30,14 @@ export class DriverService {
     );
   }
 
-  getExpiringLicenses(daysAhead = 60): Observable<WebApiResponse<Driver[]>> {
+  /**
+   * When daysAhead is omitted, the backend uses the lead time configured for the
+   * "DriverLicenseExpiry" alert (see Configuração > Alertas), 60 days by default.
+   */
+  getExpiringLicenses(daysAhead?: number): Observable<WebApiResponse<Driver[]>> {
+    const query = daysAhead != null ? `?daysAhead=${daysAhead}` : '';
     return this.apiService.get<WebApiResponse<Driver[]>>(
-      `${this._baseEndPoint}/getExpiringLicenses?daysAhead=${daysAhead}`,
+      `${this._baseEndPoint}/getExpiringLicenses${query}`,
     );
   }
 
