@@ -26,6 +26,9 @@ import {
   NotificationService,
   PaymentService,
   ModalService,
+  SelectableOption,
+  SelectableOptionGroup,
+  SelectableOptionService,
   TranslationService,
 } from '@friday/core';
 
@@ -96,17 +99,7 @@ export class PaymentFormComponent
     ];
   }
 
-  get categoryOptions() {
-    return [
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FUEL'), value: 'Combustível' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FIXED_EXPENSES'), value: 'Despesas Fixas' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VARIABLE_EXPENSES'), value: 'Despesas Variáveis' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VEHICLE_EXPENSES'), value: 'Despesas Veículos' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_MISC'), value: 'Diversos' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_EMPLOYEES'), value: 'Funcionários' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_RECEIVABLES'), value: 'Recebimentos' },
-    ];
-  }
+  categories: SelectableOption[] = [];
 
   businessPartners$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
@@ -122,6 +115,7 @@ export class PaymentFormComponent
     private modalService: ModalService,
     private notificationService: NotificationService,
     private paymentService: PaymentService,
+    private selectableOptionService: SelectableOptionService,
     private translationService: TranslationService,
   ) {
     super();
@@ -131,6 +125,7 @@ export class PaymentFormComponent
     this.initForm();
     this.patchFormWithData();
     this.disableEditFields();
+    this.loadCategories();
 
     // Subscription para price
     this._subscriptions.push(
@@ -336,6 +331,14 @@ export class PaymentFormComponent
     if (this.data?.status === PaymentStatus.Approved) {
       this.form.disable();
     }
+  }
+
+  private loadCategories(): void {
+    this.selectableOptionService
+      .getByGroup(SelectableOptionGroup.TransactionCategory)
+      .subscribe((response) => {
+        this.categories = response.data ?? [];
+      });
   }
 
   private save(payment: Payment): Observable<WebApiResponse<Payment>> {

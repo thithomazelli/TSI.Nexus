@@ -22,6 +22,9 @@ import {
   ProductType,
   ProductUnit,
   ResponseStatus,
+  SelectableOption,
+  SelectableOptionGroup,
+  SelectableOptionService,
   TranslationService,
   WebApiResponse,
 } from '@friday/core';
@@ -56,20 +59,7 @@ export class ProductFormComponent
   @Input()
   dialogRef?: MatDialogRef<ProductDetailsModalComponent>;
 
-  get categories() {
-    return [
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_ELECTRIC'), value: 'Electric' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_HYDRAULICS'), value: 'Hydraulics' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_STRUCTURE'), value: 'Structure' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_DRYWALL'), value: 'Drywall' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_PAINTING'), value: 'Painting' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'), value: 'Finishing' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_SANITARY'), value: 'Sanitary' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_EQUIPMENT'), value: 'Equipment' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_FIXING'), value: 'Fixing' },
-      { label: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'), value: 'Finish' },
-    ];
-  }
+  categories: SelectableOption[] = [];
 
   get unitOptions() {
     return [
@@ -97,6 +87,7 @@ export class ProductFormComponent
     private notificationService: NotificationService,
     private productService: ProductService,
     private routerService: Router,
+    private selectableOptionService: SelectableOptionService,
     private translationService: TranslationService,
   ) {
     super();
@@ -105,6 +96,7 @@ export class ProductFormComponent
   ngOnInit(): void {
     this.initForm();
     this.patchFormWithData();
+    this.loadCategories();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -125,6 +117,14 @@ export class ProductFormComponent
         sub && typeof sub.unsubscribe === 'function' && sub.unsubscribe(),
     );
     this._subscriptions = [];
+  }
+
+  private loadCategories(): void {
+    this.selectableOptionService
+      .getByGroup(SelectableOptionGroup.ProductCategory)
+      .subscribe((response) => {
+        this.categories = response.data ?? [];
+      });
   }
 
   submit(): Observable<WebApiResponse<Product> | null> {

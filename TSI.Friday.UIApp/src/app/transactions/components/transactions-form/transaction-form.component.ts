@@ -27,6 +27,9 @@ import {
   NotificationService,
   TransactionService,
   ResponseStatus,
+  SelectableOption,
+  SelectableOptionGroup,
+  SelectableOptionService,
   TranslationService,
 } from '@friday/core';
 
@@ -109,17 +112,7 @@ export class TransactionFormComponent
     ];
   }
 
-  get categoryOptions() {
-    return [
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FUEL'), value: 'Combustível' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_FIXED_EXPENSES'), value: 'Despesas Fixas' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VARIABLE_EXPENSES'), value: 'Despesas Variáveis' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_VEHICLE_EXPENSES'), value: 'Despesas Veículos' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_MISC'), value: 'Diversos' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_EMPLOYEES'), value: 'Funcionários' },
-      { label: this.translationService.instant('TRANSACTIONS.CATEGORY_RECEIVABLES'), value: 'Recebimentos' },
-    ];
-  }
+  categories: SelectableOption[] = [];
 
   private _subscriptions: Subscription[] = [];
   private _baseEndPoint = ApiType.Transactions;
@@ -138,6 +131,7 @@ export class TransactionFormComponent
     private modalService: ModalService,
     private notificationService: NotificationService,
     private routerService: Router,
+    private selectableOptionService: SelectableOptionService,
     private transactionService: TransactionService,
     private translationService: TranslationService,
   ) {
@@ -154,6 +148,7 @@ export class TransactionFormComponent
     this.patchFormWithData();
     this.onTypeChanges();
     this.setupAutoComplete();
+    this.loadCategories();
 
     this.setupStatusWatcher();
 
@@ -388,6 +383,14 @@ export class TransactionFormComponent
       });
       this._subscriptions.push(sub);
     }, 200);
+  }
+
+  private loadCategories(): void {
+    this.selectableOptionService
+      .getByGroup(SelectableOptionGroup.TransactionCategory)
+      .subscribe((response) => {
+        this.categories = response.data ?? [];
+      });
   }
 
   private resetBusinessPartnerSelection(clearValidation = false): void {

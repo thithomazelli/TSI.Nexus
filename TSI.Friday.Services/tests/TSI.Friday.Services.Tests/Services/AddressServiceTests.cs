@@ -42,7 +42,7 @@ namespace TSI.Friday.Services.Tests.Services
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Type = AddressType.Home,
+                    Type = "Residencial",
                     Country = "Brasil",
                     City = "Santo André",
                     State = "SP",
@@ -56,7 +56,7 @@ namespace TSI.Friday.Services.Tests.Services
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     BusinessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Type = AddressType.Office,
+                    Type = "Comercial",
                     Country = "Brasil",
                     City = "Santo André",
                     State = "SP",

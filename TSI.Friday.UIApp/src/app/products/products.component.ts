@@ -29,21 +29,6 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   baseEndPoint = 'products';
 
-  get categoryMap(): { [key: string]: string } {
-    return {
-      Electric: this.translationService.instant('PRODUCTS.CATEGORY_ELECTRIC'),
-      Hydraulics: this.translationService.instant('PRODUCTS.CATEGORY_HYDRAULICS'),
-      Structure: this.translationService.instant('PRODUCTS.CATEGORY_STRUCTURE'),
-      Drywall: this.translationService.instant('PRODUCTS.CATEGORY_DRYWALL'),
-      Painting: this.translationService.instant('PRODUCTS.CATEGORY_PAINTING'),
-      Finishing: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'),
-      Sanitary: this.translationService.instant('PRODUCTS.CATEGORY_SANITARY'),
-      Equipment: this.translationService.instant('PRODUCTS.CATEGORY_EQUIPMENT'),
-      Fixing: this.translationService.instant('PRODUCTS.CATEGORY_FIXING'),
-      Finish: this.translationService.instant('PRODUCTS.CATEGORY_FINISHING'),
-    };
-  }
-
   get unitMap(): { [key: string]: string } {
     return {
       Unit: this.translationService.instant('PRODUCTS.UNIT_UNIT'),
@@ -153,14 +138,6 @@ export class ProductsComponent implements OnInit, OnDestroy {
       sortable: true,
       filter: true,
       maxWidth: 120,
-      filterValueGetter: (params: ValueGetterParams) => {
-        return (
-          this.categoryMap[params.data?.category] ?? params.data?.category ?? ''
-        );
-      },
-      valueFormatter: (params: ValueFormatterParams) => {
-        return this.getCategoryLabel(params.value);
-      },
     },
     {
       field: 'unit',
@@ -300,9 +277,5 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   private getTypeLabel(type: string): string {
     return this.typeMap[type] ?? type ?? '';
-  }
-
-  private getCategoryLabel(category: string): string {
-    return this.categoryMap[category] ?? category ?? '';
   }
 }

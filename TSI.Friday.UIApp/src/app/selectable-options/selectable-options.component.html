@@ -1,0 +1,76 @@
+<app-header
+  [title]="'SELECTABLE_OPTIONS.TITLE' | translate"
+  [navigationMenus]="[
+    { label: 'COMMON.HOME' | translate, link: '/home' },
+    { label: 'SELECTABLE_OPTIONS.TITLE' | translate, link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <div class="card card-secondary card-outline">
+    <div class="card-body">
+      <p class="text-muted">
+        {{ 'SELECTABLE_OPTIONS.DESCRIPTION' | translate }}
+      </p>
+
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item" *ngFor="let group of groups">
+          <a
+            href="#"
+            class="nav-link"
+            [class.active]="group.value === activeGroup"
+            (click)="$event.preventDefault(); selectGroup(group.value)"
+          >
+            {{ group.labelKey | translate }}
+          </a>
+        </li>
+      </ul>
+
+      <div class="input-group mb-3 option-add-row">
+        <div class="form-floating flex-fill">
+          <input
+            type="text"
+            class="form-control"
+            [placeholder]="'SELECTABLE_OPTIONS.NEW_VALUE' | translate"
+            [(ngModel)]="newValue"
+            (keydown.enter)="add()"
+          />
+          <label>{{ 'SELECTABLE_OPTIONS.NEW_VALUE' | translate }}</label>
+        </div>
+        <button
+          type="button"
+          class="btn btn-success"
+          [disabled]="!newValue.trim() || saving"
+          (click)="add()"
+        >
+          <i class="bi bi-plus-lg"></i> {{ 'COMMON.ADD' | translate }}
+        </button>
+      </div>
+
+      <div *ngIf="loading" class="text-center py-4">
+        <i class="bi bi-arrow-repeat"></i> {{ 'COMMON.LOADING' | translate }}
+      </div>
+
+      <div *ngIf="!loading && options.length === 0" class="text-muted py-3">
+        {{ 'SELECTABLE_OPTIONS.NO_OPTIONS_FOUND' | translate }}
+      </div>
+
+      <ul *ngIf="!loading" class="list-group list-group-flush">
+        <li
+          *ngFor="let option of options"
+          class="list-group-item d-flex justify-content-between align-items-center"
+        >
+          {{ option.value }}
+          <button
+            type="button"
+            class="btn btn-link p-0 text-danger"
+            [title]="'COMMON.REMOVE' | translate"
+            (click)="remove(option)"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

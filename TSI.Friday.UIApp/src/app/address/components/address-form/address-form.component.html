@@ -12,11 +12,12 @@
                 [class.is-invalid]="isInvalid('type')"
               >
                 <option [ngValue]="null">{{ 'ADDRESS.SELECT_TYPE' | translate }}</option>
-                <option [ngValue]="'Home'">{{ 'ADDRESS.TYPE_HOME' | translate }}</option>
-                <option [ngValue]="'Office'">{{ 'ADDRESS.TYPE_OFFICE' | translate }}</option>
-                <option [ngValue]="'Postal'">{{ 'ADDRESS.TYPE_POSTAL' | translate }}</option>
-                <option [ngValue]="'Billing'">{{ 'ADDRESS.TYPE_BILLING' | translate }}</option>
-                <option [ngValue]="'Shipping'">{{ 'ADDRESS.TYPE_SHIPPING' | translate }}</option>
+                <option
+                  *ngFor="let option of addressTypeOptions"
+                  [ngValue]="option.value"
+                >
+                  {{ option.value }}
+                </option>
               </select>
               <label for="type">{{ 'ADDRESS.ADDRESS_TYPE' | translate }}</label>
             </div>

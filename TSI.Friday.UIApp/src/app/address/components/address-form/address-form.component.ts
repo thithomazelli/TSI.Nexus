@@ -17,6 +17,9 @@ import {
   ModalService,
   NotificationService,
   ResponseStatus,
+  SelectableOption,
+  SelectableOptionGroup,
+  SelectableOptionService,
   TranslationService,
   WebApiResponse,
 } from '@friday/core';
@@ -61,6 +64,7 @@ export class AddressFormComponent
   estados: { id: number; sigla: string; nome: string }[] = [];
   cidades: { id: number; nome: string }[] = [];
   loadingCep = false;
+  addressTypeOptions: SelectableOption[] = [];
 
   private _cidadesCancel$ = new Subject<void>();
 
@@ -70,6 +74,7 @@ export class AddressFormComponent
     private http: HttpClient,
     private modalService: ModalService,
     private notificationService: NotificationService,
+    private selectableOptionService: SelectableOptionService,
     private translationService: TranslationService,
   ) {
     super();
@@ -84,6 +89,7 @@ export class AddressFormComponent
 
     this.getEstados();
     this.setupAutoComplete();
+    this.loadAddressTypeOptions();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -378,6 +384,14 @@ export class AddressFormComponent
         );
         cityControl?.updateValueAndValidity();
         this.form.updateValueAndValidity();
+      });
+  }
+
+  private loadAddressTypeOptions(): void {
+    this.selectableOptionService
+      .getByGroup(SelectableOptionGroup.AddressType)
+      .subscribe((response) => {
+        this.addressTypeOptions = response.data ?? [];
       });
   }
 

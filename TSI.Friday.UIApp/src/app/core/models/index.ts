@@ -34,3 +34,4 @@ export * from './quote-trip.model';
 export * from './document-template.model';
 export * from './feature-toggle.model';
 export * from './alert-config.model';
+export * from './selectable-option.model';

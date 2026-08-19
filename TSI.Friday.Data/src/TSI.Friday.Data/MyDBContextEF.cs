@@ -74,6 +74,8 @@ namespace TSI.Friday.Data
 
         public DbSet<AlertConfig> AlertConfig { get; set; }
 
+        public DbSet<SelectableOption> SelectableOption { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -130,6 +132,14 @@ namespace TSI.Friday.Data
             // (see the AddTripQuoteTripAndDocumentTemplate migration), so it needs an
             // explicit bounded length.
             modelBuilder.Entity<Quote>().Property(q => q.Type).HasMaxLength(50);
+
+            // Same longtext/DEFAULT issue as Quote.Type above.
+            modelBuilder.Entity<SelectableOption>().Property(o => o.Group).HasMaxLength(50);
+            modelBuilder.Entity<SelectableOption>().Property(o => o.Value).HasMaxLength(200);
+            modelBuilder
+                .Entity<SelectableOption>()
+                .HasIndex(o => new { o.Group, o.Value })
+                .IsUnique();
 
             modelBuilder
                 .Entity<Quote>()

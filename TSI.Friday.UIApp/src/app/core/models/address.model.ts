@@ -1,5 +1,3 @@
-import { AddressType } from '../enums/address-type.enum';
-
 export class Address {
   id?: string;
   name?: string;
@@ -10,7 +8,9 @@ export class Address {
   zipCode?: string;
   country?: string;
   comments?: string;
-  type?: AddressType;
+  // Free-text value matching one of the admin-managed SelectableOption rows for the
+  // AddressType group (was a fixed AddressType enum).
+  type?: string;
   businessPartnerId?: string;
   isDefault?: boolean;
 

@@ -72,9 +72,9 @@
                 [class.is-valid]="isValid('category')"
               >
                 <option value="" disabled selected>{{ 'VEHICLES.CATEGORY' | translate }}</option>
-                @for (option of categories; track option) {
+                @for (option of categories; track option.id) {
                   <option [value]="option.value">
-                    {{ option.label }}
+                    {{ option.value }}
                   </option>
                 }
               </select>

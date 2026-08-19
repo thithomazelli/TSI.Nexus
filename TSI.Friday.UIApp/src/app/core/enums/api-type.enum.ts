@@ -26,4 +26,5 @@ export enum ApiType {
   FeatureToggles = 'featuretoggles',
   AlertConfigs = 'alertconfigs',
   DocumentTemplates = 'documenttemplates',
+  SelectableOptions = 'selectableoptions',
 }

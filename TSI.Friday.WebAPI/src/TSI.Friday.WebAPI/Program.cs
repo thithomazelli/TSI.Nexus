@@ -160,6 +160,18 @@ catch
     // swallow to not break startup
 }
 
+// Seed the default values for the admin-editable dropdown option lists (address type, product
+// category, transaction category), and rewrite any Address/Product row still holding one of the
+// old hardcoded English keys to the new Portuguese label.
+try
+{
+    SelectableOptionSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
+}
+catch
+{
+    // swallow to not break startup
+}
+
 // Optional demo data (fake business partners, quotes, orders, fleet, etc.) for presenting the
 // app on a clean database. Never runs unless explicitly enabled - and never in Production, even
 // if the flag is set by mistake - and it's a no-op once real data exists (see DemoDataSeeder).

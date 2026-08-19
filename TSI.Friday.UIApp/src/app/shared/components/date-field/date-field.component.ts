@@ -86,6 +86,26 @@ export class DateFieldComponent implements ControlValueAccessor {
     this.picker?.toggle();
   }
 
+  // The calendar panel renders inline (see the template comment on why appendTo="body" was
+  // dropped), so PrimeNG positions it with `position: absolute` and small top/left offsets
+  // relative to the field. That absolute box still counts toward a scrollable ancestor's
+  // (.modal-scrollable-area) scroll size even though it's out of normal flow, so on a short
+  // modal opening the calendar clipped it and popped up a scrollbar. Re-pinning the panel to
+  // `position: fixed` with coordinates computed from the input's own viewport rect keeps it
+  // correctly placed under the field while removing it from the ancestor's scrollable content.
+  onCalendarShow(overlay: HTMLElement): void {
+    const inputEl = this.picker?.inputfieldViewChild?.nativeElement as
+      | HTMLElement
+      | undefined;
+    if (!overlay || !inputEl) {
+      return;
+    }
+    const rect = inputEl.getBoundingClientRect();
+    overlay.style.position = 'fixed';
+    overlay.style.top = `${rect.bottom}px`;
+    overlay.style.insetInlineStart = `${rect.left}px`;
+  }
+
   // Restricts typing to digits, "/" and the usual editing/navigation keys - nothing else reaches
   // the input, so the field can never end up holding letters or stray punctuation.
   onInputKeydown(event: KeyboardEvent): void {

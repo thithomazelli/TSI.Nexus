@@ -26,7 +26,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var addressMock = new AddressDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Type = AddressType.Home,
+                Type = "Residencial",
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
                 Number = 950,
@@ -87,7 +87,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var addressMock = new AddressDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Type = AddressType.Home,
+                Type = "Residencial",
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
                 Number = 950,
@@ -148,7 +148,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var addressMock = new AddressDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Type = AddressType.Home,
+                Type = "Residencial",
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
                 Number = 950,
@@ -191,7 +191,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 new()
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Type = AddressType.Home,
+                    Type = "Residencial",
                     ZipCode = "09240110",
                     Street = "Rua Boa Vista",
                     Number = 950,
@@ -204,7 +204,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
                 new()
                 {
                     Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Type = AddressType.Office,
+                    Type = "Comercial",
                     ZipCode = "09240110",
                     Street = "Rua Boa Vista",
                     Number = 950,
@@ -252,7 +252,7 @@ namespace TSI.Friday.WebAPI.Tests.Controllers
             var addressMock = new AddressDto
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                Type = AddressType.Home,
+                Type = "Residencial",
                 ZipCode = "09240110",
                 Street = "Rua Boa Vista",
                 Number = 950,

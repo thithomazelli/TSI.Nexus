@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models
 {
@@ -22,7 +21,10 @@ namespace TSI.Friday.Contracts.Models
 
         public string Comments { get; set; }
 
-        public AddressType Type { get; set; }
+        // Was an AddressType enum (Home/Office/Mailing/Billing/Shipping) - now a free-text value
+        // matching one of the admin-managed SelectableOption rows for the AddressType group, the
+        // same way Product.Category and Transaction.Category already work.
+        public string Type { get; set; }
 
         public bool IsDefault { get; set; }
 

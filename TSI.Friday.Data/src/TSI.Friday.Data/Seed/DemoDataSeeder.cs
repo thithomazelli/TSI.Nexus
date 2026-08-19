@@ -243,7 +243,7 @@ namespace TSI.Friday.Data.Seed
                         ZipCode = faker.Random.Replace("#####-###"),
                         Country = "Brasil",
                         Comments = string.Empty,
-                        Type = AddressType.Home,
+                        Type = "Residencial",
                         IsDefault = true,
                         BusinessPartnerId = bp.Id,
                     }

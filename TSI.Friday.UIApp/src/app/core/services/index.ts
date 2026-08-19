@@ -30,3 +30,4 @@ export * from './theme/theme.service';
 export * from './translation/translation.service';
 export * from './preferences/preferences.service';
 export * from './document-template/document-template.service';
+export * from './selectable-option/selectable-option.service';

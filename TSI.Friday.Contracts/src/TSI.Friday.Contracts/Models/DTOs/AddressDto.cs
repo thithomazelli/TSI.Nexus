@@ -1,5 +1,4 @@
 ﻿using System;
-using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
 {
@@ -23,7 +22,7 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public string Comments { get; set; }
 
-        public AddressType Type { get; set; }
+        public string Type { get; set; }
 
         public Guid? BusinessPartnerId { get; set; }
 

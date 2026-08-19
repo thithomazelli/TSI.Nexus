@@ -21,6 +21,7 @@
       styleClass="date-field-picker"
       showTransitionOptions="0ms"
       hideTransitionOptions="0ms"
+      (onShow)="onCalendarShow($event)"
     ></p-datepicker>
     @if (label) {
       <label [for]="fieldId">{{ label }}</label>

@@ -43,6 +43,14 @@ const routes: Routes = [
       ),
   },
   {
+    path: 'selectable-options',
+    canActivateChild: [AuthorizationGuard],
+    loadChildren: () =>
+      import('./selectable-options/selectable-options.module').then(
+        (m) => m.SelectableOptionsModule,
+      ),
+  },
+  {
     path: 'feature-toggles',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>

@@ -184,8 +184,8 @@
                   [class.is-valid]="isValid('category')"
                 >
                   <option value="" disabled selected>{{ 'VEHICLES.CATEGORY' | translate }}</option>
-                  @for (option of categoryOptions; track option) {
-                    <option [value]="option.value">{{ option.label }}</option>
+                  @for (option of categories; track option.id) {
+                    <option [value]="option.value">{{ option.value }}</option>
                   }
                 </select>
                 <label for="category">{{ 'VEHICLES.CATEGORY' | translate }}</label>
