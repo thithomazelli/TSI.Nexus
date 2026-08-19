@@ -306,7 +306,6 @@ export class QuoteFormComponent
                     BusinessPartnerDetailsModalComponent,
                     {
                       data: { name: businessPartnerName },
-                      width: '600px',
                       disableClose: true,
                     },
                   );

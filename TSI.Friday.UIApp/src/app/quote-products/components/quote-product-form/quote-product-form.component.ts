@@ -239,7 +239,6 @@ export class QuoteProductFormComponent
                   ProductDetailsModalComponent,
                   {
                     data: { sku: productSku },
-                    width: '600px',
                     disableClose: true,
                   },
                 );
@@ -289,7 +288,6 @@ export class QuoteProductFormComponent
                   ProductDetailsModalComponent,
                   {
                     data: { name: productName },
-                    width: '600px',
                     disableClose: true,
                   },
                 );

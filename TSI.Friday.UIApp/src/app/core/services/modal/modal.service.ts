@@ -29,11 +29,9 @@ export class ModalService {
     }
     return this.dialog.open(componentOrTemplate as any, {
       data: dialogData,
-      width: data?.width || '600px',
+      width: data?.width || '760px',
       disableClose: !!data?.disableClose,
-      // custom-modal-wide lifts the 600px cap .custom-modal enforces globally (see styles.scss) -
-      // only opt in per-call via `width` when a form genuinely needs more room.
-      panelClass: data?.width ? ['custom-modal', 'custom-modal-wide'] : 'custom-modal',
+      panelClass: 'custom-modal',
       autoFocus: false,
     });
   }

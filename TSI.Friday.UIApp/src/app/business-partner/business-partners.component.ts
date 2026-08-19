@@ -203,7 +203,6 @@ export class BusinessPartnersComponent {
   openModal(initialState: any) {
     const initialStateWithData = {
       ...initialState,
-      width: '760px',
       data: {
         ...initialState.data,
         type:

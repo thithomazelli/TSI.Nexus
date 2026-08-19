@@ -269,7 +269,6 @@ export class TripFormComponent
                     BusinessPartnerDetailsModalComponent,
                     {
                       data: { name: businessPartnerName },
-                      width: '600px',
                       disableClose: true,
                     },
                   );

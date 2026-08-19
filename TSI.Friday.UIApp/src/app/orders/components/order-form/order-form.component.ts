@@ -333,7 +333,6 @@ export class OrderFormComponent
                     BusinessPartnerDetailsModalComponent,
                     {
                       data: { name: businessPartnerName },
-                      width: '600px',
                       disableClose: true,
                     },
                   );

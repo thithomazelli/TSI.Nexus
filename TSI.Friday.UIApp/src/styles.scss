@@ -121,12 +121,21 @@ a:hover {
    (qualquer filho direto que não seja .modal-scrollable-area) mantêm sua altura natural e
    ficam sempre visíveis, e só a área central (.modal-scrollable-area) ganha scroll próprio
    quando o conteúdo não cabe. */
+/* Angular Material's own dialog.mjs styles set `.cdk-overlay-pane.mat-mdc-dialog-panel` to
+   `max-width: var(--mat-dialog-container-max-width, 560px)` - a higher-specificity,
+   component-scoped rule our .custom-modal max-width below can't out-rank on its own, so the
+   cap has to be lifted through that same CSS variable rather than just a competing max-width
+   declaration. */
+.cdk-overlay-pane.custom-modal {
+  --mat-dialog-container-max-width: 900px;
+}
+
 .cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface,
 .cdk-overlay-pane.custom-modal .mdc-dialog__surface {
   border-radius: 12px !important;
   padding: 24px 24px 16px 24px !important;
   min-width: 400px !important;
-  max-width: 600px !important;
+  max-width: 900px !important;
   width: 100% !important;
   max-height: 90vh !important;
   display: flex !important;
@@ -136,22 +145,6 @@ a:hover {
   color: var(--bs-body-color) !important;
   font-family: inherit !important;
   overflow: hidden !important;
-}
-
-/* Opt-in variant (see ModalService.showTemplateModal) for forms that genuinely need more
-   horizontal room than the standard 600px modal - e.g. business-partner's two-column
-   client+address layout with the input-group icon boxes.
-   Angular Material's own dialog.mjs styles set `.cdk-overlay-pane.mat-mdc-dialog-panel` to
-   `max-width: var(--mat-dialog-container-max-width, 560px)` - a higher-specificity,
-   component-scoped rule that our .custom-modal max-width above can't out-rank, so the cap has
-   to be lifted through that same CSS variable rather than a competing max-width declaration. */
-.cdk-overlay-pane.custom-modal.custom-modal-wide {
-  --mat-dialog-container-max-width: 900px;
-}
-
-.cdk-overlay-pane.custom-modal.custom-modal-wide .mat-mdc-dialog-surface,
-.cdk-overlay-pane.custom-modal.custom-modal-wide .mdc-dialog__surface {
-  max-width: 900px !important;
 }
 
 /* Garante que o conteúdo do modal não tenha padding duplicado */
