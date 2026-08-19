@@ -43,17 +43,20 @@
 }
 
 .sidebar-brand {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
+// Left edge lines up with .nav-link's own icon column instead of centering the mark, matching
+// the alignment of every other item in the menu below it.
 .brand-link {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: flex-start;
   width: 100%;
 }
 
 .brand-image-full {
-  max-width: 140px;
+  max-width: 120px;
   width: 100%;
   height: auto;
 }

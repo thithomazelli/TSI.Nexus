@@ -203,11 +203,67 @@
               <th class="table-header-title" scope="col">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</th>
               <th class="table-header-title" scope="col">{{ 'COMMON.QUANTITY' | translate }}</th>
               <th class="" scope="col" style="width: 40px">
-                <button class="address-link" (click)="openOrderProductsModal()">{{ 'COMMON.ADD' | translate }}</button>
+                <button class="address-link" (click)="openOrderProductsModal()">{{ 'ORDERS.ADD_PRODUCT_BUTTON' | translate }}</button>
               </th>
             </tr>
           </thead>
           <tbody class="table-group-divider table-body">
+            <tr class="inline-product-row" [formGroup]="inlineProductForm">
+              <td>
+                <input
+                  type="text"
+                  formControlName="productSku"
+                  class="form-control form-control-sm"
+                  [matAutocomplete]="inlineSkuAuto"
+                  [placeholder]="'PRODUCTS.SKU' | translate"
+                  (blur)="onInlineProductSkuBlur()"
+                />
+                <mat-autocomplete
+                  #inlineSkuAuto="matAutocomplete"
+                  (optionSelected)="selectInlineProduct($event.option.value)"
+                >
+                  <mat-option
+                    *ngFor="let product of filteredInlineProductsSku$ | async"
+                    [value]="product"
+                    [disabled]="product.disabled || product.alreadyUsed"
+                    [ngClass]="{ 'text-muted': product.disabled || product.alreadyUsed }"
+                  >
+                    {{ product.sku }}
+                    <span class="ms-2 text-muted">
+                      @if (product.alreadyUsed) {
+                        {{ 'PRODUCTS.ALREADY_USED' | translate }}
+                      } @else if (product.disabled) {
+                        {{ 'PRODUCTS.UNAVAILABLE' | translate }}
+                      }
+                    </span>
+                  </mat-option>
+                </mat-autocomplete>
+              </td>
+              <td class="table-cell-info">{{ inlineProductForm.get('productName')?.value }}</td>
+              <td class="table-cell-info">
+                {{ (inlineProductForm.get('price')?.value * (inlineProductForm.get('quantity')?.value || 1)) | currency: "BRL" }}
+              </td>
+              <td>
+                <input
+                  type="number"
+                  min="1"
+                  formControlName="quantity"
+                  class="form-control form-control-sm"
+                  (blur)="onInlineQuantityBlur()"
+                />
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-link p-0"
+                  [disabled]="!inlineProductForm.get('productId')?.value"
+                  [title]="'ORDERS.ADD_PRODUCT_BUTTON' | translate"
+                  (click)="addInlineProduct()"
+                >
+                  <i class="bi bi-plus-circle"></i>
+                </button>
+              </td>
+            </tr>
             <tr *ngFor="let item of data?.orderProducts; let i = index">
               <td class="table-cell-info">{{ item.productSku }}</td>
               <td class="table-cell-info">{{ item.productName }}</td>

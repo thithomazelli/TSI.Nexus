@@ -58,6 +58,42 @@
   padding-bottom: 0;
 }
 
+// Same soft blue/gray gradient family as the login screen, applied app-wide in light mode only
+// (ThemeService sets data-bs-theme on <html>; dark mode is untouched). The page canvas gets the
+// full multi-blob backdrop; cards and modal surfaces - which sit on top of it at a much smaller
+// scale, where the same blob positions would just look like a disconnected, repeated pattern -
+// get a flatter two-stop version instead so nothing reads as plain white without clashing.
+html[data-bs-theme='light'] {
+  body {
+    background: radial-gradient(
+        55% 65% at 8% 12%,
+        rgba(94, 200, 224, 0.25) 0%,
+        rgba(94, 200, 224, 0) 70%
+      ),
+      radial-gradient(
+        50% 60% at 4% 92%,
+        rgba(47, 127, 214, 0.22) 0%,
+        rgba(47, 127, 214, 0) 70%
+      ),
+      radial-gradient(
+        45% 55% at 96% 90%,
+        rgba(18, 48, 85, 0.2) 0%,
+        rgba(18, 48, 85, 0) 70%
+      ),
+      #eef3f7;
+    background-attachment: fixed;
+  }
+
+  .card {
+    background: linear-gradient(160deg, #ffffff 0%, #eef3f7 100%);
+  }
+
+  .cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface,
+  .cdk-overlay-pane.custom-modal .mdc-dialog__surface {
+    background: linear-gradient(160deg, #ffffff 0%, #eef3f7 100%) !important;
+  }
+}
+
 @media (max-width: 576px) {
   .login-box,
   .register-box {
@@ -181,6 +217,34 @@ a:hover {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  // A couple px less padding on the side that grows a scrollbar keeps fields from crowding
+  // right up against it once the thumb/track (added below) actually take up visible width.
+  padding-right: 6px;
+}
+
+// Styled scrollbar for every modal's scrollable body (was the bare unstyled browser default,
+// which looked out of place against the rest of the app's styling).
+.modal-scrollable-area {
+  scrollbar-width: thin;
+  scrollbar-color: #a9d3e3 #eef4f7;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #eef4f7;
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #a9d3e3;
+    border-radius: 8px;
+
+    &:hover {
+      background-color: #4fb8d6;
+    }
+  }
 }
 
 /* Vários modais (business-partner, user, trip, order, quote, etc.) não colocam o form
@@ -338,6 +402,20 @@ mat-calendar {
   color: #6ea9bd;
   background-color: #f7fbfd;
   border-color: #cfe3ec;
+}
+
+// Chrome/Edge/Safari paint autofilled fields with their own opaque yellow/gray tint that no
+// background-color override can touch directly - the standard workaround is an absurdly large
+// inset box-shadow in the field's real background color, which visually papers over the browser's
+// own fill color without disabling the yellow-tinted text color they also force.
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--bs-body-bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--bs-body-bg) inset !important;
+  -webkit-text-fill-color: var(--bs-body-color) !important;
+  caret-color: var(--bs-body-color);
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .swal-btn {

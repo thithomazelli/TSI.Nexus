@@ -40,3 +40,17 @@
   margin-bottom: 0.5rem;
   margin-top: 1.2rem;
 }
+
+.inline-product-row {
+  background: #f7fbfd;
+
+  td {
+    vertical-align: middle;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  input.form-control-sm {
+    min-width: 90px;
+  }
+}

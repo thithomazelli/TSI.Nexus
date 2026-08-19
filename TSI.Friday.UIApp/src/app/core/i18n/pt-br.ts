@@ -197,7 +197,7 @@ export const PT_BR = {
   BUSINESS_PARTNER: {
     DOCUMENT_TYPE: 'Tipo',
     CPF_CNPJ: 'CPF / CNPJ',
-    BIRTHDAY: 'Aniversário',
+    BIRTHDAY: 'Data de Nascimento',
     MOBILE: 'Celular',
     CLIENTS_REFRESHED: 'Clientes atualizados com sucesso',
     SUPPLIERS_REFRESHED: 'Fornecedores atualizados com sucesso',
@@ -466,7 +466,7 @@ export const PT_BR = {
     ORDERS_REFRESHED: 'Pedidos atualizados com sucesso',
     PRODUCT_ADDED_SUCCESS: 'Produto adicionado ao pedido com sucesso.',
     REMOVE_ERROR: 'Erro ao remover',
-    SELECT_CLIENT_HINT: 'Por favor, selecione um cliente antes de adicionar produtos ao pedido.',
+    ADD_PRODUCT_BUTTON: 'Buscar',
     CLOSE_ORDER: 'Fechar pedido',
     CONFIRM_RETURN_ALL: 'Deseja marcar todos os produtos como retornados?',
     ORDER_ADDED: 'Pedido adicionado',

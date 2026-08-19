@@ -197,7 +197,7 @@ export const EN = {
   BUSINESS_PARTNER: {
     DOCUMENT_TYPE: 'Type',
     CPF_CNPJ: 'Tax ID',
-    BIRTHDAY: 'Birthday',
+    BIRTHDAY: 'Date of Birth',
     MOBILE: 'Mobile',
     CLIENTS_REFRESHED: 'Clients refreshed successfully',
     SUPPLIERS_REFRESHED: 'Suppliers refreshed successfully',
@@ -466,7 +466,7 @@ export const EN = {
     ORDERS_REFRESHED: 'Orders refreshed successfully',
     PRODUCT_ADDED_SUCCESS: 'Product added to order successfully.',
     REMOVE_ERROR: 'Error removing',
-    SELECT_CLIENT_HINT: 'Please select a client before adding products to the order.',
+    ADD_PRODUCT_BUTTON: 'Search',
     CLOSE_ORDER: 'Close order',
     CONFIRM_RETURN_ALL: 'Do you want to mark all products as returned?',
     ORDER_ADDED: 'Order added',

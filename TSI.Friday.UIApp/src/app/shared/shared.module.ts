@@ -55,6 +55,7 @@ import { InputText } from 'primeng/inputtext';
 import { FileUpload } from 'primeng/fileupload';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { Tooltip } from 'primeng/tooltip';
+import { DatePicker } from 'primeng/datepicker';
 import { ConfirmationService } from 'primeng/api';
 
 @NgModule({
@@ -104,6 +105,7 @@ import { ConfirmationService } from 'primeng/api';
     FileUpload,
     ConfirmDialog,
     Tooltip,
+    DatePicker,
   ],
   exports: [
     AttachmentsComponent,

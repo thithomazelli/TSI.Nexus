@@ -1,30 +1,28 @@
-.input-group-text {
-  cursor: pointer;
-}
-
-.date-picker-proxy {
-  position: absolute;
-  inset: 0;
+.date-field {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
-  opacity: 0;
-  border: 0;
-  padding: 0;
-  pointer-events: none;
 }
 
-.pt-br-datepicker {
-  z-index: 9999;
+.date-field-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 4px;
 }
 
-mat-datepicker {
-  display: none !important;
-}
+// p-datepicker renders its own markup outside this component's view (the input/icon aren't
+// direct children in the emulated-encapsulation sense once PrimeNG projects them), so reaching
+// its internals needs ::ng-deep. inputStyleClass already puts `.form-control` on the native
+// input, which is enough to pick up the app-wide blue border/focus styling from styles.scss -
+// this just makes the whole control (and the input inside it) fill its container like every
+// other field.
+:host ::ng-deep {
+  .date-field-picker {
+    width: 100%;
+    display: block;
+  }
 
-.button {
-  background-color: var(--bs-tertiary-bg);
-  border: var(--bs-border-width) solid var(--bs-border-color);
-  border-radius: var(--bs-border-radius) !important;
-  border-top-left-radius: 0 !important;
-  border-bottom-left-radius: 0 !important;
+  .date-field-input {
+    width: 100%;
+  }
 }
