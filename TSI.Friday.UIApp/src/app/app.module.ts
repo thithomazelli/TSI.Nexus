@@ -65,6 +65,12 @@ ModuleRegistry.registerModules([AllCommunityModule]);
     providePrimeNG({
       theme: {
         preset: Aura,
+        // PrimeNG defaults to following the OS's prefers-color-scheme, independent of this app's
+        // own light/dark toggle (ThemeService sets data-bs-theme on <html>) - without this, the
+        // calendar popup can render dark even while the rest of the app is in light mode.
+        options: {
+          darkModeSelector: '[data-bs-theme="dark"]',
+        },
       },
       // pt-BR month/day names for p-datepicker (app-date-field) - PrimeNG has no built-in
       // locale bundle, translation strings have to be supplied directly.
