@@ -41,53 +41,45 @@
   box-shadow: 0 30px 70px rgba(11, 31, 58, 0.22);
 }
 
-// -------- Left half: brand image + welcome message --------
+// -------- Left half: blue brand backdrop with centered logo --------
 .login-visual {
   position: relative;
   flex: 0 0 44%;
   max-width: 44%;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+      120% 90% at 30% 45%,
+      #123055 0%,
+      #0b1f3a 55%,
+      #060f21 100%
+    ),
+    #060f21;
 }
 
-.login-visual-image {
+.login-visual-rays {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center;
+  pointer-events: none;
 }
 
 .login-visual-content {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 44px 36px 0;
-  background: linear-gradient(
-    180deg,
-    rgba(6, 15, 33, 0.55) 0%,
-    rgba(6, 15, 33, 0.15) 40%,
-    rgba(6, 15, 33, 0) 65%
-  );
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px;
 }
 
-.login-visual-title {
-  color: #fff;
-  font-size: 1.7rem;
-  font-weight: 700;
-  margin: 0 0 8px;
-}
-
-.login-visual-subtitle {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin: 0;
+.login-visual-logo {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
 }
 
 // -------- Right half: sign-in form --------
@@ -180,10 +172,39 @@
   user-select: none;
 
   input[type='checkbox'] {
-    accent-color: #2f7fd6;
-    width: 15px;
-    height: 15px;
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #cfe3ec;
+    border-radius: 4px;
+    background: #fff;
     cursor: pointer;
+    position: relative;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &:checked {
+      background: #2f7fd6;
+      border-color: #2f7fd6;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 4px;
+        height: 8px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid #4fb8d6;
+      outline-offset: 2px;
+    }
   }
 }
 
