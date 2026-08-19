@@ -54,10 +54,13 @@ export class BusinessPartnerFormComponent
   @Input()
   dialogRef?: MatDialogRef<BusinessPartnerDetailsModalComponent>;
 
-  canDisplayClientButtons = true;
-  canDisplayAddressForm = true;
-  canDisplayAddressButtons = false;
-  canDisplayNewAddressLink = false;
+  // 'list': shows existing addresses as a read-only summary + one "add new address" link.
+  // 'form': shows the inline address form. Edit mode uses it for one address at a time (its own
+  // Cancel/Save buttons replace the partner-level Cancel/Remove/Save row so a half-finished
+  // address edit can't be submitted together with unrelated partner changes); Add mode starts
+  // here directly since Address is required, and lets several addresses be staged - via its own
+  // Cancel/"Adicionar um novo endereço" links - before the final partner-level submit.
+  addressPanelMode: 'list' | 'form' = 'list';
   selectedAddressIndex: number | null = null;
 
   private _baseEndPoint = '';
@@ -74,10 +77,9 @@ export class BusinessPartnerFormComponent
 
   ngOnInit(): void {
     this.defineBusinessPartnerType();
-    this.setCanDisplayAddressFormAndAddressLink();
-    this.setCanDisplayAddressButtons();
     this.initForm();
     this.initAddressInfo();
+    this.setInitialAddressPanelMode();
     this.disableEditFields();
     this.patchFormWithData();
   }
@@ -110,6 +112,15 @@ export class BusinessPartnerFormComponent
       return this.data.addresses[this.selectedAddressIndex];
     }
     return null;
+  }
+
+  // Edit mode: the address sub-form takes over the whole footer (its own Cancel/Save Address
+  // buttons replace the partner-level Cancel/Remove/Save row) so a half-finished address edit
+  // can't be submitted together with unrelated partner changes. Add mode keeps the outer row
+  // visible alongside the address form, since there the address is just one optional item that
+  // can be staged before the final partner-level submit.
+  get isEditingAddressExclusively(): boolean {
+    return this.addressPanelMode === 'form' && this.isEdit;
   }
 
   get canAddAddress(): boolean {
@@ -257,8 +268,7 @@ export class BusinessPartnerFormComponent
   displayNewAddress(): void {
     this.restoreAddressValidators();
     this.selectedAddressIndex = null;
-    this.canDisplayAddressForm = true;
-    this.canDisplayAddressButtons = true;
+    this.addressPanelMode = 'form';
   }
 
   editAddress(addr: Address) {
@@ -267,19 +277,14 @@ export class BusinessPartnerFormComponent
       this.selectedAddressIndex = idx;
       // Preenche o form de endereço com os dados selecionados
       this.addressFormGroup.patchValue({ ...addr });
-      this.canDisplayAddressForm = true;
-      this.canDisplayAddressButtons = true;
-      this.canDisplayNewAddressLink = false;
+      this.restoreAddressValidators();
+      this.addressPanelMode = 'form';
     }
   }
 
   cancelAddress(): void {
-    this.canDisplayClientButtons = true;
-    this.canDisplayAddressForm = false;
-    this.canDisplayAddressButtons = false;
-    this.canDisplayNewAddressLink = false;
+    this.addressPanelMode = 'list';
     this.selectedAddressIndex = null;
-
     this.resetAddressForm();
   }
 
@@ -300,10 +305,12 @@ export class BusinessPartnerFormComponent
     this.resetAddressForm();
 
     this.selectedAddressIndex = null;
-    this.canDisplayAddressForm = this.canDisplayNewAddressLink ? true : false;
-    this.canDisplayAddressButtons = false;
+    // Add mode lets several addresses be staged before the final partner-level submit, so keep
+    // the form open for the next one; Edit mode is one focused change at a time, so collapse
+    // back to the summary list after saving.
+    this.addressPanelMode = this.isEdit ? 'list' : 'form';
 
-    if (this.canDisplayAddressForm) {
+    if (this.addressPanelMode === 'form') {
       this.restoreAddressValidators();
     }
   }
@@ -511,12 +518,7 @@ export class BusinessPartnerFormComponent
       this.form.patchValue(patch);
     }
 
-    if (
-      this.isModal &&
-      this.data?.addresses &&
-      this.data.addresses.length > 0
-    ) {
-      this.canDisplayAddressForm = false;
+    if (this.addressPanelMode === 'list') {
       this.resetAddressForm();
     }
   }
@@ -612,21 +614,11 @@ export class BusinessPartnerFormComponent
     }
   }
 
-  private setCanDisplayAddressFormAndAddressLink(): void {
-    if (this.isEdit) {
-      this.canDisplayAddressForm = this.canDisplayAddressForm ? false : true;
-      this.canDisplayNewAddressLink = this.canDisplayNewAddressLink
-        ? false
-        : true;
-    } else {
-      // Add mode: address is required, so the form starts open rather than hidden behind a link.
-      this.canDisplayNewAddressLink = true;
-    }
-  }
-
-  private setCanDisplayAddressButtons(): void {
-    if (this.isEdit && this.canDisplayAddressForm) {
-      this.canDisplayAddressButtons = true;
-    }
+  private setInitialAddressPanelMode(): void {
+    const hasAddresses = !!this.data?.addresses?.length;
+    // Editing a partner that already has at least one address: start collapsed, showing the
+    // summary + a link to add another. Otherwise (adding a new partner, or editing one with no
+    // address yet) start with the form open, since Address is required for Client-type partners.
+    this.addressPanelMode = this.isEdit && hasAddresses ? 'list' : 'form';
   }
 }

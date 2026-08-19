@@ -174,72 +174,74 @@
               </div>
             </div>
           </div>
-          <div class="mb-2">
-            <a
-              *ngIf="!canDisplayNewAddressLink && !canDisplayAddressForm"
-              href="#"
-              class="address-link me-3"
-              [attr.aria-disabled]="submitted"
-              (click)="$event.preventDefault(); displayNewAddress()"
-              >{{ 'BUSINESS_PARTNER.ADD_NEW_ADDRESS' | translate }}</a
-            >
-          </div>
-          <app-address-form
-            *ngIf="canDisplayAddressForm"
-            [formGroup]="addressFormGroup"
-            [data]="selectedAddress"
-            [compact]="true"
-          ></app-address-form>
-
-          <div class="d-flex justify-content-end mt-3">
-            @if (canDisplayAddressButtons) {
-              <button
-                type="button"
-                class="btn btn-secondary me-2"
-                [attr.aria-disabled]="submitted"
-                (click)="$event.preventDefault(); cancelAddress()"
-              >
-                {{ 'COMMON.CANCEL' | translate }}
-              </button>
-              <button
-                type="submit"
-                class="btn btn-success"
-                [class.disabled]="!addressFormGroup.valid || submitted"
-                (click)="
-                  $event.preventDefault(); saveAddress(addressFormGroup.value)
-                "
-              >
-                {{ 'BUSINESS_PARTNER.SAVE_ADDRESS' | translate }}
-              </button>
-            } @else if (canDisplayNewAddressLink) {
+          @if (addressPanelMode === 'list') {
+            <div class="mb-2">
               <a
-                *ngIf="data?.addresses?.length !== 0"
                 href="#"
                 class="address-link me-3"
                 [attr.aria-disabled]="submitted"
-                (click)="$event.preventDefault(); cancelAddress()"
-                >{{ 'COMMON.CANCEL' | translate }}
-              </a>
-
-              <a
-                id="newAddressLinkButton"
-                href="#"
-                class="address-link"
-                [class.disabled]="!canAddAddress || submitted"
-                (click)="
-                  $event.preventDefault(); saveAddress(addressFormGroup.value)
-                "
+                (click)="$event.preventDefault(); displayNewAddress()"
                 >{{ 'BUSINESS_PARTNER.ADD_NEW_ADDRESS' | translate }}</a
               >
-            }
-          </div>
+            </div>
+          }
+          @if (addressPanelMode === 'form') {
+            <app-address-form
+              [formGroup]="addressFormGroup"
+              [data]="selectedAddress"
+              [compact]="true"
+            ></app-address-form>
+
+            <div class="d-flex justify-content-end mt-3">
+              @if (isEdit) {
+                <button
+                  type="button"
+                  class="btn btn-secondary me-2"
+                  [attr.aria-disabled]="submitted"
+                  (click)="$event.preventDefault(); cancelAddress()"
+                >
+                  {{ 'COMMON.CANCEL' | translate }}
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                  [class.disabled]="!addressFormGroup.valid || submitted"
+                  (click)="
+                    $event.preventDefault(); saveAddress(addressFormGroup.value)
+                  "
+                >
+                  {{ 'BUSINESS_PARTNER.SAVE_ADDRESS' | translate }}
+                </button>
+              } @else {
+                <a
+                  *ngIf="data?.addresses?.length !== 0"
+                  href="#"
+                  class="address-link me-3"
+                  [attr.aria-disabled]="submitted"
+                  (click)="$event.preventDefault(); cancelAddress()"
+                  >{{ 'COMMON.CANCEL' | translate }}
+                </a>
+
+                <a
+                  id="newAddressLinkButton"
+                  href="#"
+                  class="address-link"
+                  [class.disabled]="!canAddAddress || submitted"
+                  (click)="
+                    $event.preventDefault(); saveAddress(addressFormGroup.value)
+                  "
+                  >{{ 'BUSINESS_PARTNER.ADD_NEW_ADDRESS' | translate }}</a
+                >
+              }
+            </div>
+          }
         </section>
       }
     </div>
 
     <div
       class="d-flex justify-content-end mt-3"
-      *ngIf="!canDisplayAddressButtons"
+      *ngIf="!isEditingAddressExclusively"
     >
       <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
         {{ 'COMMON.CANCEL' | translate }}
@@ -253,7 +255,7 @@
         [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
-        [disabled]="canDisplayAddressButtons"
+        [disabled]="isEditingAddressExclusively"
       >
         {{ (isEdit ? "COMMON.SAVE" : "COMMON.ADD") | translate }}
       </button>
