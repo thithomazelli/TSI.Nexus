@@ -24,6 +24,16 @@
   }
 }
 
+// The toggle button reuses .input-group-text's look, but as a real <button> so it's clickable
+// without stealing a tab stop from the natural field order (tabindex="-1" in the template).
+.date-field-toggle {
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
 :host ::ng-deep {
   .date-field-picker {
     width: 100%;
@@ -34,5 +44,15 @@
     width: 100%;
     height: calc(3.5rem + 2px);
     padding: 1.625rem 0.75rem 0.625rem;
+    // PrimeNG's Aura preset ships its own light/dark tokens that follow the OS color scheme
+    // independent of this app's own theme toggle, which is what was turning the field black
+    // outside of focus on a dark-mode system. Pin it to the same vars every other .form-control
+    // in the app resolves to instead.
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+    // Matches the rest of the app's input-group fields: rounded on the left, square where it
+    // meets the icon box on the right.
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
   }
 }

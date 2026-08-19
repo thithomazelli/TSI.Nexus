@@ -1,9 +1,12 @@
 <div class="input-group date-field">
   <div class="form-floating flex-fill">
     <p-datepicker
+      #picker
       [ngModel]="value"
       (ngModelChange)="onModelChange($event)"
       (onBlur)="onTouched()"
+      (keydown)="onInputKeydown($event)"
+      (input)="onInputChange($event)"
       dateFormat="dd/mm/yy"
       [showIcon]="false"
       [placeholder]="placeholder"
@@ -17,5 +20,13 @@
       <label [for]="fieldId">{{ label }}</label>
     }
   </div>
-  <div class="input-group-text"><i class="bi bi-calendar2-week"></i></div>
+  <button
+    type="button"
+    class="input-group-text date-field-toggle"
+    tabindex="-1"
+    [disabled]="isDisabled"
+    (click)="toggleCalendar()"
+  >
+    <i class="bi bi-calendar2-week"></i>
+  </button>
 </div>

@@ -28,7 +28,7 @@
             <div class="input-group-text"><i class="bi bi-person"></i></div>
           </div>
 
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-4">
             <div class="form-floating">
               <select formControlName="documentType" class="form-select">
                 <option value="Física">{{
@@ -43,7 +43,17 @@
               }}</label>
             </div>
           </div>
-          <div class="col-12 col-md-6">
+
+          @if (form.get("documentType")?.value === "Física") {
+            <div class="col-12 col-md-4">
+              <app-date-field
+                formControlName="birthday"
+                [label]="'BUSINESS_PARTNER.BIRTHDAY' | translate"
+              ></app-date-field>
+            </div>
+          }
+
+          <div class="col-12 col-md-4">
             @if (form.get("documentType")?.value === "Física") {
               <div class="input-group">
                 <div class="form-floating flex-grow-1">
@@ -84,15 +94,6 @@
               </div>
             }
           </div>
-
-          @if (form.get("documentType")?.value === "Física") {
-            <div class="col-12">
-              <app-date-field
-                formControlName="birthday"
-                [label]="'BUSINESS_PARTNER.BIRTHDAY' | translate"
-              ></app-date-field>
-            </div>
-          }
 
           <div class="col-12">
             <div class="input-group">

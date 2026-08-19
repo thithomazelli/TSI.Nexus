@@ -58,30 +58,12 @@
   padding-bottom: 0;
 }
 
-// Same soft blue/gray gradient family as the login screen, applied app-wide in light mode only
-// (ThemeService sets data-bs-theme on <html>; dark mode is untouched). The page canvas gets the
-// full multi-blob backdrop; cards and modal surfaces - which sit on top of it at a much smaller
-// scale, where the same blob positions would just look like a disconnected, repeated pattern -
-// get a flatter two-stop version instead so nothing reads as plain white without clashing.
+// Same soft blue/gray tone as the login screen, applied app-wide in light mode only (ThemeService
+// sets data-bs-theme on <html>; dark mode is untouched). The page canvas gets a flat fixed color;
+// cards and modal surfaces on top of it get a subtle gradient so they read as raised, not white.
 html[data-bs-theme='light'] {
   body {
-    background: radial-gradient(
-        55% 65% at 8% 12%,
-        rgba(94, 200, 224, 0.25) 0%,
-        rgba(94, 200, 224, 0) 70%
-      ),
-      radial-gradient(
-        50% 60% at 4% 92%,
-        rgba(47, 127, 214, 0.22) 0%,
-        rgba(47, 127, 214, 0) 70%
-      ),
-      radial-gradient(
-        45% 55% at 96% 90%,
-        rgba(18, 48, 85, 0.2) 0%,
-        rgba(18, 48, 85, 0) 70%
-      ),
-      #eef3f7;
-    background-attachment: fixed;
+    background: #eef3f7;
   }
 
   .card {
