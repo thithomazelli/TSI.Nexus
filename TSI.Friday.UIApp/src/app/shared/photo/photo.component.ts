@@ -407,9 +407,12 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
+  // 'Users' is the entityClass value actually passed in (see getEntityIdField's map) - a person
+  // gets the person silhouette, every other entity (a BusinessPartner may be a company, not a
+  // person) gets a neutral generic-photo glyph instead.
   private getNoImage(): string {
-    return this.entityClass == 'User'
+    return this.entityClass == 'Users'
       ? 'assets/img/no_profile.png'
-      : 'assets/img/no_image.png';
+      : 'assets/img/no_photo_generic.svg';
   }
 }

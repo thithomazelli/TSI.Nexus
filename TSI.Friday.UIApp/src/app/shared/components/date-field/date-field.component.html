@@ -1,5 +1,10 @@
 <div class="input-group date-field">
   <div class="form-floating flex-fill">
+    <!-- No appendTo="body": portalling the calendar panel to <body> made it never actually
+         paint (it was there in the DOM - correct position, z-index, hit-testing, day clicks all
+         worked - it just never rendered a pixel). Rendering it in place, right after the input,
+         avoids that entirely; the trade-off is it can get clipped by a modal's own scroll area
+         if the field sits deep inside a long, scrolled-down form. -->
     <p-datepicker
       #picker
       [ngModel]="value"
@@ -14,7 +19,8 @@
       [inputId]="fieldId"
       inputStyleClass="form-control date-field-input"
       styleClass="date-field-picker"
-      appendTo="body"
+      showTransitionOptions="0ms"
+      hideTransitionOptions="0ms"
     ></p-datepicker>
     @if (label) {
       <label [for]="fieldId">{{ label }}</label>

@@ -390,6 +390,21 @@ mat-calendar {
 // background-color override can touch directly - the standard workaround is an absurdly large
 // inset box-shadow in the field's real background color, which visually papers over the browser's
 // own fill color without disabling the yellow-tinted text color they also force.
+// When a field inside an .input-group carries a validation state, extend the same green/red
+// border onto its .input-group-text icon box too, so the whole group reads as one continuously
+// outlined unit instead of a colored input with a plain gray icon box tacked on. Both sides
+// share the exact same border-color variable the input's own .is-valid/.is-invalid already use,
+// so the seam where they meet is invisible - not a second colored line, just one border.
+.input-group:has(.form-control.is-valid) .input-group-text,
+.input-group:has(.form-select.is-valid) .input-group-text {
+  border-color: var(--bs-form-valid-border-color);
+}
+
+.input-group:has(.form-control.is-invalid) .input-group-text,
+.input-group:has(.form-select.is-invalid) .input-group-text {
+  border-color: var(--bs-form-invalid-border-color);
+}
+
 .form-control:-webkit-autofill,
 .form-control:-webkit-autofill:hover,
 .form-control:-webkit-autofill:focus {
