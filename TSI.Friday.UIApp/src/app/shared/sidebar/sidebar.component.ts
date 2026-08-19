@@ -10,7 +10,6 @@ import { Subscription } from 'rxjs';
 import { AccountService } from '../../core/services/account/account.service';
 import { FeatureFlagService } from '../../core/services/feature-flag/feature-flag.service';
 import { FeatureToggleKeys } from '../../core/models/feature-toggle.model';
-import { ThemeService } from '../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -34,7 +33,6 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     private renderer: Renderer2,
     private accountService: AccountService,
     private featureFlagService: FeatureFlagService,
-    public themeService: ThemeService,
   ) {}
 
   ngOnInit(): void {

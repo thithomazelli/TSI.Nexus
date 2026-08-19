@@ -311,6 +311,26 @@ mat-calendar {
   outline: none;
 }
 
+// Same blue accent used on the login screen, applied to every form-control/
+// form-select/input-group across the app. Bootstrap's own red/green
+// validation-state borders (.is-invalid/.is-valid) are left untouched.
+.form-control:not(.is-invalid):not(.is-valid),
+.form-select:not(.is-invalid):not(.is-valid) {
+  border-color: #cfe3ec;
+}
+
+.form-control:focus:not(.is-invalid):not(.is-valid),
+.form-select:focus:not(.is-invalid):not(.is-valid) {
+  border-color: #4fb8d6;
+  box-shadow: 0 0 0 0.2rem rgba(79, 184, 214, 0.15);
+}
+
+.input-group-text {
+  color: #6ea9bd;
+  background-color: #f7fbfd;
+  border-color: #cfe3ec;
+}
+
 .swal-btn {
   min-width: 100px;
 }

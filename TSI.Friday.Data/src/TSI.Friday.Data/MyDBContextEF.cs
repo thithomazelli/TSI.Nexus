@@ -125,6 +125,12 @@ namespace TSI.Friday.Data
             // Quote entity uses QuoteNumber property
             modelBuilder.Entity<Quote>().HasIndex(q => q.QuoteNumber).IsUnique();
 
+            // The global enum->string convention below leaves enum columns unbounded
+            // (longtext on MySQL), which can't carry a DEFAULT VALUE. Type needs one
+            // (see the AddTripQuoteTripAndDocumentTemplate migration), so it needs an
+            // explicit bounded length.
+            modelBuilder.Entity<Quote>().Property(q => q.Type).HasMaxLength(50);
+
             modelBuilder
                 .Entity<Quote>()
                 .Property(q => q.TotalPrice)

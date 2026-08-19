@@ -98,7 +98,8 @@ namespace TSI.Friday.Data.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "Type",
                 table: "Quote",
-                type: "longtext",
+                type: "varchar(50)",
+                maxLength: 50,
                 nullable: false,
                 defaultValue: "Product");
 

@@ -65,29 +65,36 @@
         <h2 class="login-heading">{{ 'ACCOUNT.LOGIN.SUBMIT' | translate }}</h2>
 
         <form [formGroup]="form" (ngSubmit)="login()" novalidate>
-          <div class="login-field" [class.is-invalid]="isInvalid('userName')">
-            <i class="bi bi-person login-field-icon"></i>
-            <input
-              formControlName="userName"
-              type="text"
-              [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
-              [attr.aria-label]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
-              class="login-input"
-            />
+          <div class="input-group mb-3">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="userName"
+                type="text"
+                [placeholder]="'ACCOUNT.LOGIN.EMAIL_LABEL' | translate"
+                class="form-control"
+                id="loginUserName"
+                [class.is-invalid]="isInvalid('userName')"
+              />
+              <label for="loginUserName">{{ 'ACCOUNT.LOGIN.EMAIL_LABEL' | translate }}</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-person"></i></div>
           </div>
 
-          <div class="login-field" [class.is-invalid]="isInvalid('password')">
-            <i class="bi bi-lock login-field-icon"></i>
-            <input
-              formControlName="password"
-              [type]="passwordVisible ? 'text' : 'password'"
-              [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
-              [attr.aria-label]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
-              class="login-input"
-            />
+          <div class="input-group mb-3">
+            <div class="form-floating flex-fill">
+              <input
+                formControlName="password"
+                [type]="passwordVisible ? 'text' : 'password'"
+                [placeholder]="'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate"
+                class="form-control"
+                id="loginPassword"
+                [class.is-invalid]="isInvalid('password')"
+              />
+              <label for="loginPassword">{{ 'ACCOUNT.LOGIN.PASSWORD_LABEL' | translate }}</label>
+            </div>
             <button
               type="button"
-              class="login-field-toggle"
+              class="input-group-text login-password-toggle"
               (click)="togglePasswordVisibility()"
               [attr.aria-pressed]="passwordVisible"
               [title]="

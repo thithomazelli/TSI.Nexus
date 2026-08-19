@@ -10,11 +10,7 @@
     >
       <!--begin::Brand Image-->
       <img
-        [src]="
-          (themeService.theme$ | async) === 'dark'
-            ? './assets/img/nexus/logo-full-dark.png'
-            : './assets/img/nexus/logo-full.png'
-        "
+        src="./assets/img/nexus/logo-full-dark.png"
         alt="Nexus"
         class="brand-image-full"
       />

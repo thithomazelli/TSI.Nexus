@@ -103,52 +103,13 @@
   margin: 0 0 24px;
 }
 
-.login-field {
-  position: relative;
-  display: flex;
-  align-items: center;
-  border: 1px solid #cfe3ec;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-  &:focus-within {
-    border-color: #4fb8d6;
-    box-shadow: 0 0 0 3px rgba(79, 184, 214, 0.15);
-  }
-
-  &.is-invalid {
-    border-color: var(--bs-danger);
-  }
-}
-
-.login-field-icon {
-  color: #6ea9bd;
-  font-size: 1rem;
-  padding: 0 12px;
-  pointer-events: none;
-}
-
-.login-input {
-  flex: 1 1 auto;
-  min-width: 0;
+// Email/password fields reuse the app-wide .input-group/.form-floating/
+// .input-group-text pattern (see product-form etc.) instead of a bespoke
+// style, so the login screen looks consistent with every other form.
+// The password field's icon box doubles as the show/hide toggle button.
+.login-password-toggle {
   border: none;
-  outline: none;
-  background: transparent;
-  padding: 13px 12px 13px 0;
-  font-size: 0.95rem;
-  color: #17233b;
-
-  &::placeholder {
-    color: #93a3b8;
-  }
-}
-
-.login-field-toggle {
-  border: none;
-  background: transparent;
-  color: #93a3b8;
-  padding: 0 12px;
+  cursor: pointer;
 
   &:hover {
     color: #4fb8d6;
