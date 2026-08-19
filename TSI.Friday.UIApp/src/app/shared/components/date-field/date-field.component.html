@@ -1,18 +1,21 @@
-<div class="date-field">
-  @if (label) {
-    <label class="date-field-label">{{ label }}</label>
-  }
-  <p-datepicker
-    [ngModel]="value"
-    (ngModelChange)="onModelChange($event)"
-    (onBlur)="onTouched()"
-    dateFormat="dd/mm/yy"
-    [showIcon]="true"
-    iconDisplay="input"
-    [placeholder]="placeholder"
-    [disabled]="isDisabled"
-    inputStyleClass="form-control date-field-input"
-    styleClass="date-field-picker"
-    appendTo="body"
-  ></p-datepicker>
+<div class="input-group date-field">
+  <div class="form-floating flex-fill">
+    <p-datepicker
+      [ngModel]="value"
+      (ngModelChange)="onModelChange($event)"
+      (onBlur)="onTouched()"
+      dateFormat="dd/mm/yy"
+      [showIcon]="false"
+      [placeholder]="placeholder"
+      [disabled]="isDisabled"
+      [inputId]="fieldId"
+      inputStyleClass="form-control date-field-input"
+      styleClass="date-field-picker"
+      appendTo="body"
+    ></p-datepicker>
+    @if (label) {
+      <label [for]="fieldId">{{ label }}</label>
+    }
+  </div>
+  <div class="input-group-text"><i class="bi bi-calendar2-week"></i></div>
 </div>

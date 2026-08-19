@@ -1,21 +1,29 @@
 .date-field {
-  display: flex;
-  flex-direction: column;
   width: 100%;
 }
 
-.date-field-label {
-  font-size: 0.8rem;
-  color: #6c757d;
-  margin-bottom: 4px;
+// p-datepicker renders its own markup outside this component's view (the real native <input>
+// isn't a direct child of .form-floating the way a plain <input> would be), so Bootstrap's
+// `:not(:placeholder-shown) ~ label` floating trick never fires. The label is instead pinned
+// permanently in its "floated" position - visually identical to every other filled/focused
+// form-floating field in the app - and the input gets the matching padding by hand.
+.date-field .form-floating {
+  position: relative;
+
+  > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    color: rgba(var(--bs-body-color-rgb), 0.65);
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    transform-origin: 0 0;
+  }
 }
 
-// p-datepicker renders its own markup outside this component's view (the input/icon aren't
-// direct children in the emulated-encapsulation sense once PrimeNG projects them), so reaching
-// its internals needs ::ng-deep. inputStyleClass already puts `.form-control` on the native
-// input, which is enough to pick up the app-wide blue border/focus styling from styles.scss -
-// this just makes the whole control (and the input inside it) fill its container like every
-// other field.
 :host ::ng-deep {
   .date-field-picker {
     width: 100%;
@@ -24,5 +32,7 @@
 
   .date-field-input {
     width: 100%;
+    height: calc(3.5rem + 2px);
+    padding: 1.625rem 0.75rem 0.625rem;
   }
 }

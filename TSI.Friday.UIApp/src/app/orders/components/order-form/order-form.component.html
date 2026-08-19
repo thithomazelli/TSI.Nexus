@@ -213,7 +213,7 @@
                 <input
                   type="text"
                   formControlName="productSku"
-                  class="form-control form-control-sm"
+                  class="form-control form-control-sm grid-input"
                   [matAutocomplete]="inlineSkuAuto"
                   [placeholder]="'PRODUCTS.SKU' | translate"
                   (blur)="onInlineProductSkuBlur()"
@@ -248,7 +248,7 @@
                   type="number"
                   min="1"
                   formControlName="quantity"
-                  class="form-control form-control-sm"
+                  class="form-control form-control-sm grid-input"
                   (blur)="onInlineQuantityBlur()"
                 />
               </td>

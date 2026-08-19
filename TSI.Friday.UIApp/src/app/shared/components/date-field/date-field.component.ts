@@ -1,6 +1,8 @@
 import { Component, Input, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
+let dateFieldIdCounter = 0;
+
 @Component({
   selector: 'app-date-field',
   templateUrl: 'date-field.component.html',
@@ -26,6 +28,8 @@ export class DateFieldComponent implements ControlValueAccessor {
 
   @Input()
   isDisabled: boolean = false;
+
+  readonly fieldId = `date-field-${++dateFieldIdCounter}`;
 
   value: Date | null = null;
 
