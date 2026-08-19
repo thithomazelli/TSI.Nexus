@@ -196,21 +196,21 @@
               @if (isEdit) {
                 <button
                   type="button"
-                  class="btn btn-form-cancel me-2"
+                  class="btn btn-secondary me-2"
                   [attr.aria-disabled]="submitted"
                   (click)="$event.preventDefault(); cancelAddress()"
                 >
-                  <i class="bi bi-x-lg"></i>{{ 'COMMON.CANCEL' | translate }}
+                  {{ 'COMMON.CANCEL' | translate }}
                 </button>
                 <button
                   type="submit"
-                  class="btn btn-form-save"
+                  class="btn btn-success"
                   [class.disabled]="!addressFormGroup.valid || submitted"
                   (click)="
                     $event.preventDefault(); saveAddress(addressFormGroup.value)
                   "
                 >
-                  <i class="bi bi-check-lg"></i>{{ 'BUSINESS_PARTNER.SAVE_ADDRESS' | translate }}
+                  {{ 'BUSINESS_PARTNER.SAVE_ADDRESS' | translate }}
                 </button>
               } @else {
                 <a
@@ -243,21 +243,21 @@
       class="d-flex justify-content-end mt-3"
       *ngIf="!isEditingAddressExclusively"
     >
-      <button type="button" class="btn btn-form-cancel me-2" (click)="cancel()">
-        <i class="bi bi-x-lg"></i>{{ 'COMMON.CANCEL' | translate }}
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
+        {{ 'COMMON.CANCEL' | translate }}
       </button>
       @if (isEdit) {
-        <button type="button" class="btn btn-form-remove me-2" (click)="remove()">
-          <i class="bi bi-trash"></i>{{ 'COMMON.REMOVE' | translate }}
+        <button type="button" class="btn btn-danger me-2" (click)="remove()">
+          {{ 'COMMON.REMOVE' | translate }}
         </button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
-        class="btn btn-form-save"
+        class="btn btn-success"
         [disabled]="isEditingAddressExclusively"
       >
-        <i class="bi bi-check-lg"></i>{{ (isEdit ? "COMMON.SAVE" : "COMMON.ADD") | translate }}
+        {{ (isEdit ? "COMMON.SAVE" : "COMMON.ADD") | translate }}
       </button>
     </div>
   </form>
