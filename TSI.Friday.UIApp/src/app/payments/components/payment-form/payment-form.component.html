@@ -311,16 +311,16 @@
       </div>
     </div>
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-form-cancel me-2" (click)="cancel()"><i class="bi bi-x-lg"></i>{{ 'COMMON.CANCEL' | translate }}</button>
       @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger me-2">{{ 'COMMON.REMOVE' | translate }}</button>
+        <button (click)="remove()" type="button" class="btn btn-form-remove me-2"><i class="bi bi-trash"></i>{{ 'COMMON.REMOVE' | translate }}</button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
-        class="btn btn-success"
+        class="btn btn-form-save"
       >
-        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
+        <i class="bi bi-check-lg"></i>{{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>

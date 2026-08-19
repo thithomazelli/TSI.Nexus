@@ -430,3 +430,35 @@ mat-calendar {
   left: auto !important;
   transform: none !important;
 }
+
+// Cancelar/Remover/Salvar row at the bottom of every form: all three buttons share the same
+// neutral outline (instead of Bootstrap's solid gray/red/green .btn-secondary/.btn-danger/
+// .btn-success), and only the icon inside carries color - keeps the row from reading as three
+// loud, competing blocks of color.
+.btn-form-cancel,
+.btn-form-remove,
+.btn-form-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background-color: var(--bs-body-bg);
+  border-color: #cfe3ec;
+  color: var(--bs-body-color);
+
+  &:hover {
+    background-color: #f7fbfd;
+    border-color: #a9d3e3;
+  }
+
+  i {
+    font-size: 0.95em;
+  }
+}
+
+.btn-form-remove i {
+  color: #c9534b;
+}
+
+.btn-form-save i {
+  color: #2f8f6b;
+}

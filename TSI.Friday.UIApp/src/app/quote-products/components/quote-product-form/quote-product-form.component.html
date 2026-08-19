@@ -190,16 +190,16 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3 gap-2">
-      <button type="button" class="btn btn-secondary" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-form-cancel" (click)="cancel()"><i class="bi bi-x-lg"></i>{{ 'COMMON.CANCEL' | translate }}</button>
       @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger">{{ 'COMMON.REMOVE' | translate }}</button>
+        <button (click)="remove()" type="button" class="btn btn-form-remove"><i class="bi bi-trash"></i>{{ 'COMMON.REMOVE' | translate }}</button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
-        class="btn btn-success"
+        class="btn btn-form-save"
       >
-        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
+        <i class="bi bi-check-lg"></i>{{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>
     </div>
   </form>
