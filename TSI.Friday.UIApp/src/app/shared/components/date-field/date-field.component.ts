@@ -126,10 +126,26 @@ export class DateFieldComponent implements ControlValueAccessor {
         value.substring(4);
     }
     event.target.value = formatted;
-    // Propaga pro FormControl - sem isso, uma data digitada manualmente (sem usar o datepicker)
-    // nunca chegava a atualizar o valor do formulário.
     this.value = formatted;
-    this.onChange(formatted);
+
+    // Only propagate to the FormControl once the typed value is a complete date, and as a real
+    // Date - not the raw "DD/MM/YYYY" display string. The backend's DateTime deserialization only
+    // accepts ISO 8601, so a typed date that was never converted (unlike a calendar-picked one,
+    // which already arrives as a Date via onDateChange) made every save request with a typed date
+    // fail outright. While the date is still incomplete, leave the control untouched instead of
+    // pushing a partial/invalid value.
+    if (value.length === 8) {
+      const d = Number(value.slice(0, 2));
+      const m = Number(value.slice(2, 4));
+      const y = Number(value.slice(4));
+      const dt = new Date(y, m - 1, d);
+      const isValid =
+        !isNaN(dt.getTime()) &&
+        dt.getDate() === d &&
+        dt.getMonth() === m - 1 &&
+        dt.getFullYear() === y;
+      this.onChange(isValid ? dt : null);
+    }
   }
 
   // Bloqueia letras e limita a 10 caracteres totais (incluindo barras)

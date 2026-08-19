@@ -138,6 +138,22 @@ a:hover {
   overflow: hidden !important;
 }
 
+/* Opt-in variant (see ModalService.showTemplateModal) for forms that genuinely need more
+   horizontal room than the standard 600px modal - e.g. business-partner's two-column
+   client+address layout with the input-group icon boxes.
+   Angular Material's own dialog.mjs styles set `.cdk-overlay-pane.mat-mdc-dialog-panel` to
+   `max-width: var(--mat-dialog-container-max-width, 560px)` - a higher-specificity,
+   component-scoped rule that our .custom-modal max-width above can't out-rank, so the cap has
+   to be lifted through that same CSS variable rather than a competing max-width declaration. */
+.cdk-overlay-pane.custom-modal.custom-modal-wide {
+  --mat-dialog-container-max-width: 900px;
+}
+
+.cdk-overlay-pane.custom-modal.custom-modal-wide .mat-mdc-dialog-surface,
+.cdk-overlay-pane.custom-modal.custom-modal-wide .mdc-dialog__surface {
+  max-width: 900px !important;
+}
+
 /* Garante que o conteúdo do modal não tenha padding duplicado */
 .cdk-overlay-pane.custom-modal .custom-modal {
   padding: 0 !important;
