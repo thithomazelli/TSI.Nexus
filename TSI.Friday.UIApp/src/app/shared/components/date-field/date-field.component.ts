@@ -44,6 +44,19 @@ export class DateFieldComponent implements ControlValueAccessor {
   @Input()
   isDisabled: boolean = false;
 
+  // Angular's forms machinery calls setDisabledState(control.disabled) as soon as a
+  // formControlName/ngModel is set up, regardless of whether anything ever actually
+  // disables that control - with a plain `this.isDisabled = isDisabled` there, that
+  // unconditional setDisabledState(false) call was clobbering an explicit
+  // [isDisabled]="true" binding (e.g. audit-tab's read-only date fields) back to enabled.
+  // Keeping the two flags separate and OR-ing them means either source can disable the
+  // field, but neither can silently re-enable what the other disabled.
+  private formDisabled = false;
+
+  get effectiveDisabled(): boolean {
+    return this.isDisabled || this.formDisabled;
+  }
+
   @ViewChild('picker')
   picker?: DatePicker;
 
@@ -74,7 +87,7 @@ export class DateFieldComponent implements ControlValueAccessor {
   }
 
   setDisabledState(isDisabled: boolean): void {
-    this.isDisabled = isDisabled;
+    this.formDisabled = isDisabled;
   }
 
   onModelChange(value: Date | null): void {

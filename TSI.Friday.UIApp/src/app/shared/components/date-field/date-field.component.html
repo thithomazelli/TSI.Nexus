@@ -15,7 +15,7 @@
       dateFormat="dd/mm/yy"
       [showIcon]="false"
       [placeholder]="placeholder"
-      [disabled]="isDisabled"
+      [disabled]="effectiveDisabled"
       [inputId]="fieldId"
       inputStyleClass="form-control date-field-input"
       styleClass="date-field-picker"
@@ -31,7 +31,7 @@
     type="button"
     class="input-group-text date-field-toggle"
     tabindex="-1"
-    [disabled]="isDisabled"
+    [disabled]="effectiveDisabled"
     (click)="toggleCalendar()"
   >
     <i class="bi bi-calendar2-week"></i>
