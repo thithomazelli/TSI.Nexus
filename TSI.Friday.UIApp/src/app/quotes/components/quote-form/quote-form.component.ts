@@ -86,6 +86,13 @@ export class QuoteFormComponent
     ];
   }
 
+  // quoteStatusOptions is a getter, so *ngFor's default identity-based tracking sees a brand new
+  // array/objects on every change-detection pass and keeps destroying/recreating the <option>
+  // elements - severe enough churn on a bound <select> to trip NG0103 (infinite change detection).
+  trackByOptionValue(_index: number, option: { value: string; label: string }): string {
+    return option.value;
+  }
+
   get methodOptions() {
     return [
       { label: this.translationService.instant('TRANSACTIONS.METHOD_CASH'), value: PaymentMethod.Cash },

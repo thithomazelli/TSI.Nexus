@@ -91,6 +91,14 @@ export class OrderProductsFormComponent
     ];
   }
 
+  // productTypeOptions/orderProductStatusOptions are getters, so *ngFor's default identity-based
+  // tracking sees brand new arrays/objects on every change-detection pass and keeps destroying/
+  // recreating the <option> elements - severe enough churn on a bound <select> to trip NG0103
+  // (infinite change detection).
+  trackByOptionValue(_index: number, option: { value: string; label: string }): string {
+    return option.value;
+  }
+
   orderProductInfo = [
     {
       InProgress: 'Vigente',

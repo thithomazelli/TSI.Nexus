@@ -117,7 +117,7 @@
                   [class.is-valid]="isValid('status')"
                 >
                   <option
-                    *ngFor="let s of orderStatusOptions"
+                    *ngFor="let s of orderStatusOptions; trackBy: trackByOptionValue"
                     [value]="s.value"
                   >
                     {{ s.label }}

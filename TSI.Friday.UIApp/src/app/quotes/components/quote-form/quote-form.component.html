@@ -107,7 +107,7 @@
                   [class.is-valid]="isValid('status')"
                 >
                   <option
-                    *ngFor="let s of quoteStatusOptions"
+                    *ngFor="let s of quoteStatusOptions; trackBy: trackByOptionValue"
                     [value]="s.value"
                   >
                     {{ s.label }}

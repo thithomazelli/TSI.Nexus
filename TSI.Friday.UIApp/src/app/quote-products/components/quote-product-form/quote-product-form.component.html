@@ -97,7 +97,7 @@
                 <select formControlName="productType" class="form-select">
                   <option value="" disabled selected>{{ 'COMMON.TYPE' | translate }}</option>
                   <option
-                    *ngFor="let option of productTypeOptions"
+                    *ngFor="let option of productTypeOptions; trackBy: trackByOptionValue"
                     [value]="option.value"
                   >
                     {{ option.label }}
