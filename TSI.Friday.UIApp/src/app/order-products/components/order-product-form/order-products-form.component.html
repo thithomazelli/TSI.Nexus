@@ -213,39 +213,16 @@
           </div>
 
           <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <input
-                  formControlName="priceFormatted"
-                  type="text"
-                  [placeholder]="'PRODUCTS.SUGGESTED_PRICE' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('priceFormatted')"
-                  (blur)="onPriceBlur()"
-                />
-                <label for="price">{{ 'PRODUCTS.SUGGESTED_PRICE' | translate }}</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-            </div>
+            <app-currency-field
+              formControlName="price"
+              [label]="'PRODUCTS.SUGGESTED_PRICE' | translate"
+            ></app-currency-field>
           </div>
           <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <input
-                  formControlName="totalPriceFormatted"
-                  type="text"
-                  [placeholder]="'COMMON.TOTAL_PRICE_LABEL' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('totalPriceFormatted')"
-                />
-                <label for="totalPrice">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-            </div>
+            <app-currency-field
+              formControlName="totalPrice"
+              [label]="'COMMON.TOTAL_PRICE_LABEL' | translate"
+            ></app-currency-field>
           </div>
         </div>
       </section>

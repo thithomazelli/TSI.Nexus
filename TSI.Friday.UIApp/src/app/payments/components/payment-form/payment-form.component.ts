@@ -154,17 +154,6 @@ export class PaymentFormComponent
     this._subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
-  onCurrencyBlur(formControlName: string): void {
-    const priceControl = this.form.get(`${formControlName}Formatted`);
-    if (!priceControl) {
-      return;
-    }
-
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get(formControlName)?.setValue(value);
-  }
-
   submit(): Observable<WebApiResponse<Payment> | null> {
     this.submitted = true;
     if (this.form.invalid) {
@@ -288,7 +277,6 @@ export class PaymentFormComponent
       description: ['', Validators.required],
       installmentNumber: [0],
       price: [0, [Validators.required, Validators.min(0)]],
-      priceFormatted: [{ value: 0 }],
       transactionId: [transactionId],
       transactionDescription: [transactionDescription],
       businessPartnerId: [this.parentData?.businessPartnerId],
@@ -316,14 +304,7 @@ export class PaymentFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      this.form.patchValue({
-        ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-      });
-    } else {
-      this.form
-        .get('priceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
+      this.form.patchValue(this.data);
     }
   }
 

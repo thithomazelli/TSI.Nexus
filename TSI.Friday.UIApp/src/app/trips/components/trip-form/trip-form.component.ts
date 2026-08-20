@@ -21,7 +21,6 @@ import {
   OrderStatus,
   FormBaseComponent,
   ModalService,
-  CurrencyService,
   PaymentType,
   PaymentCondition,
   PaymentMethod,
@@ -93,7 +92,6 @@ export class TripFormComponent
 
   constructor(
     private businessPartnerService: BusinessPartnerService,
-    private currencyService: CurrencyService,
     private driverService: DriverService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
@@ -351,10 +349,8 @@ export class TripFormComponent
       date: [new Date(), Validators.required],
       status: [OrderStatus.Open, Validators.required],
       price: [0, [Validators.min(0)]],
-      priceFormatted: [0],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
-      totalPriceFormatted: [{ value: 0, disabled: true }],
       transactionId: [null],
       vehicleId: [null],
       route: [''],
@@ -417,8 +413,7 @@ export class TripFormComponent
           },
           Validators.required,
         ],
-        paymentTotalPrice: [0, [Validators.min(0)]],
-        paymentTotalPriceFormatted: [{ value: 0, disabled: true }],
+        paymentTotalPrice: [{ value: 0, disabled: true }, [Validators.min(0)]],
         totalOfExpenses: [
           {
             value: 0,
@@ -426,9 +421,9 @@ export class TripFormComponent
           },
           Validators.required,
         ],
-        expenseTotalPrice: [0, [Validators.min(0)]],
-        expenseTotalPriceFormatted: [
+        expenseTotalPrice: [
           { value: 0, disabled: this.isEdit ? true : false },
+          [Validators.min(0)],
         ],
       });
       this.form.addControl('transaction', transactionGroup);
@@ -444,15 +439,10 @@ export class TripFormComponent
 
       const patch = {
         ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-        totalPriceFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.totalPrice,
-        ),
         transaction: {
           ...this.data.transaction,
           id: this.data.transaction?.id ?? null,
-          paymentTotalPriceFormatted:
-            this.currencyService.formatCurrencyBRL(paymentTotalPrice),
+          paymentTotalPrice,
         },
       };
 
@@ -665,18 +655,10 @@ export class TripFormComponent
     const discount = Number(this.form.get('discount')?.value) || 0;
     const total = price * (1 - discount / 100);
     this.form.get('totalPrice')?.setValue(total);
-    this.form
-      .get('totalPriceFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(total));
 
     const transactionGroup = this.form.get('transaction') as FormGroup | null;
     if (!this.isEdit && transactionGroup) {
-      const transactions = transactionGroup.get('totalOfPayments')?.value || 1;
-      const pricePerPayment = total / (transactions > 0 ? transactions : 1);
       transactionGroup.get('paymentTotalPrice')?.setValue(total);
-      transactionGroup
-        .get('paymentTotalPriceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(pricePerPayment));
     }
   }
 

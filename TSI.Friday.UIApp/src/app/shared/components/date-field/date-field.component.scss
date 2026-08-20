@@ -55,4 +55,12 @@
     border-top-right-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
   }
+
+  // p-datepicker's native <input> takes the same disabled attribute as a plain <input>, but the
+  // rule above forces the background to the same token in every state, which was masking it -
+  // this restores the same muted look every other disabled .form-control in the app already has.
+  .date-field-input:disabled {
+    background-color: var(--bs-secondary-bg) !important;
+    opacity: 1;
+  }
 }

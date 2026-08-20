@@ -11,7 +11,6 @@ import { Router } from '@angular/router';
 
 import {
   ApiType,
-  CurrencyService,
   FormBaseComponent,
   ModalService,
   NotificationService,
@@ -76,7 +75,6 @@ export class VehicleFormComponent
   private _baseEndPoint: ApiType = ApiType.Vehicles;
 
   constructor(
-    private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
@@ -175,26 +173,6 @@ export class VehicleFormComponent
       .subscribe();
   }
 
-  onPricePerKmBlur(): void {
-    const control = this.form.get('pricePerKmFormatted');
-    if (!control) {
-      return;
-    }
-    const value = this.currencyService.parseCurrencyBRL(control.value);
-    control.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get('pricePerKm')?.setValue(value);
-  }
-
-  onDailyRateBlur(): void {
-    const control = this.form.get('dailyRateFormatted');
-    if (!control) {
-      return;
-    }
-    const value = this.currencyService.parseCurrencyBRL(control.value);
-    control.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get('dailyRate')?.setValue(value);
-  }
-
   private initForm(): void {
     const commonControls = {
       plate: ['', Validators.required],
@@ -211,9 +189,7 @@ export class VehicleFormComponent
       type: [VehicleType.Bus, Validators.required],
       status: [VehicleStatus.Available, Validators.required],
       pricePerKm: [0, [Validators.required, Validators.min(0)]],
-      pricePerKmFormatted: ['', Validators.required],
       dailyRate: [0, [Validators.required, Validators.min(0)]],
-      dailyRateFormatted: ['', Validators.required],
       odometer: [0, [Validators.min(0)]],
     };
 
@@ -224,23 +200,7 @@ export class VehicleFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      const patch = {
-        ...this.data,
-        pricePerKmFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.pricePerKm,
-        ),
-        dailyRateFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.dailyRate,
-        ),
-      };
-      this.form.patchValue(patch);
-    } else {
-      this.form
-        .get('pricePerKmFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(0));
-      this.form
-        .get('dailyRateFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(0));
+      this.form.patchValue(this.data);
     }
   }
 

@@ -12,7 +12,6 @@ import {
   Product,
   ProductService,
   FormBaseComponent,
-  CurrencyService,
   ModalService,
   ProductType,
   WebApiResponse,
@@ -93,7 +92,6 @@ export class QuoteProductFormComponent
   private _quoteData: Quote | null = null;
 
   constructor(
-    private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
@@ -321,18 +319,6 @@ export class QuoteProductFormComponent
     }, 200);
   }
 
-  onPriceBlur(): void {
-    const priceControl = this.form.get('priceFormatted');
-    if (!priceControl) {
-      return;
-    }
-
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get('price')?.setValue(value);
-    this.updateTotalPrice();
-  }
-
   selectProduct(product: Product) {
     if (!product) {
       return;
@@ -358,7 +344,6 @@ export class QuoteProductFormComponent
       productName: product.name,
       productType: product.type,
       price: product.price,
-      priceFormatted: this.currencyService.formatCurrencyBRL(product.price),
     });
 
     this.updateTotalPrice();
@@ -373,10 +358,8 @@ export class QuoteProductFormComponent
       quantity: [1, [Validators.required, Validators.min(1)]],
       previousQuantity: [0],
       price: [0, [Validators.required]],
-      priceFormatted: [{ value: 0 }],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
-      totalPriceFormatted: [{ value: 0, disabled: true }],
     });
 
     if (this.isEdit) {
@@ -398,18 +381,7 @@ export class QuoteProductFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      const patch = {
-        ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-        totalPriceFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.totalPrice,
-        ),
-      };
-      this.form.patchValue(patch);
-    } else {
-      this.form
-        .get('priceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
+      this.form.patchValue(this.data);
     }
   }
 
@@ -522,10 +494,6 @@ export class QuoteProductFormComponent
     const total = price * quantity * (1 - discount / 100);
 
     this.form.get('totalPrice')?.setValue(total);
-
-    this.form
-      .get('totalPriceFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(total));
   }
 
   private cleanProductSelection() {

@@ -182,38 +182,17 @@
         </div>
       </div>
       <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="pricePerKmFormatted"
-              type="text"
-              [placeholder]="'VEHICLES.PRICE_PER_KM' | translate"
-              class="form-control"
-              [class.is-invalid]="isInvalid('pricePerKmFormatted')"
-              [class.is-valid]="isValid('pricePerKmFormatted')"
-              (blur)="onPricePerKmBlur()"
-            />
-            <label>{{ 'VEHICLES.PRICE_PER_KM_LABEL' | translate }}</label>
-          </div>
-          <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
-        </div>
+        <app-currency-field
+          formControlName="pricePerKm"
+          [label]="'VEHICLES.PRICE_PER_KM_LABEL' | translate"
+          icon="bi-signpost-split"
+        ></app-currency-field>
       </div>
       <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="dailyRateFormatted"
-              type="text"
-              [placeholder]="'VEHICLES.DAILY_RATE' | translate"
-              class="form-control"
-              [class.is-invalid]="isInvalid('dailyRateFormatted')"
-              [class.is-valid]="isValid('dailyRateFormatted')"
-              (blur)="onDailyRateBlur()"
-            />
-            <label>{{ 'VEHICLES.DAILY_RATE' | translate }}</label>
-          </div>
-          <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
-        </div>
+        <app-currency-field
+          formControlName="dailyRate"
+          [label]="'VEHICLES.DAILY_RATE' | translate"
+        ></app-currency-field>
       </div>
     </div>
     </div>

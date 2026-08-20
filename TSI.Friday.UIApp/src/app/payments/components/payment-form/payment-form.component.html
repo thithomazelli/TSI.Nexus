@@ -251,21 +251,10 @@
         </div>
 
         <div class="col-md-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="priceFormatted"
-                type="text"
-                [placeholder]="'COMMON.VALUE' | translate"
-                class="form-control"
-                [class.is-invalid]="isInvalid('priceFormatted')"
-                [class.is-valid]="isValid('priceFormatted')"
-                (blur)="onCurrencyBlur('price')"
-              />
-              <label for="price">{{ 'COMMON.VALUE' | translate }}</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
-          </div>
+          <app-currency-field
+            formControlName="price"
+            [label]="'COMMON.VALUE' | translate"
+          ></app-currency-field>
         </div>
 
         @if (isInstallment) {
@@ -291,21 +280,11 @@
             </div>
           </div>
           <div class="col-md-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <input
-                  formControlName="priceFormatted"
-                  type="text"
-                  [placeholder]="'COMMON.VALUE' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('priceFormatted')"
-                  [class.is-valid]="isValid('priceFormatted')"
-                  (blur)="onCurrencyBlur('price')"
-                />
-                <label for="priceFormatted">{{ 'COMMON.VALUE' | translate }}</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-cash"></i></div>
-            </div>
+            <app-currency-field
+              formControlName="price"
+              [label]="'COMMON.VALUE' | translate"
+              icon="bi-cash"
+            ></app-currency-field>
           </div>
         }
       </div>

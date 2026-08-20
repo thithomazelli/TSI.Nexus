@@ -78,21 +78,10 @@
           </div>
 
           <div class="col-12">
-            <div class="input-group">
-              <div class="form-floating flex-fill">
-                <input
-                  formControlName="amount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  [placeholder]="'TRIPS.DRIVER_AMOUNT' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('amount')"
-                />
-                <label for="amount">{{ 'TRIPS.DRIVER_AMOUNT' | translate }}</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
-            </div>
+            <app-currency-field
+              formControlName="amount"
+              [label]="'TRIPS.DRIVER_AMOUNT' | translate"
+            ></app-currency-field>
           </div>
         </div>
       </section>

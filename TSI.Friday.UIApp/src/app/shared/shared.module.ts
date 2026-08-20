@@ -47,6 +47,7 @@ import { AttachmentsComponent } from './attachments/attachments.component';
 import { AttachmentDetailsModalComponent } from './attachments/components/attachment-details-modal/attachment-details-modal.component';
 import { UserPreferencesComponent } from './components/user-preferences/user-preferences.component';
 import { AuditTabComponent } from './components/audit-tab/audit-tab.component';
+import { CurrencyFieldComponent } from './components/currency-field/currency-field.component';
 
 import { Tree } from 'primeng/tree';
 import { ContextMenu } from 'primeng/contextmenu';
@@ -81,6 +82,7 @@ import { ConfirmationService } from 'primeng/api';
     InfoCardsComponent,
     UserPreferencesComponent,
     AuditTabComponent,
+    CurrencyFieldComponent,
   ],
   imports: [
     ClickDirective,
@@ -124,6 +126,7 @@ import { ConfirmationService } from 'primeng/api';
     InfoCardsComponent,
     UserPreferencesComponent,
     AuditTabComponent,
+    CurrencyFieldComponent,
     NotificationComponent,
     FooterComponent,
     RouterModule,

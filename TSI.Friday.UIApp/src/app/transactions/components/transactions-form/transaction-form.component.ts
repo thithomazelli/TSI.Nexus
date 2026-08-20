@@ -12,7 +12,6 @@ import { MatDialogRef } from '@angular/material/dialog';
 import {
   BusinessPartner,
   BusinessPartnerService,
-  CurrencyService,
   FormBaseComponent,
   ModalService,
   Order,
@@ -126,7 +125,6 @@ export class TransactionFormComponent
 
   constructor(
     private businessPartnerService: BusinessPartnerService,
-    private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
@@ -158,9 +156,6 @@ export class TransactionFormComponent
       const validPayments = payments > 0 ? payments : 1;
       const perPayment = price / validPayments;
       this.form.get('paymentTotalPrice')?.setValue(perPayment);
-      this.form
-        .get('paymentTotalPriceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(perPayment));
     });
   }
 
@@ -326,17 +321,6 @@ export class TransactionFormComponent
     );
   }
 
-  onCurrencyBlur(formControlName: string): void {
-    const priceControl = this.form.get(`${formControlName}Formatted`);
-    if (!priceControl) {
-      return;
-    }
-
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get(formControlName)?.setValue(value);
-  }
-
   async onClientBlur(): Promise<void> {
     setTimeout(() => {
       const businessPartnerName = this.form
@@ -446,11 +430,9 @@ export class TransactionFormComponent
       description: ['', required],
       condition: [PaymentCondition.FullPayment, this.isEdit ? [] : required],
       totalOfPayments: [0, [Validators.min(0)]],
-      paymentTotalPrice: [0, [Validators.min(0)]],
-      paymentTotalPriceFormatted: [{ value: 0, disabled: this.isEdit }],
+      paymentTotalPrice: [{ value: 0, disabled: this.isEdit }, [Validators.min(0)]],
       totalOfExpenses: [0, [Validators.min(0)]],
-      expenseTotalPrice: [0, [Validators.min(0)]],
-      expenseTotalPriceFormatted: [{ value: 0, disabled: this.isEdit }],
+      expenseTotalPrice: [{ value: 0, disabled: this.isEdit }, [Validators.min(0)]],
       businessPartnerId: [null],
       businessPartnerName: [''],
       orderId: [null],
@@ -502,28 +484,9 @@ export class TransactionFormComponent
         ...this.data,
         totalOfPayments,
         paymentTotalPrice,
-        paymentTotalPriceFormatted:
-          this.currencyService.formatCurrencyBRL(paymentTotalPrice),
         totalOfExpenses,
         expenseTotalPrice,
-        expenseTotalPriceFormatted:
-          this.currencyService.formatCurrencyBRL(expenseTotalPrice),
       });
-
-      // Disable price field
-      this.form.get('paymentTotalPrice')?.disable();
-      this.form.get('expenseTotalPrice')?.disable();
-    } else {
-      this.form
-        .get('paymentTotalPriceFormatted')
-        ?.setValue(
-          this.currencyService.formatCurrencyBRL(this.data?.paymentTotalPrice),
-        );
-      this.form
-        .get('expenseTotalPriceFormatted')
-        ?.setValue(
-          this.currencyService.formatCurrencyBRL(this.data?.expenseTotalPrice),
-        );
     }
   }
 

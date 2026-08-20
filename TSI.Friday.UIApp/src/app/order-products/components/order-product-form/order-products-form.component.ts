@@ -13,7 +13,6 @@ import {
   Product,
   ProductService,
   FormBaseComponent,
-  CurrencyService,
   OrderProductStatus,
   ModalService,
   ProductType,
@@ -117,7 +116,6 @@ export class OrderProductsFormComponent
   private _subscriptions: Subscription[] = [];
 
   constructor(
-    private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
@@ -380,18 +378,6 @@ export class OrderProductsFormComponent
     }
   }
 
-  onPriceBlur(): void {
-    const priceControl = this.form.get('priceFormatted');
-    if (!priceControl) {
-      return;
-    }
-
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get('price')?.setValue(value);
-    this.updateTotalPrice();
-  }
-
   selectProduct(product: Product) {
     if (!product) {
       return;
@@ -436,7 +422,6 @@ export class OrderProductsFormComponent
       productName: product.name,
       productType: product.type,
       price: product.price,
-      priceFormatted: this.currencyService.formatCurrencyBRL(product.price),
     });
 
     this.updateTotalPrice();
@@ -477,10 +462,8 @@ export class OrderProductsFormComponent
       quantity: [1, [Validators.required, Validators.min(1)]],
       previousQuantity: [0],
       price: [0, [Validators.required]],
-      priceFormatted: [{ value: 0 }],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
-      totalPriceFormatted: [{ value: 0, disabled: true }],
       startDate: [today],
       endDate: [fiveDaysLater],
       status: [OrderProductStatus.InProgress, Validators.required],
@@ -522,18 +505,7 @@ export class OrderProductsFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      const patch = {
-        ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-        totalPriceFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.totalPrice,
-        ),
-      };
-      this.form.patchValue(patch);
-    } else {
-      this.form
-        .get('priceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
+      this.form.patchValue(this.data);
     }
   }
 
@@ -652,28 +624,22 @@ export class OrderProductsFormComponent
           .get('discount')!
           .valueChanges.subscribe(() => this.updateTotalPrice()),
       );
+
+    this.form.get('price')?.valueChanges &&
+      this._subscriptions.push(
+        this.form
+          .get('price')!
+          .valueChanges.subscribe(() => this.updateTotalPrice()),
+      );
   }
 
   private updateTotalPrice(): void {
-    let priceValue = this.form.get('price')?.value || 0;
-
-    if (typeof priceValue === 'string') {
-      priceValue = priceValue
-        .replace(/R\$\s?/g, '')
-        .replace(/\./g, '')
-        .replace(',', '.')
-        .trim();
-    }
-    const price = Number(priceValue) || 0;
+    const price = Number(this.form.get('price')?.value) || 0;
     const quantity = Number(this.form.get('quantity')?.value) || 0;
     const discount = Number(this.form.get('discount')?.value) || 0;
     const total = price * quantity * (1 - discount / 100);
 
     this.form.get('totalPrice')?.setValue(total);
-
-    this.form
-      .get('totalPriceFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(total));
   }
 
   private cleanProductSelection() {

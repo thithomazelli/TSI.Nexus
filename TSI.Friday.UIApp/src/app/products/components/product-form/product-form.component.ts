@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 
 import {
   ApiType,
-  CurrencyService,
   FormBaseComponent,
   ModalService,
   NotificationService,
@@ -81,7 +80,6 @@ export class ProductFormComponent
   private _subscriptions: Subscription[] = [];
 
   constructor(
-    private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
@@ -231,23 +229,12 @@ export class ProductFormComponent
       });
   }
 
-  onPriceBlur(): void {
-    const priceControl = this.form.get('priceFormatted');
-    if (!priceControl) {
-      return;
-    }
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get('price')?.setValue(value);
-  }
-
   private initForm(): void {
     const commonControls = {
       sku: ['', Validators.required],
       name: ['', Validators.required],
       description: [''],
       price: [0, [Validators.required, Validators.min(0)]],
-      priceFormatted: ['', [Validators.required, Validators.min(0)]],
       unit: [ProductUnit.Unit, Validators.required],
       type: [ProductType.Rental, Validators.required],
       quantityInStock: [1, [Validators.required, Validators.min(0)]],
@@ -265,15 +252,7 @@ export class ProductFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      const patch = {
-        ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-      };
-      this.form.patchValue(patch);
-    } else {
-      this.form
-        .get('priceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(this.data?.price));
+      this.form.patchValue(this.data);
     }
 
     const typeSub = this.form.get('type')?.valueChanges.subscribe((type) => {

@@ -523,10 +523,8 @@ export class OrderFormComponent
       date: [new Date(), Validators.required],
       status: [OrderStatus.Open, Validators.required],
       price: [{ value: 0, disabled: true }],
-      priceFormatted: [{ value: 0, disabled: true }],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
-      totalPriceFormatted: [{ value: 0, disabled: true }],
       transactionId: [null],
     });
 
@@ -577,8 +575,7 @@ export class OrderFormComponent
           },
           Validators.required,
         ],
-        paymentTotalPrice: [0, [Validators.min(0)]],
-        paymentTotalPriceFormatted: [{ value: 0, disabled: true }],
+        paymentTotalPrice: [{ value: 0, disabled: true }, [Validators.min(0)]],
         totalOfExpenses: [
           {
             value: 0,
@@ -586,9 +583,9 @@ export class OrderFormComponent
           },
           Validators.required,
         ],
-        expenseTotalPrice: [0, [Validators.min(0)]],
-        expenseTotalPriceFormatted: [
+        expenseTotalPrice: [
           { value: 0, disabled: this.isEdit ? true : false },
+          [Validators.min(0)],
         ],
       });
       this.form.addControl('transaction', transactionGroup);
@@ -604,15 +601,10 @@ export class OrderFormComponent
 
       const patch = {
         ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-        totalPriceFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.totalPrice,
-        ),
         transaction: {
           ...this.data.transaction,
           id: this.data.transaction?.id ?? null,
-          paymentTotalPriceFormatted:
-            this.currencyService.formatCurrencyBRL(paymentTotalPrice),
+          paymentTotalPrice,
         },
       };
 
@@ -730,9 +722,6 @@ export class OrderFormComponent
     );
     this.data!.price = total;
     this.form.get('price')?.setValue(total);
-    this.form
-      .get('priceFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(total));
   }
 
   private updateTotalPriceFields(): void {
@@ -740,18 +729,10 @@ export class OrderFormComponent
     const discount = Number(this.form.get('discount')?.value) || 0;
     const total = price * (1 - discount / 100);
     this.form.get('totalPrice')?.setValue(total);
-    this.form
-      .get('totalPriceFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(total));
 
     const transactionGroup = this.form.get('transaction') as FormGroup | null;
     if (!this.isEdit && transactionGroup) {
-      const transactions = transactionGroup.get('totalOfPayments')?.value || 1;
-      const pricePerPayment = total / (transactions > 0 ? transactions : 1);
       transactionGroup.get('paymentTotalPrice')?.setValue(total);
-      transactionGroup
-        .get('paymentTotalPriceFormatted')
-        ?.setValue(this.currencyService.formatCurrencyBRL(pricePerPayment));
     }
   }
 

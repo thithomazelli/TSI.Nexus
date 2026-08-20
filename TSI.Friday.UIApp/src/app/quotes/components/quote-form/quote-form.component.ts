@@ -20,7 +20,6 @@ import {
   QuoteType,
   FormBaseComponent,
   ModalService,
-  CurrencyService,
   Vehicle,
   VehicleService,
   WebApiResponse,
@@ -113,7 +112,6 @@ export class QuoteFormComponent
 
   constructor(
     private businessPartnerService: BusinessPartnerService,
-    private currencyService: CurrencyService,
     private driverService: DriverService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
@@ -376,17 +374,6 @@ export class QuoteFormComponent
     );
   }
 
-  onCurrencyBlur(formControlName: string): void {
-    const priceControl = this.form.get(`${formControlName}Formatted`);
-    if (!priceControl) {
-      return;
-    }
-
-    const value = this.currencyService.parseCurrencyBRL(priceControl.value);
-    priceControl.setValue(this.currencyService.formatCurrencyBRL(value));
-    this.form.get(formControlName)?.setValue(value);
-  }
-
   canDisplayConvertButton(): boolean {
     return this.isEdit && this.data?.status === QuoteStatus.Open;
   }
@@ -407,18 +394,14 @@ export class QuoteFormComponent
       date: [new Date(), Validators.required],
       status: [QuoteStatus.Open, Validators.required],
       price: [{ value: 0, disabled: true }],
-      priceFormatted: [{ value: 0, disabled: true }],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
-      totalPriceFormatted: [{ value: 0, disabled: true }],
       condition: [PaymentCondition.FullPayment],
       method: [PaymentMethod.Cash],
       totalOfPayments: [1, [Validators.min(1)]],
-      paymentTotalPrice: [0, [Validators.min(0)]],
-      paymentTotalPriceFormatted: [{ value: 0, disabled: this.isEdit }],
+      paymentTotalPrice: [{ value: 0, disabled: this.isEdit }, [Validators.min(0)]],
       totalOfExpenses: [0, [Validators.min(0)]],
-      expenseTotalPrice: [0, [Validators.min(0)]],
-      expenseTotalPriceFormatted: [{ value: 0, disabled: this.isEdit }],
+      expenseTotalPrice: [{ value: 0, disabled: this.isEdit }, [Validators.min(0)]],
     });
 
     if (this.isEdit) {
@@ -480,31 +463,19 @@ export class QuoteFormComponent
   private patchFormWithData(): void {
     if (this.data && this.form) {
       const totalOfPayments = this.data.totalOfPayments ?? 1;
-      const paymentTotalPrice = this.data.paymentTotalPrice ?? 0;
+      const paymentTotalPrice = this.data.totalPrice ?? 0;
       const totalOfExpenses = this.data.totalOfExpenses ?? 0;
       const expenseTotalPrice = this.data.expenseTotalPrice ?? 0;
 
       const patch = {
         ...this.data,
-        priceFormatted: this.currencyService.formatCurrencyBRL(this.data.price),
-        totalPriceFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.totalPrice,
-        ),
         totalOfPayments,
         paymentTotalPrice,
-        paymentTotalPriceFormatted: this.currencyService.formatCurrencyBRL(
-          this.data.totalPrice,
-        ),
         totalOfExpenses,
         expenseTotalPrice,
-        expenseTotalPriceFormatted:
-          this.currencyService.formatCurrencyBRL(expenseTotalPrice),
       };
 
       this.form.patchValue(patch);
-
-      this.form.get('paymentTotalPrice')?.disable();
-      this.form.get('expenseTotalPrice')?.disable();
     }
   }
 
@@ -556,9 +527,6 @@ export class QuoteFormComponent
           const validPayments = payments > 0 ? payments : 1;
           const perPayment = totalPrice / validPayments;
           this.form.get('paymentTotalPrice')?.setValue(perPayment);
-          this.form
-            .get('paymentTotalPriceFormatted')
-            ?.setValue(this.currencyService.formatCurrencyBRL(perPayment));
         }),
     );
   }
@@ -576,9 +544,6 @@ export class QuoteFormComponent
     );
     this.data!.price = total;
     this.form.get('price')?.setValue(total);
-    this.form
-      .get('priceFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(total));
   }
 
   private updateTotalPriceFields(): void {
@@ -586,9 +551,6 @@ export class QuoteFormComponent
     const discount = Number(this.form.get('discount')?.value) || 0;
     const total = price * (1 - discount / 100);
     this.form.get('totalPrice')?.setValue(total);
-    this.form
-      .get('totalPriceFormatted')
-      ?.setValue(this.currencyService.formatCurrencyBRL(total));
   }
 
   private save(quote: Quote): Observable<WebApiResponse<Quote>> {

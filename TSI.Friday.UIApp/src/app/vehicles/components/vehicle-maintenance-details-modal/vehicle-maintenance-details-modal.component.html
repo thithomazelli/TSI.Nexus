@@ -40,20 +40,10 @@
         </div>
       </div>
       <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="cost"
-              type="number"
-              min="0"
-              [placeholder]="'VEHICLES.COST' | translate"
-              class="form-control"
-              id="maintenanceModalCost"
-            />
-            <label for="maintenanceModalCost">{{ 'VEHICLES.COST' | translate }}</label>
-          </div>
-          <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
-        </div>
+        <app-currency-field
+          formControlName="cost"
+          [label]="'VEHICLES.COST' | translate"
+        ></app-currency-field>
       </div>
       <div class="col-12 col-md-6">
         <div class="input-group">

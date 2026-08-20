@@ -141,41 +141,17 @@
           </div>
 
           <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating">
-                <input
-                  formControlName="priceFormatted"
-                  type="text"
-                  [placeholder]="'COMMON.PRICE' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('priceFormatted')"
-                  [class.is-valid]="isValid('priceFormatted')"
-                />
-                <label for="price">{{ 'COMMON.PRICE' | translate }}</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-            </div>
+            <app-currency-field
+              formControlName="price"
+              [label]="'COMMON.PRICE' | translate"
+            ></app-currency-field>
           </div>
 
           <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating">
-                <input
-                  formControlName="totalPriceFormatted"
-                  type="text"
-                  [placeholder]="'COMMON.TOTAL_PRICE_LABEL' | translate"
-                  class="form-control"
-                  [class.is-invalid]="isInvalid('totalPriceFormatted')"
-                  [class.is-valid]="isValid('totalPriceFormatted')"
-                />
-                <label for="totalPrice">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-cash-coin"></i>
-              </div>
-            </div>
+            <app-currency-field
+              formControlName="totalPrice"
+              [label]="'COMMON.TOTAL_PRICE_LABEL' | translate"
+            ></app-currency-field>
           </div>
         </div>
       </section>
@@ -397,23 +373,10 @@
         </div>
 
         <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="paymentTotalPriceFormatted"
-                type="text"
-                [placeholder]="'TRANSACTIONS.PAYMENT_TOTAL_PRICE' | translate"
-                class="form-control"
-                [class.is-invalid]="isInvalid('paymentTotalPriceFormatted')"
-                [class.is-valid]="isValid('paymentTotalPriceFormatted')"
-                (blur)="onCurrencyBlur('paymentTotalPrice')"
-              />
-              <label for="paymentTotalPrice">{{ 'TRANSACTIONS.PAYMENT_TOTAL_PRICE' | translate }}</label>
-            </div>
-            <div class="input-group-text">
-              <i class="bi bi-cash-coin"></i>
-            </div>
-          </div>
+          <app-currency-field
+            formControlName="paymentTotalPrice"
+            [label]="'TRANSACTIONS.PAYMENT_TOTAL_PRICE' | translate"
+          ></app-currency-field>
         </div>
 
         <div class="col-6">
@@ -439,21 +402,11 @@
         </div>
 
         <div class="col-6">
-          <div class="input-group">
-            <div class="form-floating flex-grow-1">
-              <input
-                formControlName="expenseTotalPriceFormatted"
-                type="text"
-                [placeholder]="'TRANSACTIONS.EXPENSE_TOTAL_PRICE' | translate"
-                class="form-control"
-                [class.is-invalid]="isInvalid('expenseTotalPriceFormatted')"
-                [class.is-valid]="isValid('expenseTotalPriceFormatted')"
-                (blur)="onCurrencyBlur('expenseTotalPrice')"
-              />
-              <label for="expenseTotalPrice">{{ 'TRANSACTIONS.EXPENSE_TOTAL_PRICE' | translate }}</label>
-            </div>
-            <div class="input-group-text"><i class="bi bi-cash"></i></div>
-          </div>
+          <app-currency-field
+            formControlName="expenseTotalPrice"
+            [label]="'TRANSACTIONS.EXPENSE_TOTAL_PRICE' | translate"
+            icon="bi-cash"
+          ></app-currency-field>
         </div>
       </div>
       </section>

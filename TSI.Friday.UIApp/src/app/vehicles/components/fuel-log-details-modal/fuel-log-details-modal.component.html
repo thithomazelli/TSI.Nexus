@@ -44,21 +44,10 @@
         </div>
       </div>
       <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="pricePerLiter"
-              type="number"
-              min="0"
-              step="0.01"
-              [placeholder]="'VEHICLES.PRICE_PER_LITER' | translate"
-              class="form-control"
-              id="fuelLogModalPricePerLiter"
-            />
-            <label for="fuelLogModalPricePerLiter">{{ 'VEHICLES.PRICE_PER_LITER' | translate }}</label>
-          </div>
-          <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
-        </div>
+        <app-currency-field
+          formControlName="pricePerLiter"
+          [label]="'VEHICLES.PRICE_PER_LITER' | translate"
+        ></app-currency-field>
       </div>
       <div class="col-12">
         <div class="input-group">
