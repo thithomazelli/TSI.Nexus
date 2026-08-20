@@ -428,6 +428,8 @@ export const EN = {
     DRIVER_AMOUNT: 'Amount to Pay',
     DRIVER_ALREADY_ADDED_TITLE: 'Driver already added',
     DRIVER_ALREADY_ADDED_MESSAGE: '{name} is already assigned to this trip.',
+    DRIVER_ALREADY_ADDED_SHORT: '(already added)',
+    DRIVER_LICENSE_EXPIRED: 'Expired license',
     ADD_DRIVER_ITEM: 'Add Driver to Trip',
     EDIT_DRIVER_ITEM: 'Edit Trip Driver',
     DRIVERS_REFRESHED: 'Drivers refreshed successfully',

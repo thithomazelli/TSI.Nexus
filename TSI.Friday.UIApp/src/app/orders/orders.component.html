@@ -16,6 +16,7 @@
     [baseEndPoint]="baseEndPoint"
     [refresh]="refreshOrders.bind(this)"
     [delete]="deleteOrder.bind(this)"
+    [rowDoubleClickAction]="'view'"
     (openModal)="openModal($event)"
     [filtersTemplate]="filtersTpl"
     [showFilters]="showFiltersOnInit"

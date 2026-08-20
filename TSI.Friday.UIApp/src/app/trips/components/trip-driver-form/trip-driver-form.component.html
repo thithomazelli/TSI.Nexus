@@ -24,13 +24,17 @@
                     <mat-option
                       *ngFor="let driver of filteredDriversByName$ | async"
                       [value]="driver"
-                      [disabled]="driver.alreadyUsed"
-                      [ngClass]="{ 'text-muted': driver.alreadyUsed }"
+                      [disabled]="driver.alreadyUsed || driver.licenseExpired"
+                      [ngClass]="{ 'text-muted': driver.alreadyUsed || driver.licenseExpired }"
                     >
                       {{ driver.name }}
-                      <span *ngIf="driver.alreadyUsed" class="ms-2 text-muted"
-                        >{{ 'TRIPS.DRIVER_ALREADY_ADDED_TITLE' | translate }}</span
-                      >
+                      <span class="ms-2 text-muted">
+                        @if (driver.alreadyUsed) {
+                          {{ 'TRIPS.DRIVER_ALREADY_ADDED_SHORT' | translate }}
+                        } @else if (driver.licenseExpired) {
+                          {{ 'TRIPS.DRIVER_LICENSE_EXPIRED' | translate }}
+                        }
+                      </span>
                     </mat-option>
                   </mat-autocomplete>
                 } @else {

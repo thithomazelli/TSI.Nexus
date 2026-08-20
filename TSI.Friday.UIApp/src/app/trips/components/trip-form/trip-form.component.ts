@@ -551,11 +551,27 @@ export class TripFormComponent
           if (!filterValue) {
             return [];
           }
-          return this.drivers.filter((driver) =>
-            (driver.name || '').toLowerCase().includes(filterValue),
-          );
+          return this.drivers
+            .filter((driver) =>
+              (driver.name || '').toLowerCase().includes(filterValue),
+            )
+            .map((driver) => ({
+              ...driver,
+              alreadyUsed: this.data?.tripDrivers?.some(
+                (td) => td.driverId === driver.id,
+              ),
+              licenseExpired: this.isLicenseExpired(driver.licenseExpiryDate),
+            }));
         }),
       );
+  }
+
+  private isLicenseExpired(licenseExpiryDate: Date | string | null | undefined): boolean {
+    if (!licenseExpiryDate) {
+      return false;
+    }
+    const expiry = new Date(licenseExpiryDate);
+    return !isNaN(expiry.getTime()) && expiry.getTime() < Date.now();
   }
 
   async onInlineDriverNameBlur(): Promise<void> {

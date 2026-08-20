@@ -22,4 +22,7 @@ export interface Driver extends BaseModel {
   // Client-side only, mirrors Product.alreadyUsed - marks a driver already associated with the
   // trip so trip-driver-form's autocomplete can disable that option (see selectDriver()).
   alreadyUsed?: boolean;
+  // Client-side only - marks a driver whose CNH is past licenseExpiryDate so the autocomplete can
+  // disable that option too (see the same autocomplete filters as alreadyUsed above).
+  licenseExpired?: boolean;
 }

@@ -280,8 +280,17 @@
                   <mat-option
                     *ngFor="let driver of filteredInlineDriversByName$ | async"
                     [value]="driver"
+                    [disabled]="driver.alreadyUsed || driver.licenseExpired"
+                    [ngClass]="{ 'text-muted': driver.alreadyUsed || driver.licenseExpired }"
                   >
                     {{ driver.name }}
+                    <span class="ms-2 text-muted">
+                      @if (driver.alreadyUsed) {
+                        {{ 'TRIPS.DRIVER_ALREADY_ADDED_SHORT' | translate }}
+                      } @else if (driver.licenseExpired) {
+                        {{ 'TRIPS.DRIVER_LICENSE_EXPIRED' | translate }}
+                      }
+                    </span>
                   </mat-option>
                 </mat-autocomplete>
               </td>

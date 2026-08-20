@@ -323,9 +323,18 @@ export class TripDriverFormComponent
               alreadyUsed: this.parentData?.some(
                 (td) => td.driverId === driver.id && td.id !== this.data?.id,
               ),
+              licenseExpired: this.isLicenseExpired(driver.licenseExpiryDate),
             }));
         }),
       );
+  }
+
+  private isLicenseExpired(licenseExpiryDate: Date | string | null | undefined): boolean {
+    if (!licenseExpiryDate) {
+      return false;
+    }
+    const expiry = new Date(licenseExpiryDate);
+    return !isNaN(expiry.getTime()) && expiry.getTime() < Date.now();
   }
 
   private cleanDriverSelection(): void {

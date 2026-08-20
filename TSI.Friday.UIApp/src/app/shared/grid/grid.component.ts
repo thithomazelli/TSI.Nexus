@@ -67,6 +67,12 @@ export class GridComponent<T> implements OnInit {
   @Input()
   update!: (data: T) => void;
 
+  // Some entities (e.g. Orders) are too large to edit in a modal - only a full add flow and the
+  // view/delete actions make sense there, so the double-click shortcut has to follow suit instead
+  // of always opening the (removed) edit modal.
+  @Input()
+  rowDoubleClickAction: 'edit' | 'view' | 'none' = 'edit';
+
   @Output() openModal = new EventEmitter<any>();
 
   gridStyle: string = '';
@@ -178,7 +184,12 @@ export class GridComponent<T> implements OnInit {
   }
 
   onRowDoubleClicked(event: RowDoubleClickedEvent): void {
-    if (event.data) {
+    if (!event.data || this.rowDoubleClickAction === 'none') {
+      return;
+    }
+    if (this.rowDoubleClickAction === 'view') {
+      this.viewAction(event.data);
+    } else {
       this.editAction(event.data);
     }
   }
