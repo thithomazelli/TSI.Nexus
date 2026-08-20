@@ -15,7 +15,16 @@ export class NotificationService {
   };
 
   showMessage(type: string, message: string, title?: string) {
-    this._notificationMap[type](message, title);
+    // Callers pass this in every casing (ResponseStatus values like 'Success'/'Error', but also
+    // plain string literals like 'error' from local catch handlers) - _notificationMap's keys
+    // are capitalized, so an exact-match lookup crashed with "... is not a function" instead of
+    // showing the message whenever a caller used a different casing, which is exactly the case
+    // that matters most (an error toast failing to appear when a save fails).
+    const key = Object.keys(this._notificationMap).find(
+      (k) => k.toLowerCase() === type?.toLowerCase(),
+    );
+    const handler = key ? this._notificationMap[key] : this.error;
+    handler.call(this, message, title);
   }
 
   private success(message: string, title?: string) {

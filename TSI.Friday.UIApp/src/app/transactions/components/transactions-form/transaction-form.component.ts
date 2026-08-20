@@ -231,6 +231,14 @@ export class TransactionFormComponent
     return this.save(rawValue as Transaction).pipe(
       tap({
         next: (response: WebApiResponse<Transaction>) => {
+          // The backend reports business-rule failures as a 200 response with status Error and
+          // data: null rather than an HTTP error, so this has to be checked before treating the
+          // save as successful - otherwise savePage()/saveModal() crash reading .id off a null
+          // response.data.
+          if (response.status !== ResponseStatus.Success) {
+            this.notificationService.showMessage(response.status, response.message);
+            return;
+          }
           if (this.isModal) {
             this.saveModal(response);
           } else {

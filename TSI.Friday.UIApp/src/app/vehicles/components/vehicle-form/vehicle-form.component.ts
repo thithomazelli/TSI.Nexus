@@ -113,6 +113,14 @@ export class VehicleFormComponent
     return this.save(rawValue as Vehicle).pipe(
       tap({
         next: (response: WebApiResponse<Vehicle>) => {
+          // The backend reports business-rule failures as a 200 response with status Error and
+          // data: null rather than an HTTP error, so this has to be checked before treating the
+          // save as successful - otherwise savePage()/saveModal() crash reading .id off a null
+          // response.data.
+          if (response.status !== ResponseStatus.Success) {
+            this.notificationService.showMessage(response.status, response.message);
+            return;
+          }
           if (this.isModal) {
             this.saveModal(response);
           } else {
@@ -194,8 +202,11 @@ export class VehicleFormComponent
       chassis: [''],
       brand: ['', Validators.required],
       model: ['', Validators.required],
-      manufactureYear: [null as number | null],
-      modelYear: [null as number | null],
+      // Backend Vehicle.ManufactureYear/ModelYear are non-nullable ints - submitting with these
+      // blank sends JSON null and the API rejects it with a raw deserialization error instead of
+      // a friendly validation message, so they have to be required here too.
+      manufactureYear: [null as number | null, Validators.required],
+      modelYear: [null as number | null, Validators.required],
       seatCapacity: [1, [Validators.required, Validators.min(1)]],
       type: [VehicleType.Bus, Validators.required],
       status: [VehicleStatus.Available, Validators.required],

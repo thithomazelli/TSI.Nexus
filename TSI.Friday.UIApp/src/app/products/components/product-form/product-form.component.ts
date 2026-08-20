@@ -142,6 +142,14 @@ export class ProductFormComponent
     return this.save(rawValue as Product).pipe(
       tap({
         next: (response: WebApiResponse<Product>) => {
+          // The backend reports business-rule failures (e.g. duplicate SKU/name) as a 200
+          // response with status Error and data: null rather than an HTTP error, so this has to
+          // be checked before treating the save as successful - otherwise savePage()/saveModal()
+          // crash trying to read .id off a null response.data.
+          if (response.status !== ResponseStatus.Success) {
+            this.notificationService.showMessage(response.status, response.message);
+            return;
+          }
           if (this.isModal) {
             this.saveModal(response);
           } else {

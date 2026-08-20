@@ -92,6 +92,8 @@
               [placeholder]="'VEHICLES.MANUFACTURE_YEAR' | translate"
               class="form-control"
               id="manufactureYear"
+              [class.is-invalid]="isInvalid('manufactureYear')"
+              [class.is-valid]="isValid('manufactureYear')"
             />
             <label for="manufactureYear">{{ 'VEHICLES.MANUFACTURE_YEAR' | translate }}</label>
           </div>
@@ -106,6 +108,8 @@
               [placeholder]="'VEHICLES.MODEL_YEAR' | translate"
               class="form-control"
               id="modelYear"
+              [class.is-invalid]="isInvalid('modelYear')"
+              [class.is-valid]="isValid('modelYear')"
             />
             <label for="modelYear">{{ 'VEHICLES.MODEL_YEAR' | translate }}</label>
           </div>
