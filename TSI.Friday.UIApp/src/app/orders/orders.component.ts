@@ -82,7 +82,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   openModal(initialState: any) {
-    if (this.parentData != null) {
+    // Only pre-fill a blank Order with the parent client on Add - editAction() already put the
+    // real order (and its id) on initialState.data, and overwriting it here was discarding that
+    // and showing an empty form when editing an order from within a client's Pedidos tab.
+    if (this.parentData != null && !initialState.isEdit) {
       initialState = {
         ...initialState,
         data: <Order>{

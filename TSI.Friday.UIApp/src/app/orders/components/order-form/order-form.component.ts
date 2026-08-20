@@ -125,8 +125,13 @@ export class OrderFormComponent
     this.totalPriceChange();
     this.setupStatusWatcher();
     this.setupTotalOfPaymentsWatcher();
-    this.initInlineProductForm();
-    this.setupInlineProductAutoComplete();
+    // The inline staged-product table (and its SKU autocomplete) only renders in Add mode - see
+    // *ngIf="!isEdit" on that section in the template - so setting it up in Edit mode was just an
+    // unused productService.getAll() call on every order opened for editing.
+    if (!this.isEdit) {
+      this.initInlineProductForm();
+      this.setupInlineProductAutoComplete();
+    }
 
     this._subscriptions.push(
       this.orderProductService.orderProductAdded$.subscribe((orderProduct) => {
