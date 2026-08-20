@@ -480,9 +480,10 @@ namespace TSI.Friday.Data.Seed
                     total += product.Price * quantity * (1 - discount / 100m);
                 }
 
+                // Same generated-column caveat as Order.TotalPrice below: Discount has to be a
+                // percentage (0-100), not an absolute amount.
                 quote.Price = price;
-                quote.TotalPrice = total;
-                quote.Discount = price - total;
+                quote.Discount = price > 0 ? Math.Round((price - total) / price * 100, 2) : 0;
                 quote.TotalOfPayments = 1;
                 quote.PaymentTotalPrice = total;
                 quote.TotalOfExpenses = 0;
@@ -666,9 +667,12 @@ namespace TSI.Friday.Data.Seed
                     total += product.Price * quantity * (1 - discount / 100m);
                 }
 
+                // TotalPrice is a MySQL generated column, (Price - Price * Discount / 100) - it
+                // treats Discount as a PERCENTAGE, not an absolute amount, so Discount has to be
+                // stored as one here or TotalPrice comes back wildly wrong (and negative) once EF
+                // re-reads the row after SaveChangesAsync().
                 order.Price = price;
-                order.TotalPrice = total;
-                order.Discount = price - total;
+                order.Discount = price > 0 ? Math.Round((price - total) / price * 100, 2) : 0;
             }
 
             return result;

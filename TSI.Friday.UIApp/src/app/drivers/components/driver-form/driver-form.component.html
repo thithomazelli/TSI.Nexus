@@ -164,7 +164,7 @@
               [class.is-invalid]="isInvalid('employmentType')"
               [class.is-valid]="isValid('employmentType')"
             >
-              @for (option of employmentTypeOptions; track option) {
+              @for (option of employmentTypeOptions; track option.value) {
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>
@@ -204,7 +204,7 @@
               [class.is-invalid]="isInvalid('status')"
               [class.is-valid]="isValid('status')"
             >
-              @for (option of statusOptions; track option) {
+              @for (option of statusOptions; track option.value) {
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>

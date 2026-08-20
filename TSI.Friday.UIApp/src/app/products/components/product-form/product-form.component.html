@@ -96,7 +96,7 @@
                 [class.is-valid]="isValid('unit')"
               >
                 <option value="" disabled selected>Unidade de medida</option>
-                @for (option of unitOptions; track option) {
+                @for (option of unitOptions; track option.value) {
                   <option [value]="option.value">
                     {{ option.label }}
                   </option>
@@ -120,7 +120,7 @@
                 [class.is-valid]="isValid('type')"
               >
                 <option value="" disabled selected>{{ 'COMMON.TYPE' | translate }}</option>
-                @for (option of productTypeOptions; track option) {
+                @for (option of productTypeOptions; track option.value) {
                   <option [value]="option.value">
                     {{ option.label }}
                   </option>

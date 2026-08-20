@@ -340,7 +340,7 @@
                 [class.is-valid]="isValid('condition')"
               >
                 <option value="" disabled selected>{{ 'TRANSACTIONS.CONDITION' | translate }}</option>
-                @for (option of conditionOptions; track option) {
+                @for (option of conditionOptions; track option.value) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
@@ -362,7 +362,7 @@
                 [class.is-valid]="isValid('method')"
               >
                 <option value="" disabled selected>{{ 'TRANSACTIONS.METHOD' | translate }}</option>
-                @for (option of methodOptions; track option) {
+                @for (option of methodOptions; track option.value) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>

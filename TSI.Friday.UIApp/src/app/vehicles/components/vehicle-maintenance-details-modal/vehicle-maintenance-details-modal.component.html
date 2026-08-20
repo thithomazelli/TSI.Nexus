@@ -11,7 +11,7 @@
         <div class="input-group">
           <div class="form-floating flex-fill select-floating">
             <select formControlName="type" class="form-select" id="maintenanceModalType">
-              @for (option of typeOptions; track option) {
+              @for (option of typeOptions; track option.value) {
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>

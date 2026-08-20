@@ -136,7 +136,7 @@
                   (blur)="onTypeChanges()"
                 >
                   <option value="" disabled selected>{{ 'COMMON.TYPE' | translate }}</option>
-                  @for (option of typeOptions; track option) {
+                  @for (option of typeOptions; track option.value) {
                     <option [value]="option.value">{{ option.label }}</option>
                   }
                 </select>
@@ -160,7 +160,7 @@
                 [class.is-valid]="isValid('status')"
               >
                 <option value="" disabled selected>{{ 'COMMON.STATUS' | translate }}</option>
-                @for (option of statusOptions; track option) {
+                @for (option of statusOptions; track option.value) {
                   <option [value]="option.value">{{ option.label }}</option>
                 }
               </select>
@@ -215,7 +215,7 @@
                   [class.is-valid]="isValid('condition')"
                 >
                   <option value="" disabled selected>{{ 'TRANSACTIONS.CONDITION' | translate }}</option>
-                  @for (option of conditionOptions; track option) {
+                  @for (option of conditionOptions; track option.value) {
                     <option [value]="option.value">{{ option.label }}</option>
                   }
                 </select>
@@ -237,7 +237,7 @@
                   [class.is-valid]="isValid('method')"
                 >
                   <option value="" disabled selected>{{ 'TRANSACTIONS.METHOD' | translate }}</option>
-                  @for (option of methodOptions; track option) {
+                  @for (option of methodOptions; track option.value) {
                     <option [value]="option.value">{{ option.label }}</option>
                   }
                 </select>

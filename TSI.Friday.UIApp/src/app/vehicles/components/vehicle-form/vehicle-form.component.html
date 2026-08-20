@@ -151,7 +151,7 @@
               [class.is-invalid]="isInvalid('type')"
               [class.is-valid]="isValid('type')"
             >
-              @for (option of typeOptions; track option) {
+              @for (option of typeOptions; track option.value) {
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>
@@ -169,7 +169,7 @@
               [class.is-invalid]="isInvalid('status')"
               [class.is-valid]="isValid('status')"
             >
-              @for (option of statusOptions; track option) {
+              @for (option of statusOptions; track option.value) {
                 <option [value]="option.value">{{ option.label }}</option>
               }
             </select>

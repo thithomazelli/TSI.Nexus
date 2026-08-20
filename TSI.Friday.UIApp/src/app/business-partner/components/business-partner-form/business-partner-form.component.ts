@@ -518,7 +518,10 @@ export class BusinessPartnerFormComponent
       this.form.patchValue(patch);
     }
 
-    if (this.addressPanelMode === 'list') {
+    // The address sub-form only exists when compact (see initForm(): addressFormGroup is null
+    // otherwise) - the full, non-compact "Editar Cliente" page handles its address in a separate
+    // tab instead, so there's nothing here to reset.
+    if (this.compact && this.addressPanelMode === 'list') {
       this.resetAddressForm();
     }
   }
