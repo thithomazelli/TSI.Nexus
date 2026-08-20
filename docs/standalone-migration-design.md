@@ -92,7 +92,7 @@ modos, rodados em sequência:
 
 1. `convert-to-standalone` — marca componentes/diretivas/pipes como standalone e resolve os
    `imports` de cada um automaticamente (lendo o que o template de cada componente de fato usa).
-2. `prune-ngmodules` — remove `NgModule`s que ficaram vazios/redundantes depois do passo 1.
+2. `prune-ng-modules` — remove `NgModule`s que ficaram vazios/redundantes depois do passo 1.
 3. `standalone-bootstrap` — troca `bootstrapModule` por `bootstrapApplication` e gera
    `app.config.ts`.
 
@@ -143,15 +143,23 @@ importar `DriverFormComponent`/`DriverService` diretamente do que precisa, sem p
 `DriversSharedModule`.
 
 ### Fase 4 — root
-- `AppModule` → `app.config.ts` (providers) + `AppComponent` standalone.
-- `AppRoutingModule` → `app.routes.ts`, com `loadChildren`/`loadComponent` apontando pra
-  `*.routes.ts` de cada feature (schematic gera isso a partir dos `*-routing.module.ts` atuais).
-- `main.ts` → `bootstrapApplication(AppComponent, appConfig)`.
-- Providers hoje presos no `AppModule` (`ToastrModule.forRoot(...)`, `ServiceWorkerModule.register(...)`,
-  `BrowserAnimationsModule`) trocam pelos equivalentes `provide*()`: `provideAnimations()`,
-  `provideServiceWorker(...)`; `ngx-toastr` precisa checar se a versão instalada (`^19.1.0`) expõe
-  `provideToastr(...)` (a maioria das libs migrou; se não expuser, fica como último `NgModule`
-  residual até a lib atualizar — não é bloqueador pro resto).
+O schematic tem um **terceiro modo, `standalone-bootstrap`** (confirmado presente na versão
+instalada, `node_modules/@angular/core/schematics/ng-generate/standalone-migration/schema.json`),
+que automatiza a maior parte desta fase sozinho: converte `bootstrapModule` pra
+`bootstrapApplication` em `main.ts` e gera `app.config.ts` a partir dos `providers` que hoje estão
+em `AppModule`. Roda por último, depois que Fases 1–3 já deixaram tudo abaixo dele standalone:
+```bash
+npx ng generate @angular/core:standalone
+# escolhe: "3) Bootstrap the application using standalone APIs"
+```
+Sobra manual só o que o schematic não resolve:
+- `AppRoutingModule` → `app.routes.ts` (mesmo processo manual da seção "Rotas" acima).
+- Módulos root que não têm `provide*()` óbvio: `ngx-toastr` precisa checar se a versão instalada
+  (`^19.1.0`) expõe `provideToastr(...)` — se não expuser, fica como o único `NgModule` residual
+  do app até a lib atualizar (não bloqueia o resto, é uma sobra isolada).
+- Revisar o `app.config.ts` gerado: o schematic monta a partir do que está em `AppModule.providers`
+  hoje, mas vale conferir se `providePrimeNG({...})` (bloco grande, com tradução pt-BR) e os dois
+  `HTTP_INTERCEPTORS` (`JwtInterceptor`, `ErrorInterceptor`) vieram intactos.
 
 ### Fase 5 — testes (84 arquivos `*.spec.ts`)
 Trabalho mecânico mas obrigatório: todo `TestBed.configureTestingModule({ declarations: [X] })`
