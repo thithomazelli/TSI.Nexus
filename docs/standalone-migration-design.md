@@ -188,3 +188,130 @@ final) — testar cada feature migrada imediatamente confirma que a fase não qu
 Rodar a Fase 0 (dry-run do schematic + piloto em `alert-configs` ou `feature-toggles`) como uma PR
 isolada, pequena, fácil de revisar e de reverter se algo sair errado — antes de comprometer com o
 resto do plano.
+
+## 9. Passo a passo prático (execução manual, sem IA)
+
+Guia direto, pra seguir sozinho se decidir tocar a migração fora de uma sessão comigo. Repete o
+ciclo abaixo **uma vez por fase** (Fase 0 → Fase 1 → Fase 2 → cada item da Fase 3, na ordem já
+definida na seção 5 → Fase 4 → Fase 5), nunca pulando etapa de verificação.
+
+### Preparação (uma vez só, antes da primeira fase)
+
+```bash
+git checkout -b feat/standalone-migration
+npx ng version                      # confirma que bate com @angular/core 21.2.2 do projeto
+npx ng build --configuration development   # baseline: build limpo antes de mexer em qualquer coisa
+```
+
+Sempre `npx ng`, nunca uma CLI global — garante que roda a versão instalada no projeto.
+
+### Ciclo por fase
+
+1. **Converter** (modo interativo ou direto por flag, restringindo ao diretório da fase):
+   ```bash
+   npx ng generate @angular/core:standalone
+   # escolhe: "1) Convert all components, directives and pipes to standalone"
+   # caminho: src/app/<diretório-da-fase>   (ex.: src/app/alert-configs)
+   ```
+   O schematic também edita qualquer outro `NgModule` do app que importe algo desse diretório
+   (move do array `declarations` pro `imports`) — é esperado, não é escopo vazando.
+
+2. **Podar módulos vazios** (mesmo caminho):
+   ```bash
+   npx ng generate @angular/core:standalone
+   # escolhe: "2) Remove unnecessary NgModule classes"
+   ```
+
+3. **Revisar o diff antes de buildar.** Dois pontos que o schematic não resolve sozinho:
+   - Import que o template usa mas o schematic não detectou (geralmente diretiva de terceiro
+     usada só condicionalmente).
+   - `*-routing.module.ts` **não vira `*.routes.ts` automaticamente** — isso é manual, ver abaixo.
+
+4. **Build limpo:**
+   ```bash
+   npx ng build --configuration development
+   ```
+   Zero erros antes de seguir — se der erro de template (não só de tipo), o `tsc --noEmit` sozinho
+   não pega, precisa ser o `ng build` completo.
+
+5. **Teste manual de verdade.** Suba o app (`npx ng serve` + backend) e navegue por toda tela do
+   diretório migrado. Build limpo **não** garante renderização — foi exatamente esse o sintoma do
+   bug do `DriverDetailsModalComponent` documentado na seção 6, zero erro no console.
+
+6. **Specs da fase** (ver subseção própria abaixo).
+
+7. **Commit isolado, PR pequeno:**
+   ```bash
+   git add -A
+   git commit -m "Standalone: migrate <diretório-da-fase>"
+   ```
+   Revisar e mergear antes de começar a próxima fase — mantém cada passo revertível sozinho
+   (`git revert` de uma fase não deveria nunca precisar tocar em outra).
+
+### Rotas: `*-routing.module.ts` → `*.routes.ts` (manual)
+
+Pra cada módulo de rota dentro do diretório da fase:
+
+1. Criar `x.routes.ts` com o mesmo array `Routes` que hoje está dentro de
+   `RouterModule.forChild(routes)`, exportado direto:
+   ```ts
+   export const ALERT_CONFIGS_ROUTES: Routes = [ /* ...mesmo array de hoje... */ ];
+   ```
+2. No arquivo que faz `loadChildren` pra esse módulo (hoje em `app-routing.module.ts`, depois da
+   Fase 4 em `app.routes.ts`), trocar:
+   ```ts
+   loadChildren: () => import('./alert-configs/alert-configs.module').then(m => m.AlertConfigsModule)
+   ```
+   por:
+   ```ts
+   loadChildren: () => import('./alert-configs/alert-configs.routes').then(m => m.ALERT_CONFIGS_ROUTES)
+   ```
+3. Apagar o `*-routing.module.ts` antigo.
+
+### Specs da fase
+
+Todo `TestBed.configureTestingModule({ declarations: [X] })` vira `{ imports: [X] }` assim que `X`
+fica standalone — colocar standalone em `declarations` quebra o teste. Localizar os specs do
+diretório:
+```bash
+grep -rl "declarations: \[" src/app/<diretório-da-fase> --include="*.spec.ts"
+```
+A troca é mecânica, mas revisar cada um: confirmar que nenhum outro componente auxiliar
+referenciado no mesmo `TestBed` ainda está fora do que já foi convertido nessa fase.
+
+### Fase 4 (root), passo a passo
+
+1. Criar `src/app/app.config.ts` juntando os providers que hoje estão em `AppModule.providers` +
+   os módulos root que têm equivalente `provide*()`:
+   ```ts
+   export const appConfig: ApplicationConfig = {
+     providers: [
+       provideZoneChangeDetection({ eventCoalescing: true }),
+       provideRouter(routes),
+       provideHttpClient(withInterceptorsFromDi()),
+       provideAnimations(),
+       providePrimeNG({ /* mesmo bloco de hoje */ }),
+       provideNgxMask(),
+       { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+       { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+       provideServiceWorker('ngsw-worker.js', { /* mesmas opções de hoje */ }),
+     ],
+   };
+   ```
+2. `main.ts` vira:
+   ```ts
+   bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));
+   ```
+3. `app-routing.module.ts` vira `app.routes.ts` (mesmo array `routes`, sem o `@NgModule` em volta).
+4. Conferir se a versão instalada de `ngx-toastr` (`^19.1.0`) expõe `provideToastr(...)`. Se não
+   expuser ainda, deixar `ToastrModule.forRoot(...)` como o único `NgModule` residual por enquanto
+   — não bloqueia o resto, é só uma sobra isolada pra revisitar quando a lib atualizar.
+
+### Checklist rápido a cada fase
+
+- [ ] `npx ng build --configuration development` sem erro
+- [ ] `npx ng serve` + navegação manual em toda tela do diretório migrado
+- [ ] Specs do diretório passam
+- [ ] Smoke test rápido no menu lateral inteiro (o schematic mexe em módulos fora do diretório
+      também, por isso vale conferir o resto do app, não só a fase em si)
+- [ ] Commit isolado, PR revisado, merge antes da próxima fase
