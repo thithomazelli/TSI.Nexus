@@ -158,6 +158,15 @@ namespace TSI.Friday.Data.Seed
                 await EnsureSequenceAsync(context, "TripNumberSeq", trips.Count + 1);
                 await context.SaveChangesAsync();
 
+                // ---- Phase 14: stamp CreateUserId/ModifyUserId with the admin account ----
+                // AuditingSaveChangesInterceptor stamps these from ICurrentUserService.GetUserId()
+                // on every SaveChangesAsync() call above, but that service reads the current HTTP
+                // request's user - there is none while seeding at startup, so every row above got
+                // an empty string instead. ExecuteUpdateAsync issues a direct SQL UPDATE (it never
+                // goes through SaveChanges/the interceptor), so it can backfill them afterwards
+                // without being immediately overwritten back to empty.
+                await StampAuditFieldsWithAdminUserAsync(context, logger);
+
                 logger?.LogInformation(
                     "DemoDataSeeder: seeded {BusinessPartners} business partners, {Products} products, "
                         + "{Drivers} drivers, {Vehicles} vehicles, {Quotes} quotes, {Orders} orders, "
@@ -188,6 +197,146 @@ namespace TSI.Friday.Data.Seed
                 var logger2 = services.GetService<ILoggerFactory>()?.CreateLogger("DemoDataSeeder");
                 logger2?.LogError(ex, "DemoDataSeeder: an error occurred while seeding demo data.");
             }
+        }
+
+        private static async Task StampAuditFieldsWithAdminUserAsync(
+            MyDBContextEF context,
+            ILogger logger
+        )
+        {
+            var adminUserId = await context
+                .User.Where(u => u.UserName == "admin")
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrEmpty(adminUserId))
+            {
+                logger?.LogWarning(
+                    "DemoDataSeeder: 'admin' user not found, skipping CreateUserId/ModifyUserId backfill."
+                );
+                return;
+            }
+
+            await context
+                .BusinessPartner.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Address.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Product.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Driver.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Vehicle.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Quote.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .QuoteProduct.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Order.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .OrderProduct.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Transaction.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Payment.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Trip.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .TripDriver.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .TripLeg.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Passenger.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .FuelLog.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .VehicleMaintenance.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .ServiceOrder.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Commission.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Sequence.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
         }
 
         #region BusinessPartner / Address
