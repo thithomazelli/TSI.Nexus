@@ -27,7 +27,7 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
   id: string | null = null;
   loading = false;
 
-  activeTab: 'details' | 'products' | 'attachments' = 'details';
+  activeTab: 'details' | 'products' | 'attachments' | 'audit' = 'details';
 
   quoteStatusOptions: Record<QuoteStatus, string> = {
     [QuoteStatus.Open]: 'Em aberto',

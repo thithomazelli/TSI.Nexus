@@ -11,4 +11,8 @@ export interface User {
   roles?: string[];
   theme?: string | null;
   language?: string | null;
+  createDate?: Date;
+  createUserId?: string | null;
+  modifyDate?: Date | null;
+  modifyUserId?: string | null;
 }

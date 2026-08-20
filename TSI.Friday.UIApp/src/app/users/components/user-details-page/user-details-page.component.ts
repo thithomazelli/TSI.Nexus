@@ -14,7 +14,7 @@ export class UserDetailsPageComponent {
   data?: User | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'attachments' | 'preferences' = 'details';
+  activeTab: 'details' | 'attachments' | 'preferences' | 'audit' = 'details';
   isOwnProfile = false;
 
   private _destroy$ = new Subject<void>();

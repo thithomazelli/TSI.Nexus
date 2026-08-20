@@ -13,6 +13,9 @@ export interface Quote {
   status?: QuoteStatus;
   type?: QuoteType;
   createDate?: Date;
+  createUserId?: string | null;
+  modifyDate?: Date | null;
+  modifyUserId?: string | null;
   description?: string;
   discount?: number;
   price?: number;

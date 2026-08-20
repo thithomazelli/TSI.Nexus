@@ -107,6 +107,15 @@
                   >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
+              <li class="nav-item" *ngIf="isEdit">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'audit'"
+                  (click)="activeTab = 'audit'"
+                  data-toggle="tab"
+                  >{{ 'AUDIT.TAB' | translate }}</a
+                >
+              </li>
             </ul>
 
             @if (loading) {
@@ -158,6 +167,9 @@
                     [entity]="'businessPartner'"
                     [entityId]="data!.id"
                   ></app-attachments>
+                }
+                @if (activeTab === "audit") {
+                  <app-audit-tab [data]="data"></app-audit-tab>
                 }
               </div>
             }

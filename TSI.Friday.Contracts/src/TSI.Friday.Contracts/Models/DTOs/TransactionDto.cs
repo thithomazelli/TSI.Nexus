@@ -8,6 +8,14 @@ namespace TSI.Friday.Contracts.Models.DTOs
     {
         public Guid Id { get; set; }
 
+        public DateTime CreateDate { get; set; }
+
+        public string CreateUserId { get; set; }
+
+        public DateTime ModifyDate { get; set; }
+
+        public string ModifyUserId { get; set; }
+
         public DateTime Date { get; set; }
 
         public string Category { get; set; }

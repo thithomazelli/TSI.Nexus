@@ -80,6 +80,14 @@
                   >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
+              <li class="nav-item" *ngIf="isEdit">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'audit'"
+                  (click)="activeTab = 'audit'"
+                  >{{ 'AUDIT.TAB' | translate }}</a
+                >
+              </li>
             </ul>
             <div *ngIf="activeTab === 'details'">
               <app-quote-form
@@ -101,6 +109,9 @@
                 [entity]="'quote'"
                 [entityId]="data!.id!"
               ></app-attachments>
+            </div>
+            <div *ngIf="activeTab === 'audit'">
+              <app-audit-tab [data]="data"></app-audit-tab>
             </div>
           </div>
         </div>

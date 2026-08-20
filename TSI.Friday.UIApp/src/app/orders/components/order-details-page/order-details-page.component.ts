@@ -28,7 +28,8 @@ export class OrderDetailsPageComponent implements OnInit, OnDestroy {
   id: string | null = null;
   loading = false;
 
-  activeTab: 'details' | 'products' | 'payments' | 'attachments' = 'details';
+  activeTab: 'details' | 'products' | 'payments' | 'attachments' | 'audit' =
+    'details';
 
   orderStatusOptions: Record<OrderStatus, string> = {
     [OrderStatus.Open]: 'Em aberto',

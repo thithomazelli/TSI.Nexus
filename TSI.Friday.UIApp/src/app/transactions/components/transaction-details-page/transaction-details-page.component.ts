@@ -22,7 +22,7 @@ export class TransactionDetailsPageComponent {
   data?: Transaction | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'payments' | 'attachments' = 'details';
+  activeTab: 'details' | 'payments' | 'attachments' | 'audit' = 'details';
 
   get paymentTypeOptions(): Record<PaymentType, string> {
     return {

@@ -39,6 +39,15 @@
                 >{{ 'VEHICLES.FUEL' | translate }}</a
               >
             </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="activeTab === 'audit'"
+                (click)="activeTab = 'audit'"
+                data-toggle="tab"
+                >{{ 'AUDIT.TAB' | translate }}</a
+              >
+            </li>
           </ul>
         }
 
@@ -56,6 +65,9 @@
           }
           @if (activeTab === 'fuel' && data?.id) {
             <app-fuel-log-list [vehicleId]="data!.id"></app-fuel-log-list>
+          }
+          @if (activeTab === 'audit') {
+            <app-audit-tab [data]="data"></app-audit-tab>
           }
         }
       </div>

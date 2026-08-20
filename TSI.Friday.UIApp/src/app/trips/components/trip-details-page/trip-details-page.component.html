@@ -112,6 +112,14 @@
                   >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
+              <li class="nav-item" *ngIf="isEdit">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'audit'"
+                  (click)="activeTab = 'audit'"
+                  >{{ 'AUDIT.TAB' | translate }}</a
+                >
+              </li>
             </ul>
             <div *ngIf="activeTab === 'details'">
               <app-trip-form
@@ -144,6 +152,9 @@
                 [entityId]="data!.id!"
                 [tripNumber]="data!.tripNumber!"
               ></app-attachments>
+            </div>
+            <div *ngIf="activeTab === 'audit'">
+              <app-audit-tab [data]="data"></app-audit-tab>
             </div>
           </div>
         </div>

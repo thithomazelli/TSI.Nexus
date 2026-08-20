@@ -46,6 +46,7 @@ import { ClickDirective, TranslatePipe } from '@friday/core';
 import { AttachmentsComponent } from './attachments/attachments.component';
 import { AttachmentDetailsModalComponent } from './attachments/components/attachment-details-modal/attachment-details-modal.component';
 import { UserPreferencesComponent } from './components/user-preferences/user-preferences.component';
+import { AuditTabComponent } from './components/audit-tab/audit-tab.component';
 
 import { Tree } from 'primeng/tree';
 import { ContextMenu } from 'primeng/contextmenu';
@@ -79,6 +80,7 @@ import { ConfirmationService } from 'primeng/api';
     AlertBannerComponentComponent,
     InfoCardsComponent,
     UserPreferencesComponent,
+    AuditTabComponent,
   ],
   imports: [
     ClickDirective,
@@ -121,6 +123,7 @@ import { ConfirmationService } from 'primeng/api';
     AlertBannerComponentComponent,
     InfoCardsComponent,
     UserPreferencesComponent,
+    AuditTabComponent,
     NotificationComponent,
     FooterComponent,
     RouterModule,

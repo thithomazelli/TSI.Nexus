@@ -1,0 +1,51 @@
+<div class="audit-tab">
+  <section>
+    <div class="row g-1 mb-1">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              type="text"
+              class="form-control"
+              [value]="createUserName"
+              [placeholder]="'AUDIT.CREATED_BY' | translate"
+              disabled
+            />
+            <label>{{ 'AUDIT.CREATED_BY' | translate }}</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-person"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <app-date-field
+          [ngModel]="data?.createDate"
+          [isDisabled]="true"
+          [label]="'AUDIT.CREATED_DATE' | translate"
+        ></app-date-field>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              type="text"
+              class="form-control"
+              [value]="modifyUserName"
+              [placeholder]="'AUDIT.MODIFIED_BY' | translate"
+              disabled
+            />
+            <label>{{ 'AUDIT.MODIFIED_BY' | translate }}</label>
+          </div>
+          <div class="input-group-text"><i class="bi bi-person-check"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <app-date-field
+          [ngModel]="data?.modifyDate"
+          [isDisabled]="true"
+          [label]="'AUDIT.MODIFIED_DATE' | translate"
+        ></app-date-field>
+      </div>
+    </div>
+  </section>
+</div>

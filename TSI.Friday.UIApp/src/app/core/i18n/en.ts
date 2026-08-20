@@ -622,4 +622,11 @@ export const EN = {
     COMMISSION_PENDING: 'Commission Pending',
     NO_DRIVERS: 'No drivers found',
   },
+  AUDIT: {
+    TAB: 'Audit',
+    CREATED_BY: 'Created by',
+    CREATED_DATE: 'Created Date',
+    MODIFIED_BY: 'Modified by',
+    MODIFIED_DATE: 'Modified Date',
+  },
 };

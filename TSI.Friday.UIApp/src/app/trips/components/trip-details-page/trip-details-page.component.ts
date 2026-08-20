@@ -46,7 +46,8 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
     | 'triplegs'
     | 'passengers'
     | 'payments'
-    | 'attachments' = 'details';
+    | 'attachments'
+    | 'audit' = 'details';
 
   tripStatusOptions: Record<OrderStatus, string> = {
     [OrderStatus.Open]: 'Em aberto',

@@ -26,7 +26,8 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
     | 'orders'
     | 'transaction'
     | 'payments'
-    | 'attachments' = 'details';
+    | 'attachments'
+    | 'audit' = 'details';
   title: string = '';
   baseEndPoint: string = '';
   canDisplayOrdersTab = true;

@@ -1,8 +1,18 @@
-﻿namespace TSI.Friday.Contracts.Models.DTOs
+﻿using System;
+
+namespace TSI.Friday.Contracts.Models.DTOs
 {
     public class UserDto
     {
         public string Id { get; set; }
+
+        public DateTime CreateDate { get; set; }
+
+        public string CreateUserId { get; set; }
+
+        public DateTime ModifyDate { get; set; }
+
+        public string ModifyUserId { get; set; }
 
         public string UserName { get; set; }
 

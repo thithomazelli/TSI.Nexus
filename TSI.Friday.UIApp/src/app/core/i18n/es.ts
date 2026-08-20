@@ -613,4 +613,11 @@ export const ES = {
     COMMISSION_PENDING: 'Comisión Pendiente',
     NO_DRIVERS: 'Ningún conductor encontrado',
   },
+  AUDIT: {
+    TAB: 'Auditoría',
+    CREATED_BY: 'Creado por',
+    CREATED_DATE: 'Fecha de Creación',
+    MODIFIED_BY: 'Modificado por',
+    MODIFIED_DATE: 'Fecha de Modificación',
+  },
 };

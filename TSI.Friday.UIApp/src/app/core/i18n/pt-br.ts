@@ -622,4 +622,11 @@ export const PT_BR = {
     COMMISSION_PENDING: 'Comissão Pendente',
     NO_DRIVERS: 'Nenhum motorista encontrado',
   },
+  AUDIT: {
+    TAB: 'Auditoria',
+    CREATED_BY: 'Criado por',
+    CREATED_DATE: 'Data de Criação',
+    MODIFIED_BY: 'Modificado por',
+    MODIFIED_DATE: 'Data de Modificação',
+  },
 };
