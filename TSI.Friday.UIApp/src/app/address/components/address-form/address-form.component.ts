@@ -67,6 +67,7 @@ export class AddressFormComponent
   addressTypeOptions: SelectableOption[] = [];
 
   private _cidadesCancel$ = new Subject<void>();
+  private _zipCodeLookupBound = false;
 
   constructor(
     private addressService: AddressService,
@@ -93,8 +94,10 @@ export class AddressFormComponent
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    // emitEvent: false - this is loading an existing address's saved data, not the user typing a
+    // new one, so it must not re-trigger the CEP-lookup/state->city cascade below.
     if (changes['data'] && changes['data'].currentValue && this.form) {
-      this.form.patchValue(changes['data'].currentValue);
+      this.form.patchValue(changes['data'].currentValue, { emitEvent: false });
     }
     if (changes['isEdit'] && !changes['isEdit'].firstChange) {
       if (this.isEdit) {
@@ -251,7 +254,9 @@ export class AddressFormComponent
     if (this.data) {
       const patch = { ...this.data };
       const patchAndLoadCities = () => {
-        this.form.patchValue(patch);
+        // emitEvent: false - same as above, this restores saved data and must not re-trigger the
+        // CEP lookup (city/state are populated explicitly below regardless).
+        this.form.patchValue(patch, { emitEvent: false });
         if (patch.state) {
           const estado = this.estados.find((e) => e.sigla === patch.state);
           if (estado) {
@@ -328,11 +333,18 @@ export class AddressFormComponent
     }
 
     // SUBSCRIPTIONS REATIVAS
-    this.form.get('zipCode')?.valueChanges.subscribe((cep: string) => {
-      if (cep && cep.length >= 8) {
-        this.buscarEnderecoPorCep(cep);
-      }
-    });
+    // setupAutoComplete() re-runs on every ngOnChanges (e.g. whenever `data` is reassigned), so
+    // this subscribes only once per component instance - otherwise each re-run stacked another
+    // live subscription on top of the previous ones, and a single real CEP edit would fire the
+    // lookup (and any resulting "not found" toast) once per accumulated subscription.
+    if (!this._zipCodeLookupBound) {
+      this._zipCodeLookupBound = true;
+      this.form.get('zipCode')?.valueChanges.subscribe((cep: string) => {
+        if (cep && cep.length >= 8) {
+          this.buscarEnderecoPorCep(cep);
+        }
+      });
+    }
 
     this.form
       .get('state')
