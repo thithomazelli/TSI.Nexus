@@ -30,6 +30,11 @@ export class CurrencyFieldComponent implements ControlValueAccessor {
   @Input()
   icon = 'bi-cash-coin';
 
+  // Bare-input rendering for inline grid rows (e.g. trip-form's staged-driver table), which style
+  // their own plain .grid-input inputs and have no room for the form-floating + icon wrapper below.
+  @Input()
+  compact = false;
+
   readonly fieldId = `currency-field-${++currencyFieldIdCounter}`;
 
   displayValue = '';

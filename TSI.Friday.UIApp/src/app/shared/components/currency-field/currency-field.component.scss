@@ -1,3 +1,22 @@
 .currency-field {
   width: 100%;
 }
+
+// Compact mode renders a bare .grid-input (see currency-field.component.html) meant to sit inline
+// in a table row (e.g. trip-form's staged-driver grid) alongside plain grid-input siblings styled
+// this same way by the host page's .inline-product-row rules - those can't reach into this
+// component's own template past Angular's view encapsulation, so the look is defined here instead.
+.grid-input {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-left: 0;
+  padding-right: 0;
+  border-radius: 0;
+
+  &:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid #4fb8d6 !important;
+  }
+}

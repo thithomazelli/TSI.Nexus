@@ -42,6 +42,7 @@ import { Observable, startWith, map, forkJoin } from 'rxjs';
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 import { DriverDetailsModalComponent } from '../../../drivers/components/driver-details-modal/driver-details-modal.component';
 import { TripDetailsModalComponent } from '../trip-details-modal/trip-details-modal.component';
+import { TripDriverDetailsModalComponent } from '../trip-driver-details-modal/trip-driver-details-modal.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -114,6 +115,26 @@ export class TripFormComponent
     this.setupInlineTripDriverForm();
     this.totalPriceChange();
     this.setupTotalOfPaymentsWatcher();
+
+    this._subscriptions.push(
+      this.tripDriverService.tripDriverAdded$.subscribe((tripDriver) => {
+        if (!tripDriver) {
+          return;
+        }
+        if (!this.data) {
+          return;
+        }
+        if (!this.data.tripDrivers) {
+          this.data.tripDrivers = [];
+        }
+        this.data.tripDrivers.push(tripDriver);
+        this.modalService.showNotification(
+          true,
+          '',
+          this.translationService.instant('TRIPS.DRIVER_ADDED_SUCCESS'),
+        );
+      }),
+    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -335,6 +356,20 @@ export class TripFormComponent
       });
       this._subscriptions.push(sub);
     }, 200);
+  }
+
+  openTripDriverModal(): void {
+    const initialState = {
+      isEdit: false,
+      id: null,
+      parentId: null,
+      parentData: this.data?.tripDrivers ?? [],
+    };
+
+    this.modalService.showTemplateModal(
+      TripDriverDetailsModalComponent,
+      initialState,
+    );
   }
 
   private initForm(): void {

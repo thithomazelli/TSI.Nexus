@@ -257,7 +257,9 @@
               <th class="table-header-title" scope="col">{{ 'DRIVERS.LICENSE_NUMBER' | translate }}</th>
               <th class="table-header-title" scope="col">{{ 'DRIVERS.LICENSE_EXPIRY' | translate }}</th>
               <th class="table-header-title" scope="col">{{ 'TRIPS.DRIVER_AMOUNT' | translate }}</th>
-              <th class="" scope="col" style="width: 40px"></th>
+              <th class="" scope="col" style="width: 40px">
+                <button class="address-link" (click)="openTripDriverModal()">{{ 'TRIPS.ADD_DRIVER_BUTTON' | translate }}</button>
+              </th>
             </tr>
           </thead>
           <tbody class="table-group-divider table-body">
@@ -290,7 +292,7 @@
               <td>
                 <app-currency-field
                   formControlName="amount"
-                  [label]="''"
+                  [compact]="true"
                 ></app-currency-field>
               </td>
               <td>

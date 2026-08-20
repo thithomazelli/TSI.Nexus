@@ -424,6 +424,7 @@ export const PT_BR = {
     DRIVERS_TAB: 'Motoristas',
     ADD_DRIVER_BUTTON: 'Buscar',
     NO_DRIVERS_ADDED: 'Nenhum motorista adicionado',
+    DRIVER_ADDED_SUCCESS: 'Motorista adicionado com sucesso',
     DRIVER_AMOUNT: 'Valor a Pagar',
     DRIVER_ALREADY_ADDED_TITLE: 'Motorista já adicionado',
     DRIVER_ALREADY_ADDED_MESSAGE: '{name} já está associado a esta viagem.',

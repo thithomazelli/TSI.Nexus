@@ -424,6 +424,7 @@ export const EN = {
     DRIVERS_TAB: 'Drivers',
     ADD_DRIVER_BUTTON: 'Search',
     NO_DRIVERS_ADDED: 'No drivers added',
+    DRIVER_ADDED_SUCCESS: 'Driver added successfully',
     DRIVER_AMOUNT: 'Amount to Pay',
     DRIVER_ALREADY_ADDED_TITLE: 'Driver already added',
     DRIVER_ALREADY_ADDED_MESSAGE: '{name} is already assigned to this trip.',

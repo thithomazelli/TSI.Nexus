@@ -1,19 +1,33 @@
-<div class="input-group currency-field">
-  <div class="form-floating flex-fill">
-    <input
-      type="text"
-      inputmode="decimal"
-      class="form-control"
-      [id]="fieldId"
-      [value]="displayValue"
-      (input)="onInputChange($any($event.target).value)"
-      (blur)="onBlur()"
-      [disabled]="isDisabled"
-      [placeholder]="placeholder || label"
-    />
-    @if (label) {
-      <label [for]="fieldId">{{ label }}</label>
-    }
+@if (compact) {
+  <input
+    type="text"
+    inputmode="decimal"
+    class="form-control form-control-sm grid-input"
+    [id]="fieldId"
+    [value]="displayValue"
+    (input)="onInputChange($any($event.target).value)"
+    (blur)="onBlur()"
+    [disabled]="isDisabled"
+    [placeholder]="placeholder || label"
+  />
+} @else {
+  <div class="input-group currency-field">
+    <div class="form-floating flex-fill">
+      <input
+        type="text"
+        inputmode="decimal"
+        class="form-control"
+        [id]="fieldId"
+        [value]="displayValue"
+        (input)="onInputChange($any($event.target).value)"
+        (blur)="onBlur()"
+        [disabled]="isDisabled"
+        [placeholder]="placeholder || label"
+      />
+      @if (label) {
+        <label [for]="fieldId">{{ label }}</label>
+      }
+    </div>
+    <div class="input-group-text"><i class="bi" [ngClass]="icon"></i></div>
   </div>
-  <div class="input-group-text"><i class="bi" [ngClass]="icon"></i></div>
-</div>
+}

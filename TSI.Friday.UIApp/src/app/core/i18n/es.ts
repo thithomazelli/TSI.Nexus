@@ -424,6 +424,7 @@ export const ES = {
     DRIVERS_TAB: 'Conductores',
     ADD_DRIVER_BUTTON: 'Buscar',
     NO_DRIVERS_ADDED: 'Ningún conductor agregado',
+    DRIVER_ADDED_SUCCESS: 'Conductor agregado con éxito',
     DRIVER_AMOUNT: 'Valor a Pagar',
     DRIVER_ALREADY_ADDED_TITLE: 'Conductor ya agregado',
     DRIVER_ALREADY_ADDED_MESSAGE: '{name} ya está asociado a este viaje.',

@@ -339,7 +339,11 @@ export class TripDriverFormComponent
   }
 
   private save(tripDriver: TripDriver): Observable<WebApiResponse<TripDriver>> {
-    tripDriver.tripId = this.parentId ?? undefined;
+    if (!this.parentId) {
+      return this.tripDriverService.addTemporary(tripDriver);
+    }
+
+    tripDriver.tripId = this.parentId;
     return this.isEdit && this.data
       ? this.tripDriverService.update(tripDriver)
       : this.tripDriverService.add(tripDriver);

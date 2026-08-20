@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { ApiType } from '../../enums';
+import { ApiType, ResponseStatus } from '../../enums';
 import { TripDriver } from '../../models';
 import { ApiService, WebApiResponse } from '@friday/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, of, Subject, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -10,8 +10,10 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 export class TripDriverService {
   private _baseEndPoint = ApiType.TripDrivers;
   private _tripDriverChangedSubject = new BehaviorSubject<void>(undefined);
+  private _tripDriverAdded$ = new Subject<TripDriver>();
 
   tripDriverChanged$ = this._tripDriverChangedSubject.asObservable();
+  tripDriverAdded$ = this._tripDriverAdded$.asObservable();
 
   constructor(private apiService: ApiService) {}
 
@@ -33,6 +35,15 @@ export class TripDriverService {
         WebApiResponse<TripDriver>
       >(`${this._baseEndPoint}/add`, tripDriver)
       .pipe(tap(() => this._tripDriverChangedSubject.next()));
+  }
+
+  addTemporary(tripDriver: TripDriver): Observable<WebApiResponse<TripDriver>> {
+    this._tripDriverAdded$.next(tripDriver);
+    return of({
+      data: tripDriver,
+      message: 'Motorista adicionado temporariamente',
+      status: ResponseStatus.Success,
+    });
   }
 
   update(tripDriver: TripDriver): Observable<WebApiResponse<TripDriver>> {

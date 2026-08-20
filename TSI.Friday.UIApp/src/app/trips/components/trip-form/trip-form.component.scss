@@ -10,3 +10,62 @@
   margin-bottom: 0.5rem;
   margin-top: 1.2rem;
 }
+
+.table-header-title {
+  font-weight: 700;
+  color: #343a40;
+  font-size: 0.9rem;
+}
+
+.table-cell-info {
+  font-weight: 400;
+  color: #343a40;
+  font-size: 0.9rem;
+}
+
+.table-body {
+  border-top: 0;
+}
+
+.address-link {
+  border: none;
+  background: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+  text-decoration: underline;
+}
+
+.address-link:hover {
+  color: #f55252;
+  --bs-link-color-rgb: var(--bs-link-hover-color-rgb);
+}
+
+.inline-product-row {
+  background: #f7fbfd;
+
+  td {
+    vertical-align: middle;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  input.form-control-sm {
+    min-width: 90px;
+  }
+
+  .grid-input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding-left: 0;
+    padding-right: 0;
+    border-radius: 0;
+
+    &:focus {
+      background: transparent !important;
+      box-shadow: none !important;
+      border-bottom: 1px solid #4fb8d6 !important;
+    }
+  }
+}
