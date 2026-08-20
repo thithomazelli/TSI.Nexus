@@ -56,6 +56,9 @@ namespace TSI.Friday.Services
                 // Recalculate order price and update order
                 await RecalculateAndUpdateOrderAsync(orderProductEntity.OrderId);
 
+                // AddAsync populates orderProductEntity.Id (DB-generated); the incoming DTO still
+                // has whatever Id it arrived with (Guid.Empty for a new record).
+                orderProductDto.Id = orderProductEntity.Id;
                 result.Data = orderProductDto;
                 result.Status = ResponseStatus.Success;
                 result.Message =

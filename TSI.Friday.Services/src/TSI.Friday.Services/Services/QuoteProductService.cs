@@ -46,6 +46,9 @@ namespace TSI.Friday.Services
                 // Recalculate quote price
                 await RecalculateAndUpdateQuoteAsync(entity.QuoteId);
 
+                // AddAsync populates entity.Id (DB-generated); the incoming DTO still has
+                // whatever Id it arrived with (Guid.Empty for a new record).
+                quoteProductDto.Id = entity.Id;
                 result.Data = quoteProductDto;
                 result.Status = ResponseStatus.Success;
                 result.Message = $"Item do Orçamento cadastrado com sucesso.";

@@ -71,6 +71,11 @@ namespace TSI.Friday.Services
                 var companyEntity = _mapper.Map<Company>(businessPartnerDto);
                 await _repository.AddAsync(companyEntity);
 
+                // AddAsync populates companyEntity.Id (DB-generated), but the incoming DTO still
+                // has whatever Id it arrived with (Guid.Empty for a new record) - copy it back
+                // before returning, or callers that navigate to /suppliers/{id} right after a
+                // successful create land on Guid.Empty instead of the real record.
+                businessPartnerDto.Id = companyEntity.Id;
                 result.Data = businessPartnerDto;
                 result.Status = ResponseStatus.Success;
                 result.Message =
