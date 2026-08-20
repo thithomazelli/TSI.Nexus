@@ -105,6 +105,16 @@ namespace TSI.Friday.Data.Seed
 
                 await context.SaveChangesAsync();
 
+                // ---- Phase 7b: Expenses ("Despesas" = Payment.Type Outgoing, its own standalone
+                // Transaction against a Supplier - see BuildExpenses) ----
+                var suppliers = businessPartners
+                    .Where(bp => bp.Type == BusinessPartnerType.Supplier)
+                    .ToList();
+                var expenses = BuildExpenses(faker, suppliers, now, out var expenseTransactions);
+                await context.Transaction.AddRangeAsync(expenseTransactions);
+                await context.Payment.AddRangeAsync(expenses);
+                await context.SaveChangesAsync();
+
                 // ---- Phase 8: TripLegs + Passengers ----
                 var tripLegs = BuildTripLegs(faker, trips);
                 await context.TripLeg.AddRangeAsync(tripLegs);
@@ -143,9 +153,9 @@ namespace TSI.Friday.Data.Seed
                 logger?.LogInformation(
                     "DemoDataSeeder: seeded {BusinessPartners} business partners, {Products} products, "
                         + "{Drivers} drivers, {Vehicles} vehicles, {Quotes} quotes, {Orders} orders, "
-                        + "{Trips} trips, {Payments} payments, {TripLegs} trip legs, {Passengers} passengers, "
-                        + "{FuelLogs} fuel logs, {Maintenances} maintenances, {ServiceOrders} service orders, "
-                        + "{Commissions} commissions.",
+                        + "{Trips} trips, {Payments} payments, {Expenses} expenses, {TripLegs} trip legs, "
+                        + "{Passengers} passengers, {FuelLogs} fuel logs, {Maintenances} maintenances, "
+                        + "{ServiceOrders} service orders, {Commissions} commissions.",
                     businessPartners.Count,
                     products.Count,
                     drivers.Count,
@@ -154,6 +164,7 @@ namespace TSI.Friday.Data.Seed
                     orders.Count,
                     trips.Count,
                     payments.Count + tripPayments.Count,
+                    expenses.Count,
                     tripLegs.Count,
                     passengers.Count,
                     fuelLogs.Count,
@@ -684,7 +695,7 @@ namespace TSI.Friday.Data.Seed
 
             foreach (var order in orders)
             {
-                var installments = faker.Random.Number(1, 3);
+                var installments = faker.Random.Number(1, 4);
                 var installmentAmount = Math.Round(order.TotalPrice / installments, 2);
                 var method = faker.PickRandom(
                     PaymentMethod.Cash,
@@ -730,7 +741,7 @@ namespace TSI.Friday.Data.Seed
 
             foreach (var trip in trips)
             {
-                var installments = faker.Random.Number(1, 3);
+                var installments = faker.Random.Number(1, 4);
                 var installmentAmount = Math.Round(trip.TotalPrice / installments, 2);
                 var method = faker.PickRandom(
                     PaymentMethod.Cash,
@@ -762,6 +773,84 @@ namespace TSI.Friday.Data.Seed
                             TransactionId = trip.TransactionId,
                             BusinessPartnerId = trip.BusinessPartnerId,
                             TripId = trip.Id,
+                        }
+                    );
+                }
+            }
+
+            return result;
+        }
+
+        // "Despesas" in the UI is just /payments?type=Outgoing - the same Payment entity filtered
+        // client-side by Type, not a separate module. Unlike Order/Trip payments (installments on
+        // an existing sales transaction), an expense has no natural parent order - so it gets its
+        // own standalone Transaction against a Supplier, the same way a real "pay this supplier's
+        // bill" entry would be created from the Transactions screen.
+        private static List<Payment> BuildExpenses(
+            Faker faker,
+            List<BusinessPartner> suppliers,
+            DateTime now,
+            out List<Transaction> transactions
+        )
+        {
+            var result = new List<Payment>();
+            transactions = new List<Transaction>();
+
+            var categories = new[]
+            {
+                "Peças",
+                "Combustível",
+                "Manutenção",
+                "Serviço Terceirizado",
+                "Aluguel",
+                "Material de Escritório",
+            };
+
+            foreach (var supplier in suppliers)
+            {
+                var expenseCount = faker.Random.Number(2, 4);
+
+                for (var n = 0; n < expenseCount; n++)
+                {
+                    // Mostly past bills (Approved/Delayed), with a few due shortly in the future
+                    // (Pending) - same status mix BuildPayments gets from installment due dates.
+                    var expenseDate = now.AddDays(faker.Random.Number(-150, 20));
+                    var category = faker.PickRandom(categories);
+                    var method = faker.PickRandom(
+                        PaymentMethod.Cash,
+                        PaymentMethod.Pix,
+                        PaymentMethod.CreditCard,
+                        PaymentMethod.DebitCard
+                    );
+
+                    var transaction = new Transaction
+                    {
+                        Id = Guid.NewGuid(),
+                        Date = expenseDate,
+                        Description = $"Despesa - {category} - {supplier.Name}",
+                        BusinessPartnerId = supplier.Id,
+                    };
+                    transactions.Add(transaction);
+
+                    var status = expenseDate < now
+                        ? faker.PickRandom(PaymentStatus.Approved, PaymentStatus.Approved, PaymentStatus.Delayed)
+                        : PaymentStatus.Pending;
+
+                    result.Add(
+                        new Payment
+                        {
+                            Id = Guid.NewGuid(),
+                            Type = PaymentType.Outgoing,
+                            Status = status,
+                            Condition = PaymentCondition.FullPayment,
+                            Method = method,
+                            Category = category,
+                            Date = expenseDate,
+                            Description = $"{category} - {supplier.Name}",
+                            PaymentNumber = 1,
+                            Price = faker.Random.Decimal(80, 3500),
+                            TransactionId = transaction.Id,
+                            BusinessPartnerId = supplier.Id,
                         }
                     );
                 }
