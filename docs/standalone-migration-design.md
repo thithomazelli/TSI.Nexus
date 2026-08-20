@@ -224,31 +224,42 @@ Sempre `npx ng`, nunca uma CLI global — garante que roda a versão instalada n
    O schematic também edita qualquer outro `NgModule` do app que importe algo desse diretório
    (move do array `declarations` pro `imports`) — é esperado, não é escopo vazando.
 
-2. **Podar módulos vazios** (mesmo caminho):
+2. **Rotas primeiro, antes de podar** (manual — ver subseção própria abaixo). **Isso não é
+   opcional nem pode vir depois do passo 3.** O `prune-ng-modules` só remove um módulo se nada mais
+   no código o referencia — e enquanto `app-routing.module.ts` (ou o `loadChildren` de quem chama
+   essa feature) ainda aponta pra `import('./x/x.module').then(m => m.XModule)`, esse módulo
+   continua "em uso" pro schematic, mesmo sendo só um barril vazio por dentro. Rodar o prune antes
+   de ajustar isso não dá erro, só não remove nada (foi exatamente o que aconteceu na tentativa
+   sem `--path`: build passou, mas nenhum `.module.ts` foi removido).
+   > Atenção: se o diretório da fase for importado por **outra feature** (não só chamado via
+   > rota), como `ProductsModule` sendo importado inteiro por `OrdersModule`, essa importação
+   > também trava o prune até a feature consumidora (`orders`) já ter sido migrada. É por isso que
+   > a ordem por fan-out da Fase 3 (seção 5) importa — nem sempre "ajustar as rotas" sozinho é
+   > suficiente pra liberar a poda.
+
+3. **Podar módulos vazios** (mesmo caminho, agora que nada mais referencia a classe do módulo):
    ```bash
    npx ng generate @angular/core:standalone
    # escolhe: "2) Remove unnecessary NgModule classes"
    ```
 
-3. **Revisar o diff antes de buildar.** Dois pontos que o schematic não resolve sozinho:
-   - Import que o template usa mas o schematic não detectou (geralmente diretiva de terceiro
-     usada só condicionalmente).
-   - `*-routing.module.ts` **não vira `*.routes.ts` automaticamente** — isso é manual, ver abaixo.
+4. **Revisar o diff antes de buildar.** Um ponto que o schematic não resolve sozinho: import que o
+   template usa mas ele não detectou (geralmente diretiva de terceiro usada só condicionalmente).
 
-4. **Build limpo:**
+5. **Build limpo:**
    ```bash
    npx ng build --configuration development
    ```
    Zero erros antes de seguir — se der erro de template (não só de tipo), o `tsc --noEmit` sozinho
    não pega, precisa ser o `ng build` completo.
 
-5. **Teste manual de verdade.** Suba o app (`npx ng serve` + backend) e navegue por toda tela do
+6. **Teste manual de verdade.** Suba o app (`npx ng serve` + backend) e navegue por toda tela do
    diretório migrado. Build limpo **não** garante renderização — foi exatamente esse o sintoma do
    bug do `DriverDetailsModalComponent` documentado na seção 6, zero erro no console.
 
-6. **Specs da fase** (ver subseção própria abaixo).
+7. **Specs da fase** (ver subseção própria abaixo).
 
-7. **Commit isolado, PR pequeno:**
+8. **Commit isolado, PR pequeno:**
    ```bash
    git add -A
    git commit -m "Standalone: migrate <diretório-da-fase>"
