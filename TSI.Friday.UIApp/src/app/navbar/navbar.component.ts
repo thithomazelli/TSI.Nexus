@@ -8,12 +8,33 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AccountService, PhotoService, User } from '@friday/core';
+import { NgIf, AsyncPipe, TitleCasePipe } from '@angular/common';
+import { OrderProductNotificationComponent } from './components/order-product-notification/order-product-notification.component';
+import { PaymentNotificationComponent } from './components/payment-notification/payment-notification.component';
+import { VehicleBlockedNotificationComponent } from './components/vehicle-blocked-notification/vehicle-blocked-notification.component';
+import { DriverLicenseNotificationComponent } from './components/driver-license-notification/driver-license-notification.component';
+import { PhotoComponent } from '../shared/photo/photo.component';
+import { UserPreferencesComponent } from '../shared/components/user-preferences/user-preferences.component';
+import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-navbar',
-  templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.scss'],
-  standalone: false,
+    selector: 'app-navbar',
+    templateUrl: './navbar.component.html',
+    styleUrls: ['./navbar.component.scss'],
+    imports: [
+        NgIf,
+        OrderProductNotificationComponent,
+        PaymentNotificationComponent,
+        VehicleBlockedNotificationComponent,
+        DriverLicenseNotificationComponent,
+        PhotoComponent,
+        UserPreferencesComponent,
+        RouterLink,
+        AsyncPipe,
+        TitleCasePipe,
+        TranslatePipe,
+    ],
 })
 export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isFullscreen = false;

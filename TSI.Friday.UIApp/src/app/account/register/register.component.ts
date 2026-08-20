@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import {
   AccountService,
   FormBaseComponent,
@@ -10,12 +10,19 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { take } from 'rxjs';
+import { ValidationMessagesComponent } from '../../shared/components/errors/validation-messages/validation-messages.component';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-register',
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.scss',
-  standalone: false,
+    selector: 'app-register',
+    templateUrl: './register.component.html',
+    styleUrl: './register.component.scss',
+    imports: [
+        RouterLink,
+        ReactiveFormsModule,
+        ValidationMessagesComponent,
+        TranslatePipe,
+    ],
 })
 export class RegisterComponent extends FormBaseComponent implements OnInit {
   constructor(

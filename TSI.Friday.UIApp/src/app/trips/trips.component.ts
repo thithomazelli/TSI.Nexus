@@ -19,12 +19,26 @@ import {
 } from 'ag-grid-community';
 import { TripDetailsModalComponent } from './components/trip-details-modal/trip-details-modal.component';
 import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
+import { NgIf } from '@angular/common';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { DateFieldComponent } from '../shared/components/date-field/date-field.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-trips',
-  templateUrl: './trips.component.html',
-  styleUrl: './trips.component.scss',
-  standalone: false,
+    selector: 'app-trips',
+    templateUrl: './trips.component.html',
+    styleUrl: './trips.component.scss',
+    imports: [
+        NgIf,
+        HeaderComponent,
+        GridComponent,
+        DateFieldComponent,
+        ReactiveFormsModule,
+        FormsModule,
+        TranslatePipe,
+    ],
 })
 export class TripsComponent implements OnInit, OnDestroy {
   @Input()

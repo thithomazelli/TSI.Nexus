@@ -6,17 +6,14 @@ import { QuoteDetailsModalComponent } from './components/quote-details-modal/quo
 import { QuotesComponent } from './quotes.component';
 
 @NgModule({
-  declarations: [
-    QuotesComponent,
-    QuoteDetailsModalComponent,
-    QuoteFormComponent,
-  ],
-  imports: [CommonModule, SharedModule],
-  exports: [
-    QuotesComponent,
-    QuoteDetailsModalComponent,
-    QuoteFormComponent,
-    SharedModule,
-  ],
+    imports: [CommonModule, SharedModule, QuotesComponent,
+        QuoteDetailsModalComponent,
+        QuoteFormComponent],
+    exports: [
+        QuotesComponent,
+        QuoteDetailsModalComponent,
+        QuoteFormComponent,
+        SharedModule,
+    ],
 })
 export class QuotesSharedModule {}

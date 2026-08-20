@@ -1,6 +1,7 @@
 import { Component, Input, ViewChild, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { DatePicker } from 'primeng/datepicker';
+import { Bind } from 'primeng/bind';
 
 let dateFieldIdCounter = 0;
 
@@ -19,17 +20,22 @@ const ALLOWED_CONTROL_KEYS = [
 ];
 
 @Component({
-  selector: 'app-date-field',
-  templateUrl: 'date-field.component.html',
-  styleUrls: ['date-field.component.scss'],
-  standalone: false,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DateFieldComponent),
-      multi: true,
-    },
-  ],
+    selector: 'app-date-field',
+    templateUrl: 'date-field.component.html',
+    styleUrls: ['date-field.component.scss'],
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => DateFieldComponent),
+            multi: true,
+        },
+    ],
+    imports: [
+        Bind,
+        DatePicker,
+        ReactiveFormsModule,
+        FormsModule,
+    ],
 })
 export class DateFieldComponent implements ControlValueAccessor {
   @Input()

@@ -1,21 +1,22 @@
 import { Component, Input, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CurrencyService } from '@friday/core';
+import { NgClass } from '@angular/common';
 
 let currencyFieldIdCounter = 0;
 
 @Component({
-  selector: 'app-currency-field',
-  templateUrl: './currency-field.component.html',
-  styleUrl: './currency-field.component.scss',
-  standalone: false,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CurrencyFieldComponent),
-      multi: true,
-    },
-  ],
+    selector: 'app-currency-field',
+    templateUrl: './currency-field.component.html',
+    styleUrl: './currency-field.component.scss',
+    providers: [
+        {
+            provide: NG_VALUE_ACCESSOR,
+            useExisting: forwardRef(() => CurrencyFieldComponent),
+            multi: true,
+        },
+    ],
+    imports: [NgClass],
 })
 export class CurrencyFieldComponent implements ControlValueAccessor {
   @Input()

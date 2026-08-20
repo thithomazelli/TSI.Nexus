@@ -1,9 +1,8 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { BusinessPartnerDetailsPageComponent } from './components/business-partner-details-page/business-partner-details-page.component';
 import { BusinessPartnersComponent } from './business-partners.component';
 
-const routes: Routes = [
+export const BUSINESS_PARTNER_ROUTES: Routes = [
   {
     path: '',
     runGuardsAndResolvers: 'always',
@@ -24,9 +23,3 @@ const routes: Routes = [
     ],
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-})
-export class BusinessPartnerRoutingModule {}

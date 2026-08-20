@@ -1,10 +1,9 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 import { TripsComponent } from './trips.component';
 import { TripDetailsPageComponent } from './components/trip-details-page/trip-details-page.component';
 
-const routes: Routes = [
+export const TRIPS_ROUTES: Routes = [
   {
     path: '',
     runGuardsAndResolvers: 'always',
@@ -25,9 +24,3 @@ const routes: Routes = [
     ],
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-})
-export class TripsRoutingModule {}

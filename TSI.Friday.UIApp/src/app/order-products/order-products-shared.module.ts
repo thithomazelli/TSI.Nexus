@@ -6,16 +6,13 @@ import { OrderProductsFormComponent } from './components/order-product-form/orde
 import { OrderProductsDetailsModalComponent } from './components/order-product-details-modal/order-products-details-modal.component';
 
 @NgModule({
-  declarations: [
-    OrderProductsComponent,
-    OrderProductsDetailsModalComponent,
-    OrderProductsFormComponent,
-  ],
-  imports: [CommonModule, SharedModule],
-  exports: [
-    OrderProductsComponent,
-    OrderProductsDetailsModalComponent,
-    OrderProductsFormComponent,
-  ],
+    imports: [CommonModule, SharedModule, OrderProductsComponent,
+        OrderProductsDetailsModalComponent,
+        OrderProductsFormComponent],
+    exports: [
+        OrderProductsComponent,
+        OrderProductsDetailsModalComponent,
+        OrderProductsFormComponent,
+    ],
 })
 export class OrderProductsSharedModule {}

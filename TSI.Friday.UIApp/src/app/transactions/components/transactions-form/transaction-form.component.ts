@@ -6,7 +6,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 
 import {
@@ -46,12 +46,34 @@ import {
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 import { TransactionDetailsModalComponent } from '../transaction-details-modal/transaction-details-modal.component';
 import { Router } from '@angular/router';
+import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
+import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
+import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
+import { NgFor, NgIf, AsyncPipe } from '@angular/common';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-transaction-form',
-  templateUrl: './transaction-form.component.html',
-  styleUrls: ['./transaction-form.component.scss'],
-  standalone: false,
+    selector: 'app-transaction-form',
+    templateUrl: './transaction-form.component.html',
+    styleUrls: ['./transaction-form.component.scss'],
+    imports: [
+        AlertBannerComponentComponent,
+        ReactiveFormsModule,
+        LinkFieldComponent,
+        MatAutocompleteTrigger,
+        MatAutocomplete,
+        NgFor,
+        MatOption,
+        NgIf,
+        DateFieldComponent,
+        CurrencyFieldComponent,
+        ClickDirective,
+        AsyncPipe,
+        TranslatePipe,
+    ],
 })
 export class TransactionFormComponent
   extends FormBaseComponent

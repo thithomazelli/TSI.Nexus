@@ -15,12 +15,29 @@ import { Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { buildSalesOrderPages } from '../../utilities/order-documents';
+import { HeaderComponent } from '../../../shared/header/header.component';
+import { NgIf } from '@angular/common';
+import { OrderFormComponent } from '../order-form/order-form.component';
+import { OrderProductsComponent } from '../../../order-products/order-products.component';
+import { PaymentsComponent } from '../../../payments/payments.component';
+import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
+import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-order-details-page',
-  templateUrl: './order-details-page.component.html',
-  styleUrl: './order-details-page.component.scss',
-  standalone: false,
+    selector: 'app-order-details-page',
+    templateUrl: './order-details-page.component.html',
+    styleUrl: './order-details-page.component.scss',
+    imports: [
+        HeaderComponent,
+        NgIf,
+        OrderFormComponent,
+        OrderProductsComponent,
+        PaymentsComponent,
+        AttachmentsComponent,
+        AuditTabComponent,
+        TranslatePipe,
+    ],
 })
 export class OrderDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;

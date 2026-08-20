@@ -5,10 +5,10 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { initialConfig } from 'ngx-mask';
+import { initialConfig, NgxMaskDirective } from 'ngx-mask';
 
 import {
   ApiType,
@@ -29,12 +29,21 @@ import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { DriverDetailsModalComponent } from '../driver-details-modal/driver-details-modal.component';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-driver-form',
-  templateUrl: './driver-form.component.html',
-  styleUrl: './driver-form.component.scss',
-  standalone: false,
+    selector: 'app-driver-form',
+    templateUrl: './driver-form.component.html',
+    styleUrl: './driver-form.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        NgxMaskDirective,
+        DateFieldComponent,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class DriverFormComponent
   extends FormBaseComponent

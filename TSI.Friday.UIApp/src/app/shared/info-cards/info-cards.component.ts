@@ -3,12 +3,19 @@ import { Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ApiService, DashboardCard, WebApiResponse } from '@friday/core';
 import { ApiType } from '../../core/enums/api-type.enum';
+import { NgIf, NgFor, NgClass } from '@angular/common';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-info-cards',
-  templateUrl: './info-cards.component.html',
-  styleUrl: './info-cards.component.scss',
-  standalone: false,
+    selector: 'app-info-cards',
+    templateUrl: './info-cards.component.html',
+    styleUrl: './info-cards.component.scss',
+    imports: [
+        NgIf,
+        NgFor,
+        NgClass,
+        TranslatePipe,
+    ],
 })
 export class InfoCardsComponent implements OnInit {
   loading = true;

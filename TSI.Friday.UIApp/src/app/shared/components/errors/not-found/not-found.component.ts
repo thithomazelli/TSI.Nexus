@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
+import { HeaderComponent } from '../../../header/header.component';
+import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../../../../core/pipes/translate.pipe';
 
 @Component({
     selector: 'app-not-found',
     templateUrl: './not-found.component.html',
     styleUrl: './not-found.component.scss',
-    standalone: false
+    imports: [HeaderComponent, RouterLink, TranslatePipe]
 })
 export class NotFoundComponent {
 

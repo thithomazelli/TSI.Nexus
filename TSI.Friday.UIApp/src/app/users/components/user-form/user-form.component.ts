@@ -6,7 +6,7 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 
 import { Router } from '@angular/router';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -29,12 +29,23 @@ import { tap } from 'rxjs/operators';
 
 import { UserDetailsModalComponent } from '../user-details-modal/user-details-modal.component';
 import { ResetPasswordComponent } from '../../../account/reset-password/reset-password.component';
+import { NgClass, NgFor } from '@angular/common';
+import { ValidationMessagesComponent } from '../../../shared/components/errors/validation-messages/validation-messages.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-user-form',
-  templateUrl: './user-form.component.html',
-  styleUrl: './user-form.component.scss',
-  standalone: false,
+    selector: 'app-user-form',
+    templateUrl: './user-form.component.html',
+    styleUrl: './user-form.component.scss',
+    imports: [
+        NgClass,
+        ReactiveFormsModule,
+        NgFor,
+        ValidationMessagesComponent,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class UserFormComponent
   extends FormBaseComponent

@@ -18,12 +18,18 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 
 import { VehicleMaintenanceDetailsModalComponent } from '../vehicle-maintenance-details-modal/vehicle-maintenance-details-modal.component';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-vehicle-maintenance-list',
-  templateUrl: './vehicle-maintenance-list.component.html',
-  styleUrl: './vehicle-maintenance-list.component.scss',
-  standalone: false,
+    selector: 'app-vehicle-maintenance-list',
+    templateUrl: './vehicle-maintenance-list.component.html',
+    styleUrl: './vehicle-maintenance-list.component.scss',
+    imports: [
+        CurrencyPipe,
+        DatePipe,
+        TranslatePipe,
+    ],
 })
 export class VehicleMaintenanceListComponent
   implements OnInit, OnChanges, OnDestroy

@@ -7,16 +7,13 @@ import { SharedModule } from '../shared/shared.module';
 import { NgxMaskDirective } from 'ngx-mask';
 
 @NgModule({
-  declarations: [
-    BusinessPartnerDetailsModalComponent,
-    BusinessPartnerFormComponent,
-  ],
-  imports: [CommonModule, SharedModule, AddressModule, NgxMaskDirective],
-  exports: [
-    BusinessPartnerDetailsModalComponent,
-    BusinessPartnerFormComponent,
-    SharedModule,
-    NgxMaskDirective,
-  ],
+    imports: [CommonModule, SharedModule, AddressModule, NgxMaskDirective, BusinessPartnerDetailsModalComponent,
+        BusinessPartnerFormComponent],
+    exports: [
+        BusinessPartnerDetailsModalComponent,
+        BusinessPartnerFormComponent,
+        SharedModule,
+        NgxMaskDirective,
+    ],
 })
 export class BusinessPartnerSharedModule {}

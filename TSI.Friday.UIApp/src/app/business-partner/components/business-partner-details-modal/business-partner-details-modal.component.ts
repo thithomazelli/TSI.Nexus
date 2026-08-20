@@ -7,12 +7,13 @@ import {
   BusinessPartnerType,
   TranslationService,
 } from '@friday/core';
+import { BusinessPartnerFormComponent } from '../business-partner-form/business-partner-form.component';
 
 @Component({
-  selector: 'app-business-partner-details-modal',
-  templateUrl: './business-partner-details-modal.component.html',
-  styleUrl: './business-partner-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-business-partner-details-modal',
+    templateUrl: './business-partner-details-modal.component.html',
+    styleUrl: './business-partner-details-modal.component.scss',
+    imports: [BusinessPartnerFormComponent],
 })
 export class BusinessPartnerDetailsModalComponent implements OnInit {
   isEdit = false;

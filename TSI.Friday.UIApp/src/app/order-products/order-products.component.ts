@@ -19,12 +19,26 @@ import {
 import { OrderProduct } from '@friday/core';
 import { OrderProductsDetailsModalComponent } from './components/order-product-details-modal/order-products-details-modal.component';
 import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
+import { NgIf } from '@angular/common';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { DateFieldComponent } from '../shared/components/date-field/date-field.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-order-products',
-  templateUrl: './order-products.component.html',
-  styleUrl: './order-products.component.scss',
-  standalone: false,
+    selector: 'app-order-products',
+    templateUrl: './order-products.component.html',
+    styleUrl: './order-products.component.scss',
+    imports: [
+        NgIf,
+        HeaderComponent,
+        GridComponent,
+        DateFieldComponent,
+        ReactiveFormsModule,
+        FormsModule,
+        TranslatePipe,
+    ],
 })
 export class OrderProductsComponent implements OnInit, OnDestroy {
   @Input()

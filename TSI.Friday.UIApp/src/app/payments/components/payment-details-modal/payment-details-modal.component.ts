@@ -1,12 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Payment } from '@friday/core';
+import { PaymentFormComponent } from '../payment-form/payment-form.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-payment-details-modal',
-  standalone: false,
-  templateUrl: './payment-details-modal.component.html',
-  styleUrl: './payment-details-modal.component.scss',
+    selector: 'app-payment-details-modal',
+    templateUrl: './payment-details-modal.component.html',
+    styleUrl: './payment-details-modal.component.scss',
+    imports: [PaymentFormComponent, TranslatePipe],
 })
 export class PaymentDetailsModalComponent {
   isEdit = false;

@@ -12,12 +12,19 @@ import { Subscription, tap, Subject, takeUntil } from 'rxjs';
 import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 
 import { DriverDetailsModalComponent } from './components/driver-details-modal/driver-details-modal.component';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-drivers',
-  templateUrl: './drivers.component.html',
-  styleUrl: './drivers.component.scss',
-  standalone: false,
+    selector: 'app-drivers',
+    templateUrl: './drivers.component.html',
+    styleUrl: './drivers.component.scss',
+    imports: [
+        HeaderComponent,
+        GridComponent,
+        TranslatePipe,
+    ],
 })
 export class DriversComponent implements OnInit, OnDestroy {
   private _driverChangedSub?: Subscription;

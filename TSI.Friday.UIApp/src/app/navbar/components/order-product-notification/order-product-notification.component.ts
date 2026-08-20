@@ -9,12 +9,19 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { Subject, Subscription, switchMap, takeUntil } from 'rxjs';
+import { NgIf, NgFor, NgClass } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-order-product-notification',
-  templateUrl: './order-product-notification.component.html',
-  styleUrl: './order-product-notification.component.scss',
-  standalone: false,
+    selector: 'app-order-product-notification',
+    templateUrl: './order-product-notification.component.html',
+    styleUrl: './order-product-notification.component.scss',
+    imports: [
+        NgIf,
+        NgFor,
+        NgClass,
+        TranslatePipe,
+    ],
 })
 export class OrderProductNotificationComponent implements OnInit, OnDestroy {
   orderProducts: OrderProduct[] = [];

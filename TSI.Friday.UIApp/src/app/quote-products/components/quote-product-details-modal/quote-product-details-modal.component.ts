@@ -1,12 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { QuoteProduct } from '@friday/core';
+import { QuoteProductFormComponent } from '../quote-product-form/quote-product-form.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-quote-product-details-modal',
-  standalone: false,
-  templateUrl: './quote-product-details-modal.component.html',
-  styleUrl: './quote-product-details-modal.component.scss',
+    selector: 'app-quote-product-details-modal',
+    templateUrl: './quote-product-details-modal.component.html',
+    styleUrl: './quote-product-details-modal.component.scss',
+    imports: [QuoteProductFormComponent, TranslatePipe],
 })
 export class QuoteProductDetailsModalComponent {
   isEdit = false;

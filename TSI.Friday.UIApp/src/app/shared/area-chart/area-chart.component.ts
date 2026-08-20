@@ -1,13 +1,15 @@
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { ApiService, ApiType, TranslationService, WebApiResponse } from '@friday/core';
+import { NgIf } from '@angular/common';
+import { ChartComponent } from 'ng-apexcharts';
 
 @Component({
-  selector: 'app-area-chart',
-  templateUrl: './area-chart.component.html',
-  styleUrl: './area-chart.component.scss',
-  standalone: false,
-  animations: [cardCollapseAnimation],
+    selector: 'app-area-chart',
+    templateUrl: './area-chart.component.html',
+    styleUrl: './area-chart.component.scss',
+    animations: [cardCollapseAnimation],
+    imports: [NgIf, ChartComponent],
 })
 export class AreaChartComponent implements OnInit, OnChanges {
   @Input()

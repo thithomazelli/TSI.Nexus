@@ -10,12 +10,20 @@ import { Subscription } from 'rxjs';
 import { AccountService } from '../../core/services/account/account.service';
 import { FeatureFlagService } from '../../core/services/feature-flag/feature-flag.service';
 import { FeatureToggleKeys } from '../../core/models/feature-toggle.model';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { NgIf } from '@angular/common';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-sidebar',
-  templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss',
-  standalone: false,
+    selector: 'app-sidebar',
+    templateUrl: './sidebar.component.html',
+    styleUrl: './sidebar.component.scss',
+    imports: [
+        RouterLink,
+        RouterLinkActive,
+        NgIf,
+        TranslatePipe,
+    ],
 })
 export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private listeners: (() => void)[] = [];

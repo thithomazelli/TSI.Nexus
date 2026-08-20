@@ -8,12 +8,23 @@ import {
   SelectableOptionService,
   TranslationService,
 } from '@friday/core';
+import { HeaderComponent } from '../shared/header/header.component';
+import { NgFor, NgIf } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-selectable-options',
-  templateUrl: './selectable-options.component.html',
-  styleUrl: './selectable-options.component.scss',
-  standalone: false,
+    selector: 'app-selectable-options',
+    templateUrl: './selectable-options.component.html',
+    styleUrl: './selectable-options.component.scss',
+    imports: [
+        HeaderComponent,
+        NgFor,
+        ReactiveFormsModule,
+        FormsModule,
+        NgIf,
+        TranslatePipe,
+    ],
 })
 export class SelectableOptionsComponent implements OnInit {
   readonly groups = [

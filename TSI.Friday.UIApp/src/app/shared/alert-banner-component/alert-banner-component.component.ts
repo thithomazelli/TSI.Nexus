@@ -1,11 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { TranslationService } from '@friday/core';
+import { NgClass } from '@angular/common';
 
 @Component({
-  selector: 'app-alert-banner-component',
-  templateUrl: './alert-banner-component.component.html',
-  styleUrl: './alert-banner-component.component.scss',
-  standalone: false,
+    selector: 'app-alert-banner-component',
+    templateUrl: './alert-banner-component.component.html',
+    styleUrl: './alert-banner-component.component.scss',
+    imports: [NgClass],
 })
 export class AlertBannerComponentComponent implements OnInit {
   @Input()

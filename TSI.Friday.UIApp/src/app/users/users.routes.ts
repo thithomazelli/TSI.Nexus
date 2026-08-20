@@ -1,10 +1,9 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 import { UsersComponent } from './users.component';
 import { UserDetailsPageComponent } from './components/user-details-page/user-details-page.component';
 
-const routes: Routes = [
+export const USERS_ROUTES: Routes = [
   {
     path: '',
     runGuardsAndResolvers: 'always',
@@ -27,9 +26,3 @@ const routes: Routes = [
     ],
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-})
-export class UsersRoutingModule {}

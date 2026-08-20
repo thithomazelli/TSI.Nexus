@@ -7,7 +7,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 
 import {
@@ -33,12 +33,26 @@ import {
 
 import { Observable, of, Subscription, tap } from 'rxjs';
 import { PaymentDetailsModalComponent } from '../payment-details-modal/payment-details-modal.component';
+import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
+import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-payment-form',
-  standalone: false,
-  templateUrl: './payment-form.component.html',
-  styleUrl: './payment-form.component.scss',
+    selector: 'app-payment-form',
+    templateUrl: './payment-form.component.html',
+    styleUrl: './payment-form.component.scss',
+    imports: [
+        AlertBannerComponentComponent,
+        ReactiveFormsModule,
+        LinkFieldComponent,
+        DateFieldComponent,
+        CurrencyFieldComponent,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class PaymentFormComponent
   extends FormBaseComponent

@@ -18,12 +18,19 @@ import {
 } from 'ag-grid-community';
 import { UserDetailsModalComponent } from './components/user-details-modal/user-details-modal.component';
 import { Subject, Subscription, takeUntil, tap } from 'rxjs';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-users',
-  templateUrl: './users.component.html',
-  styleUrl: './users.component.scss',
-  standalone: false,
+    selector: 'app-users',
+    templateUrl: './users.component.html',
+    styleUrl: './users.component.scss',
+    imports: [
+        HeaderComponent,
+        GridComponent,
+        TranslatePipe,
+    ],
 })
 export class UsersComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Users;

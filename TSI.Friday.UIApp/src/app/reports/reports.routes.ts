@@ -1,9 +1,8 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { ReportsComponent } from './reports.component';
 import { FleetReportComponent } from './components/fleet-report/fleet-report.component';
 
-const routes: Routes = [
+export const REPORTS_ROUTES: Routes = [
   {
     path: '',
     runGuardsAndResolvers: 'always',
@@ -17,9 +16,3 @@ const routes: Routes = [
     data: { roles: ['Admin', 'Master'] },
   },
 ];
-
-@NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-})
-export class ReportsRoutingModule {}

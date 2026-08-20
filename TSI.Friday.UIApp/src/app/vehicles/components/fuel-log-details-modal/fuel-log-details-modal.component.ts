@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   FuelLog,
@@ -7,12 +7,20 @@ import {
   NotificationService,
   ResponseStatus,
 } from '@friday/core';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-fuel-log-details-modal',
-  templateUrl: './fuel-log-details-modal.component.html',
-  styleUrl: './fuel-log-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-fuel-log-details-modal',
+    templateUrl: './fuel-log-details-modal.component.html',
+    styleUrl: './fuel-log-details-modal.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        DateFieldComponent,
+        CurrencyFieldComponent,
+        TranslatePipe,
+    ],
 })
 export class FuelLogDetailsModalComponent {
   saving = false;

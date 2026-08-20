@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   NotificationService,
@@ -7,12 +7,13 @@ import {
   PassengerService,
   ResponseStatus,
 } from '@friday/core';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-passenger-details-modal',
-  templateUrl: './passenger-details-modal.component.html',
-  styleUrl: './passenger-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-passenger-details-modal',
+    templateUrl: './passenger-details-modal.component.html',
+    styleUrl: './passenger-details-modal.component.scss',
+    imports: [ReactiveFormsModule, TranslatePipe],
 })
 export class PassengerDetailsModalComponent {
   saving = false;

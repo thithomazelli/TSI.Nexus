@@ -16,12 +16,19 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community';
 import { ProductDetailsModalComponent } from './components/product-details-modal/product-details-modal.component';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-products',
-  templateUrl: './products.component.html',
-  styleUrl: './products.component.scss',
-  standalone: false,
+    selector: 'app-products',
+    templateUrl: './products.component.html',
+    styleUrl: './products.component.scss',
+    imports: [
+        HeaderComponent,
+        GridComponent,
+        TranslatePipe,
+    ],
 })
 export class ProductsComponent implements OnInit, OnDestroy {
   private _productChangedSub?: Subscription;

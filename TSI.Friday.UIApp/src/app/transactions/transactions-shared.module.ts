@@ -6,19 +6,16 @@ import { SharedModule } from '../shared/shared.module';
 import { TransactionsComponent } from './transactions.component';
 
 @NgModule({
-  declarations: [
-    TransactionsComponent,
-    TransactionFormComponent,
-    TransactionDetailsModalComponent,
-    TransactionFormComponent,
-  ],
-  imports: [CommonModule, SharedModule],
-  exports: [
-    TransactionsComponent,
-    TransactionFormComponent,
-    TransactionDetailsModalComponent,
-    TransactionFormComponent,
-    SharedModule,
-  ],
+    imports: [CommonModule, SharedModule, TransactionsComponent,
+        TransactionFormComponent,
+        TransactionDetailsModalComponent,
+        TransactionFormComponent],
+    exports: [
+        TransactionsComponent,
+        TransactionFormComponent,
+        TransactionDetailsModalComponent,
+        TransactionFormComponent,
+        SharedModule,
+    ],
 })
 export class TransactionsSharedModule {}

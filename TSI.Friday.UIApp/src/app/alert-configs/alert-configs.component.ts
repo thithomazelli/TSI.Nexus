@@ -7,12 +7,23 @@ import {
   TranslationService,
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
+import { HeaderComponent } from '../shared/header/header.component';
+import { NgIf, NgFor } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-alert-configs',
-  templateUrl: './alert-configs.component.html',
-  styleUrl: './alert-configs.component.scss',
-  standalone: false,
+    selector: 'app-alert-configs',
+    templateUrl: './alert-configs.component.html',
+    styleUrl: './alert-configs.component.scss',
+    imports: [
+        HeaderComponent,
+        NgIf,
+        NgFor,
+        ReactiveFormsModule,
+        FormsModule,
+        TranslatePipe,
+    ],
 })
 export class AlertConfigsComponent implements OnInit {
   alerts: AlertConfig[] = [];

@@ -14,12 +14,29 @@ import {
 import html2pdf from 'html2pdf.js';
 
 import { PaymentDetailsModalComponent } from '../payments/components/payment-details-modal/payment-details-modal.component';
+import { HeaderComponent } from '../shared/header/header.component';
+import { DateFieldComponent } from '../shared/components/date-field/date-field.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { NgFor, NgIf, CurrencyPipe, DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-reports',
-  templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss',
-  standalone: false,
+    selector: 'app-reports',
+    templateUrl: './reports.component.html',
+    styleUrl: './reports.component.scss',
+    imports: [
+        HeaderComponent,
+        DateFieldComponent,
+        ReactiveFormsModule,
+        FormsModule,
+        NgFor,
+        NgIf,
+        RouterLink,
+        CurrencyPipe,
+        DatePipe,
+        TranslatePipe,
+    ],
 })
 export class ReportsComponent implements OnInit {
   data: Payment[] = [];

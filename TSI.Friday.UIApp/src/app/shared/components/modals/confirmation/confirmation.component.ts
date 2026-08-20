@@ -3,10 +3,9 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslationService } from '@friday/core';
 
 @Component({
-  selector: 'app-confirmation',
-  templateUrl: './confirmation.component.html',
-  styleUrl: './confirmation.component.scss',
-  standalone: false,
+    selector: 'app-confirmation',
+    templateUrl: './confirmation.component.html',
+    styleUrl: './confirmation.component.scss',
 })
 export class ConfirmationComponent<T> {
   title: string;

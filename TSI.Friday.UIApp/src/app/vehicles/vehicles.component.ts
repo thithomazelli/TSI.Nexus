@@ -12,12 +12,19 @@ import { Subscription, tap, Subject, takeUntil } from 'rxjs';
 import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 
 import { VehicleDetailsModalComponent } from './components/vehicle-details-modal/vehicle-details-modal.component';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-vehicles',
-  templateUrl: './vehicles.component.html',
-  styleUrl: './vehicles.component.scss',
-  standalone: false,
+    selector: 'app-vehicles',
+    templateUrl: './vehicles.component.html',
+    styleUrl: './vehicles.component.scss',
+    imports: [
+        HeaderComponent,
+        GridComponent,
+        TranslatePipe,
+    ],
 })
 export class VehiclesComponent implements OnInit, OnDestroy {
   private _vehicleChangedSub?: Subscription;

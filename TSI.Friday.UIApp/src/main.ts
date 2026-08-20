@@ -1,12 +1,10 @@
-import { provideZoneChangeDetection } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 
-import { AppModule } from './app/app.module';
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
 
-platformBrowserDynamic()
-  .bootstrapModule(AppModule, {
-    applicationProviders: [
-      provideZoneChangeDetection({ eventCoalescing: true }),
-    ],
-  })
-  .catch((err) => console.error(err));
+// Register all Community features
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));

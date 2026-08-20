@@ -7,17 +7,14 @@ import { SharedModule } from '../shared/shared.module';
 import { TransactionsSharedModule } from '../transactions/transactions-shared.module';
 
 @NgModule({
-  declarations: [
-    OrdersComponent,
-    OrderDetailsModalComponent,
-    OrderFormComponent,
-  ],
-  imports: [CommonModule, SharedModule, TransactionsSharedModule],
-  exports: [
-    OrdersComponent,
-    OrderDetailsModalComponent,
-    OrderFormComponent,
-    SharedModule,
-  ],
+    imports: [CommonModule, SharedModule, TransactionsSharedModule, OrdersComponent,
+        OrderDetailsModalComponent,
+        OrderFormComponent],
+    exports: [
+        OrdersComponent,
+        OrderDetailsModalComponent,
+        OrderFormComponent,
+        SharedModule,
+    ],
 })
 export class OrdersSharedModule {}

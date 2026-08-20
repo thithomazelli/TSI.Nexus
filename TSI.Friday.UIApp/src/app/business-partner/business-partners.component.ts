@@ -17,12 +17,19 @@ import {
 import { BusinessPartnerDetailsModalComponent } from './components/business-partner-details-modal/business-partner-details-modal.component';
 import { Router } from '@angular/router';
 import { Subject, Subscription, takeUntil, tap } from 'rxjs';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-business-partners',
-  templateUrl: './business-partners.component.html',
-  styleUrl: './business-partners.component.scss',
-  standalone: false,
+    selector: 'app-business-partners',
+    templateUrl: './business-partners.component.html',
+    styleUrl: './business-partners.component.scss',
+    imports: [
+        HeaderComponent,
+        GridComponent,
+        TranslatePipe,
+    ],
 })
 export class BusinessPartnersComponent {
   title: string = '';

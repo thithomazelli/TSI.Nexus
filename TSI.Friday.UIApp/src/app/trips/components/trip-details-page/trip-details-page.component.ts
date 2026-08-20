@@ -27,12 +27,33 @@ import {
 import { catchError } from 'rxjs/operators';
 
 import { buildContractPages, buildServiceOrderPages } from '../../utilities/trip-documents';
+import { HeaderComponent } from '../../../shared/header/header.component';
+import { NgIf } from '@angular/common';
+import { TripFormComponent } from '../trip-form/trip-form.component';
+import { TripDriverListComponent } from '../trip-driver-list/trip-driver-list.component';
+import { TripLegListComponent } from '../trip-leg-list/trip-leg-list.component';
+import { PassengerListComponent } from '../passenger-list/passenger-list.component';
+import { PaymentsComponent } from '../../../payments/payments.component';
+import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
+import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-trip-details-page',
-  templateUrl: './trip-details-page.component.html',
-  styleUrl: './trip-details-page.component.scss',
-  standalone: false,
+    selector: 'app-trip-details-page',
+    templateUrl: './trip-details-page.component.html',
+    styleUrl: './trip-details-page.component.scss',
+    imports: [
+        HeaderComponent,
+        NgIf,
+        TripFormComponent,
+        TripDriverListComponent,
+        TripLegListComponent,
+        PassengerListComponent,
+        PaymentsComponent,
+        AttachmentsComponent,
+        AuditTabComponent,
+        TranslatePipe,
+    ],
 })
 export class TripDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;

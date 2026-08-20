@@ -2,12 +2,14 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 import { Address } from '@friday/core';
+import { AddressFormComponent } from '../address-form/address-form.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-address-details-modal',
-  standalone: false,
-  templateUrl: './address-details-modal.component.html',
-  styleUrl: './address-details-modal.component.scss',
+    selector: 'app-address-details-modal',
+    templateUrl: './address-details-modal.component.html',
+    styleUrl: './address-details-modal.component.scss',
+    imports: [AddressFormComponent, TranslatePipe],
 })
 export class AddressDetailsModalComponent {
   isEdit = false;

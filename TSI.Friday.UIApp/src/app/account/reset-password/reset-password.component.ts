@@ -8,7 +8,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   AccountService,
@@ -19,12 +19,20 @@ import {
 } from '@friday/core';
 import { UserDetailsModalComponent } from '../../users/components/user-details-modal/user-details-modal.component';
 import { UserDetailsPageComponent } from '../../users/components/user-details-page/user-details-page.component';
+import { NgIf } from '@angular/common';
+import { ValidationMessagesComponent } from '../../shared/components/errors/validation-messages/validation-messages.component';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-reset-password',
-  templateUrl: './reset-password.component.html',
-  styleUrl: './reset-password.component.scss',
-  standalone: false,
+    selector: 'app-reset-password',
+    templateUrl: './reset-password.component.html',
+    styleUrl: './reset-password.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        NgIf,
+        ValidationMessagesComponent,
+        TranslatePipe,
+    ],
 })
 export class ResetPasswordComponent
   extends FormBaseComponent

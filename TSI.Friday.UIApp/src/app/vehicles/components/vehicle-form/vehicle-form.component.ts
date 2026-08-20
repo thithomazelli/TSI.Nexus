@@ -5,7 +5,7 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
@@ -27,12 +27,20 @@ import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { VehicleDetailsModalComponent } from '../vehicle-details-modal/vehicle-details-modal.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-vehicle-form',
-  templateUrl: './vehicle-form.component.html',
-  styleUrl: './vehicle-form.component.scss',
-  standalone: false,
+    selector: 'app-vehicle-form',
+    templateUrl: './vehicle-form.component.html',
+    styleUrl: './vehicle-form.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        CurrencyFieldComponent,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class VehicleFormComponent
   extends FormBaseComponent

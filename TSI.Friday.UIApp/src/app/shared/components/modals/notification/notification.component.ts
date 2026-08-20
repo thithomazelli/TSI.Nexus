@@ -1,10 +1,11 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { NgIf } from '@angular/common';
 @Component({
-  selector: 'modal-notification',
-  templateUrl: './notification.component.html',
-  styleUrl: './notification.component.scss',
-  standalone: false,
+    selector: 'modal-notification',
+    templateUrl: './notification.component.html',
+    styleUrl: './notification.component.scss',
+    imports: [NgIf],
 })
 export class NotificationComponent {
   isSuccess: boolean;

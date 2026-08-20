@@ -8,8 +8,8 @@ describe('ValidationMessagesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ValidationMessagesComponent]
-    })
+    imports: [ValidationMessagesComponent]
+})
     .compileComponents();
 
     fixture = TestBed.createComponent(ValidationMessagesComponent);

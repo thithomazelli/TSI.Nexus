@@ -16,6 +16,9 @@ import {
   RowDoubleClickedEvent,
 } from 'ag-grid-community';
 import { map } from 'rxjs';
+import { NgIf, NgClass, NgTemplateOutlet, LowerCasePipe } from '@angular/common';
+import { AgGridAngular } from 'ag-grid-angular';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 const AG_GRID_LOCALES: Record<string, Record<string, string>> = {
   'pt-BR': AG_GRID_LOCALE_BR,
@@ -24,11 +27,18 @@ const AG_GRID_LOCALES: Record<string, Record<string, string>> = {
 };
 
 @Component({
-  selector: 'app-grid',
-  templateUrl: './grid.component.html',
-  styleUrl: './grid.component.scss',
-  standalone: false,
-  animations: [cardCollapseAnimation],
+    selector: 'app-grid',
+    templateUrl: './grid.component.html',
+    styleUrl: './grid.component.scss',
+    animations: [cardCollapseAnimation],
+    imports: [
+        NgIf,
+        NgClass,
+        NgTemplateOutlet,
+        AgGridAngular,
+        TranslatePipe,
+        LowerCasePipe,
+    ],
 })
 export class GridComponent<T> implements OnInit {
   @Input()

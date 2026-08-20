@@ -6,7 +6,7 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
   QuoteProduct,
   Product,
@@ -36,12 +36,31 @@ import { MatDialogRef } from '@angular/material/dialog';
 
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
 import { QuoteProductDetailsModalComponent } from '../quote-product-details-modal/quote-product-details-modal.component';
+import { NgClass, NgFor, NgIf, AsyncPipe } from '@angular/common';
+import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
+import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-quote-product-form',
-  standalone: false,
-  templateUrl: './quote-product-form.component.html',
-  styleUrl: './quote-product-form.component.scss',
+    selector: 'app-quote-product-form',
+    templateUrl: './quote-product-form.component.html',
+    styleUrl: './quote-product-form.component.scss',
+    imports: [
+        NgClass,
+        ReactiveFormsModule,
+        MatAutocompleteTrigger,
+        MatAutocomplete,
+        NgFor,
+        MatOption,
+        NgIf,
+        LinkFieldComponent,
+        CurrencyFieldComponent,
+        ClickDirective,
+        AsyncPipe,
+        TranslatePipe,
+    ],
 })
 export class QuoteProductFormComponent
   extends FormBaseComponent

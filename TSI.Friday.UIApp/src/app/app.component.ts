@@ -5,12 +5,17 @@ import { filter, map, Observable, Subscription } from 'rxjs';
 import { NavigationEnd, Router } from '@angular/router';
 import { environment } from '../environments/environment';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { AsyncPipe, NgClass } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './navbar/navbar.component';
+import { SidebarComponent } from './shared/sidebar/sidebar.component';
+import { FooterComponent } from './shared/footer/footer.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  standalone: false,
+  imports: [NgClass, AsyncPipe, RouterOutlet, NavbarComponent, SidebarComponent, FooterComponent],
 })
 export class AppComponent implements OnInit, OnDestroy {
   private sub?: Subscription;

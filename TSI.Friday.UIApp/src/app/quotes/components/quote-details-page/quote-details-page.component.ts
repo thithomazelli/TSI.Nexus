@@ -14,12 +14,27 @@ import { Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { buildQuotePages } from '../../utilities/quote-documents';
+import { HeaderComponent } from '../../../shared/header/header.component';
+import { NgIf } from '@angular/common';
+import { QuoteFormComponent } from '../quote-form/quote-form.component';
+import { QuoteProductsComponent } from '../../../quote-products/quote-products.component';
+import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
+import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-quote-details-page',
-  templateUrl: './quote-details-page.component.html',
-  styleUrl: './quote-details-page.component.scss',
-  standalone: false,
+    selector: 'app-quote-details-page',
+    templateUrl: './quote-details-page.component.html',
+    styleUrl: './quote-details-page.component.scss',
+    imports: [
+        HeaderComponent,
+        NgIf,
+        QuoteFormComponent,
+        QuoteProductsComponent,
+        AttachmentsComponent,
+        AuditTabComponent,
+        TranslatePipe,
+    ],
 })
 export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;

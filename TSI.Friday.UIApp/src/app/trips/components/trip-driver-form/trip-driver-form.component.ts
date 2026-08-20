@@ -6,7 +6,7 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import {
   Driver,
@@ -32,12 +32,31 @@ import {
 
 import { DriverDetailsModalComponent } from '../../../drivers/components/driver-details-modal/driver-details-modal.component';
 import { TripDriverDetailsModalComponent } from '../trip-driver-details-modal/trip-driver-details-modal.component';
+import { NgClass, NgFor, AsyncPipe, DatePipe } from '@angular/common';
+import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
+import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-trip-driver-form',
-  templateUrl: './trip-driver-form.component.html',
-  styleUrl: './trip-driver-form.component.scss',
-  standalone: false,
+    selector: 'app-trip-driver-form',
+    templateUrl: './trip-driver-form.component.html',
+    styleUrl: './trip-driver-form.component.scss',
+    imports: [
+        NgClass,
+        ReactiveFormsModule,
+        MatAutocompleteTrigger,
+        MatAutocomplete,
+        NgFor,
+        MatOption,
+        LinkFieldComponent,
+        CurrencyFieldComponent,
+        ClickDirective,
+        TranslatePipe,
+        AsyncPipe,
+        DatePipe,
+    ],
 })
 export class TripDriverFormComponent
   extends FormBaseComponent

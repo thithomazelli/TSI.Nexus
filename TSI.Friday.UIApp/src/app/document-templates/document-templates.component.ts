@@ -8,12 +8,20 @@ import {
   TranslationService,
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
+import { HeaderComponent } from '../shared/header/header.component';
+import { NgIf, NgFor } from '@angular/common';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-document-templates',
-  templateUrl: './document-templates.component.html',
-  styleUrl: './document-templates.component.scss',
-  standalone: false,
+    selector: 'app-document-templates',
+    templateUrl: './document-templates.component.html',
+    styleUrl: './document-templates.component.scss',
+    imports: [
+        HeaderComponent,
+        NgIf,
+        NgFor,
+        TranslatePipe,
+    ],
 })
 export class DocumentTemplatesComponent implements OnInit {
   templates: DocumentTemplate[] = [];

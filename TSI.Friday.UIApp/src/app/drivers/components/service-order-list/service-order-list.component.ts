@@ -9,12 +9,18 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-service-order-list',
-  templateUrl: './service-order-list.component.html',
-  styleUrl: './service-order-list.component.scss',
-  standalone: false,
+    selector: 'app-service-order-list',
+    templateUrl: './service-order-list.component.html',
+    styleUrl: './service-order-list.component.scss',
+    imports: [
+        CurrencyPipe,
+        DatePipe,
+        TranslatePipe,
+    ],
 })
 export class ServiceOrderListComponent implements OnInit, OnChanges, OnDestroy {
   @Input()

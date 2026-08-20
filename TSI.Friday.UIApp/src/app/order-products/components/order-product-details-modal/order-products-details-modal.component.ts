@@ -1,12 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { OrderProduct } from '@friday/core';
+import { OrderProductsFormComponent } from '../order-product-form/order-products-form.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-order-product-details-modal',
-  templateUrl: './order-products-details-modal.component.html',
-  styleUrl: './order-products-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-order-product-details-modal',
+    templateUrl: './order-products-details-modal.component.html',
+    styleUrl: './order-products-details-modal.component.scss',
+    imports: [OrderProductsFormComponent, TranslatePipe],
 })
 export class OrderProductsDetailsModalComponent {
   isEdit = false;

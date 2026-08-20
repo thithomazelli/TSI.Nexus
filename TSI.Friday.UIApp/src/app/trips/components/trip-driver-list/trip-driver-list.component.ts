@@ -19,12 +19,14 @@ import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { Subject, takeUntil } from 'rxjs';
 
 import { TripDriverDetailsModalComponent } from '../trip-driver-details-modal/trip-driver-details-modal.component';
+import { GridComponent } from '../../../shared/grid/grid.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-trip-driver-list',
-  templateUrl: './trip-driver-list.component.html',
-  styleUrl: './trip-driver-list.component.scss',
-  standalone: false,
+    selector: 'app-trip-driver-list',
+    templateUrl: './trip-driver-list.component.html',
+    styleUrl: './trip-driver-list.component.scss',
+    imports: [GridComponent, TranslatePipe],
 })
 export class TripDriverListComponent
   implements OnInit, OnChanges, OnDestroy

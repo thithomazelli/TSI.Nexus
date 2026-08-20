@@ -7,6 +7,9 @@ import {
   TranslationService,
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
+import { HeaderComponent } from '../shared/header/header.component';
+import { NgIf, NgFor } from '@angular/common';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 export interface FeatureToggleGroupView {
   group: FeatureToggle;
@@ -14,10 +17,15 @@ export interface FeatureToggleGroupView {
 }
 
 @Component({
-  selector: 'app-feature-toggles',
-  templateUrl: './feature-toggles.component.html',
-  styleUrl: './feature-toggles.component.scss',
-  standalone: false,
+    selector: 'app-feature-toggles',
+    templateUrl: './feature-toggles.component.html',
+    styleUrl: './feature-toggles.component.scss',
+    imports: [
+        HeaderComponent,
+        NgIf,
+        NgFor,
+        TranslatePipe,
+    ],
 })
 export class FeatureTogglesComponent implements OnInit {
   toggles: FeatureToggle[] = [];

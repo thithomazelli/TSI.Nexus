@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   NotificationService,
@@ -10,12 +10,18 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { forkJoin, Observable } from 'rxjs';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-trip-leg-details-modal',
-  templateUrl: './trip-leg-details-modal.component.html',
-  styleUrl: './trip-leg-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-trip-leg-details-modal',
+    templateUrl: './trip-leg-details-modal.component.html',
+    styleUrl: './trip-leg-details-modal.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        DateFieldComponent,
+        TranslatePipe,
+    ],
 })
 export class TripLegDetailsModalComponent {
   saving = false;

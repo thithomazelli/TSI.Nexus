@@ -1,12 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Driver } from '@friday/core';
+import { DriverFormComponent } from '../driver-form/driver-form.component';
 
 @Component({
-  selector: 'app-driver-details-modal',
-  templateUrl: './driver-details-modal.component.html',
-  styleUrl: './driver-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-driver-details-modal',
+    templateUrl: './driver-details-modal.component.html',
+    styleUrl: './driver-details-modal.component.scss',
+    imports: [DriverFormComponent],
 })
 export class DriverDetailsModalComponent implements OnInit {
   isEdit = false;

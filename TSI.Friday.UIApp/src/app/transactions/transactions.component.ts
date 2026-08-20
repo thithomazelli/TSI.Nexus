@@ -18,12 +18,26 @@ import {
 } from 'ag-grid-community';
 import { TransactionDetailsModalComponent } from './components/transaction-details-modal/transaction-details-modal.component';
 import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
+import { NgIf } from '@angular/common';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { DateFieldComponent } from '../shared/components/date-field/date-field.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-transactions',
-  templateUrl: './transactions.component.html',
-  styleUrl: './transactions.component.scss',
-  standalone: false,
+    selector: 'app-transactions',
+    templateUrl: './transactions.component.html',
+    styleUrl: './transactions.component.scss',
+    imports: [
+        NgIf,
+        HeaderComponent,
+        GridComponent,
+        DateFieldComponent,
+        ReactiveFormsModule,
+        FormsModule,
+        TranslatePipe,
+    ],
 })
 export class TransactionsComponent implements OnInit, OnDestroy {
   @Input()

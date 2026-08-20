@@ -8,12 +8,35 @@ import {
   TranslationService,
 } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
+import { HeaderComponent } from '../../../shared/header/header.component';
+import { PhotoComponent } from '../../../shared/photo/photo.component';
+import { NgIf } from '@angular/common';
+import { BusinessPartnerFormComponent } from '../business-partner-form/business-partner-form.component';
+import { AddressComponent } from '../../../address/address.component';
+import { OrdersComponent } from '../../../orders/orders.component';
+import { TransactionsComponent } from '../../../transactions/transactions.component';
+import { PaymentsComponent } from '../../../payments/payments.component';
+import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
+import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-business-partner-details-page',
-  templateUrl: './business-partner-details-page.component.html',
-  styleUrl: './business-partner-details-page.component.scss',
-  standalone: false,
+    selector: 'app-business-partner-details-page',
+    templateUrl: './business-partner-details-page.component.html',
+    styleUrl: './business-partner-details-page.component.scss',
+    imports: [
+        HeaderComponent,
+        PhotoComponent,
+        NgIf,
+        BusinessPartnerFormComponent,
+        AddressComponent,
+        OrdersComponent,
+        TransactionsComponent,
+        PaymentsComponent,
+        AttachmentsComponent,
+        AuditTabComponent,
+        TranslatePipe,
+    ],
 })
 export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;

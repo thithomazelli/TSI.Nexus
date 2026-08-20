@@ -10,12 +10,27 @@ import {
   TranslationService,
 } from '@friday/core';
 import { merge, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
+import { HeaderComponent } from '../../../shared/header/header.component';
+import { NgIf } from '@angular/common';
+import { TransactionFormComponent } from '../transactions-form/transaction-form.component';
+import { PaymentsComponent } from '../../../payments/payments.component';
+import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
+import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-transaction-details-page',
-  templateUrl: './transaction-details-page.component.html',
-  styleUrl: './transaction-details-page.component.scss',
-  standalone: false,
+    selector: 'app-transaction-details-page',
+    templateUrl: './transaction-details-page.component.html',
+    styleUrl: './transaction-details-page.component.scss',
+    imports: [
+        HeaderComponent,
+        NgIf,
+        TransactionFormComponent,
+        PaymentsComponent,
+        AttachmentsComponent,
+        AuditTabComponent,
+        TranslatePipe,
+    ],
 })
 export class TransactionDetailsPageComponent {
   isEdit = false;

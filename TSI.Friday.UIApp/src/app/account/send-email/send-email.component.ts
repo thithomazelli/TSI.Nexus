@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   AccountService,
@@ -8,12 +8,18 @@ import {
   User,
 } from '@friday/core';
 import { take } from 'rxjs';
+import { ValidationMessagesComponent } from '../../shared/components/errors/validation-messages/validation-messages.component';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-send-email',
-  standalone: false,
-  templateUrl: './send-email.component.html',
-  styleUrl: './send-email.component.scss',
+    selector: 'app-send-email',
+    templateUrl: './send-email.component.html',
+    styleUrl: './send-email.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        ValidationMessagesComponent,
+        TranslatePipe,
+    ],
 })
 export class SendEmailComponent extends FormBaseComponent implements OnInit {
   mode: string | null = '';

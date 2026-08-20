@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   MaintenanceStatus,
@@ -12,12 +12,20 @@ import {
   VehicleMaintenanceService,
   TranslationService,
 } from '@friday/core';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-vehicle-maintenance-details-modal',
-  templateUrl: './vehicle-maintenance-details-modal.component.html',
-  styleUrl: './vehicle-maintenance-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-vehicle-maintenance-details-modal',
+    templateUrl: './vehicle-maintenance-details-modal.component.html',
+    styleUrl: './vehicle-maintenance-details-modal.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        DateFieldComponent,
+        CurrencyFieldComponent,
+        TranslatePipe,
+    ],
 })
 export class VehicleMaintenanceDetailsModalComponent implements OnInit {
   saving = false;

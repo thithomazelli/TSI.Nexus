@@ -19,12 +19,14 @@ import {
   PhotoService,
 } from '@friday/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NgIf } from '@angular/common';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-photo',
-  templateUrl: './photo.component.html',
-  styleUrls: ['./photo.component.scss'],
-  standalone: false,
+    selector: 'app-photo',
+    templateUrl: './photo.component.html',
+    styleUrls: ['./photo.component.scss'],
+    imports: [NgIf, TranslatePipe],
 })
 export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   @Input()

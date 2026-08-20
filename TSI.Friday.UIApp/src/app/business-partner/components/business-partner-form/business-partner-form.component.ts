@@ -5,7 +5,7 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { FormBuilder, Validators, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
@@ -28,12 +28,28 @@ import {
 import { Observable, of, tap } from 'rxjs';
 
 import { BusinessPartnerDetailsModalComponent } from '../business-partner-details-modal/business-partner-details-modal.component';
+import { NgClass, NgIf, NgFor } from '@angular/common';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { NgxMaskDirective } from 'ngx-mask';
+import { AddressFormComponent } from '../../../address/components/address-form/address-form.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-business-partner-form',
-  templateUrl: './business-partner-form.component.html',
-  styleUrl: './business-partner-form.component.scss',
-  standalone: false,
+    selector: 'app-business-partner-form',
+    templateUrl: './business-partner-form.component.html',
+    styleUrl: './business-partner-form.component.scss',
+    imports: [
+        NgClass,
+        ReactiveFormsModule,
+        NgIf,
+        DateFieldComponent,
+        NgxMaskDirective,
+        NgFor,
+        AddressFormComponent,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class BusinessPartnerFormComponent
   extends FormBaseComponent

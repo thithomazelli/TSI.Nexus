@@ -5,12 +5,19 @@ import { ModalService, PaymentService, TranslationService } from '@friday/core';
 import { PaymentDetailsModalComponent } from '../../../payments/components/payment-details-modal/payment-details-modal.component';
 
 import { Payment, PaymentStatus, WebApiResponse } from '@friday/core';
+import { NgIf, NgFor, NgClass } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-payment-notification',
-  templateUrl: './payment-notification.component.html',
-  styleUrl: './payment-notification.component.scss',
-  standalone: false,
+    selector: 'app-payment-notification',
+    templateUrl: './payment-notification.component.html',
+    styleUrl: './payment-notification.component.scss',
+    imports: [
+        NgIf,
+        NgFor,
+        NgClass,
+        TranslatePipe,
+    ],
 })
 export class PaymentNotificationComponent implements OnInit, OnDestroy {
   payments: Payment[] = [];

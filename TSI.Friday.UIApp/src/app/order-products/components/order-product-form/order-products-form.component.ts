@@ -7,7 +7,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
   OrderProduct,
   Product,
@@ -34,12 +34,35 @@ import { MatDialogRef } from '@angular/material/dialog';
 
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
 import { OrderProductsDetailsModalComponent } from '../order-product-details-modal/order-products-details-modal.component';
+import { NgClass, NgFor, NgIf, AsyncPipe } from '@angular/common';
+import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
+import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
+import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-order-products-form',
-  templateUrl: './order-products-form.component.html',
-  styleUrl: './order-products-form.component.scss',
-  standalone: false,
+    selector: 'app-order-products-form',
+    templateUrl: './order-products-form.component.html',
+    styleUrl: './order-products-form.component.scss',
+    imports: [
+        NgClass,
+        AlertBannerComponentComponent,
+        ReactiveFormsModule,
+        MatAutocompleteTrigger,
+        MatAutocomplete,
+        NgFor,
+        MatOption,
+        LinkFieldComponent,
+        NgIf,
+        DateFieldComponent,
+        CurrencyFieldComponent,
+        ClickDirective,
+        AsyncPipe,
+        TranslatePipe,
+    ],
 })
 export class OrderProductsFormComponent
   extends FormBaseComponent

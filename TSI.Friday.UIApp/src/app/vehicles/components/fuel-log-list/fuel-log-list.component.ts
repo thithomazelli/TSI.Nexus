@@ -16,12 +16,18 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 
 import { FuelLogDetailsModalComponent } from '../fuel-log-details-modal/fuel-log-details-modal.component';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-fuel-log-list',
-  templateUrl: './fuel-log-list.component.html',
-  styleUrl: './fuel-log-list.component.scss',
-  standalone: false,
+    selector: 'app-fuel-log-list',
+    templateUrl: './fuel-log-list.component.html',
+    styleUrl: './fuel-log-list.component.scss',
+    imports: [
+        CurrencyPipe,
+        DatePipe,
+        TranslatePipe,
+    ],
 })
 export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
   @Input()

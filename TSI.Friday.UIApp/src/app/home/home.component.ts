@@ -1,13 +1,31 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { cardCollapseAnimation } from '../core/animations/card-collapse.animation';
 import { PaymentType } from '../core/enums/payment-type.enum';
+import { InfoCardsComponent } from '../shared/info-cards/info-cards.component';
+import { NgClass } from '@angular/common';
+import { DateFieldComponent } from '../shared/components/date-field/date-field.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { AreaChartTrendingComponent } from '../shared/area-chart-trending/area-chart-trending.component';
+import { AreaChartComponent } from '../shared/area-chart/area-chart.component';
+import { PieChartComponent } from '../shared/pie-chart/pie-chart.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
-  standalone: false,
-  animations: [cardCollapseAnimation],
+    selector: 'app-home',
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.scss'],
+    animations: [cardCollapseAnimation],
+    imports: [
+        InfoCardsComponent,
+        NgClass,
+        DateFieldComponent,
+        ReactiveFormsModule,
+        FormsModule,
+        AreaChartTrendingComponent,
+        AreaChartComponent,
+        PieChartComponent,
+        TranslatePipe,
+    ],
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
   PaymentType = PaymentType;

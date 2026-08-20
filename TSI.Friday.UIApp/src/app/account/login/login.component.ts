@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   AccountService,
   FormBaseComponent,
@@ -9,12 +9,24 @@ import {
   WebApiResponse,
 } from '@friday/core';
 import { Observable, of, take, tap } from 'rxjs';
+import { NgClass } from '@angular/common';
+import { ValidationMessagesComponent } from '../../shared/components/errors/validation-messages/validation-messages.component';
+import { ClickDirective } from '../../core/directives/click.directive';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
-  standalone: false,
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.scss',
+    imports: [
+        ReactiveFormsModule,
+        NgClass,
+        FormsModule,
+        RouterLink,
+        ValidationMessagesComponent,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class LoginComponent extends FormBaseComponent implements OnInit {
   returnUrl: string | null = null;

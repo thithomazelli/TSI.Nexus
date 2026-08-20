@@ -8,7 +8,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
 import {
   BusinessPartnerService,
@@ -44,12 +44,39 @@ import { DriverDetailsModalComponent } from '../../../drivers/components/driver-
 import { TripDetailsModalComponent } from '../trip-details-modal/trip-details-modal.component';
 import { TripDriverDetailsModalComponent } from '../trip-driver-details-modal/trip-driver-details-modal.component';
 import { Router } from '@angular/router';
+import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
+import { NgIf, NgClass, NgFor, AsyncPipe, CurrencyPipe, DatePipe } from '@angular/common';
+import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
+import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { TransactionFormComponent } from '../../../transactions/components/transactions-form/transaction-form.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-trip-form',
-  templateUrl: './trip-form.component.html',
-  styleUrl: './trip-form.component.scss',
-  standalone: false,
+    selector: 'app-trip-form',
+    templateUrl: './trip-form.component.html',
+    styleUrl: './trip-form.component.scss',
+    imports: [
+        AlertBannerComponentComponent,
+        ReactiveFormsModule,
+        NgIf,
+        NgClass,
+        MatAutocompleteTrigger,
+        MatAutocomplete,
+        NgFor,
+        MatOption,
+        LinkFieldComponent,
+        DateFieldComponent,
+        CurrencyFieldComponent,
+        TransactionFormComponent,
+        ClickDirective,
+        AsyncPipe,
+        CurrencyPipe,
+        DatePipe,
+        TranslatePipe,
+    ],
 })
 export class TripFormComponent
   extends FormBaseComponent

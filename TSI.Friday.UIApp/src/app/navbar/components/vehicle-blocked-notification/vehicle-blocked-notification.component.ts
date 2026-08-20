@@ -1,12 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Vehicle, VehicleService, VehicleStatus, WebApiResponse } from '@friday/core';
+import { NgIf, NgFor } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-vehicle-blocked-notification',
-  templateUrl: './vehicle-blocked-notification.component.html',
-  styleUrl: './vehicle-blocked-notification.component.scss',
-  standalone: false,
+    selector: 'app-vehicle-blocked-notification',
+    templateUrl: './vehicle-blocked-notification.component.html',
+    styleUrl: './vehicle-blocked-notification.component.scss',
+    imports: [
+        NgIf,
+        NgFor,
+        RouterLink,
+        TranslatePipe,
+    ],
 })
 export class VehicleBlockedNotificationComponent implements OnInit {
   vehicles: Vehicle[] = [];

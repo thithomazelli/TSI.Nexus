@@ -1,12 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslationService, Vehicle } from '@friday/core';
+import { VehicleFormComponent } from '../vehicle-form/vehicle-form.component';
 
 @Component({
-  selector: 'app-vehicle-details-modal',
-  templateUrl: './vehicle-details-modal.component.html',
-  styleUrl: './vehicle-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-vehicle-details-modal',
+    templateUrl: './vehicle-details-modal.component.html',
+    styleUrl: './vehicle-details-modal.component.scss',
+    imports: [VehicleFormComponent],
 })
 export class VehicleDetailsModalComponent implements OnInit {
   isEdit = false;

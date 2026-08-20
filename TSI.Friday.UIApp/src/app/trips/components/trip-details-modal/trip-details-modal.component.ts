@@ -1,12 +1,14 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Trip } from '@friday/core';
+import { TripFormComponent } from '../trip-form/trip-form.component';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-trip-details-modal',
-  templateUrl: './trip-details-modal.component.html',
-  styleUrl: './trip-details-modal.component.scss',
-  standalone: false,
+    selector: 'app-trip-details-modal',
+    templateUrl: './trip-details-modal.component.html',
+    styleUrl: './trip-details-modal.component.scss',
+    imports: [TripFormComponent, TranslatePipe],
 })
 export class TripDetailsModalComponent {
   isEdit = false;

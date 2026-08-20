@@ -14,12 +14,21 @@ import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { QuoteProduct } from '@friday/core';
 import { QuoteProductDetailsModalComponent } from './components/quote-product-details-modal/quote-product-details-modal.component';
 import { Observable, Subject, Subscription, takeUntil } from 'rxjs';
+import { NgIf } from '@angular/common';
+import { HeaderComponent } from '../shared/header/header.component';
+import { GridComponent } from '../shared/grid/grid.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-quote-products',
-  templateUrl: './quote-products.component.html',
-  styleUrl: './quote-products.component.scss',
-  standalone: false,
+    selector: 'app-quote-products',
+    templateUrl: './quote-products.component.html',
+    styleUrl: './quote-products.component.scss',
+    imports: [
+        NgIf,
+        HeaderComponent,
+        GridComponent,
+        TranslatePipe,
+    ],
 })
 export class QuoteProductsComponent implements OnInit, OnDestroy {
   @Input()

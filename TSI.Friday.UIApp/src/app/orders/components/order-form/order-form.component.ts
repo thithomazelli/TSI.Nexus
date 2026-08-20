@@ -8,7 +8,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
 import {
   BusinessPartnerService,
@@ -45,12 +45,38 @@ import { OrderProductsDetailsModalComponent } from '../../../order-products/comp
 import { OrderDetailsModalComponent } from '../order-details-modal/order-details-modal.component';
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
 import { Router } from '@angular/router';
+import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
+import { NgIf, NgClass, NgFor, AsyncPipe, CurrencyPipe } from '@angular/common';
+import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
+import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { TransactionFormComponent } from '../../../transactions/components/transactions-form/transaction-form.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-order-form',
-  templateUrl: './order-form.component.html',
-  styleUrl: './order-form.component.scss',
-  standalone: false,
+    selector: 'app-order-form',
+    templateUrl: './order-form.component.html',
+    styleUrl: './order-form.component.scss',
+    imports: [
+        AlertBannerComponentComponent,
+        ReactiveFormsModule,
+        NgIf,
+        NgClass,
+        MatAutocompleteTrigger,
+        MatAutocomplete,
+        NgFor,
+        MatOption,
+        LinkFieldComponent,
+        DateFieldComponent,
+        CurrencyFieldComponent,
+        TransactionFormComponent,
+        ClickDirective,
+        AsyncPipe,
+        CurrencyPipe,
+        TranslatePipe,
+    ],
 })
 export class OrderFormComponent
   extends FormBaseComponent

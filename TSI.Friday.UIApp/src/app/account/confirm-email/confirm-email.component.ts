@@ -4,10 +4,9 @@ import { AccountService, ConfirmEmail, ModalService, User } from '@friday/core';
 import { take } from 'rxjs';
 
 @Component({
-  selector: 'app-confirm-email',
-  standalone: false,
-  templateUrl: './confirm-email.component.html',
-  styleUrl: './confirm-email.component.scss',
+    selector: 'app-confirm-email',
+    templateUrl: './confirm-email.component.html',
+    styleUrl: './confirm-email.component.scss',
 })
 export class ConfirmEmailComponent implements OnInit {
   constructor(

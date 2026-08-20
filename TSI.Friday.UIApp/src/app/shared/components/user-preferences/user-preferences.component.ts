@@ -8,12 +8,18 @@ import {
   TranslationService,
 } from '@friday/core';
 import { finalize } from 'rxjs/operators';
+import { NgIf, AsyncPipe } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-user-preferences',
-  templateUrl: './user-preferences.component.html',
-  styleUrl: './user-preferences.component.scss',
-  standalone: false,
+    selector: 'app-user-preferences',
+    templateUrl: './user-preferences.component.html',
+    styleUrl: './user-preferences.component.scss',
+    imports: [
+        NgIf,
+        TranslatePipe,
+        AsyncPipe,
+    ],
 })
 export class UserPreferencesComponent {
   /** Compact mode drops the title/description, used inside the navbar dropdown. */

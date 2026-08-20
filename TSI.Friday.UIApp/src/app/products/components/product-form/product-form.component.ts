@@ -7,7 +7,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
@@ -32,12 +32,22 @@ import { Observable, of, Subscription } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { ProductDetailsModalComponent } from '../product-details-modal/product-details-modal.component';
+import { NgClass } from '@angular/common';
+import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-product-form',
-  templateUrl: './product-form.component.html',
-  styleUrls: ['./product-form.component.scss'],
-  standalone: false,
+    selector: 'app-product-form',
+    templateUrl: './product-form.component.html',
+    styleUrls: ['./product-form.component.scss'],
+    imports: [
+        NgClass,
+        ReactiveFormsModule,
+        CurrencyFieldComponent,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class ProductFormComponent
   extends FormBaseComponent

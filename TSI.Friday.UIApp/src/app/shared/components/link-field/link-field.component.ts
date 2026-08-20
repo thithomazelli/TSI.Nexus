@@ -3,10 +3,9 @@ import { Router } from '@angular/router';
 import { ModalService } from '@friday/core';
 
 @Component({
-  selector: 'app-link-field',
-  templateUrl: './link-field.component.html',
-  styleUrl: './link-field.component.scss',
-  standalone: false,
+    selector: 'app-link-field',
+    templateUrl: './link-field.component.html',
+    styleUrl: './link-field.component.scss',
 })
 export class LinkFieldComponent {
   @Input()

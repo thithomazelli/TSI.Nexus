@@ -9,12 +9,35 @@ import {
 import { AttachmentService } from '../../core/services/attachment/attachment.service';
 import { ModalService } from '../../core/services/modal/modal.service';
 import { NotificationService } from '../../core/services/notification/notification.service';
+import { NgIf, NgFor } from '@angular/common';
+import { Bind } from 'primeng/bind';
+import { Button } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
+import { ContextMenu } from 'primeng/contextmenu';
+import { Dialog } from 'primeng/dialog';
+import { AttachmentDetailsModalComponent } from './components/attachment-details-modal/attachment-details-modal.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { InputText } from 'primeng/inputtext';
+import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-attachments',
-  templateUrl: './attachments.component.html',
-  styleUrl: './attachments.component.scss',
-  standalone: false,
+    selector: 'app-attachments',
+    templateUrl: './attachments.component.html',
+    styleUrl: './attachments.component.scss',
+    imports: [
+        NgIf,
+        Bind,
+        Button,
+        Tooltip,
+        NgFor,
+        ContextMenu,
+        Dialog,
+        AttachmentDetailsModalComponent,
+        ReactiveFormsModule,
+        InputText,
+        FormsModule,
+        TranslatePipe,
+    ],
 })
 export class AttachmentsComponent implements OnInit {
   @Input()

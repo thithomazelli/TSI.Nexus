@@ -15,6 +15,9 @@ import {
   VehicleStatus,
 } from '@friday/core';
 import { forkJoin, map, switchMap } from 'rxjs';
+import { HeaderComponent } from '../../../shared/header/header.component';
+import { CurrencyPipe } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 interface VehicleSummaryRow {
   plate: string;
@@ -34,10 +37,14 @@ interface DriverSummaryRow {
 }
 
 @Component({
-  selector: 'app-fleet-report',
-  templateUrl: './fleet-report.component.html',
-  styleUrl: './fleet-report.component.scss',
-  standalone: false,
+    selector: 'app-fleet-report',
+    templateUrl: './fleet-report.component.html',
+    styleUrl: './fleet-report.component.scss',
+    imports: [
+        HeaderComponent,
+        CurrencyPipe,
+        TranslatePipe,
+    ],
 })
 export class FleetReportComponent implements OnInit {
   loading = false;

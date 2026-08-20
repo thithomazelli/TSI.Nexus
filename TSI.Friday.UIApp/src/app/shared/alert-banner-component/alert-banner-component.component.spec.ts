@@ -8,8 +8,8 @@ describe('AlertBannerComponentComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AlertBannerComponentComponent]
-    })
+    imports: [AlertBannerComponentComponent]
+})
     .compileComponents();
 
     fixture = TestBed.createComponent(AlertBannerComponentComponent);

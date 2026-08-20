@@ -13,12 +13,14 @@ import {
 import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { AddressDetailsModalComponent } from './components/address-details-modal/address-details-modal.component';
 import { Subject, Subscription, takeUntil, tap } from 'rxjs';
+import { GridComponent } from '../shared/grid/grid.component';
+import { TranslatePipe } from '../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-address',
-  templateUrl: './address.component.html',
-  styleUrl: './address.component.scss',
-  standalone: false,
+    selector: 'app-address',
+    templateUrl: './address.component.html',
+    styleUrl: './address.component.scss',
+    imports: [GridComponent, TranslatePipe],
 })
 export class AddressComponent {
   @Input()

@@ -8,19 +8,19 @@ import { TransactionsSharedModule } from '../transactions/transactions-shared.mo
 import { DriversSharedModule } from '../drivers/drivers-shared.module';
 
 @NgModule({
-  declarations: [TripsComponent, TripDetailsModalComponent, TripFormComponent],
-  imports: [
-    CommonModule,
-    SharedModule,
-    TransactionsSharedModule,
-    DriversSharedModule,
-  ],
-  exports: [
-    TripsComponent,
-    TripDetailsModalComponent,
-    TripFormComponent,
-    SharedModule,
-    DriversSharedModule,
-  ],
+    imports: [
+        CommonModule,
+        SharedModule,
+        TransactionsSharedModule,
+        DriversSharedModule,
+        TripsComponent, TripDetailsModalComponent, TripFormComponent,
+    ],
+    exports: [
+        TripsComponent,
+        TripDetailsModalComponent,
+        TripFormComponent,
+        SharedModule,
+        DriversSharedModule,
+    ],
 })
 export class TripsSharedModule {}

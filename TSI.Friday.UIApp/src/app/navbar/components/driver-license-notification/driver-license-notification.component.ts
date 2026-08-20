@@ -1,12 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Driver, DriverService, WebApiResponse } from '@friday/core';
+import { NgIf, NgFor, DatePipe } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-driver-license-notification',
-  templateUrl: './driver-license-notification.component.html',
-  styleUrl: './driver-license-notification.component.scss',
-  standalone: false,
+    selector: 'app-driver-license-notification',
+    templateUrl: './driver-license-notification.component.html',
+    styleUrl: './driver-license-notification.component.scss',
+    imports: [
+        NgIf,
+        NgFor,
+        RouterLink,
+        DatePipe,
+        TranslatePipe,
+    ],
 })
 export class DriverLicenseNotificationComponent implements OnInit {
   drivers: Driver[] = [];

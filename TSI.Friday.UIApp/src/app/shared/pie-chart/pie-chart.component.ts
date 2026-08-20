@@ -1,13 +1,19 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { ApiService, ApiType, PaymentType, WebApiResponse } from '@friday/core';
+import { NgClass, NgIf } from '@angular/common';
+import { ChartComponent } from 'ng-apexcharts';
 
 @Component({
-  selector: 'app-pie-chart',
-  templateUrl: './pie-chart.component.html',
-  styleUrl: './pie-chart.component.scss',
-  standalone: false,
-  animations: [cardCollapseAnimation],
+    selector: 'app-pie-chart',
+    templateUrl: './pie-chart.component.html',
+    styleUrl: './pie-chart.component.scss',
+    animations: [cardCollapseAnimation],
+    imports: [
+        NgClass,
+        NgIf,
+        ChartComponent,
+    ],
 })
 export class PieChartComponent implements OnInit, OnChanges {
   @Input()

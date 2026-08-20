@@ -12,12 +12,13 @@ import {
 import { forkJoin } from 'rxjs';
 
 import { parsePassengerRows } from '../../utilities/passenger-import-parser';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-passenger-import',
-  templateUrl: './passenger-import.component.html',
-  styleUrl: './passenger-import.component.scss',
-  standalone: false,
+    selector: 'app-passenger-import',
+    templateUrl: './passenger-import.component.html',
+    styleUrl: './passenger-import.component.scss',
+    imports: [TranslatePipe],
 })
 export class PassengerImportComponent {
   tripId: string;

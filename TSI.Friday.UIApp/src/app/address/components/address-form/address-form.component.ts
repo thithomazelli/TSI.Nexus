@@ -1,4 +1,4 @@
-import { FormGroup } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import {
   Component,
@@ -26,12 +26,23 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AddressDetailsModalComponent } from '../address-details-modal/address-details-modal.component';
+import { NgClass, NgFor } from '@angular/common';
+import { NgxMaskDirective } from 'ngx-mask';
+import { ClickDirective } from '../../../core/directives/click.directive';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
-  selector: 'app-address-form',
-  templateUrl: './address-form.component.html',
-  styleUrl: './address-form.component.scss',
-  standalone: false,
+    selector: 'app-address-form',
+    templateUrl: './address-form.component.html',
+    styleUrl: './address-form.component.scss',
+    imports: [
+        NgClass,
+        ReactiveFormsModule,
+        NgFor,
+        NgxMaskDirective,
+        ClickDirective,
+        TranslatePipe,
+    ],
 })
 export class AddressFormComponent
   extends FormBaseComponent

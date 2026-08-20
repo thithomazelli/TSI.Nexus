@@ -6,16 +6,13 @@ import { QuoteProductFormComponent } from './components/quote-product-form/quote
 import { QuoteProductDetailsModalComponent } from './components/quote-product-details-modal/quote-product-details-modal.component';
 
 @NgModule({
-  declarations: [
-    QuoteProductsComponent,
-    QuoteProductDetailsModalComponent,
-    QuoteProductFormComponent,
-  ],
-  imports: [CommonModule, SharedModule],
-  exports: [
-    QuoteProductsComponent,
-    QuoteProductDetailsModalComponent,
-    QuoteProductFormComponent,
-  ],
+    imports: [CommonModule, SharedModule, QuoteProductsComponent,
+        QuoteProductDetailsModalComponent,
+        QuoteProductFormComponent],
+    exports: [
+        QuoteProductsComponent,
+        QuoteProductDetailsModalComponent,
+        QuoteProductFormComponent,
+    ],
 })
 export class QuoteProductsSharedModule {}

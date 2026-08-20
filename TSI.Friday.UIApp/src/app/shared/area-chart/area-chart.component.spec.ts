@@ -8,8 +8,8 @@ describe('AreaChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [AreaChartComponent],
-    }).compileComponents();
+    imports: [AreaChartComponent],
+}).compileComponents();
 
     fixture = TestBed.createComponent(AreaChartComponent);
     component = fixture.componentInstance;
