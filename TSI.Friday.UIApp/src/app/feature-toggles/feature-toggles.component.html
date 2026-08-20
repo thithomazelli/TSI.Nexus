@@ -49,7 +49,7 @@
         class="list-group list-group-flush"
       >
         <li
-          *ngFor="let featureToggle of groupToggles"
+          *ngFor="let featureToggle of groupToggles; trackBy: trackByToggleKey"
           class="list-group-item d-flex justify-content-between align-items-center"
         >
           <div>
@@ -71,13 +71,13 @@
 
       <!-- Detailed view: entity-by-entity switches, grouped under their parent module -->
       <div *ngIf="!loading && activeTab === 'detailed'">
-        <div *ngFor="let groupView of detailedGroups" class="mb-4">
+        <div *ngFor="let groupView of detailedGroups; trackBy: trackByGroupKey" class="mb-4">
           <h6 class="fw-bold border-bottom pb-2">
             {{ groupView.group.name }}
           </h6>
           <ul class="list-group list-group-flush">
             <li
-              *ngFor="let featureToggle of groupView.entities"
+              *ngFor="let featureToggle of groupView.entities; trackBy: trackByToggleKey"
               class="list-group-item d-flex justify-content-between align-items-center"
             >
               <div>

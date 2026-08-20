@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   BusinessPartnerService,
+  BusinessPartnerType,
   Company,
   Individual,
   TranslationService,
@@ -52,7 +53,17 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
       this.getBusinessPartnerById(idParam);
     } else {
       this.isEdit = false;
-      this.data = null;
+      // business-partner-form's `type` control is required but has no visible input of its own -
+      // it's meant to be set from context (Client vs Supplier), the same way the list page's
+      // "Adicionar" modal already does via business-partners.component.ts's openModal(). Without
+      // this, the form is permanently invalid and "Adicionar Cliente"/"Adicionar Fornecedor" via
+      // the full page (as opposed to the modal) could never actually be submitted.
+      this.data = {
+        type:
+          this.baseEndPoint === 'clients'
+            ? BusinessPartnerType.Client
+            : BusinessPartnerType.Supplier,
+      } as Individual;
     }
   }
 

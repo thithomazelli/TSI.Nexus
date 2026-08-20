@@ -196,7 +196,10 @@ export class DriverFormComponent
       // RG não tem padrão nacional único (varia por estado), então só filtramos dígitos via
       // máscara, sem validador de tamanho/checksum fixo.
       nationalIdCard: [''],
-      birthday: [null as Date | null],
+      // Backend Driver.Birthday is a non-nullable DateTime - leaving this blank sent JSON null
+      // and the API rejected it with a raw deserialization error instead of a friendly
+      // validation message.
+      birthday: [null as Date | null, Validators.required],
       // CNH: registro nacional de 11 dígitos. Não valida o dígito verificador (algoritmo módulo
       // 11 pouco documentado/testável), só o formato de 11 números.
       licenseNumber: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],

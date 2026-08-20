@@ -48,6 +48,17 @@ export class FeatureTogglesComponent implements OnInit {
       .filter((g) => g.entities.length > 0);
   }
 
+  // detailedGroups is a getter that wraps each group in a brand new object literal on every
+  // change-detection pass, so *ngFor's default identity-based tracking keeps destroying/
+  // recreating the DOM for it - the same NG0103-prone pattern fixed elsewhere this session.
+  trackByGroupKey(_index: number, groupView: FeatureToggleGroupView): string | undefined {
+    return groupView.group.key;
+  }
+
+  trackByToggleKey(_index: number, featureToggle: FeatureToggle): string | undefined {
+    return featureToggle.key;
+  }
+
   toggle(featureToggle: FeatureToggle): void {
     if (!featureToggle.key || this.savingKey) {
       return;

@@ -348,9 +348,12 @@ export class UserFormComponent
       lastName: [
         '',
         [
+          // maxLength must match RegisterDto.LastName's [StringLength(15, ...)] on the backend -
+          // it was 30 here, so a 16-30 char last name passed client validation cleanly and only
+          // failed after submit with a raw backend error.
           Validators.required,
           Validators.minLength(3),
-          Validators.maxLength(30),
+          Validators.maxLength(15),
         ],
       ],
       email: [
@@ -367,7 +370,13 @@ export class UserFormComponent
     this.form = !this.isEdit
       ? this.formBuilder.group({
           ...commonControls,
-          password: ['', [Validators.required]],
+          // RegisterDto.Password is [StringLength(15, MinimumLength = 6)] on the backend - without
+          // matching bounds here, a too-short or too-long password passes client validation and
+          // only fails after submit with a raw backend error.
+          password: [
+            '',
+            [Validators.required, Validators.minLength(6), Validators.maxLength(15)],
+          ],
         })
       : this.formBuilder.group({
           id: [''],
