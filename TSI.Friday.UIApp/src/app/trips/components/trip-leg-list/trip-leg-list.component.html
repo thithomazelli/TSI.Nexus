@@ -1,48 +1,13 @@
 <div class="trip-leg-list">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">{{ 'TRIPS.ITINERARY' | translate }}</h5>
-    <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
-      <i class="bi bi-plus-lg"></i> {{ 'TRIPS.NEW_LEG' | translate }}
-    </button>
-  </div>
-
-  <table class="table table-sm">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>{{ 'TRIPS.ORIGIN' | translate }}</th>
-        <th>{{ 'TRIPS.DESTINATION' | translate }}</th>
-        <th>{{ 'TRIPS.DEPARTURE' | translate }}</th>
-        <th>{{ 'VEHICLES.KM' | translate }}</th>
-        <th style="width: 60px"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (leg of tripLegs; track leg.id) {
-        <tr>
-          <td>{{ leg.sequenceNumber }}</td>
-          <td>{{ leg.origin }}</td>
-          <td>{{ leg.destination }}</td>
-          <td>{{ leg.departureDate | date: 'dd/MM/yyyy HH:mm' }}</td>
-          <td>{{ leg.distanceKm }}</td>
-          <td>
-            <button
-              type="button"
-              class="btn btn-link btn-sm p-0 text-danger"
-              [title]="'COMMON.REMOVE' | translate"
-              (click)="removeTripLeg(leg)"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="6" class="text-center text-muted small py-3">
-            {{ 'TRIPS.NO_LEGS_REGISTERED' | translate }}
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+  <app-grid
+    [className]="'TRIPS.ITINERARY' | translate"
+    [compactView]="true"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [canAdd]="true"
+    [refresh]="refresh.bind(this)"
+    [update]="noop.bind(this)"
+    [delete]="deleteTripLeg.bind(this)"
+    (openModal)="openModal($event)"
+  ></app-grid>
 </div>

@@ -46,7 +46,7 @@
             </div>
           </div>
 
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-4">
             <div class="input-group">
               <div class="form-floating flex-fill">
                 <input
@@ -61,23 +61,23 @@
               <div class="input-group-text"><i class="bi bi-card-text"></i></div>
             </div>
           </div>
-          <div class="col-12 col-md-6">
+          <div class="col-12 col-md-4">
             <div class="input-group">
               <div class="form-floating flex-fill">
                 <input
                   type="text"
                   class="form-control"
                   [value]="form.get('driverLicenseExpiryDate')?.value | date: 'dd/MM/yyyy'"
-                  [placeholder]="'TRIPS.LICENSE_EXPIRY' | translate"
+                  [placeholder]="'DRIVERS.LICENSE_EXPIRY' | translate"
                   disabled
                 />
-                <label>{{ 'TRIPS.LICENSE_EXPIRY' | translate }}</label>
+                <label>{{ 'DRIVERS.LICENSE_EXPIRY' | translate }}</label>
               </div>
               <div class="input-group-text"><i class="bi bi-calendar2-week"></i></div>
             </div>
           </div>
 
-          <div class="col-12">
+          <div class="col-12 col-md-4">
             <app-currency-field
               formControlName="amount"
               [label]="'TRIPS.DRIVER_AMOUNT' | translate"

@@ -13,6 +13,7 @@ import {
   ColDef,
   GridApi,
   GridReadyEvent,
+  RowDoubleClickedEvent,
 } from 'ag-grid-community';
 import { map } from 'rxjs';
 
@@ -32,6 +33,9 @@ const AG_GRID_LOCALES: Record<string, Record<string, string>> = {
 export class GridComponent<T> implements OnInit {
   @Input()
   filtersTemplate?: TemplateRef<any>;
+
+  @Input()
+  extraActionsTemplate?: TemplateRef<any>;
 
   @Input()
   baseEndPoint: string = '';
@@ -173,6 +177,12 @@ export class GridComponent<T> implements OnInit {
     this._actionsMap[action](event.data);
   }
 
+  onRowDoubleClicked(event: RowDoubleClickedEvent): void {
+    if (event.data) {
+      this.editAction(event.data);
+    }
+  }
+
   openAddModal(): void {
     const initialState = {
       isEdit: false,
@@ -182,7 +192,7 @@ export class GridComponent<T> implements OnInit {
     this.openModal.emit(initialState);
   }
 
-  private editAction(data: any): void {
+  editAction(data: any): void {
     const initialState = {
       isEdit: true,
       data: data,

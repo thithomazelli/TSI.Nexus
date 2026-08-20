@@ -1,119 +1,205 @@
 <div class="modal-header">
-  <h5 class="modal-title">{{ 'TRIPS.NEW_LEG' | translate }}</h5>
+  <h5 class="modal-title">{{ (isEdit ? 'TRIPS.EDIT_LEG_ITEM' : 'TRIPS.NEW_LEG') | translate }}</h5>
   <button type="button" class="btn-close" (click)="close()"></button>
 </div>
 
 <div class="modal-body">
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="modal-scrollable-area">
-    <div class="row g-2 mb-2">
-      <div class="col-12">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="origin"
-              type="text"
-              [placeholder]="'TRIPS.ORIGIN' | translate"
-              class="form-control"
-              id="origin"
-            />
-            <label for="origin">{{ 'TRIPS.ORIGIN' | translate }}</label>
+      @if (isEdit) {
+        <div class="row g-2 mb-2">
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="origin"
+                  type="text"
+                  [placeholder]="'TRIPS.ORIGIN' | translate"
+                  class="form-control"
+                  id="legOrigin"
+                />
+                <label for="legOrigin">{{ 'TRIPS.ORIGIN' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+            </div>
           </div>
-          <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="destination"
+                  type="text"
+                  [placeholder]="'TRIPS.DESTINATION' | translate"
+                  class="form-control"
+                  id="legDestination"
+                />
+                <label for="legDestination">{{ 'TRIPS.DESTINATION' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-geo-alt-fill"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <app-date-field
+              formControlName="dateOnly"
+              [label]="'TRIPS.DEPARTURE_DATE' | translate"
+            ></app-date-field>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="time"
+                  type="time"
+                  [placeholder]="'TRIPS.DEPARTURE_TIME' | translate"
+                  class="form-control"
+                  id="legTime"
+                />
+                <label for="legTime">{{ 'TRIPS.DEPARTURE_TIME' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-clock"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="distanceKm"
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIPS.LEG_DISTANCE_KM' | translate"
+                  class="form-control"
+                  id="legDistanceKm"
+                />
+                <label for="legDistanceKm">{{ 'TRIPS.LEG_DISTANCE_KM' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="notes"
+                  type="text"
+                  [placeholder]="'COMMON.OBSERVATIONS' | translate"
+                  class="form-control"
+                  id="legNotes"
+                />
+                <label for="legNotes">{{ 'COMMON.OBSERVATIONS' | translate }}</label>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      } @else {
+        <div class="row g-2 mb-2">
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="origin"
+                  type="text"
+                  [placeholder]="'TRIPS.ORIGIN' | translate"
+                  class="form-control"
+                  id="origin"
+                />
+                <label for="origin">{{ 'TRIPS.ORIGIN' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+            </div>
+          </div>
+        </div>
 
-    <div formArrayName="stops">
-      @for (stop of stops.controls; track stop; let i = $index) {
-        <div [formGroupName]="i" class="border rounded p-2 mb-2">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <b class="small">{{ 'TRIPS.DESTINATION_NUM' | translate: { num: (i + 1) + '' } }}</b>
-            <button
-              type="button"
-              class="btn btn-link btn-sm p-0 text-danger"
-              [title]="'TRIPS.REMOVE_DESTINATION' | translate"
-              [disabled]="stops.length === 1"
-              (click)="removeStop(i)"
-            >
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-          <div class="row g-2">
-            <div class="col-12 col-md-6">
-              <div class="input-group">
-                <div class="form-floating flex-fill">
-                  <input
-                    formControlName="destination"
-                    type="text"
-                    [placeholder]="'TRIPS.DESTINATION' | translate"
-                    class="form-control"
-                    [id]="'destination-' + i"
-                  />
-                  <label [for]="'destination-' + i">{{ 'TRIPS.DESTINATION' | translate }}</label>
+        <div formArrayName="stops">
+          @for (stop of stops.controls; track stop; let i = $index) {
+            <div [formGroupName]="i" class="border rounded p-2 mb-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <b class="small">{{ 'TRIPS.DESTINATION_NUM' | translate: { num: (i + 1) + '' } }}</b>
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 text-danger"
+                  [title]="'TRIPS.REMOVE_DESTINATION' | translate"
+                  [disabled]="stops.length === 1"
+                  (click)="removeStop(i)"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="destination"
+                        type="text"
+                        [placeholder]="'TRIPS.DESTINATION' | translate"
+                        class="form-control"
+                        [id]="'destination-' + i"
+                      />
+                      <label [for]="'destination-' + i">{{ 'TRIPS.DESTINATION' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-geo-alt-fill"></i></div>
+                  </div>
                 </div>
-                <div class="input-group-text"><i class="bi bi-geo-alt-fill"></i></div>
+                <div class="col-12 col-md-6">
+                  <app-date-field
+                    formControlName="dateOnly"
+                    [label]="'TRIPS.DEPARTURE_DATE' | translate"
+                  ></app-date-field>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="time"
+                        type="time"
+                        [placeholder]="'TRIPS.DEPARTURE_TIME' | translate"
+                        class="form-control"
+                        [id]="'time-' + i"
+                      />
+                      <label [for]="'time-' + i">{{ 'TRIPS.DEPARTURE_TIME' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-clock"></i></div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="distanceKm"
+                        type="number"
+                        min="0"
+                        [placeholder]="'TRIPS.LEG_DISTANCE_KM' | translate"
+                        class="form-control"
+                        [id]="'distanceKm-' + i"
+                      />
+                      <label [for]="'distanceKm-' + i">{{ 'TRIPS.LEG_DISTANCE_KM' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="notes"
+                        type="text"
+                        [placeholder]="'COMMON.OBSERVATIONS' | translate"
+                        class="form-control"
+                        [id]="'notes-' + i"
+                      />
+                      <label [for]="'notes-' + i">{{ 'COMMON.OBSERVATIONS' | translate }}</label>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="col-12 col-md-6">
-              <app-date-field
-                formControlName="dateOnly"
-                [label]="'TRIPS.DEPARTURE_DATE' | translate"
-              ></app-date-field>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="input-group">
-                <div class="form-floating flex-fill">
-                  <input
-                    formControlName="time"
-                    type="time"
-                    [placeholder]="'TRIPS.DEPARTURE_TIME' | translate"
-                    class="form-control"
-                    [id]="'time-' + i"
-                  />
-                  <label [for]="'time-' + i">{{ 'TRIPS.DEPARTURE_TIME' | translate }}</label>
-                </div>
-                <div class="input-group-text"><i class="bi bi-clock"></i></div>
-              </div>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="input-group">
-                <div class="form-floating flex-fill">
-                  <input
-                    formControlName="distanceKm"
-                    type="number"
-                    min="0"
-                    [placeholder]="'TRIPS.LEG_DISTANCE_KM' | translate"
-                    class="form-control"
-                    [id]="'distanceKm-' + i"
-                  />
-                  <label [for]="'distanceKm-' + i">{{ 'TRIPS.LEG_DISTANCE_KM' | translate }}</label>
-                </div>
-                <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
-              </div>
-            </div>
-            <div class="col-12">
-              <div class="input-group">
-                <div class="form-floating flex-fill">
-                  <input
-                    formControlName="notes"
-                    type="text"
-                    [placeholder]="'COMMON.OBSERVATIONS' | translate"
-                    class="form-control"
-                    [id]="'notes-' + i"
-                  />
-                  <label [for]="'notes-' + i">{{ 'COMMON.OBSERVATIONS' | translate }}</label>
-                </div>
-              </div>
-            </div>
-          </div>
+          }
         </div>
+
+        <button type="button" class="btn btn-outline-primary btn-sm mb-3" (click)="addStop()">
+          <i class="bi bi-plus-lg"></i> {{ 'TRIPS.ADD_DESTINATION' | translate }}
+        </button>
       }
-    </div>
-
-    <button type="button" class="btn btn-outline-primary btn-sm mb-3" (click)="addStop()">
-      <i class="bi bi-plus-lg"></i> {{ 'TRIPS.ADD_DESTINATION' | translate }}
-    </button>
     </div>
 
     <div class="d-flex justify-content-end mt-3">

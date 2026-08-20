@@ -20,7 +20,9 @@ import { forkJoin, Observable } from 'rxjs';
 export class TripLegDetailsModalComponent {
   saving = false;
 
+  isEdit: boolean;
   tripId: string;
+  private _id: string | null = null;
   private _nextSequenceNumber: number;
 
   form: FormGroup;
@@ -33,13 +35,28 @@ export class TripLegDetailsModalComponent {
     private notificationService: NotificationService,
     private translationService: TranslationService,
   ) {
-    this.tripId = dialogData?.tripId ?? '';
+    const existing: TripLeg | null = dialogData?.data ?? null;
+    this.isEdit = dialogData?.isEdit ?? !!existing?.id;
+    this.tripId = dialogData?.tripId ?? dialogData?.parentId ?? '';
     this._nextSequenceNumber = dialogData?.nextSequenceNumber ?? 1;
 
-    this.form = this.formBuilder.group({
-      origin: ['', Validators.required],
-      stops: this.formBuilder.array([this.buildStopGroup()]),
-    });
+    if (this.isEdit && existing) {
+      this._id = existing.id ?? null;
+      const { dateOnly, time } = this.splitDateAndTime(existing.departureDate);
+      this.form = this.formBuilder.group({
+        origin: [existing.origin ?? '', Validators.required],
+        destination: [existing.destination ?? '', Validators.required],
+        dateOnly: [dateOnly, Validators.required],
+        time: [time],
+        distanceKm: [existing.distanceKm ?? 0, [Validators.min(0)]],
+        notes: [existing.notes ?? ''],
+      });
+    } else {
+      this.form = this.formBuilder.group({
+        origin: ['', Validators.required],
+        stops: this.formBuilder.array([this.buildStopGroup()]),
+      });
+    }
   }
 
   get stops(): FormArray {
@@ -66,6 +83,45 @@ export class TripLegDetailsModalComponent {
       return;
     }
 
+    if (this.isEdit) {
+      this.submitEdit();
+    } else {
+      this.submitAdd();
+    }
+  }
+
+  private submitEdit(): void {
+    const raw = this.form.getRawValue();
+    const tripLeg = {
+      id: this._id as string,
+      tripId: this.tripId,
+      origin: raw.origin,
+      destination: raw.destination,
+      departureDate: this.combineDateAndTime(raw.dateOnly, raw.time),
+      distanceKm: raw.distanceKm ?? 0,
+      notes: raw.notes ?? '',
+    } as TripLeg;
+
+    this.saving = true;
+    this.tripLegService.update(tripLeg).subscribe({
+      next: (response: WebApiResponse<TripLeg>) => {
+        this.saving = false;
+        this.notificationService.showMessage(response.status, response.message);
+        if (response.status === ResponseStatus.Success) {
+          this.dialogRef.close(response);
+        }
+      },
+      error: () => {
+        this.saving = false;
+        this.notificationService.showMessage(
+          ResponseStatus.Error,
+          this.translationService.instant('TRIPS.SAVE_LEGS_ERROR'),
+        );
+      },
+    });
+  }
+
+  private submitAdd(): void {
     const raw = this.form.getRawValue();
     const legs: TripLeg[] = [];
     let previousPoint = raw.origin!;
@@ -151,5 +207,21 @@ export class TripLegDetailsModalComponent {
     }
     const [hours, minutes] = (time || '00:00').split(':').map((part) => Number(part));
     return new Date(year, (month || 1) - 1, day || 1, hours || 0, minutes || 0);
+  }
+
+  private splitDateAndTime(date: string | Date | null | undefined): {
+    dateOnly: Date | null;
+    time: string;
+  } {
+    if (!date) {
+      return { dateOnly: null, time: '' };
+    }
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return { dateOnly: null, time: '' };
+    }
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return { dateOnly: d, time: `${hours}:${minutes}` };
   }
 }

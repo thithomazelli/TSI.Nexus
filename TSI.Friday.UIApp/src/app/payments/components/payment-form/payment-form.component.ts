@@ -12,7 +12,6 @@ import { MatDialogRef } from '@angular/material/dialog';
 
 import {
   BusinessPartner,
-  CurrencyService,
   FormBaseComponent,
   Order,
   Trip,
@@ -110,7 +109,6 @@ export class PaymentFormComponent
   private _subscriptions: Subscription[] = [];
 
   constructor(
-    private currencyService: CurrencyService,
     private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
@@ -126,19 +124,6 @@ export class PaymentFormComponent
     this.patchFormWithData();
     this.disableEditFields();
     this.loadCategories();
-
-    // Subscription para price
-    this._subscriptions.push(
-      this.form.get('price')!.valueChanges.subscribe((price: number) => {
-        const payments = this.form.get('totalOfPayments')?.value || 1;
-        const validInstallments = payments > 0 ? payments : 1;
-        const perInstallment = price / validInstallments;
-        this.form.get('pricePerInstallment')?.setValue(perInstallment);
-        this.form
-          .get('pricePerInstallmentFormatted')
-          ?.setValue(this.currencyService.formatCurrencyBRL(perInstallment));
-      }),
-    );
   }
 
   ngOnChanges(changes: SimpleChanges): void {

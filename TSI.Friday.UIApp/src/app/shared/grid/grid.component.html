@@ -33,6 +33,10 @@
       <i class="bi bi-arrow-clockwise"></i>
       {{ 'GRID.REFRESH' | translate }}
     </button>
+    <ng-container
+      *ngIf="extraActionsTemplate"
+      [ngTemplateOutlet]="extraActionsTemplate"
+    ></ng-container>
     <button *ngIf="canAdd" class="btn btn-success" (click)="openAddModal()">
       <i class="bi bi-plus-lg"></i>
       {{ 'COMMON.ADD' | translate }}
@@ -60,6 +64,7 @@
     [quickFilterText]="quickFilter"
     (gridReady)="onGridReady($event)"
     (cellClicked)="onCellClicked($event)"
+    (rowDoubleClicked)="onRowDoubleClicked($event)"
     (firstDataRendered)="onFirstDataRendered($event)"
   >
   </ag-grid-angular>

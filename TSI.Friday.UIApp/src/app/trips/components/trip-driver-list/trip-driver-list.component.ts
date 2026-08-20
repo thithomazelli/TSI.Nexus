@@ -132,7 +132,7 @@ export class TripDriverListComponent
       },
       {
         field: 'driverLicenseExpiryDate',
-        headerName: this.translationService.instant('TRIPS.LICENSE_EXPIRY'),
+        headerName: this.translationService.instant('DRIVERS.LICENSE_EXPIRY'),
         sortable: true,
         filter: true,
         flex: 1,

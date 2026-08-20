@@ -11,8 +11,11 @@ import {
   NotificationService,
   Passenger,
   PassengerService,
+  ResponseStatus,
+  TranslationService,
   WebApiResponse,
 } from '@friday/core';
+import { ColDef, ValueFormatterParams } from 'ag-grid-community';
 import { Subject, takeUntil } from 'rxjs';
 
 import { PassengerDetailsModalComponent } from '../passenger-details-modal/passenger-details-modal.component';
@@ -28,17 +31,23 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
   tripId!: string;
 
-  passengers: Passenger[] = [];
+  rowData: Passenger[] = [];
+  columnDefs: ColDef[] = [];
 
   private _destroy$ = new Subject<void>();
 
   constructor(
+    private modalService: ModalService,
     private notificationService: NotificationService,
     private passengerService: PassengerService,
-    private modalService: ModalService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
+    this.initializeColumnDefs();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeColumnDefs());
     this.load();
     this.passengerService.passengerChanged$
       .pipe(takeUntil(this._destroy$))
@@ -56,10 +65,10 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
     this._destroy$.complete();
   }
 
-  openModal(passenger?: Passenger): void {
+  openModal(initialState: any): void {
     this.modalService.showTemplateModal(PassengerDetailsModalComponent, {
+      ...initialState,
       tripId: this.tripId,
-      data: passenger ?? null,
     });
   }
 
@@ -69,16 +78,93 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  removePassenger(passenger: Passenger): void {
+  refresh(): void {
+    this.load(true);
+  }
+
+  // <app-grid>'s [update] input is required (no toggle-style action column here to trigger it).
+  noop(): void {}
+
+  deletePassenger(passenger: Passenger): void {
     this.passengerService
       .delete(passenger)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Passenger>) => {
-        this.notificationService.showMessage(response.status, response.message);
+        const isSuccess = response.status === ResponseStatus.Success;
+        if (isSuccess) {
+          this.rowData = this.rowData.filter((p) => p.id !== passenger.id);
+        }
+
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          '',
+          response.message,
+          response.status,
+        );
       });
   }
 
-  private load(): void {
+  private initializeColumnDefs(): void {
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        hide: true,
+      },
+      {
+        field: 'name',
+        headerName: this.translationService.instant('COMMON.NAME'),
+        sortable: true,
+        filter: true,
+        flex: 2,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="edit" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'documentNumber',
+        headerName: this.translationService.instant('TRIPS.DOCUMENT'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+      },
+      {
+        field: 'seat',
+        headerName: this.translationService.instant('TRIPS.SEAT'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+      },
+      {
+        field: 'phone',
+        headerName: this.translationService.instant('COMMON.PHONE'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+      },
+      {
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
+        flex: 1,
+        minWidth: 150,
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellRenderer: () => {
+          return `
+            <button class="btn btn-info btn-sm" data-action="edit">
+              <i class="fas fa-edit" data-action="edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" data-action="delete">
+              <i class="fas fa-trash" data-action="delete"></i>
+            </button>
+          `;
+        },
+      },
+    ];
+  }
+
+  private load(isRefresh = false): void {
     if (!this.tripId) {
       return;
     }
@@ -86,7 +172,14 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
       .getByTrip(this.tripId)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response) => {
-        this.passengers = response.data ?? [];
+        this.rowData = response.data ?? [];
+
+        if (isRefresh) {
+          this.notificationService.showMessage(
+            ResponseStatus.Success,
+            this.translationService.instant('TRIPS.PASSENGERS_REFRESHED'),
+          );
+        }
       });
   }
 }
