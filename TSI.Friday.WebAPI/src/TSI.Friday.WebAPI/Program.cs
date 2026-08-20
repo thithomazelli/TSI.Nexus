@@ -37,6 +37,13 @@ builder
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        // Several entity pairs have bidirectional EF Core navigation properties
+        // (Vehicle<->VehicleMaintenance, Commission<->ServiceOrder, ...) that get fixed up on
+        // both sides when loaded into the same tracked DbContext, producing a reference cycle
+        // the serializer can't walk. IgnoreCycles just omits the back-reference instead of
+        // throwing, without changing the JSON shape (no $id/$values wrappers) for the rest of
+        // the payload the Angular app already expects.
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

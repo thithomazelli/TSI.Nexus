@@ -190,7 +190,13 @@ export class TransactionFormComponent
           } else {
             businessPartnerNameCtrl.clearValidators();
           }
-          businessPartnerNameCtrl.updateValueAndValidity();
+          // emitEvent: false - this only recomputes validity after setValidators/clearValidators
+          // above, it isn't a real value change. Left at its true default, it synchronously
+          // notifies the businessPartnerName valueChanges subscription set up in initForm(),
+          // which reads this.businessPartnersArray$ - not yet (re)assigned until
+          // setupAutoComplete() below runs - causing "Cannot read properties of undefined
+          // (reading 'subscribe')".
+          businessPartnerNameCtrl.updateValueAndValidity({ emitEvent: false });
           this.resetBusinessPartnerSelection();
           this.setupAutoComplete();
         }),
@@ -202,7 +208,10 @@ export class TransactionFormComponent
       } else {
         businessPartnerNameCtrl.clearValidators();
       }
-      businessPartnerNameCtrl.updateValueAndValidity();
+      // emitEvent: false - same reason as above: businessPartnersArray$ isn't assigned yet
+      // (setupAutoComplete() only runs after this block), so a real emission here reaches the
+      // initForm() subscription before it has anything to subscribe to.
+      businessPartnerNameCtrl.updateValueAndValidity({ emitEvent: false });
     }
     this.setupAutoComplete();
   }

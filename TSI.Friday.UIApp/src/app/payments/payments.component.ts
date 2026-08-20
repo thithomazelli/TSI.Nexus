@@ -421,9 +421,17 @@ export class PaymentsComponent implements OnInit, OnDestroy {
 
     if (this.entity === '') {
       payments$ = this.paymentService.getAll();
+    } else if (!this.parentData?.id) {
+      // Scoped to a parent entity (Order/Trip/BusinessPartner) that hasn't been saved yet (Add
+      // mode) - nothing to fetch, and calling the API with an undefined id 400s.
+      this.rowData = [];
+      if (callback) {
+        callback();
+      }
+      return;
     } else {
       payments$ = this.paymentService.getByEntityId(
-        this.parentData?.id!,
+        this.parentData.id,
         this.entity,
       );
     }

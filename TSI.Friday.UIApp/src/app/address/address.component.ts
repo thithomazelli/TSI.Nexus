@@ -237,8 +237,15 @@ export class AddressComponent {
   }
 
   private getAddresses(): void {
+    // No parentData.id yet means the business partner hasn't been saved (Add mode) - there's
+    // nothing to fetch, and calling the API with an empty id 404s.
+    if (!this.parentData?.id) {
+      this.rowData = [];
+      return;
+    }
+
     this.addressService
-      .getAllByBusinessPartnerId(this.parentData?.id ?? '')
+      .getAllByBusinessPartnerId(this.parentData.id)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Address[]>) => {
         this.rowData = response.data ?? [];
