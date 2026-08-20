@@ -42,6 +42,7 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
 
   activeTab:
     | 'details'
+    | 'drivers'
     | 'triplegs'
     | 'passengers'
     | 'payments'
@@ -81,7 +82,12 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
       this.getTripById(idParam);
     } else {
       this.isEdit = false;
-      this.data = null;
+      // app-trip-form's own default for its `data` @Input is `{}`, which it relies on to build up
+      // the new Trip via submit()'s Object.assign(this.data!, rawValue) - passing null here (as
+      // opposed to just omitting the binding) overrides that default and leaves it null all the
+      // way to save(), which then POSTs a null body (see TripDto Add() 415 - same class of bug
+      // fixed earlier for business-partner-details-page's Add-mode `type` field).
+      this.data = {} as Trip;
     }
   }
 

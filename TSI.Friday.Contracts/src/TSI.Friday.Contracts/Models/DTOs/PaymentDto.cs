@@ -42,5 +42,9 @@ namespace TSI.Friday.Contracts.Models.DTOs
         public Guid? TripId { get; set; }
 
         public string TripNumber { get; set; }
+
+        public Guid? DriverId { get; set; }
+
+        public string DriverName { get; set; }
     }
 }

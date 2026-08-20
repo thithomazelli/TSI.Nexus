@@ -41,10 +41,15 @@ namespace TSI.Friday.Contracts.Models
 
         public virtual Vehicle? Vehicle { get; set; }
 
+        // Kept for backward compatibility with existing ServiceOrder/Commission/report code that
+        // still assumes a single driver per Trip. The "Motoristas" tab and its expense payments
+        // are driven entirely by TripDrivers now - a Trip can have any number of drivers.
         [ForeignKey("Driver")]
         public Guid? DriverId { get; set; }
 
         public virtual Driver? Driver { get; set; }
+
+        public virtual ICollection<TripDriver> TripDrivers { get; set; } = new List<TripDriver>();
 
         [ForeignKey("Transaction")]
         public Guid TransactionId { get; set; }

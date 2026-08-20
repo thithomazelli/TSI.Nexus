@@ -417,6 +417,12 @@ export const ES = {
     LEG_ADDED_SINGLE: 'Tramo agregado con éxito.',
     LEG_ADDED_PLURAL: '{count} tramos agregados con éxito.',
     SAVE_LEGS_ERROR: 'Error al guardar los tramos del itinerario.',
+    DRIVERS_TAB: 'Conductores',
+    ADD_DRIVER_BUTTON: 'Buscar',
+    NO_DRIVERS_ADDED: 'Ningún conductor agregado',
+    DRIVER_AMOUNT: 'Valor a Pagar',
+    DRIVER_ALREADY_ADDED_TITLE: 'Conductor ya agregado',
+    DRIVER_ALREADY_ADDED_MESSAGE: '{name} ya está asociado a este viaje.',
   },
   TRANSACTIONS: {
     DISCOUNT: 'Descuento',

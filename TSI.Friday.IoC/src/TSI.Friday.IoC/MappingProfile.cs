@@ -319,6 +319,32 @@ namespace TSI.Friday.IoC
             CreateMap<OrderProductDto, OrderProduct>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
+            // TripDriver mappings
+            CreateMap<TripDriver, TripDriverDto>()
+                .ForMember(
+                    dest => dest.TripNumber,
+                    opt => opt.MapFrom(src => src.Trip != null ? src.Trip.TripNumber : null)
+                )
+                .ForMember(
+                    dest => dest.DriverName,
+                    opt => opt.MapFrom(src => src.Driver != null ? src.Driver.Name : null)
+                )
+                .ForMember(
+                    dest => dest.DriverLicenseNumber,
+                    opt =>
+                        opt.MapFrom(src => src.Driver != null ? src.Driver.LicenseNumber : null)
+                )
+                .ForMember(
+                    dest => dest.DriverLicenseExpiryDate,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Driver != null ? src.Driver.LicenseExpiryDate : default
+                        )
+                );
+
+            CreateMap<TripDriverDto, TripDriver>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
             // Transaction mappings
             CreateMap<Transaction, TransactionDto>()
                 .ForMember(
@@ -431,6 +457,10 @@ namespace TSI.Friday.IoC
                         opt.MapFrom(src =>
                             src.Transaction != null ? src.Transaction.Description : null
                         )
+                )
+                .ForMember(
+                    dest => dest.DriverName,
+                    opt => opt.MapFrom(src => src.Driver != null ? src.Driver.Name : null)
                 );
             CreateMap<PaymentDto, Payment>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));

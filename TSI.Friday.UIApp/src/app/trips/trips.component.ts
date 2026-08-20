@@ -2,6 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   ApiType,
   Company,
+  Driver,
   Individual,
   ModalService,
   NotificationService,
@@ -33,7 +34,7 @@ export class TripsComponent implements OnInit, OnDestroy {
   entity: string | null = '';
 
   @Input()
-  parentData: Individual | Company | null = null;
+  parentData: Individual | Company | Driver | null | undefined = null;
 
   baseEndPoint = ApiType.Trips;
   rowData: Trip[] = [];
@@ -298,10 +299,14 @@ export class TripsComponent implements OnInit, OnDestroy {
   }
 
   private getTrips(callback?: () => void, isRefresh = false): void {
-    let trips$: Observable<WebApiResponse<Trip[]>> =
-      this.entity != '' && this.parentData?.id != null
-        ? this.tripService.getByBusinessPartnerId(this.parentData.id)
-        : this.tripService.getAll();
+    let trips$: Observable<WebApiResponse<Trip[]>>;
+    if (this.entity === 'Driver' && this.parentData?.id != null) {
+      trips$ = this.tripService.getByDriverId(this.parentData.id);
+    } else if (this.entity != '' && this.parentData?.id != null) {
+      trips$ = this.tripService.getByBusinessPartnerId(this.parentData.id);
+    } else {
+      trips$ = this.tripService.getAll();
+    }
 
     trips$
       .pipe(takeUntil(this._destroy$))

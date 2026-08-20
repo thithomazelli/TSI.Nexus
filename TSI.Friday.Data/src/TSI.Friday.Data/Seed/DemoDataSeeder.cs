@@ -115,6 +115,14 @@ namespace TSI.Friday.Data.Seed
                 await context.Payment.AddRangeAsync(expenses);
                 await context.SaveChangesAsync();
 
+                // ---- Phase 7c: TripDrivers (a Trip can have any number of drivers now - each
+                // one's Amount becomes its own Outgoing Payment/expense on the Trip's own
+                // Transaction, see BuildTripDrivers) ----
+                var tripDrivers = BuildTripDrivers(faker, trips, drivers, now, out var tripDriverPayments);
+                await context.Payment.AddRangeAsync(tripDriverPayments);
+                await context.TripDriver.AddRangeAsync(tripDrivers);
+                await context.SaveChangesAsync();
+
                 // ---- Phase 8: TripLegs + Passengers ----
                 var tripLegs = BuildTripLegs(faker, trips);
                 await context.TripLeg.AddRangeAsync(tripLegs);
@@ -153,7 +161,8 @@ namespace TSI.Friday.Data.Seed
                 logger?.LogInformation(
                     "DemoDataSeeder: seeded {BusinessPartners} business partners, {Products} products, "
                         + "{Drivers} drivers, {Vehicles} vehicles, {Quotes} quotes, {Orders} orders, "
-                        + "{Trips} trips, {Payments} payments, {Expenses} expenses, {TripLegs} trip legs, "
+                        + "{Trips} trips, {Payments} payments, {Expenses} expenses, {TripDrivers} trip drivers, "
+                        + "{TripLegs} trip legs, "
                         + "{Passengers} passengers, {FuelLogs} fuel logs, {Maintenances} maintenances, "
                         + "{ServiceOrders} service orders, {Commissions} commissions.",
                     businessPartners.Count,
@@ -165,6 +174,7 @@ namespace TSI.Friday.Data.Seed
                     trips.Count,
                     payments.Count + tripPayments.Count,
                     expenses.Count,
+                    tripDrivers.Count,
                     tripLegs.Count,
                     passengers.Count,
                     fuelLogs.Count,
@@ -635,6 +645,71 @@ namespace TSI.Friday.Data.Seed
             }
 
             return trips;
+        }
+
+        // A Trip can have any number of drivers now (see TripDriver) - trip.DriverId above is
+        // kept only for the existing ServiceOrder/Commission generation below, which still
+        // assumes a single driver. This assigns 1-2 real drivers per trip (independent of
+        // trip.DriverId) and, mirroring TripDriverService.Add, gives each one its own Outgoing
+        // Payment/expense on the trip's Transaction.
+        private static List<TripDriver> BuildTripDrivers(
+            Faker faker,
+            List<Trip> trips,
+            List<Driver> drivers,
+            DateTime now,
+            out List<Payment> payments
+        )
+        {
+            var result = new List<TripDriver>();
+            payments = new List<Payment>();
+
+            var activeDrivers = drivers.Where(d => d.Status == DriverStatus.Active).ToList();
+            if (activeDrivers.Count == 0)
+            {
+                return result;
+            }
+
+            foreach (var trip in trips)
+            {
+                var driverCount = faker.Random.Number(1, Math.Min(2, activeDrivers.Count));
+                var chosenDrivers = faker.PickRandom(activeDrivers, driverCount).ToList();
+
+                foreach (var driver in chosenDrivers)
+                {
+                    var amount = faker.Random.Decimal(150, 600);
+
+                    var payment = new Payment
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = PaymentType.Outgoing,
+                        Status = PaymentStatus.Pending,
+                        Condition = PaymentCondition.FullPayment,
+                        Method = PaymentMethod.Cash,
+                        Category = "Motorista",
+                        Date = trip.Date,
+                        Description = $"Pagamento Motorista - {driver.Name} - Viagem {trip.TripNumber}",
+                        PaymentNumber = 1,
+                        Price = amount,
+                        TransactionId = trip.TransactionId,
+                        TripId = trip.Id,
+                        DriverId = driver.Id,
+                    };
+                    payments.Add(payment);
+
+                    result.Add(
+                        new TripDriver
+                        {
+                            Id = Guid.NewGuid(),
+                            TripId = trip.Id,
+                            DriverId = driver.Id,
+                            Amount = amount,
+                            PaymentId = payment.Id,
+                        }
+                    );
+                }
+            }
+
+            return result;
         }
 
         private static List<OrderProduct> BuildOrderProducts(

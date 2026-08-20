@@ -66,6 +66,8 @@ namespace TSI.Friday.Data
 
         public DbSet<Trip> Trip { get; set; }
 
+        public DbSet<TripDriver> TripDriver { get; set; }
+
         public DbSet<QuoteTrip> QuoteTrip { get; set; }
 
         public DbSet<DocumentTemplate> DocumentTemplate { get; set; }

@@ -7,6 +7,7 @@ import { TripLegDetailsModalComponent } from './components/trip-leg-details-moda
 import { PassengerListComponent } from './components/passenger-list/passenger-list.component';
 import { PassengerDetailsModalComponent } from './components/passenger-details-modal/passenger-details-modal.component';
 import { PassengerImportComponent } from './components/passenger-import/passenger-import.component';
+import { TripDriverListComponent } from './components/trip-driver-list/trip-driver-list.component';
 
 import { TripsRoutingModule } from './trips-routing.module';
 import { NgxMaskDirective } from 'ngx-mask';
@@ -25,6 +26,7 @@ import { TripsSharedModule } from './trips-shared.module';
     PassengerListComponent,
     PassengerDetailsModalComponent,
     PassengerImportComponent,
+    TripDriverListComponent,
   ],
   imports: [
     TripsSharedModule,

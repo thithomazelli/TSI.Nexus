@@ -9,6 +9,7 @@ export * from './notification/notification.service';
 export * from './order/order.service';
 export * from './trip/trip.service';
 export * from './order-product/order-product.service';
+export * from './trip-driver/trip-driver.service';
 export * from './payment/payment.service';
 export * from './photo/photo.service';
 export * from './product/product.service';

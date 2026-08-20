@@ -1,6 +1,7 @@
 import { OrderStatus } from '../enums/order-status.enum';
 import { BaseModel } from './base.model';
 import { Transaction } from './transaction.model';
+import { TripDriver } from './trip-driver.model';
 
 export interface Trip extends BaseModel {
   id?: string;
@@ -24,4 +25,8 @@ export interface Trip extends BaseModel {
   quoteNumber?: string | null;
   transaction?: Transaction;
   transactionId?: string;
+  // Staging-only in Add mode (see trip-form's inline Motoristas grid) - flushed via
+  // TripDriverService.add() after the Trip itself is created, then unused (the "Motoristas" tab
+  // on trip-details-page manages TripDrivers live from then on).
+  tripDrivers?: TripDriver[];
 }

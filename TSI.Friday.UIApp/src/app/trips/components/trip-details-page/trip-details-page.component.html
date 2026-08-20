@@ -75,6 +75,14 @@
               <li class="nav-item" *ngIf="isEdit">
                 <a
                   class="nav-link"
+                  [class.active]="activeTab === 'drivers'"
+                  (click)="activeTab = 'drivers'"
+                  >{{ 'TRIPS.DRIVERS_TAB' | translate }}</a
+                >
+              </li>
+              <li class="nav-item" *ngIf="isEdit">
+                <a
+                  class="nav-link"
                   [class.active]="activeTab === 'triplegs'"
                   (click)="activeTab = 'triplegs'"
                   >{{ 'TRIPS.ITINERARY' | translate }}</a
@@ -113,6 +121,9 @@
               ></app-trip-form>
             </div>
 
+            <div *ngIf="activeTab === 'drivers'">
+              <app-trip-driver-list [tripId]="data!.id!"></app-trip-driver-list>
+            </div>
             <div *ngIf="activeTab === 'triplegs'">
               <app-trip-leg-list [tripId]="data!.id!"></app-trip-leg-list>
             </div>

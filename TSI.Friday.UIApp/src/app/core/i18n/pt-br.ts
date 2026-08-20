@@ -417,6 +417,12 @@ export const PT_BR = {
     LEG_ADDED_SINGLE: 'Trecho adicionado com sucesso.',
     LEG_ADDED_PLURAL: '{count} trechos adicionados com sucesso.',
     SAVE_LEGS_ERROR: 'Erro ao salvar os trechos do itinerário.',
+    DRIVERS_TAB: 'Motoristas',
+    ADD_DRIVER_BUTTON: 'Buscar',
+    NO_DRIVERS_ADDED: 'Nenhum motorista adicionado',
+    DRIVER_AMOUNT: 'Valor a Pagar',
+    DRIVER_ALREADY_ADDED_TITLE: 'Motorista já adicionado',
+    DRIVER_ALREADY_ADDED_MESSAGE: '{name} já está associado a esta viagem.',
   },
   TRANSACTIONS: {
     DISCOUNT: 'Desconto',

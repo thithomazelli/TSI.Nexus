@@ -417,6 +417,12 @@ export const EN = {
     LEG_ADDED_SINGLE: 'Leg added successfully.',
     LEG_ADDED_PLURAL: '{count} legs added successfully.',
     SAVE_LEGS_ERROR: 'Error saving itinerary legs.',
+    DRIVERS_TAB: 'Drivers',
+    ADD_DRIVER_BUTTON: 'Search',
+    NO_DRIVERS_ADDED: 'No drivers added',
+    DRIVER_AMOUNT: 'Amount to Pay',
+    DRIVER_ALREADY_ADDED_TITLE: 'Driver already added',
+    DRIVER_ALREADY_ADDED_MESSAGE: '{name} is already assigned to this trip.',
   },
   TRANSACTIONS: {
     DISCOUNT: 'Discount',

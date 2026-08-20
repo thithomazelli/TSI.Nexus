@@ -45,6 +45,14 @@ namespace TSI.Friday.Contracts.Models
 
         public Trip Trip { get; set; }
 
+        // Set when this Payment is the expense generated for a driver's TripDriver.Amount - lets
+        // a driver's "Pagamentos" tab query their payment history the same way BusinessPartner's
+        // getByBusinessPartnerId already works.
+        [ForeignKey("Driver")]
+        public Guid? DriverId { get; set; }
+
+        public Driver? Driver { get; set; }
+
         public ICollection<Attachment> Attachments { get; set; }
     }
 }

@@ -38,6 +38,24 @@
                 >{{ 'DRIVERS.SERVICE_ORDERS_TAB' | translate }}</a
               >
             </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="activeTab === 'trips'"
+                (click)="activeTab = 'trips'"
+                data-toggle="tab"
+                >{{ 'SIDEBAR.TRIPS' | translate }}</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="activeTab === 'payments'"
+                (click)="activeTab = 'payments'"
+                data-toggle="tab"
+                >{{ 'SIDEBAR.PAYMENTS' | translate }}</a
+              >
+            </li>
           </ul>
         }
 
@@ -50,6 +68,21 @@
           }
           @if (activeTab === 'serviceOrders' && data?.id) {
             <app-service-order-list [driverId]="data!.id"></app-service-order-list>
+          }
+          @if (activeTab === 'trips' && data?.id) {
+            <app-trips
+              [compact]="true"
+              [entity]="'Driver'"
+              [parentData]="data"
+            ></app-trips>
+          }
+          @if (activeTab === 'payments' && data?.id) {
+            <app-payments
+              [compact]="true"
+              [canAdd]="false"
+              [entity]="'Driver'"
+              [parentData]="data"
+            ></app-payments>
           }
         }
       </div>

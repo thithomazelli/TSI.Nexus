@@ -44,6 +44,18 @@ export class TripService {
       );
   }
 
+  getByDriverId(driverId: string): Observable<WebApiResponse<Trip[]>> {
+    return this.apiService
+      .get<
+        WebApiResponse<Trip[]>
+      >(`${this._baseEndPoint}/getByDriverId/${driverId}`)
+      .pipe(
+        tap((response) => {
+          this._trips$.next(response.data);
+        }),
+      );
+  }
+
   refreshTrips(): Observable<WebApiResponse<Trip[]>> {
     return this.getAll();
   }

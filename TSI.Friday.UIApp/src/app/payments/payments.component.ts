@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import {
   ApiType,
   BusinessPartner,
+  Driver,
   ModalService,
   Order,
   Trip,
@@ -44,7 +45,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
   entity: string = '';
 
   @Input()
-  parentData?: BusinessPartner | Order | Trip | Transaction | null = null;
+  parentData?: BusinessPartner | Order | Trip | Transaction | Driver | null = null;
 
   @Input()
   compact: boolean = false;

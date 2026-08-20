@@ -79,6 +79,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IOrderProductService, OrderProductService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<ITripService, TripService>();
+            services.AddScoped<ITripDriverService, TripDriverService>();
             services.AddScoped<ITransactionService, TransactionService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPhotoService, PhotoService>();
@@ -115,6 +116,7 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<Order>, Repository<Order>>();
             services.AddScoped<IRepository<OrderProduct>, Repository<OrderProduct>>();
             services.AddScoped<IRepository<Trip>, Repository<Trip>>();
+            services.AddScoped<IRepository<TripDriver>, Repository<TripDriver>>();
             services.AddScoped<IRepository<QuoteTrip>, Repository<QuoteTrip>>();
             services.AddScoped<IRepository<DocumentTemplate>, Repository<DocumentTemplate>>();
             services.AddScoped<IRepository<FeatureToggle>, Repository<FeatureToggle>>();

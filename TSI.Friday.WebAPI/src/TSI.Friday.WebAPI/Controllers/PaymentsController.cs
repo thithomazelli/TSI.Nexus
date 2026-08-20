@@ -146,6 +146,18 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         /// <summary>
+        /// Get transaction payments by driver id
+        /// </summary>
+        /// <param name="driverId">Driver id to be used in the search</param>
+        [HttpGet]
+        [Route("GetByDriverId/{driverId}")]
+        public async Task<IActionResult> GetByDriverId(Guid? driverId)
+        {
+            var webApiResponse = await _paymentService.FindByDriverId(driverId);
+            return Ok(webApiResponse);
+        }
+
+        /// <summary>
         /// Get transaction payments by transaction id
         /// </summary>
         /// <param name="OrderId">Order id to be used in the search</param>

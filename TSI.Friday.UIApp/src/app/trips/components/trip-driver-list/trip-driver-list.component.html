@@ -1,0 +1,97 @@
+<div class="trip-driver-list">
+  <h5 class="mb-2">{{ 'TRIPS.DRIVERS_TAB' | translate }}</h5>
+
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>{{ 'COMMON.NAME' | translate }}</th>
+        <th>{{ 'DRIVERS.LICENSE_NUMBER' | translate }}</th>
+        <th>{{ 'TRIPS.LICENSE_EXPIRY' | translate }}</th>
+        <th>{{ 'TRIPS.DRIVER_AMOUNT' | translate }}</th>
+        <th style="width: 40px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr [formGroup]="inlineTripDriverForm">
+        <td>
+          <input
+            type="text"
+            formControlName="driverName"
+            class="form-control form-control-sm grid-input"
+            [matAutocomplete]="inlineDriverAuto"
+            [placeholder]="'COMMON.NAME' | translate"
+            (blur)="onInlineDriverNameBlur()"
+          />
+          <mat-autocomplete
+            #inlineDriverAuto="matAutocomplete"
+            (optionSelected)="selectInlineTripDriver($event.option.value)"
+          >
+            <mat-option
+              *ngFor="let driver of filteredInlineDriversByName$ | async"
+              [value]="driver"
+            >
+              {{ driver.name }}
+            </mat-option>
+          </mat-autocomplete>
+        </td>
+        <td class="table-cell-info">{{ inlineTripDriverForm.get('driverLicenseNumber')?.value }}</td>
+        <td class="table-cell-info">
+          {{ inlineTripDriverForm.get('driverLicenseExpiryDate')?.value | date: 'dd/MM/yyyy' }}
+        </td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            formControlName="amount"
+            class="form-control form-control-sm grid-input"
+          />
+        </td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-link p-0"
+            [disabled]="!inlineTripDriverForm.get('driverId')?.value"
+            [title]="'TRIPS.ADD_DRIVER_BUTTON' | translate"
+            (click)="addInlineTripDriver()"
+          >
+            <i class="bi bi-plus-circle"></i>
+          </button>
+        </td>
+      </tr>
+      @for (item of tripDrivers; track item.id) {
+        <tr>
+          <td>{{ item.driverName }}</td>
+          <td>{{ item.driverLicenseNumber }}</td>
+          <td>{{ item.driverLicenseExpiryDate | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              class="form-control form-control-sm grid-input"
+              [(ngModel)]="item.amount"
+              (blur)="onAmountBlur(item)"
+            />
+          </td>
+          <td>
+            <button
+              type="button"
+              class="btn btn-link btn-sm p-0 text-danger"
+              [title]="'COMMON.REMOVE' | translate"
+              (click)="removeTripDriver(item)"
+            >
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="text-center text-muted small py-3">
+            {{ 'TRIPS.NO_DRIVERS_ADDED' | translate }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

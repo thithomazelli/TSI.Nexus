@@ -46,6 +46,8 @@ namespace TSI.Friday.Contracts.Models
         public virtual ICollection<ServiceOrder> ServiceOrders { get; set; } =
             new List<ServiceOrder>();
 
+        public virtual ICollection<TripDriver> TripDrivers { get; set; } = new List<TripDriver>();
+
         public ICollection<Attachment> Attachments { get; set; }
     }
 }

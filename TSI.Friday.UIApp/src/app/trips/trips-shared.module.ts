@@ -5,15 +5,22 @@ import { TripDetailsModalComponent } from './components/trip-details-modal/trip-
 import { TripFormComponent } from './components/trip-form/trip-form.component';
 import { SharedModule } from '../shared/shared.module';
 import { TransactionsSharedModule } from '../transactions/transactions-shared.module';
+import { DriversSharedModule } from '../drivers/drivers-shared.module';
 
 @NgModule({
   declarations: [TripsComponent, TripDetailsModalComponent, TripFormComponent],
-  imports: [CommonModule, SharedModule, TransactionsSharedModule],
+  imports: [
+    CommonModule,
+    SharedModule,
+    TransactionsSharedModule,
+    DriversSharedModule,
+  ],
   exports: [
     TripsComponent,
     TripDetailsModalComponent,
     TripFormComponent,
     SharedModule,
+    DriversSharedModule,
   ],
 })
 export class TripsSharedModule {}

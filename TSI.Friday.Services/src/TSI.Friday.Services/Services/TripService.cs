@@ -453,8 +453,10 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
+                // A Trip can have any number of drivers now (see TripDriver) - match on the
+                // junction instead of the legacy single Trip.DriverId column.
                 var trips = await _repository.QueryAsync(
-                    t => t.DriverId == driverId,
+                    t => t.TripDrivers.Any(td => td.DriverId == driverId),
                     p => p.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<TripDto>>(trips);
