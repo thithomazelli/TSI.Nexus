@@ -1,0 +1,115 @@
+<div class="trip-driver-form-wrapper" [ngClass]="{ compact: compact }">
+  <form [formGroup]="form">
+    <div class="modal-scrollable-area">
+      <section>
+        <div class="row g-1 mb-1">
+          <div class="col-12">
+            <div class="input-group position-relative">
+              <div class="form-floating flex-grow-1">
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="driverName"
+                    class="form-control"
+                    [matAutocomplete]="driverAuto"
+                    [class.is-invalid]="isInvalid('driverId')"
+                    [placeholder]="'COMMON.NAME' | translate"
+                    (blur)="onDriverNameBlur()"
+                  />
+                  <label for="driverName">{{ 'COMMON.NAME' | translate }}</label>
+                  <mat-autocomplete
+                    #driverAuto="matAutocomplete"
+                    (optionSelected)="selectDriver($event.option.value)"
+                  >
+                    <mat-option
+                      *ngFor="let driver of filteredDriversByName$ | async"
+                      [value]="driver"
+                      [disabled]="driver.alreadyUsed"
+                      [ngClass]="{ 'text-muted': driver.alreadyUsed }"
+                    >
+                      {{ driver.name }}
+                      <span *ngIf="driver.alreadyUsed" class="ms-2 text-muted"
+                        >{{ 'TRIPS.DRIVER_ALREADY_ADDED_TITLE' | translate }}</span
+                      >
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'COMMON.NAME' | translate"
+                    [text]="form.get('driverName')?.value || ('COMMON.NAME' | translate)"
+                    [linkUrl]="['/drivers', form.get('driverId')?.value]"
+                  >
+                  </app-link-field>
+                }
+              </div>
+              <div class="input-group-text"><i class="bi bi-person"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  type="text"
+                  class="form-control"
+                  [value]="form.get('driverLicenseNumber')?.value"
+                  [placeholder]="'DRIVERS.LICENSE_NUMBER' | translate"
+                  disabled
+                />
+                <label>{{ 'DRIVERS.LICENSE_NUMBER' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-card-text"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  type="text"
+                  class="form-control"
+                  [value]="form.get('driverLicenseExpiryDate')?.value | date: 'dd/MM/yyyy'"
+                  [placeholder]="'TRIPS.LICENSE_EXPIRY' | translate"
+                  disabled
+                />
+                <label>{{ 'TRIPS.LICENSE_EXPIRY' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-calendar2-week"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [placeholder]="'TRIPS.DRIVER_AMOUNT' | translate"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('amount')"
+                />
+                <label for="amount">{{ 'TRIPS.DRIVER_AMOUNT' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-cash-coin"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3 gap-2">
+      <button type="button" class="btn btn-secondary" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (isEdit) {
+        <button (click)="remove()" type="button" class="btn btn-danger">{{ 'COMMON.REMOVE' | translate }}</button>
+      }
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success"
+      >
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
+      </button>
+    </div>
+  </form>
+</div>

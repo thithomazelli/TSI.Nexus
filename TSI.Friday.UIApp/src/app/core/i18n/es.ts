@@ -423,6 +423,9 @@ export const ES = {
     DRIVER_AMOUNT: 'Valor a Pagar',
     DRIVER_ALREADY_ADDED_TITLE: 'Conductor ya agregado',
     DRIVER_ALREADY_ADDED_MESSAGE: '{name} ya está asociado a este viaje.',
+    ADD_DRIVER_ITEM: 'Agregar Conductor al Viaje',
+    EDIT_DRIVER_ITEM: 'Editar Conductor del Viaje',
+    DRIVERS_REFRESHED: 'Conductores actualizados con éxito',
   },
   TRANSACTIONS: {
     DISCOUNT: 'Descuento',

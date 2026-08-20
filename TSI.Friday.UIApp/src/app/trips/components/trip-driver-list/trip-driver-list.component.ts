@@ -6,11 +6,7 @@ import {
   OnInit,
   SimpleChanges,
 } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
 import {
-  Driver,
-  DriverService,
   ModalService,
   NotificationService,
   ResponseStatus,
@@ -19,9 +15,10 @@ import {
   TranslationService,
   WebApiResponse,
 } from '@friday/core';
-import { Observable, Subject, startWith, takeUntil, map } from 'rxjs';
+import { ColDef, ValueFormatterParams } from 'ag-grid-community';
+import { Subject, takeUntil } from 'rxjs';
 
-import { DriverDetailsModalComponent } from '../../../drivers/components/driver-details-modal/driver-details-modal.component';
+import { TripDriverDetailsModalComponent } from '../trip-driver-details-modal/trip-driver-details-modal.component';
 
 @Component({
   selector: 'app-trip-driver-list',
@@ -35,17 +32,12 @@ export class TripDriverListComponent
   @Input()
   tripId!: string;
 
-  tripDrivers: TripDriver[] = [];
-  drivers: Driver[] = [];
-
-  inlineTripDriverForm!: FormGroup;
-  filteredInlineDriversByName$!: Observable<Driver[]>;
+  rowData: TripDriver[] = [];
+  columnDefs: ColDef[] = [];
 
   private _destroy$ = new Subject<void>();
 
   constructor(
-    private driverService: DriverService,
-    private formBuilder: FormBuilder,
     private modalService: ModalService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
@@ -53,8 +45,10 @@ export class TripDriverListComponent
   ) {}
 
   ngOnInit(): void {
-    this.setupInlineTripDriverForm();
-    this.loadDrivers();
+    this.initializeColumnDefs();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeColumnDefs());
     this.load();
     this.tripDriverService.tripDriverChanged$
       .pipe(takeUntil(this._destroy$))
@@ -72,171 +66,118 @@ export class TripDriverListComponent
     this._destroy$.complete();
   }
 
-  async onInlineDriverNameBlur(): Promise<void> {
-    setTimeout(() => {
-      const driverName = this.inlineTripDriverForm
-        .get('driverName')!
-        .value?.trim();
-      if (!driverName) {
-        this.cleanInlineTripDriverSelection();
-        return;
-      }
-      const found = this.drivers.find((d) => d.name === driverName);
-      if (found) {
-        return;
-      }
-      const entityLabel = this.translationService.instant('SIDEBAR.DRIVER');
-      const confirmRef = this.modalService.showConfirmation({
-        title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: entityLabel }),
-        message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: entityLabel.toLowerCase(), name: driverName }),
-        cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
-        confirmButtonText: this.translationService.instant('COMMON.YES'),
-      });
-      confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-        if (confirmed) {
-          const driverFormRef: MatDialogRef<any> = this.modalService.showTemplateModal(
-            DriverDetailsModalComponent,
-            {
-              data: { name: driverName },
-              disableClose: true,
-            },
-          );
-          driverFormRef
-            .afterClosed()
-            .pipe(takeUntil(this._destroy$))
-            .subscribe((result: WebApiResponse<Driver> | undefined) => {
-              if (result?.data) {
-                this.drivers.push(result.data);
-                this.selectInlineTripDriver(result.data);
-              } else {
-                this.cleanInlineTripDriverSelection();
-              }
-            });
-        } else {
-          this.cleanInlineTripDriverSelection();
-        }
-      });
-    }, 200);
-  }
+  openModal(initialState: any): void {
+    const initialStateWithParent = {
+      ...initialState,
+      parentId: this.tripId,
+      parentData: this.rowData,
+    };
 
-  selectInlineTripDriver(driver: Driver): void {
-    if (!driver) {
-      return;
-    }
-
-    const alreadyAdded = this.tripDrivers.some(
-      (td) => td.driverId === driver.id,
+    this.modalService.showTemplateModal(
+      TripDriverDetailsModalComponent,
+      initialStateWithParent,
     );
-    if (alreadyAdded) {
-      this.modalService.showNotification(
-        false,
-        this.translationService.instant('TRIPS.DRIVER_ALREADY_ADDED_TITLE'),
-        this.translationService.instant('TRIPS.DRIVER_ALREADY_ADDED_MESSAGE', { name: driver.name + '' }),
-      );
-      this.cleanInlineTripDriverSelection();
-      return;
-    }
-
-    this.inlineTripDriverForm.patchValue({
-      driverId: driver.id,
-      driverName: driver.name,
-      driverLicenseNumber: driver.licenseNumber,
-      driverLicenseExpiryDate: driver.licenseExpiryDate,
-    });
   }
 
-  addInlineTripDriver(): void {
-    const raw = this.inlineTripDriverForm.getRawValue();
-    if (!raw.driverId || !this.tripId) {
-      return;
-    }
-
-    const tripDriver = {
-      tripId: this.tripId,
-      driverId: raw.driverId,
-      amount: Number(raw.amount) || 0,
-    } as TripDriver;
-
-    this.tripDriverService
-      .add(tripDriver)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<TripDriver>) => {
-        this.notificationService.showMessage(response.status, response.message);
-        if (response.status === ResponseStatus.Success) {
-          this.cleanInlineTripDriverSelection();
-        }
-      });
+  refresh(): void {
+    this.load(true);
   }
 
-  onAmountBlur(tripDriver: TripDriver): void {
-    this.tripDriverService
-      .update(tripDriver)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<TripDriver>) => {
-        this.notificationService.showMessage(response.status, response.message);
-      });
-  }
+  // <app-grid>'s [update] input is required (no toggle-style action column here to trigger it).
+  noop(): void {}
 
-  removeTripDriver(tripDriver: TripDriver): void {
+  deleteTripDriver(tripDriver: TripDriver): void {
     this.tripDriverService
       .delete(tripDriver)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<TripDriver>) => {
-        this.notificationService.showMessage(response.status, response.message);
+        const isSuccess = response.status === ResponseStatus.Success;
+        if (isSuccess) {
+          this.rowData = this.rowData.filter((td) => td.id !== tripDriver.id);
+        }
+
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification(
+          '',
+          response.message,
+          response.status,
+        );
       });
   }
 
-  private setupInlineTripDriverForm(): void {
-    this.inlineTripDriverForm = this.formBuilder.group({
-      driverId: [null],
-      driverName: [''],
-      driverLicenseNumber: [''],
-      driverLicenseExpiryDate: [null as Date | null],
-      amount: [0],
-    });
-
-    this.filteredInlineDriversByName$ = this.inlineTripDriverForm
-      .get('driverName')!
-      .valueChanges.pipe(
-        startWith(''),
-        map((value: string | Driver) => {
-          // mat-autocomplete briefly writes the selected option's whole object (not just its
-          // string label) back through this same control before selectInlineTripDriver()
-          // overwrites it with driver.name - guard against that non-string value the same way
-          // order-form's inline SKU filter already does.
-          const filterValue = (
-            typeof value === 'string' ? value : ''
-          ).toLowerCase();
-          if (!filterValue) {
-            return [];
-          }
-          return this.drivers.filter((driver) =>
-            (driver.name || '').toLowerCase().includes(filterValue),
-          );
-        }),
-      );
+  private initializeColumnDefs(): void {
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        hide: true,
+      },
+      {
+        field: 'driverName',
+        headerName: this.translationService.instant('COMMON.NAME'),
+        sortable: true,
+        filter: true,
+        flex: 2,
+        cellRenderer: (params: ValueFormatterParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="edit" class="ag-link">${value}</a>`;
+        },
+      },
+      {
+        field: 'driverLicenseNumber',
+        headerName: this.translationService.instant('DRIVERS.LICENSE_NUMBER'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+      },
+      {
+        field: 'driverLicenseExpiryDate',
+        headerName: this.translationService.instant('TRIPS.LICENSE_EXPIRY'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams) =>
+          this.formatDateBR(params.value),
+      },
+      {
+        field: 'amount',
+        headerName: this.translationService.instant('TRIPS.DRIVER_AMOUNT'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams): string => {
+          const v = params.value;
+          if (v == null || v === '') return '';
+          const n = Number(v);
+          if (Number.isNaN(n)) return String(v);
+          return n.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          });
+        },
+      },
+      {
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
+        flex: 1,
+        minWidth: 150,
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellRenderer: () => {
+          return `
+            <button class="btn btn-info btn-sm" data-action="edit">
+              <i class="fas fa-edit" data-action="edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" data-action="delete">
+              <i class="fas fa-trash" data-action="delete"></i>
+            </button>
+          `;
+        },
+      },
+    ];
   }
 
-  private cleanInlineTripDriverSelection(): void {
-    this.inlineTripDriverForm.reset({
-      driverId: null,
-      driverName: '',
-      driverLicenseNumber: '',
-      driverLicenseExpiryDate: null,
-      amount: 0,
-    });
-  }
-
-  private loadDrivers(): void {
-    this.driverService
-      .getAll()
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response) => {
-        this.drivers = response.data ?? [];
-      });
-  }
-
-  private load(): void {
+  private load(isRefresh = false): void {
     if (!this.tripId) {
       return;
     }
@@ -244,7 +185,31 @@ export class TripDriverListComponent
       .getByTripId(this.tripId)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response) => {
-        this.tripDrivers = response.data ?? [];
+        this.rowData = response.data ?? [];
+
+        if (isRefresh) {
+          this.notificationService.showMessage(
+            ResponseStatus.Success,
+            this.translationService.instant('TRIPS.DRIVERS_REFRESHED'),
+          );
+        }
       });
+  }
+
+  private formatDateBR(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+
+    return `${day}/${month}/${year}`;
   }
 }

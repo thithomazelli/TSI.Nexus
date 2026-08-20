@@ -19,4 +19,7 @@ export interface Driver extends BaseModel {
   admissionDate?: Date | null;
   status: DriverStatus;
   commissionPercentage: number;
+  // Client-side only, mirrors Product.alreadyUsed - marks a driver already associated with the
+  // trip so trip-driver-form's autocomplete can disable that option (see selectDriver()).
+  alreadyUsed?: boolean;
 }

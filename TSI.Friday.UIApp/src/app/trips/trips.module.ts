@@ -8,6 +8,8 @@ import { PassengerListComponent } from './components/passenger-list/passenger-li
 import { PassengerDetailsModalComponent } from './components/passenger-details-modal/passenger-details-modal.component';
 import { PassengerImportComponent } from './components/passenger-import/passenger-import.component';
 import { TripDriverListComponent } from './components/trip-driver-list/trip-driver-list.component';
+import { TripDriverDetailsModalComponent } from './components/trip-driver-details-modal/trip-driver-details-modal.component';
+import { TripDriverFormComponent } from './components/trip-driver-form/trip-driver-form.component';
 
 import { TripsRoutingModule } from './trips-routing.module';
 import { NgxMaskDirective } from 'ngx-mask';
@@ -27,6 +29,8 @@ import { TripsSharedModule } from './trips-shared.module';
     PassengerDetailsModalComponent,
     PassengerImportComponent,
     TripDriverListComponent,
+    TripDriverDetailsModalComponent,
+    TripDriverFormComponent,
   ],
   imports: [
     TripsSharedModule,
