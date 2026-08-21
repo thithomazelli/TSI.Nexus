@@ -16,8 +16,16 @@ import {
 } from '@friday/core';
 import { forkJoin, map, switchMap } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
+import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
+import { cardCollapseAnimation } from '../../../core/animations/card-collapse.animation';
+
+interface DriverCommissionEntry {
+  driver: Driver;
+  commissions: { commission: Commission; issueDate: Date }[];
+}
 
 interface VehicleSummaryRow {
   plate: string;
@@ -44,10 +52,17 @@ interface DriverSummaryRow {
         HeaderComponent,
         CurrencyPipe,
         TranslatePipe,
+        NgClass,
+        FormsModule,
+        DateFieldComponent,
     ],
+    animations: [cardCollapseAnimation],
 })
 export class FleetReportComponent implements OnInit {
   loading = false;
+  showFilters = false;
+  filterStartDate: string | null = null;
+  filterEndDate: string | null = null;
 
   totalVehicles = 0;
   availableVehicles = 0;
@@ -63,6 +78,12 @@ export class FleetReportComponent implements OnInit {
   vehicleRows: VehicleSummaryRow[] = [];
   driverRows: DriverSummaryRow[] = [];
 
+  private allVehicles: Vehicle[] = [];
+  private allTrips: Trip[] = [];
+  private allMaintenances: VehicleMaintenance[] = [];
+  private allDrivers: Driver[] = [];
+  private allDriverCommissions: DriverCommissionEntry[] = [];
+
   constructor(
     private driverService: DriverService,
     private tripService: TripService,
@@ -73,6 +94,64 @@ export class FleetReportComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+  }
+
+  toggleFilters(): void {
+    this.showFilters = !this.showFilters;
+  }
+
+  applyFilters(): void {
+    const trips = this.allTrips.filter(
+      (t) => !!t.vehicleId && this.isInDateRange(t.date),
+    );
+    const maintenances = this.allMaintenances.filter((m) =>
+      this.isInDateRange(m.scheduledDate),
+    );
+    const driverCommissions = this.allDriverCommissions.map(
+      ({ driver, commissions }) => ({
+        driver,
+        commissions: commissions
+          .filter((c) => this.isInDateRange(c.issueDate))
+          .map((c) => c.commission),
+      }),
+    );
+
+    this.buildSummary(
+      this.allVehicles,
+      trips,
+      maintenances,
+      this.allDrivers,
+      driverCommissions,
+    );
+  }
+
+  clearFilters(): void {
+    this.filterStartDate = null;
+    this.filterEndDate = null;
+    this.applyFilters();
+  }
+
+  private isInDateRange(date: Date | string | null | undefined): boolean {
+    if (!this.filterStartDate && !this.filterEndDate) {
+      return true;
+    }
+    if (!date) {
+      return false;
+    }
+    const itemDate = new Date(date).toISOString().slice(0, 10);
+    if (this.filterStartDate) {
+      const startDate = new Date(this.filterStartDate).toISOString().slice(0, 10);
+      if (itemDate < startDate) {
+        return false;
+      }
+    }
+    if (this.filterEndDate) {
+      const endDate = new Date(this.filterEndDate).toISOString().slice(0, 10);
+      if (itemDate > endDate) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private load(): void {
@@ -99,8 +178,11 @@ export class FleetReportComponent implements OnInit {
                     map((response) => ({
                       driver,
                       commissions: (response.data ?? [])
-                        .map((so) => so.commission)
-                        .filter((c): c is Commission => !!c),
+                        .filter((so) => !!so.commission)
+                        .map((so) => ({
+                          commission: so.commission as Commission,
+                          issueDate: so.issueDate,
+                        })),
                     })),
                   ),
                 )
@@ -117,14 +199,19 @@ export class FleetReportComponent implements OnInit {
         ),
       )
       .subscribe(({ vehicles, trips, maintenances, drivers, driverCommissions }) => {
-        this.buildSummary(vehicles, trips, maintenances, drivers, driverCommissions);
+        this.allVehicles = vehicles;
+        this.allTrips = trips;
+        this.allMaintenances = maintenances;
+        this.allDrivers = drivers;
+        this.allDriverCommissions = driverCommissions;
+        this.applyFilters();
         this.loading = false;
       });
   }
 
   private buildSummary(
     vehicles: Vehicle[],
-    allTrips: Trip[],
+    trips: Trip[],
     maintenances: VehicleMaintenance[],
     drivers: Driver[],
     driverCommissions: { driver: Driver; commissions: Commission[] }[],
@@ -135,7 +222,6 @@ export class FleetReportComponent implements OnInit {
     ).length;
     this.blockedVehicles = vehicles.filter((v) => v.status === VehicleStatus.Blocked).length;
 
-    const trips = allTrips.filter((t) => !!t.vehicleId);
     this.totalTrips = trips.length;
     this.totalRevenue = trips.reduce((sum, t) => sum + (t.totalPrice ?? 0), 0);
     this.totalMaintenanceCost = maintenances.reduce((sum, m) => sum + (m.cost ?? 0), 0);

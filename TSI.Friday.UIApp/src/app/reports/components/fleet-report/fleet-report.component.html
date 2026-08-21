@@ -8,6 +8,44 @@
 ></app-header>
 
 <div class="app-content">
+  <div class="d-flex justify-content-end mb-2">
+    <button
+      class="btn btn-outline-primary"
+      [ngClass]="showFilters ? 'active' : ''"
+      (click)="toggleFilters()"
+    >
+      <i class="bi bi-funnel"></i> {{ 'GRID.FILTERS' | translate }}
+    </button>
+  </div>
+  <div [@cardCollapse]="showFilters ? 'open' : 'closed'">
+    <div class="row g-1 mb-3 flex-column flex-md-row">
+      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0">
+        <app-date-field
+          [(ngModel)]="filterStartDate"
+          (ngModelChange)="applyFilters()"
+          [label]="'COMMON.RANGE_START' | translate"
+          class="w-100 p-0"
+        ></app-date-field>
+      </div>
+      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0 ms-md-1">
+        <app-date-field
+          [(ngModel)]="filterEndDate"
+          (ngModelChange)="applyFilters()"
+          [label]="'COMMON.RANGE_END' | translate"
+          class="w-100 p-0"
+        ></app-date-field>
+      </div>
+      <div class="col-12 col-md-auto d-flex align-items-end p-0">
+        <button
+          class="btn btn-secondary w-100 mt-2 mt-md-0 ms-md-1"
+          (click)="clearFilters()"
+        >
+          {{ 'COMMON.CLEAR' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   @if (loading) {
     <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
   }
