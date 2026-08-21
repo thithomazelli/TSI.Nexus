@@ -65,6 +65,7 @@ export const routes: Routes = [
   {
     path: 'order-products',
     canActivateChild: [AuthorizationGuard],
+    data: { featureFlag: ['SalesOrdersModule', 'RentalReport'] },
     loadChildren: () =>
       import('./order-products/order-products.routes').then(
         (m) => m.ORDER_PRODUCTS_ROUTES,

@@ -6,7 +6,7 @@ import {
   Renderer2,
   OnInit,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 import { AccountService } from '../../core/services/account/account.service';
 import { FeatureFlagService } from '../../core/services/feature-flag/feature-flag.service';
 import { FeatureToggleKeys } from '../../core/models/feature-toggle.model';
@@ -31,10 +31,12 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private osInstance: any = null;
   private userSub: Subscription | null = null;
   private featureFlagSub: Subscription | null = null;
+  private rentalReportSub: Subscription | null = null;
 
   isAdmin = false;
   isMaster = false;
   isFleetModuleEnabled = true;
+  isRentalReportEnabled = true;
 
   constructor(
     private el: ElementRef,
@@ -53,6 +55,15 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
       .subscribe((enabled) => {
         this.isFleetModuleEnabled = enabled;
       });
+    // Shown only when both the Pedidos de Venda group and its own entity toggle are enabled -
+    // same "group AND entity" rule documented on FeatureToggleKeys, so it can be hidden either
+    // by turning off the whole group or just this report on its own.
+    this.rentalReportSub = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.SalesOrdersModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.RentalReport),
+    ]).subscribe(([groupEnabled, entityEnabled]) => {
+      this.isRentalReportEnabled = groupEnabled && entityEnabled;
+    });
   }
 
   ngAfterViewInit(): void {
@@ -264,6 +275,10 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.featureFlagSub) {
       this.featureFlagSub.unsubscribe();
       this.featureFlagSub = null;
+    }
+    if (this.rentalReportSub) {
+      this.rentalReportSub.unsubscribe();
+      this.rentalReportSub = null;
     }
   }
 

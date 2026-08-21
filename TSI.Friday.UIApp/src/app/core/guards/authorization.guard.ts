@@ -6,7 +6,7 @@ import {
 } from '@angular/router';
 import { AccountService, FeatureFlagService, ModalService } from '../services';
 import { TranslationService } from '../services/translation/translation.service';
-import { map, switchMap, Observable, of } from 'rxjs';
+import { combineLatest, map, switchMap, Observable, of } from 'rxjs';
 import { User } from '../models/account/user';
 import { Injectable } from '@angular/core';
 
@@ -59,12 +59,26 @@ export class AuthorizationGuard implements CanActivateChild {
         }
 
         // A module behind a feature flag disappears entirely - route included - while off, the
-        // same way its data disappears from every API response and the sidebar link.
-        const featureFlag = route.data['featureFlag'] as string | undefined;
-        if (featureFlag) {
-          return this.featureFlagService.isEnabled(featureFlag).pipe(
-            map((enabled) => {
-              if (!enabled) {
+        // same way its data disappears from every API response and the sidebar link. Routes that
+        // need both their group AND their own entity toggle (e.g. Relatório de Locações needs
+        // SalesOrdersModule and RentalReport) can list an array here - every flag has to be
+        // enabled for the route to be reachable.
+        const featureFlagData = route.data['featureFlag'] as
+          | string
+          | string[]
+          | undefined;
+        const featureFlags = Array.isArray(featureFlagData)
+          ? featureFlagData
+          : featureFlagData
+            ? [featureFlagData]
+            : [];
+        if (featureFlags.length > 0) {
+          return combineLatest(
+            featureFlags.map((flag) => this.featureFlagService.isEnabled(flag)),
+          ).pipe(
+            map((results) => {
+              const allEnabled = results.every((enabled) => enabled);
+              if (!allEnabled) {
                 this.router.navigate(['not-found']);
                 return false;
               }

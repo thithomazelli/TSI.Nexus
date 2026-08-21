@@ -54,6 +54,13 @@ namespace TSI.Friday.Contracts.Models
         public const string Order = "Order";
         public const string OrderProduct = "OrderProduct";
 
+        /// <summary>
+        /// Gates the standalone Relatório de Locações page/sidebar link only - unlike
+        /// <see cref="OrderProduct"/>, it doesn't affect order-product data used elsewhere (e.g.
+        /// the embedded list inside an Order's own page).
+        /// </summary>
+        public const string RentalReport = "RentalReport";
+
         // --- Entities (Anexos group) -------------------------------------------------------------
 
         public const string Attachment = "Attachment";

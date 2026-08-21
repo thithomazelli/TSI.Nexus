@@ -269,6 +269,7 @@ namespace TSI.Friday.Data
                     // Pedidos de Venda entities
                     (Key: FeatureToggleKeys.Order, Name: "Pedidos de Venda", Description: "Controla a exibição de Pedidos de Venda.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
                     (Key: FeatureToggleKeys.OrderProduct, Name: "Itens de Pedido", Description: "Controla a exibição de Itens de Pedido.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
+                    (Key: FeatureToggleKeys.RentalReport, Name: "Relatório de Locações", Description: "Controla a exibição do menu Relatório de Locações.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
                     // Anexos entities
                     (Key: FeatureToggleKeys.Attachment, Name: "Anexos", Description: "Controla a exibição de Anexos.", GroupKey: FeatureToggleKeys.AttachmentsModule),
                 };
