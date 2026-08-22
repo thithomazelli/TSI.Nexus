@@ -261,15 +261,19 @@ namespace TSI.Friday.Data
                     (Key: FeatureToggleKeys.VehicleMaintenance, Name: "Manutenções", Description: "Controla a exibição de Manutenções de Veículo.", GroupKey: FeatureToggleKeys.FleetModule),
                     (Key: FeatureToggleKeys.ServiceOrder, Name: "Ordens de Serviço", Description: "Controla a exibição de Ordens de Serviço.", GroupKey: FeatureToggleKeys.FleetModule),
                     (Key: FeatureToggleKeys.Commission, Name: "Comissões", Description: "Controla a exibição de Comissões de Motorista.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.DriverLicenseAlert, Name: "Alerta de CNH a Vencer", Description: "Controla a exibição do alerta de CNH a vencer na navbar.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.VehicleBlockedAlert, Name: "Alerta de Veículos Bloqueados", Description: "Controla a exibição do alerta de veículos bloqueados na navbar.", GroupKey: FeatureToggleKeys.FleetModule),
                     // Financeiro entities
                     (Key: FeatureToggleKeys.Transaction, Name: "Transações", Description: "Controla a exibição de Transações.", GroupKey: FeatureToggleKeys.FinanceModule),
                     (Key: FeatureToggleKeys.Payment, Name: "Pagamentos", Description: "Controla a exibição de Pagamentos.", GroupKey: FeatureToggleKeys.FinanceModule),
+                    (Key: FeatureToggleKeys.PaymentAlert, Name: "Alerta de Pagamentos", Description: "Controla a exibição do alerta de pagamentos atrasados/pendentes na navbar.", GroupKey: FeatureToggleKeys.FinanceModule),
                     // Orçamentos entities
                     (Key: FeatureToggleKeys.Quote, Name: "Orçamentos (Produto)", Description: "Controla a exibição de Orçamentos do tipo Produto.", GroupKey: FeatureToggleKeys.QuotesModule),
                     // Pedidos de Venda entities
                     (Key: FeatureToggleKeys.Order, Name: "Pedidos de Venda", Description: "Controla a exibição de Pedidos de Venda.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
                     (Key: FeatureToggleKeys.OrderProduct, Name: "Itens de Pedido", Description: "Controla a exibição de Itens de Pedido.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
                     (Key: FeatureToggleKeys.RentalReport, Name: "Relatório de Locações", Description: "Controla a exibição do menu Relatório de Locações.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
+                    (Key: FeatureToggleKeys.OrderProductAlert, Name: "Alerta de Itens de Pedido em Atraso", Description: "Controla a exibição do alerta de itens de pedido em atraso na navbar.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
                     // Anexos entities
                     (Key: FeatureToggleKeys.Attachment, Name: "Anexos", Description: "Controla a exibição de Anexos.", GroupKey: FeatureToggleKeys.AttachmentsModule),
                 };

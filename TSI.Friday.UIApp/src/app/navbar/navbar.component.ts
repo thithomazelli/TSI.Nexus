@@ -6,7 +6,7 @@ import {
   OnInit,
   Renderer2,
 } from '@angular/core';
-import { Observable } from 'rxjs';
+import { combineLatest, Observable, Subscription } from 'rxjs';
 import { AccountService, PhotoService, User } from '@friday/core';
 import { NgIf, AsyncPipe, TitleCasePipe } from '@angular/common';
 import { OrderProductNotificationComponent } from './components/order-product-notification/order-product-notification.component';
@@ -17,6 +17,8 @@ import { PhotoComponent } from '../shared/photo/photo.component';
 import { UserPreferencesComponent } from '../shared/components/user-preferences/user-preferences.component';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '../core/pipes/translate.pipe';
+import { FeatureFlagService } from '../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../core/models/feature-toggle.model';
 
 @Component({
     selector: 'app-navbar',
@@ -41,9 +43,18 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   imageUrl: string = '';
   data: User | null = null;
 
+  // Shown only when both the alert's own toggle and its module's group toggle are enabled -
+  // same "group AND entity" rule documented on FeatureToggleKeys/RentalReport, so each alert can
+  // be silenced individually or hidden along with its whole module.
+  isDriverLicenseAlertEnabled = true;
+  isVehicleBlockedAlertEnabled = true;
+  isOrderProductAlertEnabled = true;
+  isPaymentAlertEnabled = true;
+
   private lastBlobUrl?: string;
   private mobileBreakpoint = 992;
   private resizeUnlisten: (() => void) | null = null;
+  private alertTogglesSub: Subscription | null = null;
 
   // simple overlay refs
   private overlayEl: HTMLElement | null = null;
@@ -53,6 +64,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     private renderer: Renderer2,
     private accountService: AccountService,
     private photoService: PhotoService,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   get user$(): Observable<User | null> {
@@ -92,6 +104,31 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.imageUrl = 'assets/img/no_profile.png';
     });
+
+    this.alertTogglesSub = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.DriverLicenseAlert),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleBlockedAlert),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.SalesOrdersModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.OrderProductAlert),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FinanceModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.PaymentAlert),
+    ]).subscribe(
+      ([
+        fleetEnabled,
+        driverLicenseAlert,
+        vehicleBlockedAlert,
+        salesOrdersEnabled,
+        orderProductAlert,
+        financeEnabled,
+        paymentAlert,
+      ]) => {
+        this.isDriverLicenseAlertEnabled = fleetEnabled && driverLicenseAlert;
+        this.isVehicleBlockedAlertEnabled = fleetEnabled && vehicleBlockedAlert;
+        this.isOrderProductAlertEnabled = salesOrdersEnabled && orderProductAlert;
+        this.isPaymentAlertEnabled = financeEnabled && paymentAlert;
+      },
+    );
   }
 
   ngAfterViewInit(): void {
@@ -113,6 +150,10 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
         this.resizeUnlisten();
       } catch {}
       this.resizeUnlisten = null;
+    }
+    if (this.alertTogglesSub) {
+      this.alertTogglesSub.unsubscribe();
+      this.alertTogglesSub = null;
     }
     this.removeOverlay(true);
   }

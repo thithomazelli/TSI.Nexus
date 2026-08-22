@@ -40,10 +40,19 @@ namespace TSI.Friday.Contracts.Models
         public const string ServiceOrder = "ServiceOrder";
         public const string Commission = "Commission";
 
+        /// <summary>Gates the driver-license-expiring notification bell in the navbar.</summary>
+        public const string DriverLicenseAlert = "DriverLicenseAlert";
+
+        /// <summary>Gates the blocked-vehicles notification bell in the navbar.</summary>
+        public const string VehicleBlockedAlert = "VehicleBlockedAlert";
+
         // --- Entities (Financeiro/Relatórios group) --------------------------------------------
 
         public const string Transaction = "Transaction";
         public const string Payment = "Payment";
+
+        /// <summary>Gates the delayed/pending payments notification bell in the navbar.</summary>
+        public const string PaymentAlert = "PaymentAlert";
 
         // --- Entities (Orçamentos group) --------------------------------------------------------
 
@@ -60,6 +69,9 @@ namespace TSI.Friday.Contracts.Models
         /// the embedded list inside an Order's own page).
         /// </summary>
         public const string RentalReport = "RentalReport";
+
+        /// <summary>Gates the delayed order-products notification bell in the navbar.</summary>
+        public const string OrderProductAlert = "OrderProductAlert";
 
         // --- Entities (Anexos group) -------------------------------------------------------------
 

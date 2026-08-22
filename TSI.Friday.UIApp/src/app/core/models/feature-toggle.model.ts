@@ -16,4 +16,8 @@ export const FeatureToggleKeys = {
   SalesOrdersModule: 'SalesOrdersModule',
   AttachmentsModule: 'AttachmentsModule',
   RentalReport: 'RentalReport',
+  DriverLicenseAlert: 'DriverLicenseAlert',
+  VehicleBlockedAlert: 'VehicleBlockedAlert',
+  OrderProductAlert: 'OrderProductAlert',
+  PaymentAlert: 'PaymentAlert',
 } as const;

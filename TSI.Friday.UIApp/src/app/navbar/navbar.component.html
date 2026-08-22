@@ -21,19 +21,19 @@
     <ng-container *ngIf="user$ | async as user">
       <ul class="navbar-nav ms-auto">
         <!--begin::Messages Dropdown Menu-->
-        <li class="nav-item dropdown">
+        <li class="nav-item dropdown" *ngIf="isOrderProductAlertEnabled">
           <app-order-product-notification></app-order-product-notification>
         </li>
         <!--end::Messages Dropdown Menu-->
         <!--begin::Notifications Dropdown Menu-->
-        <li class="nav-item dropdown">
+        <li class="nav-item dropdown" *ngIf="isPaymentAlertEnabled">
           <app-payment-notification class=""></app-payment-notification>
         </li>
         <!--end::Notifications Dropdown Menu-->
-        <li class="nav-item dropdown">
+        <li class="nav-item dropdown" *ngIf="isVehicleBlockedAlertEnabled">
           <app-vehicle-blocked-notification></app-vehicle-blocked-notification>
         </li>
-        <li class="nav-item dropdown">
+        <li class="nav-item dropdown" *ngIf="isDriverLicenseAlertEnabled">
           <app-driver-license-notification></app-driver-license-notification>
         </li>
         <!--begin::Fullscreen Toggle-->

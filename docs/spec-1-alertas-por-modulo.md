@@ -1,8 +1,11 @@
 # Spec 1 — Alertas de notificação seguindo o controle de módulos
 
-> Escrito antes de qualquer código ser tocado. Primeira de um lote de 4 specs isoladas (3
-> features + 1 ajuste); esta é o ajuste. Cada spec do lote é implementada e validada
-> separadamente.
+> Primeira de um lote de 4 specs isoladas (3 features + 1 ajuste); esta é o ajuste. Cada spec do
+> lote é implementada e validada separadamente.
+>
+> **Implementado.** Revisão pós-implementação: a seção 2.1 foi ajustada a pedido do usuário para
+> deixar explícito que a aba "por grupo" reaproveita os switches de grupo já existentes (nenhum
+> toggle novo entra ali) — o design final e o código batem com o texto abaixo.
 
 ## 1. Contexto
 
@@ -31,17 +34,29 @@ só de template. Combinado explicitamente: fica pra depois, resolvido de outra f
 
 ## 2. Desenho
 
-### 2.1 Um toggle novo por alerta, não reaproveitar os toggles de entidade existentes
+### 2.1 Reaproveita os toggles de grupo já existentes + 1 toggle de entidade novo por alerta
 
-Cada alerta ganha seu **próprio** toggle de entidade (mesmo padrão já usado no `RentalReport` —
-ver `docs/` do commit `f345ae3`), em vez de reaproveitar `Driver`/`Vehicle`/`OrderProduct`/
-`Payment`. Motivo: esses toggles de entidade já controlam a exibição dos registros em todo o
-sistema (telas de cadastro, grids, etc.) — reaproveitar significaria que desligar o alerta de CNH,
-por exemplo, também esconderia a tela de Motoristas inteira. São preocupações diferentes.
+Confirmado com o usuário: **nenhum toggle novo é criado na aba "por grupo"** — o desligamento em
+cascata continua vindo dos switches de grupo que já existem lá hoje (`FleetModule`,
+`SalesOrdersModule`, `FinanceModule`). Nada muda nessa aba.
+
+O que é novo é, exclusivamente, **um toggle de entidade por alerta**, seguindo o mesmo padrão já
+usado no `RentalReport` (commit `f345ae3`) — em vez de reaproveitar `Driver`/`Vehicle`/
+`OrderProduct`/`Payment`. Motivo: esses toggles de entidade já controlam a exibição dos registros
+em todo o sistema (telas de cadastro, grids, etc.) — reaproveitar significaria que desligar o
+alerta de CNH, por exemplo, também esconderia a tela de Motoristas inteira. São preocupações
+diferentes.
+
+Cada um desses toggles novos entra com `GroupKey` apontando pro grupo já existente
+(`FleetModule`/`SalesOrdersModule`/`FinanceModule`), então ele **aparece automaticamente vinculado
+ao grupo certo na aba "detalhada"** (mesmo mecanismo de listagem por `GroupKey` que já existe pra
+qualquer outra entidade) — é esse vínculo que atende ao "alertas individuais devem aparecer
+vinculado aos grupos informados também na área detalhada".
 
 Isso também atende ao pedido de granularidade: cada alerta pode ser desligado **individualmente**
 (ex.: silenciar só o alerta de veículos bloqueados, mantendo o de CNH ligado), além de sumir
-automaticamente quando o grupo inteiro (Frota, Pedidos de Venda, Financeiro) for desligado.
+automaticamente quando o grupo inteiro (Frota, Pedidos de Venda, Financeiro) for desligado — a
+regra "grupo E entidade" aplicada em todo o resto do sistema.
 
 ### 2.2 Novos `FeatureToggleKeys`
 
