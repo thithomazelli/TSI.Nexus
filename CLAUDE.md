@@ -50,6 +50,18 @@ sempre via variável de ambiente, `dotnet user-secrets`, ou `appsettings.Local.j
 copiar de `appsettings.Local.json.example`). Ver README.md para a tabela completa de
 variáveis/secrets e o processo de deploy manual via FTP/IIS.
 
+## Princípios de código
+
+Todo código novo (backend e frontend) segue **SOLID** e usa **design patterns** onde eles
+simplificam em vez de complicar — não como caixa a marcar, mas porque a base já é construída em
+cima disso: a separação em camadas (`WebAPI → IoC → Services → Repository → Data → Contracts`) é
+SRP/DIP aplicados na prática, o `Repository<T>` genérico é o Repository pattern, a injeção de
+interfaces (`I*Service`, `I*Repository`) via `TSI.Friday.IoC` é o que viabiliza testar cada camada
+isolada com mock. Ao adicionar uma classe/serviço/componente novo, preferir manter essa mesma
+disciplina (interface + implementação, responsabilidade única, favorecer composição/injeção a
+herança ou a `if/switch` gigante) em vez de atalhos que quebrem esse desenho — é isso que mantém o
+código limpo e organizado à medida que o sistema cresce.
+
 ## Arquitetura do backend
 
 Camadas como projetos .NET separados, dependência em uma direção só:
