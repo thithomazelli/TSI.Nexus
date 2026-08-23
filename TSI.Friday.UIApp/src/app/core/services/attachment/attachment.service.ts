@@ -37,6 +37,14 @@ export class AttachmentService {
     );
   }
 
+  getByPurchaseOrderId(
+    purchaseOrderId: string,
+  ): Observable<WebApiResponse<Attachment[]>> {
+    return this.apiService.get<WebApiResponse<Attachment[]>>(
+      `${this._baseEndPoint}/getByPurchaseOrderId/${purchaseOrderId}`,
+    );
+  }
+
   getByTripId(tripId: string): Observable<WebApiResponse<Attachment[]>> {
     return this.apiService.get<WebApiResponse<Attachment[]>>(
       `${this._baseEndPoint}/getByTripId/${tripId}`,
@@ -118,6 +126,8 @@ export class AttachmentService {
     if (attachment.businessPartnerId)
       fd.append('businessPartnerId', attachment.businessPartnerId);
     if (attachment.orderId) fd.append('orderId', attachment.orderId);
+    if (attachment.purchaseOrderId)
+      fd.append('purchaseOrderId', attachment.purchaseOrderId);
     if (attachment.tripId) fd.append('tripId', attachment.tripId);
     if (attachment.transactionId)
       fd.append('transactionId', attachment.transactionId);

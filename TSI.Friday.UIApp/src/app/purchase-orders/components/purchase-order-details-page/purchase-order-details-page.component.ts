@@ -15,6 +15,7 @@ import { NgIf } from '@angular/common';
 import { PurchaseOrderFormComponent } from '../purchase-order-form/purchase-order-form.component';
 import { PurchaseOrderProductsComponent } from '../../../purchase-order-products/purchase-order-products.component';
 import { PaymentsComponent } from '../../../payments/payments.component';
+import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
@@ -28,6 +29,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         PurchaseOrderFormComponent,
         PurchaseOrderProductsComponent,
         PaymentsComponent,
+        AttachmentsComponent,
         AuditTabComponent,
         TranslatePipe,
     ],
@@ -38,7 +40,8 @@ export class PurchaseOrderDetailsPageComponent implements OnInit, OnDestroy {
   id: string | null = null;
   loading = false;
 
-  activeTab: 'details' | 'products' | 'payments' | 'audit' = 'details';
+  activeTab: 'details' | 'products' | 'payments' | 'attachments' | 'audit' =
+    'details';
 
   purchaseOrderStatusOptions: Record<OrderStatus, string> = {
     [OrderStatus.Open]: 'Em aberto',

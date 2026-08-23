@@ -28,6 +28,8 @@ namespace TSI.Friday.Contracts.Models
 
         public Guid? OrderId { get; set; }
 
+        public Guid? PurchaseOrderId { get; set; }
+
         public Guid? TripId { get; set; }
 
         public Guid? TransactionId { get; set; }

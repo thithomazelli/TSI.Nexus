@@ -43,6 +43,8 @@ export class AttachmentsComponent implements OnInit {
   @Input()
   orderNumber = '';
   @Input()
+  purchaseOrderNumber = '';
+  @Input()
   tripNumber = '';
   @Input()
   entity = 'businessPartner';
@@ -363,6 +365,7 @@ export class AttachmentsComponent implements OnInit {
     const map: Record<string, string> = {
       businessPartner: 'businessPartnerId',
       order: 'orderId',
+      purchaseOrder: 'purchaseOrderId',
       transaction: 'transactionId',
       payment: 'paymentId',
       product: 'productId',
@@ -418,6 +421,7 @@ export class AttachmentsComponent implements OnInit {
       businessPartner: (id) =>
         this.attachmentService.getByBusinessPartnerId(id),
       order: (id) => this.attachmentService.getByOrderId(id),
+      purchaseOrder: (id) => this.attachmentService.getByPurchaseOrderId(id),
       trip: (id) => this.attachmentService.getByTripId(id),
       transaction: (id) => this.attachmentService.getByTransactionId(id),
       payment: (id) => this.attachmentService.getByPaymentId(id),
@@ -459,6 +463,7 @@ export class AttachmentsComponent implements OnInit {
     const map: Record<string, string> = {
       businessPartner: 'BusinessPartners',
       order: 'Orders',
+      purchaseOrder: 'PurchaseOrders',
       trip: 'Trips',
       transaction: 'Transactions',
       payment: 'Payments',
@@ -478,6 +483,7 @@ export class AttachmentsComponent implements OnInit {
     const entityFolders = [
       'BusinessPartners',
       'Orders',
+      'PurchaseOrders',
       'Trips',
       'Transactions',
       'Payments',
@@ -494,6 +500,24 @@ export class AttachmentsComponent implements OnInit {
           const prefix =
             att.path.split(`/Orders/${this.orderNumber}`)[0] +
             `/Orders/${this.orderNumber}`;
+          return { prefix, rootName: 'Anexos' };
+        }
+      }
+    }
+    // Para pedido de compra, corta até attachments/BusinessPartners/{NomeFornecedor}/PurchaseOrders/{PurchaseOrderNumber}
+    if (
+      this.entity === 'purchaseOrder' &&
+      this.purchaseOrderNumber &&
+      this.entityId
+    ) {
+      for (const att of this.attachments) {
+        if (
+          att.path &&
+          att.path.includes(`/PurchaseOrders/${this.purchaseOrderNumber}/`)
+        ) {
+          const prefix =
+            att.path.split(`/PurchaseOrders/${this.purchaseOrderNumber}`)[0] +
+            `/PurchaseOrders/${this.purchaseOrderNumber}`;
           return { prefix, rootName: 'Anexos' };
         }
       }
@@ -604,6 +628,10 @@ export class AttachmentsComponent implements OnInit {
       // Orders só é relatedEntity fora do contexto de pedido
       if (this.entity !== 'order') {
         relatedEntities.push('Orders');
+      }
+      // PurchaseOrders só é relatedEntity fora do contexto de pedido de compra
+      if (this.entity !== 'purchaseOrder') {
+        relatedEntities.push('PurchaseOrders');
       }
       if (relatedEntities.includes(parts[0])) {
         let current = this.rootFolder;

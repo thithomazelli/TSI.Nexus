@@ -99,6 +99,7 @@ namespace TSI.Friday.Services
                     Path = Path.GetRelativePath(_env.ContentRootPath, fullPath),
                     BusinessPartnerId = dto.BusinessPartnerId,
                     OrderId = dto.OrderId,
+                    PurchaseOrderId = dto.PurchaseOrderId,
                     TripId = dto.TripId,
                     TransactionId = dto.TransactionId,
                     PaymentId = dto.PaymentId,
@@ -193,6 +194,7 @@ namespace TSI.Friday.Services
                 // update metadata
                 existing.BusinessPartnerId = dto.BusinessPartnerId;
                 existing.OrderId = dto.OrderId;
+                existing.PurchaseOrderId = dto.PurchaseOrderId;
                 existing.TripId = dto.TripId;
                 existing.TransactionId = dto.TransactionId;
                 existing.PaymentId = dto.PaymentId;
@@ -444,6 +446,7 @@ namespace TSI.Friday.Services
                 DownloadUrl = string.Format(_downloadUrlTemplate, attachment.Id),
                 BusinessPartnerId = attachment.BusinessPartnerId,
                 OrderId = attachment.OrderId,
+                PurchaseOrderId = attachment.PurchaseOrderId,
                 TripId = attachment.TripId,
                 TransactionId = attachment.TransactionId,
                 PaymentId = attachment.PaymentId,
@@ -513,6 +516,19 @@ namespace TSI.Friday.Services
                 }
             }
 
+            // Resolve PurchaseOrderId from PurchaseOrderNumber when PurchaseOrderId is not provided
+            if (dto.PurchaseOrderId == null && !string.IsNullOrWhiteSpace(dto.PurchaseOrderNumber))
+            {
+                var purchaseOrder = await _db.PurchaseOrder.FirstOrDefaultAsync(o =>
+                    o.PurchaseOrderNumber == dto.PurchaseOrderNumber
+                );
+                if (purchaseOrder != null)
+                {
+                    dto.PurchaseOrderId = purchaseOrder.Id;
+                    dto.BusinessPartnerId ??= purchaseOrder.BusinessPartnerId;
+                }
+            }
+
             // Resolve TripId from TripNumber when TripId is not provided
             if (dto.TripId == null && !string.IsNullOrWhiteSpace(dto.TripNumber))
             {
@@ -526,7 +542,7 @@ namespace TSI.Friday.Services
                 }
             }
 
-            // Payment → Transaction → Order → BusinessPartner
+            // Payment → Transaction → Order/PurchaseOrder → BusinessPartner
             if (dto.PaymentId != null && dto.TransactionId == null)
             {
                 var payment = await _db.Payment.FindAsync(dto.PaymentId.Value);
@@ -534,21 +550,28 @@ namespace TSI.Friday.Services
                 {
                     dto.TransactionId = payment.TransactionId;
                     dto.OrderId ??= payment.OrderId;
+                    dto.PurchaseOrderId ??= payment.PurchaseOrderId;
                     dto.TripId ??= payment.TripId;
                     dto.BusinessPartnerId ??= payment.BusinessPartnerId;
                 }
             }
 
-            // Transaction → Order/Trip → BusinessPartner
+            // Transaction → Order/PurchaseOrder/Trip → BusinessPartner
             if (
                 dto.TransactionId != null
-                && (dto.OrderId == null || dto.TripId == null || dto.BusinessPartnerId == null)
+                && (
+                    dto.OrderId == null
+                    || dto.PurchaseOrderId == null
+                    || dto.TripId == null
+                    || dto.BusinessPartnerId == null
+                )
             )
             {
                 var transaction = await _db.Transaction.FindAsync(dto.TransactionId.Value);
                 if (transaction != null)
                 {
                     dto.OrderId ??= transaction.OrderId;
+                    dto.PurchaseOrderId ??= transaction.PurchaseOrderId;
                     dto.TripId ??= transaction.TripId;
                     dto.BusinessPartnerId ??= transaction.BusinessPartnerId;
                 }
@@ -561,6 +584,16 @@ namespace TSI.Friday.Services
                 if (order != null)
                 {
                     dto.BusinessPartnerId = order.BusinessPartnerId;
+                }
+            }
+
+            // PurchaseOrder → BusinessPartner
+            if (dto.PurchaseOrderId != null && dto.BusinessPartnerId == null)
+            {
+                var purchaseOrder = await _db.PurchaseOrder.FindAsync(dto.PurchaseOrderId.Value);
+                if (purchaseOrder != null)
+                {
+                    dto.BusinessPartnerId = purchaseOrder.BusinessPartnerId;
                 }
             }
 
@@ -619,6 +652,11 @@ namespace TSI.Friday.Services
                     {
                         // entityValue is OrderNumber (e.g. "TEA-00022")
                         dto.OrderNumber ??= entityValue;
+                    }
+                    else if (entityType.Equals("PurchaseOrders", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // entityValue is PurchaseOrderNumber (e.g. "FOR-00022")
+                        dto.PurchaseOrderNumber ??= entityValue;
                     }
                     else if (entityType.Equals("Trips", StringComparison.OrdinalIgnoreCase))
                     {
@@ -757,6 +795,24 @@ namespace TSI.Friday.Services
                         ? SanitizeFileName(order.OrderNumber)
                         : dto.OrderId.ToString();
                 return Path.Combine(basePath, "BusinessPartners", bpName, "Orders", orderFolder);
+            }
+
+            // PurchaseOrder → BusinessPartners/{BpName}/PurchaseOrders/{PurchaseOrderNumber}
+            if (dto.PurchaseOrderId != null && bpName != null)
+            {
+                var purchaseOrder = await _db.PurchaseOrder.FindAsync(dto.PurchaseOrderId.Value);
+                var purchaseOrderFolder =
+                    purchaseOrder != null
+                    && !string.IsNullOrWhiteSpace(purchaseOrder.PurchaseOrderNumber)
+                        ? SanitizeFileName(purchaseOrder.PurchaseOrderNumber)
+                        : dto.PurchaseOrderId.ToString();
+                return Path.Combine(
+                    basePath,
+                    "BusinessPartners",
+                    bpName,
+                    "PurchaseOrders",
+                    purchaseOrderFolder
+                );
             }
 
             // Trip → BusinessPartners/{BpName}/Trips/{TripNumber}

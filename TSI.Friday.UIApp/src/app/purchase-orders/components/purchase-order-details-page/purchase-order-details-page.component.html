@@ -71,6 +71,14 @@
               <li class="nav-item" *ngIf="isEdit">
                 <a
                   class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
+                >
+              </li>
+              <li class="nav-item" *ngIf="isEdit">
+                <a
+                  class="nav-link"
                   [class.active]="activeTab === 'audit'"
                   (click)="activeTab = 'audit'"
                   >{{ 'AUDIT.TAB' | translate }}</a
@@ -98,6 +106,13 @@
                 [entity]="'PurchaseOrder'"
                 [parentData]="data"
               ></app-payments>
+            </div>
+            <div *ngIf="activeTab === 'attachments'">
+              <app-attachments
+                [entity]="'purchaseOrder'"
+                [entityId]="data!.id!"
+                [purchaseOrderNumber]="data!.purchaseOrderNumber!"
+              ></app-attachments>
             </div>
             <div *ngIf="activeTab === 'audit'">
               <app-audit-tab [data]="data"></app-audit-tab>

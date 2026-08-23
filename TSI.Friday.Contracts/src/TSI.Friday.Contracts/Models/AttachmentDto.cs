@@ -28,6 +28,14 @@ namespace TSI.Friday.Contracts.Models
         /// </summary>
         public string OrderNumber { get; set; }
 
+        public Guid? PurchaseOrderId { get; set; }
+
+        /// <summary>
+        /// Purchase order number used to resolve PurchaseOrderId when navigating the folder tree.
+        /// When provided and PurchaseOrderId is null, the service will look up the PurchaseOrder by this number.
+        /// </summary>
+        public string PurchaseOrderNumber { get; set; }
+
         public Guid? TripId { get; set; }
 
         /// <summary>
