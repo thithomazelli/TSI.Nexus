@@ -106,7 +106,7 @@
           </li>
         </ng-container>
 
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isQuotesModuleEnabled">
           <a
             routerLink="/quotes"
             routerLinkActive="active"

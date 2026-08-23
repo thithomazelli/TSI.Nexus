@@ -31,12 +31,14 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private osInstance: any = null;
   private userSub: Subscription | null = null;
   private featureFlagSub: Subscription | null = null;
+  private quotesModuleSub: Subscription | null = null;
   private salesOrdersModuleSub: Subscription | null = null;
   private rentalReportSub: Subscription | null = null;
 
   isAdmin = false;
   isMaster = false;
   isFleetModuleEnabled = true;
+  isQuotesModuleEnabled = true;
   isSalesOrdersModuleEnabled = true;
   isRentalReportEnabled = true;
 
@@ -56,6 +58,11 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
       .isEnabled(FeatureToggleKeys.FleetModule)
       .subscribe((enabled) => {
         this.isFleetModuleEnabled = enabled;
+      });
+    this.quotesModuleSub = this.featureFlagService
+      .isEnabled(FeatureToggleKeys.QuotesModule)
+      .subscribe((enabled) => {
+        this.isQuotesModuleEnabled = enabled;
       });
     this.salesOrdersModuleSub = this.featureFlagService
       .isEnabled(FeatureToggleKeys.SalesOrdersModule)
@@ -282,6 +289,10 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.featureFlagSub) {
       this.featureFlagSub.unsubscribe();
       this.featureFlagSub = null;
+    }
+    if (this.quotesModuleSub) {
+      this.quotesModuleSub.unsubscribe();
+      this.quotesModuleSub = null;
     }
     if (this.salesOrdersModuleSub) {
       this.salesOrdersModuleSub.unsubscribe();

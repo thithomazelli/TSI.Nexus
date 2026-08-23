@@ -93,6 +93,7 @@ export const routes: Routes = [
   {
     path: 'quotes',
     canActivateChild: [AuthorizationGuard],
+    data: { featureFlag: 'QuotesModule' },
     loadChildren: () =>
       import('./quotes/quotes.routes').then((m) => m.QUOTES_ROUTES),
   },
