@@ -89,6 +89,22 @@ grupo" lista só os 5 toggles de grupo; "detalhada" agrupa os toggles de entidad
 
 Desenho completo em `docs/feature-toggle-design.md`.
 
+### Padrões de código obrigatórios no backend
+
+- **XML doc**: toda interface (`Contracts/Interfaces`) documenta seus métodos com `///` seguindo o
+  padrão já usado nos arquivos existentes; a implementação em `Services` importa esse texto via
+  `/// <inheritdoc />` em vez de duplicar a doc (ver `TripDriverService.cs` como referência).
+  Controllers seguem o mesmo padrão de XML doc nos endpoints.
+- **Regions**: estruturar a classe nas mesmas regions já usadas nos arquivos existentes do mesmo
+  tipo (ex.: `#region Properties`, `#region Public methods` num service) — manter a mesma ordem,
+  não inventar uma organização nova por arquivo.
+- **Unit test obrigatório**: todo código novo de backend (services, principalmente) precisa de
+  teste cobrindo a implementação, no projeto de teste da camada correspondente (`dotnet test` deve
+  passar limpo antes de considerar o trabalho concluído).
+- **Seed de novo módulo**: sempre que uma entidade/módulo novo for introduzido, alimentar o seed
+  inicial (`DatabaseSeeder.cs` para dados estruturais sempre presentes, ou `DemoDataSeeder.cs` para
+  dados de exemplo) para que a nova implementação já nasça com dados pra testar/demonstrar.
+
 ## Arquitetura do frontend
 
 `TSI.Friday.UIApp/src/app` — **100% standalone components**, sem `NgModule` (bootstrap via
@@ -104,13 +120,40 @@ código novo; todo componente novo é standalone e declara seus próprios `impor
   compartilhados, i18n, pipes/diretivas (`ClickDirective`/`appClick`, `TranslatePipe`,
   `CurrencyFormatDirective`).
 - **`shared/`**: componentes reaproveitados entre features (`app-date-field`, `app-currency-field`,
-  `app-grid` sobre ag-Grid, `app-photo`, etc.) — importados diretamente por quem usa, não via
-  barrel module.
+  `app-link-field`, `app-grid` sobre ag-Grid, `app-photo`, etc.) — importados diretamente por quem
+  usa, não via barrel module.
 - Cada feature de domínio (`orders`, `quotes`, `trips`, `payments`, `business-partner`, `products`,
   `vehicles`, `users`, `reports`, `feature-toggles`, `document-templates`, ...) é lazy-loaded via
   `loadChildren`/`loadComponent` em `app.routes.ts`, cada uma com seu próprio `*.routes.ts`.
 - **i18n**: `TranslatePipe` + `TranslationService`, pt-BR/en/es.
 - **Tema**: dark/light mode, preferência persistida em `User.theme`.
+
+### Padrões de tela obrigatórios no frontend
+
+- **Organização de pastas/nomenclatura**: seguir a mesma estrutura já usada nas outras features —
+  `<feature>/components/<entidade>-list`, `<entidade>-form`, `<entidade>-details-modal` (ou
+  `-details-page`), etc. (ver `vehicles/components/` como referência: `vehicle-form`,
+  `vehicle-details-modal`, `vehicle-details-page`, mais `fuel-log-list`/`fuel-log-details-modal`
+  para as sub-entidades 1-N).
+- **Componentes por entidade/módulo**: o component base na raiz da feature é a **lista**; dentro
+  de `components/`, um component pro **form**, um pro **modal** e um pros **detalhes**.
+- **Botões padrão**: Adicionar sempre abre modal (form dentro de modal); Editar sempre abre modal
+  (mesmo form, modo edição); Visualizar sempre vai pros detalhes (modal ou página de detalhes,
+  nunca abre o form).
+- **Campos genéricos obrigatórios**: usar sempre os componentes compartilhados pra data
+  (`app-date-field`), link (`app-link-field`), moeda (`app-currency-field`) — nunca reimplementar
+  esse tipo de campo local a uma feature.
+- **Grids de relacionamento 1-N**: qualquer aba de uma entidade que mostre dados de uma relação
+  1-N usa `app-grid`, com os mesmos botões e funcionalidades (add/edit/view, etc.) já usados nas
+  outras entidades — não criar uma tabela/lista customizada pra isso.
+- **Inputs de formulário**: `form-floating` dentro de um `input-group`, com o ícone no
+  `input-group-text` à direita do campo (ver `vehicle-form.component.html`).
+- **Validação visual**: campos obrigatórios usam `[class.is-invalid]="isInvalid('campo')"` /
+  `[class.is-valid]="isValid('campo')"` (herdados de `core/base/form-base.component.ts`) —
+  vermelho quando inválido, verde quando válido, igual ao resto dos formulários.
+- Dentro de uma entidade, respeitar o mesmo template/estrutura de tela já usado em todas as
+  outras (mesma ordem de seções, mesmos padrões de header/ações) — não introduzir um layout novo
+  pra uma entidade sem justificativa.
 
 ### Convenções recorrentes desta sessão
 
