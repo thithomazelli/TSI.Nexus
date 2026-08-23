@@ -57,6 +57,12 @@ export const PT_BR = {
     DELIVERY_DELAYED: 'Entrega atrasada',
     DELIVERY_IN_PROGRESS: 'Entrega em andamento',
     PRODUCT_RETURNED: 'Produto devolvido',
+    STOCK_ALERT_TITLE: 'Alerta de estoque',
+    STOCK_ALERT_HEADER: 'Alerta de estoque',
+    STOCK_ALERT_OUT_OF_STOCK: 'Sem estoque',
+    STOCK_ALERT_LOW_STOCK: 'Estoque baixo',
+    STOCK_ALERT_EMPTY: 'Nenhum produto com estoque baixo ou zerado.',
+    SEE_ALL_STOCK: 'Ver todos',
   },
   PREFERENCES: {
     TITLE: 'Preferências',

@@ -12,6 +12,7 @@ import { NgIf, AsyncPipe, TitleCasePipe } from '@angular/common';
 import { PaymentNotificationComponent } from './components/payment-notification/payment-notification.component';
 import { VehicleBlockedNotificationComponent } from './components/vehicle-blocked-notification/vehicle-blocked-notification.component';
 import { DriverLicenseNotificationComponent } from './components/driver-license-notification/driver-license-notification.component';
+import { StockAlertNotificationComponent } from './components/stock-alert-notification/stock-alert-notification.component';
 import { PhotoComponent } from '../shared/photo/photo.component';
 import { UserPreferencesComponent } from '../shared/components/user-preferences/user-preferences.component';
 import { RouterLink } from '@angular/router';
@@ -28,6 +29,7 @@ import { FeatureToggleKeys } from '../core/models/feature-toggle.model';
         PaymentNotificationComponent,
         VehicleBlockedNotificationComponent,
         DriverLicenseNotificationComponent,
+        StockAlertNotificationComponent,
         PhotoComponent,
         UserPreferencesComponent,
         RouterLink,
@@ -47,6 +49,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isDriverLicenseAlertEnabled = true;
   isVehicleBlockedAlertEnabled = true;
   isPaymentAlertEnabled = true;
+  isStockAlertEnabled = true;
 
   private lastBlobUrl?: string;
   private mobileBreakpoint = 992;
@@ -108,6 +111,8 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleBlockedAlert),
       this.featureFlagService.isEnabled(FeatureToggleKeys.FinanceModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.PaymentAlert),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.PurchaseOrdersModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.StockAlert),
     ]).subscribe(
       ([
         fleetEnabled,
@@ -115,10 +120,13 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
         vehicleBlockedAlert,
         financeEnabled,
         paymentAlert,
+        purchaseOrdersEnabled,
+        stockAlert,
       ]) => {
         this.isDriverLicenseAlertEnabled = fleetEnabled && driverLicenseAlert;
         this.isVehicleBlockedAlertEnabled = fleetEnabled && vehicleBlockedAlert;
         this.isPaymentAlertEnabled = financeEnabled && paymentAlert;
+        this.isStockAlertEnabled = purchaseOrdersEnabled && stockAlert;
       },
     );
   }

@@ -1,0 +1,62 @@
+<a
+  class="nav-link"
+  data-bs-toggle="dropdown"
+  href="#"
+  [title]="'NAVBAR.STOCK_ALERT_TITLE' | translate"
+>
+  <i class="bi bi-box-seam"></i>
+  <span *ngIf="showBadge" class="navbar-badge badge text-bg-danger">{{
+    total
+  }}</span>
+</a>
+<div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+  <span class="dropdown-item dropdown-header">{{ 'NAVBAR.STOCK_ALERT_HEADER' | translate }}</span>
+  <div class="dropdown-divider"></div>
+
+  <ng-container *ngIf="outOfStockProducts.length > 0">
+    <span class="dropdown-item-text small text-danger fw-semibold px-3 py-1">
+      <i class="bi bi-exclamation-octagon-fill"></i>
+      {{ 'NAVBAR.STOCK_ALERT_OUT_OF_STOCK' | translate }}
+    </span>
+    <a
+      *ngFor="let product of outOfStockProducts"
+      href="#"
+      class="dropdown-item px-2 py-2"
+      (click)="openProduct(product); $event.preventDefault()"
+    >
+      <div class="d-flex justify-content-between align-items-center w-100 small">
+        <span class="fw-semibold">{{ product.sku }}</span>
+        <span>{{ product.name }}</span>
+        <span class="badge text-bg-danger">0</span>
+      </div>
+    </a>
+  </ng-container>
+
+  <ng-container *ngIf="lowStockProducts.length > 0">
+    <span class="dropdown-item-text small text-warning fw-semibold px-3 py-1">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      {{ 'NAVBAR.STOCK_ALERT_LOW_STOCK' | translate }}
+    </span>
+    <a
+      *ngFor="let product of lowStockProducts"
+      href="#"
+      class="dropdown-item px-2 py-2"
+      (click)="openProduct(product); $event.preventDefault()"
+    >
+      <div class="d-flex justify-content-between align-items-center w-100 small">
+        <span class="fw-semibold">{{ product.sku }}</span>
+        <span>{{ product.name }}</span>
+        <span class="badge text-bg-warning">{{ product.quantityInStock }}</span>
+      </div>
+    </a>
+  </ng-container>
+
+  <span *ngIf="!showBadge" class="dropdown-item-text small text-muted px-3 py-2">
+    {{ 'NAVBAR.STOCK_ALERT_EMPTY' | translate }}
+  </span>
+
+  <div class="dropdown-divider"></div>
+  <a href="#" class="dropdown-item dropdown-footer" (click)="onSeeAll(); $event.preventDefault()"
+    >{{ 'NAVBAR.SEE_ALL_STOCK' | translate }}</a
+  >
+</div>

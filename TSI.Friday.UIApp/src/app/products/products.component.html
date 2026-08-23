@@ -10,7 +10,7 @@
   <app-grid
     [baseEndPoint]="baseEndPoint"
     [className]="'SIDEBAR.PRODUCTS' | translate"
-    [rowData]="rowData"
+    [rowData]="filteredRowData"
     [columnDefs]="columnDefs"
     [refresh]="refreshProducts.bind(this)"
     [delete]="deleteProduct.bind(this)"

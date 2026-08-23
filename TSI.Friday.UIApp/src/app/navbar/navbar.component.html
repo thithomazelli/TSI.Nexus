@@ -31,6 +31,9 @@
         <li class="nav-item dropdown" *ngIf="isDriverLicenseAlertEnabled">
           <app-driver-license-notification></app-driver-license-notification>
         </li>
+        <li class="nav-item dropdown" *ngIf="isStockAlertEnabled">
+          <app-stock-alert-notification></app-stock-alert-notification>
+        </li>
         <!--begin::Fullscreen Toggle-->
         <li class="nav-item">
           <a

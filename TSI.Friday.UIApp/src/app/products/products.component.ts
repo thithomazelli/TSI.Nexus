@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   ModalService,
   NotificationService,
@@ -53,7 +54,12 @@ export class ProductsComponent implements OnInit, OnDestroy {
   }
 
   rowData: Product[] = [];
+  filteredRowData: Product[] = [];
   columnDefs: ColDef[] = [];
+
+  // Set from the ?stockStatus=Low query param (navbar stock alert's "ver todos"): same "<=3" rule
+  // as the alert itself, includes both zero and low stock.
+  private _stockStatusFilter: string | null = null;
 
   private buildColumnDefs(): void {
     this.columnDefs = [
@@ -197,6 +203,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
   }
 
   constructor(
+    private activatedRoute: ActivatedRoute,
     private modalService: ModalService,
     private notificationService: NotificationService,
     private productService: ProductService,
@@ -207,6 +214,8 @@ export class ProductsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this._stockStatusFilter = this.activatedRoute.snapshot.queryParamMap.get('stockStatus');
+
     this._productChangedSub = this.productService.productChanged$
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
@@ -266,6 +275,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
       )
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];
+        this.applyStockStatusFilter();
       });
   }
 
@@ -275,7 +285,15 @@ export class ProductsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];
+        this.applyStockStatusFilter();
       });
+  }
+
+  private applyStockStatusFilter(): void {
+    this.filteredRowData =
+      this._stockStatusFilter === 'Low'
+        ? this.rowData.filter((p) => (p.quantityInStock ?? 0) <= 3)
+        : this.rowData;
   }
 
   private getUnitLabel(unit: string): string {
