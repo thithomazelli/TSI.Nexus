@@ -54,6 +54,14 @@ namespace TSI.Friday.WebAPI.Controllers
         }
 
         [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var webApiResponse = await _fuelLogService.FindAll();
+            return Ok(webApiResponse);
+        }
+
+        [HttpGet]
         [Route("GetById/{fuelLogId}")]
         public async Task<IActionResult> GetById(Guid? fuelLogId)
         {

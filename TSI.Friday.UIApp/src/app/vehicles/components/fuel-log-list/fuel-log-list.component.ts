@@ -16,7 +16,8 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 
 import { FuelLogDetailsModalComponent } from '../fuel-log-details-modal/fuel-log-details-modal.component';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, NgIf } from '@angular/common';
+import { HeaderComponent } from '../../../shared/header/header.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -24,16 +25,27 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     templateUrl: './fuel-log-list.component.html',
     styleUrl: './fuel-log-list.component.scss',
     imports: [
+        NgIf,
         CurrencyPipe,
         DatePipe,
+        HeaderComponent,
         TranslatePipe,
     ],
 })
 export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
   @Input()
-  vehicleId!: string;
+  vehicleId?: string;
+
+  @Input()
+  compact = false;
 
   fuelLogs: FuelLog[] = [];
+
+  statusColorMap: { [key: string]: string } = {
+    'Concluído': 'success',
+    'Agendado': 'info',
+    'Cancelado': 'secondary',
+  };
 
   private _destroy$ = new Subject<void>();
 
@@ -61,9 +73,13 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
     this._destroy$.complete();
   }
 
+  getStatusColor(status: string): string {
+    return this.statusColorMap[status] ?? 'secondary';
+  }
+
   openModal(fuelLog?: FuelLog): void {
     this.modalService.showTemplateModal(FuelLogDetailsModalComponent, {
-      vehicleId: this.vehicleId,
+      vehicleId: fuelLog?.vehicleId ?? this.vehicleId,
       data: fuelLog ?? null,
     });
   }
@@ -78,14 +94,12 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private load(): void {
-    if (!this.vehicleId) {
-      return;
-    }
-    this.fuelLogService
-      .getByVehicle(this.vehicleId)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response) => {
-        this.fuelLogs = response.data ?? [];
-      });
+    const request$ = this.vehicleId
+      ? this.fuelLogService.getByVehicle(this.vehicleId)
+      : this.fuelLogService.getAll();
+
+    request$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
+      this.fuelLogs = response.data ?? [];
+    });
   }
 }

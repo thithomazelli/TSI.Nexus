@@ -1,7 +1,21 @@
-<div class="fuel-log-list">
+<app-header
+  *ngIf="!compact"
+  [title]="'VEHICLES.REFUELINGS' | translate"
+  [navigationMenus]="[
+    { label: 'COMMON.HOME' | translate, link: '/home' },
+    { label: 'VEHICLES.REFUELINGS' | translate, link: '' },
+  ]"
+></app-header>
+
+<div class="fuel-log-list" [class.app-content]="!compact">
   <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0">{{ 'VEHICLES.REFUELINGS' | translate }}</h5>
-    <button type="button" class="btn btn-success btn-sm" (click)="openModal()">
+    <h5 class="mb-0" *ngIf="compact">{{ 'VEHICLES.REFUELINGS' | translate }}</h5>
+    <button
+      *ngIf="vehicleId"
+      type="button"
+      class="btn btn-success btn-sm ms-auto"
+      (click)="openModal()"
+    >
       <i class="bi bi-plus-lg"></i> {{ 'VEHICLES.NEW_REFUELING' | translate }}
     </button>
   </div>
@@ -9,24 +23,30 @@
   <table class="table table-sm">
     <thead>
       <tr>
+        <th *ngIf="!vehicleId">{{ 'VEHICLES.SINGULAR' | translate }}</th>
         <th>{{ 'COMMON.DATE' | translate }}</th>
         <th>{{ 'VEHICLES.ODOMETER_SHORT' | translate }}</th>
         <th>{{ 'VEHICLES.LITERS' | translate }}</th>
         <th>{{ 'VEHICLES.PRICE_PER_LITER' | translate }}</th>
         <th>{{ 'COMMON.TOTAL' | translate }}</th>
         <th>{{ 'VEHICLES.GAS_STATION' | translate }}</th>
+        <th>{{ 'COMMON.STATUS' | translate }}</th>
         <th style="width: 80px"></th>
       </tr>
     </thead>
     <tbody>
       @for (log of fuelLogs; track log.id) {
         <tr>
+          <td *ngIf="!vehicleId">{{ log.vehicle?.plate }}</td>
           <td>{{ log.date | date: 'dd/MM/yyyy' }}</td>
           <td>{{ log.odometer }}</td>
           <td>{{ log.liters }}</td>
           <td>{{ log.pricePerLiter | currency: 'BRL' }}</td>
           <td>{{ log.totalCost | currency: 'BRL' }}</td>
           <td>{{ log.gasStation }}</td>
+          <td>
+            <span class="badge bg-{{ getStatusColor(log.status) }}">{{ log.status }}</span>
+          </td>
           <td>
             <button
               type="button"
@@ -48,7 +68,7 @@
         </tr>
       } @empty {
         <tr>
-          <td colspan="7" class="text-center text-muted small py-3">
+          <td [attr.colspan]="vehicleId ? 8 : 9" class="text-center text-muted small py-3">
             {{ 'VEHICLES.NO_REFUELING_REGISTERED' | translate }}
           </td>
         </tr>

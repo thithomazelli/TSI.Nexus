@@ -5,15 +5,15 @@ import {
   MaintenanceStatus,
   MaintenanceType,
   NotificationService,
-  Product,
-  ProductService,
   ResponseStatus,
   VehicleMaintenance,
+  VehicleMaintenanceProduct,
   VehicleMaintenanceService,
   TranslationService,
 } from '@friday/core';
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
 import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
+import { ProductPickerGridComponent } from '../../../shared/components/product-picker-grid/product-picker-grid.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -24,6 +24,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         ReactiveFormsModule,
         DateFieldComponent,
         CurrencyFieldComponent,
+        ProductPickerGridComponent,
         TranslatePipe,
     ],
 })
@@ -31,10 +32,9 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
   saving = false;
   isEdit: boolean;
   vehicleId: string;
-  products: Product[] = [];
+  vehicleMaintenanceProducts: VehicleMaintenanceProduct[] = [];
 
   private _id: string;
-  private _status: MaintenanceStatus;
 
   form: FormGroup;
 
@@ -45,11 +45,20 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
     ];
   }
 
+  get statusOptions() {
+    return [
+      { label: this.translationService.instant('VEHICLES.MAINTENANCE_SCHEDULED'), value: MaintenanceStatus.Scheduled },
+      { label: this.translationService.instant('VEHICLES.MAINTENANCE_IN_PROGRESS'), value: MaintenanceStatus.InProgress },
+      { label: this.translationService.instant('VEHICLES.MAINTENANCE_COMPLETED'), value: MaintenanceStatus.Completed },
+      { label: this.translationService.instant('VEHICLES.MAINTENANCE_OVERDUE'), value: MaintenanceStatus.Overdue },
+      { label: this.translationService.instant('VEHICLES.MAINTENANCE_CANCELLED'), value: MaintenanceStatus.Cancelled },
+    ];
+  }
+
   constructor(
     public dialogRef: MatDialogRef<VehicleMaintenanceDetailsModalComponent>,
     @Inject(MAT_DIALOG_DATA) public dialogData: any,
     private formBuilder: FormBuilder,
-    private productService: ProductService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
@@ -58,26 +67,29 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
     this.vehicleId = dialogData?.vehicleId ?? '';
     this.isEdit = !!existing?.id;
     this._id = existing?.id ?? '';
-    this._status = existing?.status ?? MaintenanceStatus.Scheduled;
+    this.vehicleMaintenanceProducts = [...(existing?.vehicleMaintenanceProducts ?? [])];
 
     this.form = this.formBuilder.group({
       type: [existing?.type ?? MaintenanceType.Preventive, Validators.required],
       description: [existing?.description ?? '', Validators.required],
       scheduledDate: [existing?.scheduledDate ?? '', Validators.required],
       cost: [existing?.cost ?? 0, [Validators.min(0)]],
-      productId: [existing?.productId ?? (null as string | null)],
-      partQuantity: [existing?.partQuantity ?? 0, [Validators.min(0)]],
+      status: [existing?.status ?? MaintenanceStatus.Scheduled, Validators.required],
     });
   }
 
-  ngOnInit(): void {
-    this.productService.getAll().subscribe((response) => {
-      this.products = response.data ?? [];
-    });
-  }
+  ngOnInit(): void {}
 
   close(): void {
     this.dialogRef.close(null);
+  }
+
+  onProductPickerItemAdded(item: VehicleMaintenanceProduct): void {
+    this.vehicleMaintenanceProducts.push(item);
+  }
+
+  removeProduct(index: number): void {
+    this.vehicleMaintenanceProducts.splice(index, 1);
   }
 
   submit(): void {
@@ -94,10 +106,9 @@ export class VehicleMaintenanceDetailsModalComponent implements OnInit {
       description: raw.description,
       scheduledDate: this.toDate(raw.scheduledDate),
       cost: raw.cost,
-      status: this._status,
+      status: raw.status,
       vehicleId: this.vehicleId,
-      productId: raw.productId || null,
-      partQuantity: raw.productId ? raw.partQuantity : 0,
+      vehicleMaintenanceProducts: this.vehicleMaintenanceProducts,
     } as VehicleMaintenance;
 
     this.saving = true;

@@ -12,6 +12,12 @@ export class FuelLogService {
 
   constructor(private apiService: ApiService) {}
 
+  getAll(): Observable<WebApiResponse<FuelLog[]>> {
+    return this.apiService.get<WebApiResponse<FuelLog[]>>(
+      `${this._baseEndPoint}/getAll`,
+    );
+  }
+
   getByVehicle(vehicleId: string): Observable<WebApiResponse<FuelLog[]>> {
     return this.apiService.get<WebApiResponse<FuelLog[]>>(
       `${this._baseEndPoint}/getByVehicle/${vehicleId}`,

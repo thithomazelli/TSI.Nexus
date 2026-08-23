@@ -96,10 +96,11 @@
               @if (activeTab === 'maintenances' && data?.id) {
                 <app-vehicle-maintenance-list
                   [vehicleId]="data!.id"
+                  [compact]="true"
                 ></app-vehicle-maintenance-list>
               }
               @if (activeTab === 'fuel' && data?.id) {
-                <app-fuel-log-list [vehicleId]="data!.id"></app-fuel-log-list>
+                <app-fuel-log-list [vehicleId]="data!.id" [compact]="true"></app-fuel-log-list>
               }
               @if (activeTab === 'attachments' && data?.id) {
                 <app-attachments

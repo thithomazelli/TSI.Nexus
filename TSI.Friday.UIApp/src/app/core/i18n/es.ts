@@ -35,6 +35,9 @@ export const ES = {
     ALERTS: 'Alertas',
     VEHICLES: 'Vehículos',
     DRIVER: 'Conductor',
+    CHARTERING: 'Fletamento',
+    MAINTENANCES: 'Mantenimiento',
+    REFUELINGS: 'Combustible',
   },
   NAVBAR: {
     PROFILE: 'Perfil',

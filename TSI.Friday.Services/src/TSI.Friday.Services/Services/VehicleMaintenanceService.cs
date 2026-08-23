@@ -80,10 +80,29 @@ namespace TSI.Friday.Services
                     maintenance.CompletedDate = DateTime.UtcNow;
                 }
 
-                await _repository.UpdateAsync(maintenance);
-                await SyncVehicleStatusAsync(maintenance.VehicleId);
+                // Load the tracked entity (with its parts) so the incoming VehicleMaintenanceProducts
+                // can be reconciled against the ones already persisted, instead of resending the
+                // whole collection blind - UpdateAsync's Entry(entity).State = Modified does not
+                // cascade into navigation collections on its own.
+                var existing = await _repository.GetByIdAsync(
+                    maintenance.Id,
+                    m => m.VehicleMaintenanceProducts
+                );
 
-                result.Data = maintenance;
+                existing.Type = maintenance.Type;
+                existing.Description = maintenance.Description;
+                existing.ScheduledDate = maintenance.ScheduledDate;
+                existing.CompletedDate = maintenance.CompletedDate;
+                existing.OdometerAtService = maintenance.OdometerAtService;
+                existing.Cost = maintenance.Cost;
+                existing.Status = maintenance.Status;
+
+                SyncMaintenanceProducts(existing, maintenance.VehicleMaintenanceProducts);
+
+                await _repository.UpdateAsync(existing);
+                await SyncVehicleStatusAsync(existing.VehicleId);
+
+                result.Data = existing;
                 result.Status = ResponseStatus.Success;
                 result.Message = "Manutenção atualizada com sucesso.";
             }
@@ -140,7 +159,10 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
-                result.Data = await _repository.GetAllAsync(m => m.Vehicle);
+                result.Data = await _repository.GetAllAsync(
+                    m => m.Vehicle,
+                    m => m.VehicleMaintenanceProducts
+                );
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
             }
@@ -171,7 +193,11 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
-                result.Data = await _repository.GetByIdAsync(id, m => m.Vehicle);
+                result.Data = await _repository.GetByIdAsync(
+                    id,
+                    m => m.Vehicle,
+                    m => m.VehicleMaintenanceProducts
+                );
                 result.Status = ResponseStatus.Success;
                 result.Message =
                     result.Data != null
@@ -207,7 +233,10 @@ namespace TSI.Friday.Services
                     return result;
                 }
 
-                result.Data = await _repository.QueryAsync(_ => _.VehicleId == vehicleId);
+                result.Data = await _repository.QueryAsync(
+                    _ => _.VehicleId == vehicleId,
+                    m => m.VehicleMaintenanceProducts
+                );
                 result.Status = ResponseStatus.Success;
                 result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
             }
@@ -226,6 +255,61 @@ namespace TSI.Friday.Services
         #endregion Public methods
 
         #region Private methods
+
+        /// <summary>
+        /// Reconciles the tracked VehicleMaintenanceProducts collection against the parts sent by
+        /// the client: removes lines no longer present, updates the ones that still are, and adds
+        /// the new ones (identified by an empty/default Id) - mirroring the staging grid, which
+        /// lets the user add/remove parts both when creating and when editing a Maintenance.
+        /// </summary>
+        private static void SyncMaintenanceProducts(
+            VehicleMaintenance existing,
+            ICollection<VehicleMaintenanceProduct> incoming
+        )
+        {
+            incoming ??= new List<VehicleMaintenanceProduct>();
+            var incomingIds = incoming.Where(p => p.Id != Guid.Empty).Select(p => p.Id).ToHashSet();
+
+            foreach (
+                var current in existing
+                    .VehicleMaintenanceProducts.Where(p => !incomingIds.Contains(p.Id))
+                    .ToList()
+            )
+            {
+                existing.VehicleMaintenanceProducts.Remove(current);
+            }
+
+            foreach (var line in incoming)
+            {
+                var current =
+                    line.Id != Guid.Empty
+                        ? existing.VehicleMaintenanceProducts.FirstOrDefault(p => p.Id == line.Id)
+                        : null;
+
+                if (current != null)
+                {
+                    current.Description = line.Description;
+                    current.Quantity = line.Quantity;
+                    current.Price = line.Price;
+                    current.Discount = line.Discount;
+                    current.ProductId = line.ProductId;
+                }
+                else
+                {
+                    existing.VehicleMaintenanceProducts.Add(
+                        new VehicleMaintenanceProduct
+                        {
+                            Description = line.Description,
+                            Quantity = line.Quantity,
+                            Price = line.Price,
+                            Discount = line.Discount,
+                            VehicleMaintenanceId = existing.Id,
+                            ProductId = line.ProductId,
+                        }
+                    );
+                }
+            }
+        }
 
         /// <summary>
         /// Blocks the Vehicle when it has any pending (InProgress/Overdue) maintenance, or releases

@@ -81,6 +81,8 @@
         </li>
 
         <ng-container *ngIf="isFleetModuleEnabled">
+          <li class="nav-header">{{ 'SIDEBAR.CHARTERING' | translate }}</li>
+
           <li class="nav-item">
             <a
               routerLink="/vehicles"
@@ -102,6 +104,54 @@
             >
               <i class="nav-icon bi bi-person-vcard"></i>
               <p>{{ 'SIDEBAR.DRIVERS' | translate }}</p>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              routerLink="/trips"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-signpost-split"></i>
+              <p>{{ 'SIDEBAR.TRIPS' | translate }}</p>
+            </a>
+          </li>
+
+          <li class="nav-item" *ngIf="isVehicleMaintenanceEnabled">
+            <a
+              routerLink="/vehicle-maintenances"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-tools"></i>
+              <p>{{ 'SIDEBAR.MAINTENANCES' | translate }}</p>
+            </a>
+          </li>
+
+          <li class="nav-item" *ngIf="isFuelLogEnabled">
+            <a
+              routerLink="/fuel-logs"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-fuel-pump"></i>
+              <p>{{ 'SIDEBAR.REFUELINGS' | translate }}</p>
+            </a>
+          </li>
+
+          <li class="nav-item" *ngIf="isAdmin || isMaster">
+            <a
+              routerLink="/reports/fleet"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="nav-link"
+            >
+              <i class="nav-icon bi bi-graph-up"></i>
+              <p>{{ 'SIDEBAR.FLEET_REPORT' | translate }}</p>
             </a>
           </li>
         </ng-container>
@@ -139,18 +189,6 @@
           >
             <i class="nav-icon bi bi-cart-plus"></i>
             <p>{{ 'SIDEBAR.PURCHASE_ORDERS' | translate }}</p>
-          </a>
-        </li>
-
-        <li class="nav-item" *ngIf="isFleetModuleEnabled">
-          <a
-            routerLink="/trips"
-            routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="nav-link"
-          >
-            <i class="nav-icon bi bi-signpost-split"></i>
-            <p>{{ 'SIDEBAR.TRIPS' | translate }}</p>
           </a>
         </li>
 
@@ -201,17 +239,6 @@
             >
               <i class="nav-icon bi bi-bar-chart"></i>
               <p>{{ 'SIDEBAR.REPORTS' | translate }}</p>
-            </a>
-          </li>
-          <li class="nav-item" *ngIf="isFleetModuleEnabled">
-            <a
-              routerLink="/reports/fleet"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="nav-link"
-            >
-              <i class="nav-icon bi bi-graph-up"></i>
-              <p>{{ 'SIDEBAR.FLEET_REPORT' | translate }}</p>
             </a>
           </li>
           <li class="nav-header">{{ 'SIDEBAR.ADMIN' | translate }}</li>

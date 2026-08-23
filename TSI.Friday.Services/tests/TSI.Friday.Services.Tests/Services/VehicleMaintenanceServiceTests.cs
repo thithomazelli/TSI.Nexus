@@ -123,6 +123,12 @@ namespace TSI.Friday.Services.Tests.Services
                 VehicleId = _vehicleId,
                 Status = MaintenanceStatus.Completed,
             };
+            var existing = new VehicleMaintenance
+            {
+                Id = maintenance.Id,
+                VehicleId = _vehicleId,
+                VehicleMaintenanceProducts = new List<VehicleMaintenanceProduct>(),
+            };
 
             _vehicleRepository
                 .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
@@ -130,13 +136,16 @@ namespace TSI.Friday.Services.Tests.Services
             _repository
                 .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<VehicleMaintenance, bool>>>()))
                 .ReturnsAsync(false);
+            _repository
+                .Setup(_ => _.GetByIdAsync(maintenance.Id, m => m.VehicleMaintenanceProducts))
+                .ReturnsAsync(existing);
 
             // Act
             var result = await _service.Update(maintenance);
 
             // Assert
             Assert.Equal(ResponseStatus.Success, result.Status);
-            Assert.NotNull(maintenance.CompletedDate);
+            Assert.NotNull(existing.CompletedDate);
             Assert.Equal(VehicleStatus.Available, vehicle.Status);
             _vehicleRepository.Verify(_ => _.UpdateAsync(vehicle), Times.Once);
         }
@@ -157,6 +166,12 @@ namespace TSI.Friday.Services.Tests.Services
                 VehicleId = _vehicleId,
                 Status = MaintenanceStatus.Completed,
             };
+            var existing = new VehicleMaintenance
+            {
+                Id = maintenance.Id,
+                VehicleId = _vehicleId,
+                VehicleMaintenanceProducts = new List<VehicleMaintenanceProduct>(),
+            };
 
             _vehicleRepository
                 .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
@@ -164,6 +179,9 @@ namespace TSI.Friday.Services.Tests.Services
             _repository
                 .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<VehicleMaintenance, bool>>>()))
                 .ReturnsAsync(true);
+            _repository
+                .Setup(_ => _.GetByIdAsync(maintenance.Id, m => m.VehicleMaintenanceProducts))
+                .ReturnsAsync(existing);
 
             // Act
             var result = await _service.Update(maintenance);
@@ -172,6 +190,95 @@ namespace TSI.Friday.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Equal(VehicleStatus.Blocked, vehicle.Status);
             _vehicleRepository.Verify(_ => _.UpdateAsync(It.IsAny<Vehicle>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_Update_ShouldReconcileVehicleMaintenanceProducts()
+        {
+            // Arrange
+            var vehicle = new Vehicle
+            {
+                Id = _vehicleId,
+                Plate = "ABC1D23",
+                Status = VehicleStatus.Available,
+            };
+            var keptProductId = Guid.NewGuid();
+            var removedProductId = Guid.NewGuid();
+            var newProductId = Guid.NewGuid();
+            var maintenanceId = Guid.NewGuid();
+            var keptLineId = Guid.NewGuid();
+
+            var existing = new VehicleMaintenance
+            {
+                Id = maintenanceId,
+                VehicleId = _vehicleId,
+                Status = MaintenanceStatus.Scheduled,
+                VehicleMaintenanceProducts = new List<VehicleMaintenanceProduct>
+                {
+                    new()
+                    {
+                        Id = keptLineId,
+                        VehicleMaintenanceId = maintenanceId,
+                        ProductId = keptProductId,
+                        Quantity = 1,
+                        Price = 10,
+                    },
+                    new()
+                    {
+                        Id = Guid.NewGuid(),
+                        VehicleMaintenanceId = maintenanceId,
+                        ProductId = removedProductId,
+                        Quantity = 2,
+                        Price = 20,
+                    },
+                },
+            };
+
+            var maintenance = new VehicleMaintenance
+            {
+                Id = maintenanceId,
+                VehicleId = _vehicleId,
+                Status = MaintenanceStatus.Scheduled,
+                VehicleMaintenanceProducts = new List<VehicleMaintenanceProduct>
+                {
+                    new()
+                    {
+                        Id = keptLineId,
+                        ProductId = keptProductId,
+                        Quantity = 3,
+                        Price = 15,
+                    },
+                    new() { ProductId = newProductId, Quantity = 1, Price = 30 },
+                },
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle> { vehicle });
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<VehicleMaintenance, bool>>>()))
+                .ReturnsAsync(false);
+            _repository
+                .Setup(_ => _.GetByIdAsync(maintenanceId, m => m.VehicleMaintenanceProducts))
+                .ReturnsAsync(existing);
+
+            // Act
+            var result = await _service.Update(maintenance);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(2, existing.VehicleMaintenanceProducts.Count);
+            Assert.DoesNotContain(
+                existing.VehicleMaintenanceProducts,
+                p => p.ProductId == removedProductId
+            );
+            var kept = existing.VehicleMaintenanceProducts.Single(p => p.Id == keptLineId);
+            Assert.Equal(3, kept.Quantity);
+            Assert.Equal(15, kept.Price);
+            Assert.Contains(
+                existing.VehicleMaintenanceProducts,
+                p => p.ProductId == newProductId && p.VehicleMaintenanceId == maintenanceId
+            );
         }
 
         [Fact]
@@ -184,7 +291,10 @@ namespace TSI.Friday.Services.Tests.Services
             };
 
             _repository
-                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<VehicleMaintenance, bool>>>()))
+                .Setup(_ => _.QueryAsync(
+                    It.IsAny<Expression<Func<VehicleMaintenance, bool>>>(),
+                    It.IsAny<Expression<Func<VehicleMaintenance, object>>[]>()
+                ))
                 .ReturnsAsync(maintenances);
 
             // Act

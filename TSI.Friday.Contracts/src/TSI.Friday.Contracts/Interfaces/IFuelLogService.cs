@@ -30,6 +30,12 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<FuelLog>> Remove(FuelLog fuelLog);
 
         /// <summary>
+        /// Method responsible to get all registers available on the FuelLog database.
+        /// </summary>
+        /// <returns>All registers found on the FuelLog database.</returns>
+        Task<WebApiResponse<IEnumerable<FuelLog>>> FindAll();
+
+        /// <summary>
         /// Method responsible to get only one FuelLog based on the ID received as parameter.
         /// </summary>
         /// <param name="id">The ID to be used on the search.</param>

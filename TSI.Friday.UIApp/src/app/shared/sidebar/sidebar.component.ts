@@ -6,7 +6,7 @@ import {
   Renderer2,
   OnInit,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, combineLatest } from 'rxjs';
 import { AccountService } from '../../core/services/account/account.service';
 import { FeatureFlagService } from '../../core/services/feature-flag/feature-flag.service';
 import { FeatureToggleKeys } from '../../core/models/feature-toggle.model';
@@ -34,6 +34,8 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private quotesModuleSub: Subscription | null = null;
   private salesOrdersModuleSub: Subscription | null = null;
   private purchaseOrdersModuleSub: Subscription | null = null;
+  private vehicleMaintenanceSub: Subscription | null = null;
+  private fuelLogSub: Subscription | null = null;
 
   isAdmin = false;
   isMaster = false;
@@ -41,6 +43,8 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   isQuotesModuleEnabled = true;
   isSalesOrdersModuleEnabled = true;
   isPurchaseOrdersModuleEnabled = true;
+  isVehicleMaintenanceEnabled = true;
+  isFuelLogEnabled = true;
 
   constructor(
     private el: ElementRef,
@@ -74,6 +78,18 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
       .subscribe((enabled) => {
         this.isPurchaseOrdersModuleEnabled = enabled;
       });
+    this.vehicleMaintenanceSub = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleMaintenance),
+    ]).subscribe(([groupEnabled, entityEnabled]) => {
+      this.isVehicleMaintenanceEnabled = groupEnabled && entityEnabled;
+    });
+    this.fuelLogSub = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FuelLog),
+    ]).subscribe(([groupEnabled, entityEnabled]) => {
+      this.isFuelLogEnabled = groupEnabled && entityEnabled;
+    });
   }
 
   ngAfterViewInit(): void {
@@ -297,6 +313,14 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.purchaseOrdersModuleSub) {
       this.purchaseOrdersModuleSub.unsubscribe();
       this.purchaseOrdersModuleSub = null;
+    }
+    if (this.vehicleMaintenanceSub) {
+      this.vehicleMaintenanceSub.unsubscribe();
+      this.vehicleMaintenanceSub = null;
+    }
+    if (this.fuelLogSub) {
+      this.fuelLogSub.unsubscribe();
+      this.fuelLogSub = null;
     }
   }
 

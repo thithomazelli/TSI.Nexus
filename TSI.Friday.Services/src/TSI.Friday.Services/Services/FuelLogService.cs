@@ -113,6 +113,37 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<FuelLog>>> FindAll()
+        {
+            WebApiResponse<IEnumerable<FuelLog>> result = new();
+
+            try
+            {
+                if (!await _featureToggleService.IsEnabledAsync(FeatureToggleKeys.FuelLog, FeatureToggleKeys.FleetModule))
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
+                result.Data = await _repository.GetAllAsync(f => f.Vehicle);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data.Count()} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "FuelLogService.FindAll", null);
+
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de abastecimento na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
         public async Task<WebApiResponse<FuelLog>> FindById(Guid? id)
         {
             WebApiResponse<FuelLog> result = new();

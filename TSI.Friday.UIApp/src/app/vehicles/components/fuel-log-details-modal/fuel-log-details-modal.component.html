@@ -49,7 +49,7 @@
           [label]="'VEHICLES.PRICE_PER_LITER' | translate"
         ></app-currency-field>
       </div>
-      <div class="col-12">
+      <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill">
             <input
@@ -62,6 +62,70 @@
             <label for="fuelLogModalGasStation">{{ 'VEHICLES.GAS_STATION' | translate }}</label>
           </div>
           <div class="input-group-text"><i class="bi bi-fuel-pump"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select formControlName="status" class="form-select" id="fuelLogModalStatus">
+              <option value="" disabled>{{ 'COMMON.STATUS' | translate }}</option>
+              @for (option of statusOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.value }}</option>
+              }
+            </select>
+            <label for="fuelLogModalStatus">{{ 'COMMON.STATUS' | translate }}</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              type="text"
+              formControlName="productSku"
+              class="form-control"
+              [matAutocomplete]="fuelLogSkuAuto"
+              [placeholder]="'PRODUCTS.SKU' | translate"
+              id="fuelLogModalProductSku"
+              (blur)="onProductSkuBlur()"
+            />
+            <label for="fuelLogModalProductSku">{{ 'PRODUCTS.SKU' | translate }}</label>
+            <mat-autocomplete
+              #fuelLogSkuAuto="matAutocomplete"
+              (optionSelected)="selectProduct($event.option.value)"
+            >
+              <mat-option *ngFor="let product of filteredProductsSku$ | async" [value]="product">
+                {{ product.sku }}
+              </mat-option>
+            </mat-autocomplete>
+          </div>
+          <div class="input-group-text"><i class="bi bi-upc"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              type="text"
+              formControlName="productName"
+              class="form-control"
+              [matAutocomplete]="fuelLogNameAuto"
+              [placeholder]="'PRODUCTS.PRODUCT_NAME' | translate"
+              id="fuelLogModalProductName"
+              (blur)="onProductNameBlur()"
+            />
+            <label for="fuelLogModalProductName">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
+            <mat-autocomplete
+              #fuelLogNameAuto="matAutocomplete"
+              (optionSelected)="selectProduct($event.option.value)"
+            >
+              <mat-option *ngFor="let product of filteredProductsName$ | async" [value]="product">
+                {{ product.name }}
+              </mat-option>
+            </mat-autocomplete>
+          </div>
+          <div class="input-group-text"><i class="bi bi-tag"></i></div>
         </div>
       </div>
     </div>

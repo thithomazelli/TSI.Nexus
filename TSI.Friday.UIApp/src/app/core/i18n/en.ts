@@ -35,6 +35,9 @@ export const EN = {
     ALERTS: 'Alerts',
     VEHICLES: 'Vehicles',
     DRIVER: 'Driver',
+    CHARTERING: 'Chartering',
+    MAINTENANCES: 'Maintenance',
+    REFUELINGS: 'Fuel',
   },
   NAVBAR: {
     PROFILE: 'Profile',
@@ -597,6 +600,7 @@ export const EN = {
     GROUP_ADDRESS_TYPE: 'Address Type',
     GROUP_PRODUCT_CATEGORY: 'Product Category',
     GROUP_TRANSACTION_CATEGORY: 'Transaction Category',
+    GROUP_FUEL_LOG_STATUS: 'Fuel Log Status',
     NEW_VALUE: 'New option',
     NO_OPTIONS_FOUND: 'No options found.',
   },

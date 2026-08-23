@@ -66,8 +66,11 @@ namespace TSI.Friday.Data.Seed
 
                 await context.SaveChangesAsync();
 
-                var clientProducts = products.Where(p => p.Category != "Peças").ToList();
+                var clientProducts = products
+                    .Where(p => p.Category != "Peças" && p.Category != "Combustível")
+                    .ToList();
                 var partProducts = products.Where(p => p.Category == "Peças").ToList();
+                var fuelProducts = products.Where(p => p.Category == "Combustível").ToList();
                 var clients = businessPartners.Where(bp => bp.Type == BusinessPartnerType.Client).ToList();
 
                 // ---- Phase 4: Quotes + QuoteProducts ----
@@ -150,13 +153,16 @@ namespace TSI.Friday.Data.Seed
                 await context.SaveChangesAsync();
 
                 // ---- Phase 9: FuelLogs ----
-                var fuelLogs = BuildFuelLogs(faker, vehicles, now);
+                var fuelLogs = BuildFuelLogs(faker, vehicles, fuelProducts, now);
                 await context.FuelLog.AddRangeAsync(fuelLogs);
                 await context.SaveChangesAsync();
 
                 // ---- Phase 10: VehicleMaintenances (part consumption adjusts stock here) ----
-                var maintenances = BuildVehicleMaintenances(faker, vehicles, partProducts, now);
+                var maintenances = BuildVehicleMaintenances(faker, vehicles, partProducts, now, out var maintenanceProducts);
                 await context.VehicleMaintenance.AddRangeAsync(maintenances);
+                await context.SaveChangesAsync();
+
+                await context.VehicleMaintenanceProduct.AddRangeAsync(maintenanceProducts);
                 await context.SaveChangesAsync();
 
                 // ---- Phase 11: ServiceOrders (one per Trip that has a Driver) ----
@@ -477,6 +483,8 @@ namespace TSI.Friday.Data.Seed
                 ("Correia Dentada", "Peças", ProductType.Sale, 280m, 25),
                 ("Bateria 150Ah", "Peças", ProductType.Sale, 890m, 20),
                 ("Fluido de Freio DOT4", "Peças", ProductType.Sale, 45m, 40),
+                ("Diesel S10 (Litro)", "Combustível", ProductType.Sale, 6.2m, 5000),
+                ("Diesel Comum (Litro)", "Combustível", ProductType.Sale, 5.9m, 5000),
             };
 
             return catalog
@@ -1312,7 +1320,12 @@ namespace TSI.Friday.Data.Seed
             return result;
         }
 
-        private static List<FuelLog> BuildFuelLogs(Faker faker, List<Vehicle> vehicles, DateTime now)
+        private static List<FuelLog> BuildFuelLogs(
+            Faker faker,
+            List<Vehicle> vehicles,
+            List<Product> fuelProducts,
+            DateTime now
+        )
         {
             var result = new List<FuelLog>();
 
@@ -1324,6 +1337,8 @@ namespace TSI.Friday.Data.Seed
                 {
                     var liters = faker.Random.Decimal(120, 400);
                     var pricePerLiter = faker.Random.Decimal(5.8m, 6.6m);
+                    var status = faker.PickRandom("Concluído", "Concluído", "Agendado", "Cancelado");
+                    var product = fuelProducts.Count > 0 ? faker.PickRandom(fuelProducts) : null;
 
                     result.Add(
                         new FuelLog
@@ -1340,7 +1355,11 @@ namespace TSI.Friday.Data.Seed
                                 "Posto Raízen - Via Anchieta",
                                 "Posto Petrobras - Rodovia Anhanguera"
                             ),
+                            Status = status,
                             VehicleId = vehicle.Id,
+                            ProductId = product?.Id,
+                            ProductSku = product?.Sku,
+                            ProductName = product?.Name,
                         }
                     );
                 }
@@ -1353,10 +1372,12 @@ namespace TSI.Friday.Data.Seed
             Faker faker,
             List<Vehicle> vehicles,
             List<Product> partProducts,
-            DateTime now
+            DateTime now,
+            out List<VehicleMaintenanceProduct> maintenanceProducts
         )
         {
             var result = new List<VehicleMaintenance>();
+            maintenanceProducts = new List<VehicleMaintenanceProduct>();
 
             foreach (var vehicle in vehicles)
             {
@@ -1380,24 +1401,37 @@ namespace TSI.Friday.Data.Seed
                     var part = usePart ? faker.PickRandom(partProducts) : null;
                     var partQuantity = usePart ? faker.Random.Number(1, 4) : 0;
 
-                    result.Add(
-                        new VehicleMaintenance
-                        {
-                            Id = Guid.NewGuid(),
-                            Type = faker.PickRandom(MaintenanceType.Preventive, MaintenanceType.Corrective),
-                            Description = usePart
-                                ? $"Substituição de {part!.Name}"
-                                : "Revisão geral programada",
-                            ScheduledDate = scheduled,
-                            CompletedDate = status == MaintenanceStatus.Completed ? scheduled : null,
-                            OdometerAtService = vehicle.Odometer - faker.Random.Number(0, 8000),
-                            Cost = usePart ? part!.Price * partQuantity : faker.Random.Decimal(150, 900),
-                            Status = status,
-                            VehicleId = vehicle.Id,
-                            ProductId = part?.Id,
-                            PartQuantity = partQuantity,
-                        }
-                    );
+                    var maintenance = new VehicleMaintenance
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = faker.PickRandom(MaintenanceType.Preventive, MaintenanceType.Corrective),
+                        Description = usePart
+                            ? $"Substituição de {part!.Name}"
+                            : "Revisão geral programada",
+                        ScheduledDate = scheduled,
+                        CompletedDate = status == MaintenanceStatus.Completed ? scheduled : null,
+                        OdometerAtService = vehicle.Odometer - faker.Random.Number(0, 8000),
+                        Cost = usePart ? part!.Price * partQuantity : faker.Random.Decimal(150, 900),
+                        Status = status,
+                        VehicleId = vehicle.Id,
+                    };
+                    result.Add(maintenance);
+
+                    if (usePart)
+                    {
+                        maintenanceProducts.Add(
+                            new VehicleMaintenanceProduct
+                            {
+                                Id = Guid.NewGuid(),
+                                Description = part!.Name,
+                                Quantity = partQuantity,
+                                Price = part.Price,
+                                Discount = 0,
+                                VehicleMaintenanceId = maintenance.Id,
+                                ProductId = part.Id,
+                            }
+                        );
+                    }
                 }
             }
 

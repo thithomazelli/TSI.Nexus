@@ -55,6 +55,7 @@ namespace TSI.Friday.IoC
             services.AddSingleton<StockAdjustingSaveChangesInterceptor>();
             services.AddSingleton<MaintenancePartsStockAdjustingSaveChangesInterceptor>();
             services.AddSingleton<PurchaseOrderStockIncrementingSaveChangesInterceptor>();
+            services.AddSingleton<FuelLogStockAdjustingSaveChangesInterceptor>();
 
             #endregion
 

@@ -40,6 +40,10 @@ export class SelectableOptionsComponent implements OnInit {
       value: SelectableOptionGroup.TransactionCategory,
       labelKey: 'SELECTABLE_OPTIONS.GROUP_TRANSACTION_CATEGORY',
     },
+    {
+      value: SelectableOptionGroup.FuelLogStatus,
+      labelKey: 'SELECTABLE_OPTIONS.GROUP_FUEL_LOG_STATUS',
+    },
   ];
 
   activeGroup: SelectableOptionGroup = SelectableOptionGroup.AddressType;

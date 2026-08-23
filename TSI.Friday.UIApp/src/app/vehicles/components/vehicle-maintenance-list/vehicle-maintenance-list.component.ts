@@ -18,7 +18,8 @@ import {
 import { Subject, takeUntil } from 'rxjs';
 
 import { VehicleMaintenanceDetailsModalComponent } from '../vehicle-maintenance-details-modal/vehicle-maintenance-details-modal.component';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, NgIf } from '@angular/common';
+import { HeaderComponent } from '../../../shared/header/header.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -26,8 +27,10 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     templateUrl: './vehicle-maintenance-list.component.html',
     styleUrl: './vehicle-maintenance-list.component.scss',
     imports: [
+        NgIf,
         CurrencyPipe,
         DatePipe,
+        HeaderComponent,
         TranslatePipe,
     ],
 })
@@ -35,7 +38,10 @@ export class VehicleMaintenanceListComponent
   implements OnInit, OnChanges, OnDestroy
 {
   @Input()
-  vehicleId!: string;
+  vehicleId?: string;
+
+  @Input()
+  compact = false;
 
   maintenances: VehicleMaintenance[] = [];
 
@@ -82,7 +88,7 @@ export class VehicleMaintenanceListComponent
 
   openModal(maintenance?: VehicleMaintenance): void {
     this.modalService.showTemplateModal(VehicleMaintenanceDetailsModalComponent, {
-      vehicleId: this.vehicleId,
+      vehicleId: maintenance?.vehicleId ?? this.vehicleId,
       data: maintenance ?? null,
     });
   }
@@ -109,14 +115,12 @@ export class VehicleMaintenanceListComponent
   }
 
   private load(): void {
-    if (!this.vehicleId) {
-      return;
-    }
-    this.vehicleMaintenanceService
-      .getByVehicle(this.vehicleId)
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response) => {
-        this.maintenances = response.data ?? [];
-      });
+    const request$ = this.vehicleId
+      ? this.vehicleMaintenanceService.getByVehicle(this.vehicleId)
+      : this.vehicleMaintenanceService.getAll();
+
+    request$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
+      this.maintenances = response.data ?? [];
+    });
   }
 }

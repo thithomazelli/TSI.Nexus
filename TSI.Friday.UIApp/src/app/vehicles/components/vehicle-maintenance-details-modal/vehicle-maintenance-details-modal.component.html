@@ -47,35 +47,24 @@
       </div>
       <div class="col-12 col-md-6">
         <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              formControlName="partQuantity"
-              type="number"
-              min="0"
-              [placeholder]="'COMMON.QUANTITY' | translate"
-              class="form-control"
-              id="maintenanceModalPartQuantity"
-            />
-            <label for="maintenanceModalPartQuantity">{{ 'COMMON.QUANTITY' | translate }}</label>
-          </div>
-        </div>
-      </div>
-      <div class="col-12">
-        <div class="input-group">
           <div class="form-floating flex-fill select-floating">
-            <select formControlName="productId" class="form-select" id="maintenanceModalProduct">
-              <option [ngValue]="null">{{ 'VEHICLES.NONE' | translate }}</option>
-              @for (product of products; track product.id) {
-                <option [ngValue]="product.id">
-                  {{ product.sku }} - {{ product.name }} ({{ 'VEHICLES.PRODUCT_STOCK' | translate: { qty: product.quantityInStock + '' } }})
-                </option>
+            <select formControlName="status" class="form-select" id="maintenanceModalStatus">
+              @for (option of statusOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
               }
             </select>
-            <label for="maintenanceModalProduct">{{ 'VEHICLES.CONSUMED_PART' | translate }}</label>
+            <label for="maintenanceModalStatus">{{ 'COMMON.STATUS' | translate }}</label>
           </div>
         </div>
       </div>
     </div>
+
+    <app-product-picker-grid
+      [items]="vehicleMaintenanceProducts"
+      [filterOutOfStock]="true"
+      (itemAdded)="onProductPickerItemAdded($event)"
+      (itemRemoved)="removeProduct($event)"
+    ></app-product-picker-grid>
     </div>
 
     <div class="d-flex justify-content-end mt-3">

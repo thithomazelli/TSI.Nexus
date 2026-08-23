@@ -144,6 +144,37 @@ namespace TSI.Friday.Services.Tests.Services
         }
 
         [Fact]
+        public async Task FuelLogService_FindAll_ShouldReturnAllLogs()
+        {
+            // Arrange
+            var logs = new List<FuelLog> { new() { Id = Guid.NewGuid(), VehicleId = _vehicleId } };
+            _repository.Setup(_ => _.GetAllAsync(f => f.Vehicle)).ReturnsAsync(logs);
+
+            // Act
+            var result = await _service.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(logs, result.Data);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindAll_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FuelLog, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
         public async Task FuelLogService_FindByVehicle_ShouldReturnLogsForVehicle()
         {
             // Arrange

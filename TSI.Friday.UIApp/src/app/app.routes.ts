@@ -53,6 +53,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'fuel-logs',
+    canActivateChild: [AuthorizationGuard],
+    data: { featureFlag: ['FleetModule', 'FuelLog'] },
+    loadChildren: () =>
+      import('./fuel-logs/fuel-logs.routes').then((m) => m.FUEL_LOGS_ROUTES),
+  },
+  {
     path: 'home',
     canActivate: [AuthorizationGuard],
     component: HomeComponent,
@@ -139,6 +146,15 @@ export const routes: Routes = [
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>
       import('./users/users.routes').then((m) => m.USERS_ROUTES),
+  },
+  {
+    path: 'vehicle-maintenances',
+    canActivateChild: [AuthorizationGuard],
+    data: { featureFlag: ['FleetModule', 'VehicleMaintenance'] },
+    loadChildren: () =>
+      import('./vehicle-maintenances/vehicle-maintenances.routes').then(
+        (m) => m.VEHICLE_MAINTENANCES_ROUTES,
+      ),
   },
   {
     path: 'vehicles',

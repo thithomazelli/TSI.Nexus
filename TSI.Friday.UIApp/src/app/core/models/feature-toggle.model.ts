@@ -21,4 +21,6 @@ export const FeatureToggleKeys = {
   PaymentAlert: 'PaymentAlert',
   PurchaseOrder: 'PurchaseOrder',
   StockAlert: 'StockAlert',
+  FuelLog: 'FuelLog',
+  VehicleMaintenance: 'VehicleMaintenance',
 } as const;

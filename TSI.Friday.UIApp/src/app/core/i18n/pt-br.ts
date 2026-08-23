@@ -35,6 +35,9 @@ export const PT_BR = {
     ALERTS: 'Alertas',
     VEHICLES: 'Veículos',
     DRIVER: 'Motorista',
+    CHARTERING: 'Fretamento',
+    MAINTENANCES: 'Manutenção',
+    REFUELINGS: 'Combustível',
   },
   NAVBAR: {
     PROFILE: 'Perfil',
@@ -597,6 +600,7 @@ export const PT_BR = {
     GROUP_ADDRESS_TYPE: 'Tipo de Endereço',
     GROUP_PRODUCT_CATEGORY: 'Categoria de Produtos',
     GROUP_TRANSACTION_CATEGORY: 'Categoria de Transação',
+    GROUP_FUEL_LOG_STATUS: 'Status de Abastecimento',
     NEW_VALUE: 'Nova opção',
     NO_OPTIONS_FOUND: 'Nenhuma opção cadastrada.',
   },

@@ -45,6 +45,9 @@ namespace TSI.Friday.Data.Seed
             (SelectableOptionGroup.TransactionCategory, "Diversos"),
             (SelectableOptionGroup.TransactionCategory, "Funcionários"),
             (SelectableOptionGroup.TransactionCategory, "Recebimentos"),
+            (SelectableOptionGroup.FuelLogStatus, "Agendado"),
+            (SelectableOptionGroup.FuelLogStatus, "Cancelado"),
+            (SelectableOptionGroup.FuelLogStatus, "Concluído"),
         ];
 
         // Old English key -> new Portuguese label, for the two groups that used to store the key.

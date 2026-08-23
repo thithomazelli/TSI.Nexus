@@ -56,6 +56,8 @@ namespace TSI.Friday.Data
 
         public DbSet<VehicleMaintenance> VehicleMaintenance { get; set; }
 
+        public DbSet<VehicleMaintenanceProduct> VehicleMaintenanceProduct { get; set; }
+
         public DbSet<Driver> Driver { get; set; }
 
         public DbSet<TripLeg> TripLeg { get; set; }
@@ -300,11 +302,12 @@ namespace TSI.Friday.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder
-                .Entity<VehicleMaintenance>()
-                .HasOne(m => m.Product)
-                .WithMany()
-                .HasForeignKey(m => m.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .Entity<VehicleMaintenanceProduct>()
+                .Property(vmp => vmp.TotalPrice)
+                .HasComputedColumnSql(
+                    "((Price * Quantity) - ((Price * Quantity) * Discount /100.0))",
+                    stored: true
+                );
 
             modelBuilder.Entity<Driver>().HasIndex(d => d.SocialSecurityCard).IsUnique();
 
