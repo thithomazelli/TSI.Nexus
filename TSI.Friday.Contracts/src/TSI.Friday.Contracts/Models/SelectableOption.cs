@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models
@@ -12,6 +13,12 @@ namespace TSI.Friday.Contracts.Models
         public SelectableOptionGroup Group { get; set; }
 
         public string Value { get; set; } = string.Empty;
+
+        // Only meaningful for Group == EventType (hex color shown on the Agenda calendar for
+        // events of this type) - ignored by every other group.
+        public string? Color { get; set; }
+
+        public ICollection<Event> Events { get; set; }
 
         public SelectableOption() { }
     }

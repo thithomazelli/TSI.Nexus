@@ -49,5 +49,7 @@ namespace TSI.Friday.Contracts.Models
         public virtual ICollection<TripDriver> TripDrivers { get; set; } = new List<TripDriver>();
 
         public ICollection<Attachment> Attachments { get; set; }
+
+        public ICollection<Event> Events { get; set; }
     }
 }

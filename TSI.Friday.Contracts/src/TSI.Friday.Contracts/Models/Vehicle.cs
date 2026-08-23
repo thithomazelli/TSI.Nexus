@@ -41,5 +41,7 @@ namespace TSI.Friday.Contracts.Models
         public virtual ICollection<FuelLog> FuelLogs { get; set; } = new List<FuelLog>();
 
         public ICollection<Attachment> Attachments { get; set; }
+
+        public ICollection<Event> Events { get; set; }
     }
 }

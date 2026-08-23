@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TSI.Friday.Contracts.Models
@@ -44,6 +45,8 @@ namespace TSI.Friday.Contracts.Models
         public string? ProductSku { get; set; }
 
         public string? ProductName { get; set; }
+
+        public virtual ICollection<Event> Events { get; set; } = [];
 
         public FuelLog() { }
 

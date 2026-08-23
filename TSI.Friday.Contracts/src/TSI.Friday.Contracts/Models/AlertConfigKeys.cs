@@ -13,5 +13,8 @@ namespace TSI.Friday.Contracts.Models
 
         /// <summary>Driver transport license expired or expiring within ThresholdDays.</summary>
         public const string DriverLicenseExpiry = "DriverLicenseExpiry";
+
+        /// <summary>Events starting within ThresholdDays days (navbar bell + "meus eventos").</summary>
+        public const string UpcomingEventReminder = "UpcomingEventReminder";
     }
 }

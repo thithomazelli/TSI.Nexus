@@ -31,6 +31,10 @@ namespace TSI.Friday.Contracts.Models
         /// <summary>Gates Attachments.</summary>
         public const string AttachmentsModule = "AttachmentsModule";
 
+        /// <summary>Gates the whole Agenda/Calendário module: the standalone screen, the Agenda
+        /// tab on every linkable entity, and the upcoming-events navbar bell.</summary>
+        public const string AgendaModule = "AgendaModule";
+
         // --- Entities (Fleet/Viagens group) ----------------------------------------------------
 
         public const string Trip = "Trip";
@@ -76,5 +80,12 @@ namespace TSI.Friday.Contracts.Models
         // --- Entities (Anexos group) -------------------------------------------------------------
 
         public const string Attachment = "Attachment";
+
+        // --- Entities (Agenda group) --------------------------------------------------------------
+
+        public const string Event = "Event";
+
+        /// <summary>Gates the upcoming-events notification bell in the navbar.</summary>
+        public const string UpcomingEventAlert = "UpcomingEventAlert";
     }
 }

@@ -37,5 +37,9 @@ namespace TSI.Friday.Contracts.Models
         public string ModifyUserId { get; set; }
 
         public ICollection<Attachment> Attachments { get; set; }
+
+        public ICollection<Event> CreatedEvents { get; set; }
+
+        public ICollection<EventParticipant> EventParticipations { get; set; }
     }
 }

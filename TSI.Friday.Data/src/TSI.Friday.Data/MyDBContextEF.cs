@@ -84,6 +84,10 @@ namespace TSI.Friday.Data
 
         public DbSet<SelectableOption> SelectableOption { get; set; }
 
+        public DbSet<Event> Event { get; set; }
+
+        public DbSet<EventParticipant> EventParticipant { get; set; }
+
         #endregion DbSets
 
         /// <summary>
@@ -440,6 +444,115 @@ namespace TSI.Friday.Data
 
             // One AlertConfig row per Key - see AlertConfigKeys for the known values.
             modelBuilder.Entity<AlertConfig>().HasIndex(a => a.Key).IsUnique();
+
+            // Event - one nullable FK per linkable entity, same non-polymorphic shape as
+            // Attachment. Deleting a linked entity deletes its events (Cascade), same as Attachment.
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.EventType)
+                .WithMany(o => o.Events)
+                .HasForeignKey(e => e.EventTypeOptionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.CreatedByUser)
+                .WithMany(u => (ICollection<Event>)u.CreatedEvents)
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.BusinessPartner)
+                .WithMany(b => (ICollection<Event>)b.Events)
+                .HasForeignKey(e => e.BusinessPartnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.Quote)
+                .WithMany(q => (ICollection<Event>)q.Events)
+                .HasForeignKey(e => e.QuoteId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.Order)
+                .WithMany(o => (ICollection<Event>)o.Events)
+                .HasForeignKey(e => e.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.PurchaseOrder)
+                .WithMany(o => (ICollection<Event>)o.Events)
+                .HasForeignKey(e => e.PurchaseOrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.Trip)
+                .WithMany(t => (ICollection<Event>)t.Events)
+                .HasForeignKey(e => e.TripId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.Transaction)
+                .WithMany(t => (ICollection<Event>)t.Events)
+                .HasForeignKey(e => e.TransactionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.Payment)
+                .WithMany(p => (ICollection<Event>)p.Events)
+                .HasForeignKey(e => e.PaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.Vehicle)
+                .WithMany(v => (ICollection<Event>)v.Events)
+                .HasForeignKey(e => e.VehicleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.Driver)
+                .WithMany(d => (ICollection<Event>)d.Events)
+                .HasForeignKey(e => e.DriverId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.VehicleMaintenance)
+                .WithMany(m => (ICollection<Event>)m.Events)
+                .HasForeignKey(e => e.VehicleMaintenanceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Event>()
+                .HasOne(e => e.FuelLog)
+                .WithMany(f => (ICollection<Event>)f.Events)
+                .HasForeignKey(e => e.FuelLogId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // EventParticipant - either UserId (existing system user) or Name/Email (freeform
+            // contact) is set, validated in EventParticipantService, not here.
+            modelBuilder
+                .Entity<EventParticipant>()
+                .HasOne(p => p.Event)
+                .WithMany(e => e.Participants)
+                .HasForeignKey(p => p.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<EventParticipant>()
+                .HasOne(p => p.User)
+                .WithMany(u => (ICollection<EventParticipant>)u.EventParticipations)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

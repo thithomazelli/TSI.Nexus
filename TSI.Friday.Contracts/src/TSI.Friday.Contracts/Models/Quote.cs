@@ -44,6 +44,8 @@ namespace TSI.Friday.Contracts.Models
 
         public ICollection<Attachment> Attachments { get; set; }
 
+        public ICollection<Event> Events { get; set; }
+
         // Only populated when Type == QuoteType.Trip.
         public QuoteTrip QuoteTrip { get; set; }
     }

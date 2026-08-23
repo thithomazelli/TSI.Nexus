@@ -6,5 +6,6 @@ namespace TSI.Friday.Contracts.Enums
         ProductCategory,
         TransactionCategory,
         FuelLogStatus,
+        EventType,
     }
 }

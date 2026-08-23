@@ -38,5 +38,7 @@ namespace TSI.Friday.Contracts.Models
         public ICollection<OrderProduct> OrderProducts { get; set; } = [];
 
         public ICollection<Attachment> Attachments { get; set; }
+
+        public ICollection<Event> Events { get; set; }
     }
 }

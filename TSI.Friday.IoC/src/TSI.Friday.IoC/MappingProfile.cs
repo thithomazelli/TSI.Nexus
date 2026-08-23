@@ -705,6 +705,79 @@ namespace TSI.Friday.IoC
             CreateMap<QuoteProductDto, QuoteProduct>()
                 .ForMember(dest => dest.QuoteId, opt => opt.MapFrom(src => src.OrderId))
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // Event mappings
+            CreateMap<Event, EventDto>()
+                .ForMember(
+                    dest => dest.EventTypeName,
+                    opt => opt.MapFrom(src => src.EventType != null ? src.EventType.Value : null)
+                )
+                .ForMember(
+                    dest => dest.EventTypeColor,
+                    opt => opt.MapFrom(src => src.EventType != null ? src.EventType.Color : null)
+                )
+                .ForMember(
+                    dest => dest.CreatedByUserName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.CreatedByUser != null
+                                ? (src.CreatedByUser.FirstName + " " + src.CreatedByUser.LastName).Trim()
+                                : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.LinkedEntityType,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? "BusinessPartner"
+                            : src.Order != null ? "Order"
+                            : src.PurchaseOrder != null ? "PurchaseOrder"
+                            : src.Quote != null ? "Quote"
+                            : src.Trip != null ? "Trip"
+                            : src.Transaction != null ? "Transaction"
+                            : src.Payment != null ? "Payment"
+                            : src.Vehicle != null ? "Vehicle"
+                            : src.Driver != null ? "Driver"
+                            : src.VehicleMaintenance != null ? "VehicleMaintenance"
+                            : src.FuelLog != null ? "FuelLog"
+                            : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.LinkedEntityLabel,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name
+                            : src.Order != null ? src.Order.OrderNumber
+                            : src.PurchaseOrder != null ? src.PurchaseOrder.PurchaseOrderNumber
+                            : src.Quote != null ? src.Quote.QuoteNumber
+                            : src.Trip != null ? src.Trip.TripNumber
+                            : src.Transaction != null ? src.Transaction.Description
+                            : src.Payment != null ? src.Payment.Description
+                            : src.Vehicle != null ? src.Vehicle.Plate
+                            : src.Driver != null ? src.Driver.Name
+                            : src.VehicleMaintenance != null ? src.VehicleMaintenance.Description
+                            : src.FuelLog != null ? src.FuelLog.GasStation
+                            : null
+                        )
+                );
+
+            CreateMap<EventDto, Event>()
+                .ForMember(dest => dest.Participants, opt => opt.Ignore())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+            // EventParticipant mappings
+            CreateMap<EventParticipant, EventParticipantDto>()
+                .ForMember(
+                    dest => dest.DisplayName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.UserId != null ? null : (src.Name ?? src.Email)
+                        )
+                );
+
+            CreateMap<EventParticipantDto, EventParticipant>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

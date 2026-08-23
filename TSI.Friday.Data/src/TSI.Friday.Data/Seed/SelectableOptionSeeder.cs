@@ -22,32 +22,37 @@ namespace TSI.Friday.Data.Seed
     /// </summary>
     public static class SelectableOptionSeeder
     {
-        private static readonly (SelectableOptionGroup Group, string Value)[] DefaultOptions =
+        private static readonly (SelectableOptionGroup Group, string Value, string? Color)[] DefaultOptions =
         [
-            (SelectableOptionGroup.AddressType, "Residencial"),
-            (SelectableOptionGroup.AddressType, "Comercial"),
-            (SelectableOptionGroup.AddressType, "Correspondência"),
-            (SelectableOptionGroup.AddressType, "Cobrança"),
-            (SelectableOptionGroup.AddressType, "Entrega"),
-            (SelectableOptionGroup.ProductCategory, "Elétrica"),
-            (SelectableOptionGroup.ProductCategory, "Hidráulica"),
-            (SelectableOptionGroup.ProductCategory, "Estrutura"),
-            (SelectableOptionGroup.ProductCategory, "Drywall"),
-            (SelectableOptionGroup.ProductCategory, "Pintura"),
-            (SelectableOptionGroup.ProductCategory, "Acabamento"),
-            (SelectableOptionGroup.ProductCategory, "Sanitário"),
-            (SelectableOptionGroup.ProductCategory, "Equipamento"),
-            (SelectableOptionGroup.ProductCategory, "Fixação"),
-            (SelectableOptionGroup.TransactionCategory, "Combustível"),
-            (SelectableOptionGroup.TransactionCategory, "Despesas Fixas"),
-            (SelectableOptionGroup.TransactionCategory, "Despesas Variáveis"),
-            (SelectableOptionGroup.TransactionCategory, "Despesas Veículos"),
-            (SelectableOptionGroup.TransactionCategory, "Diversos"),
-            (SelectableOptionGroup.TransactionCategory, "Funcionários"),
-            (SelectableOptionGroup.TransactionCategory, "Recebimentos"),
-            (SelectableOptionGroup.FuelLogStatus, "Agendado"),
-            (SelectableOptionGroup.FuelLogStatus, "Cancelado"),
-            (SelectableOptionGroup.FuelLogStatus, "Concluído"),
+            (SelectableOptionGroup.AddressType, "Residencial", null),
+            (SelectableOptionGroup.AddressType, "Comercial", null),
+            (SelectableOptionGroup.AddressType, "Correspondência", null),
+            (SelectableOptionGroup.AddressType, "Cobrança", null),
+            (SelectableOptionGroup.AddressType, "Entrega", null),
+            (SelectableOptionGroup.ProductCategory, "Elétrica", null),
+            (SelectableOptionGroup.ProductCategory, "Hidráulica", null),
+            (SelectableOptionGroup.ProductCategory, "Estrutura", null),
+            (SelectableOptionGroup.ProductCategory, "Drywall", null),
+            (SelectableOptionGroup.ProductCategory, "Pintura", null),
+            (SelectableOptionGroup.ProductCategory, "Acabamento", null),
+            (SelectableOptionGroup.ProductCategory, "Sanitário", null),
+            (SelectableOptionGroup.ProductCategory, "Equipamento", null),
+            (SelectableOptionGroup.ProductCategory, "Fixação", null),
+            (SelectableOptionGroup.TransactionCategory, "Combustível", null),
+            (SelectableOptionGroup.TransactionCategory, "Despesas Fixas", null),
+            (SelectableOptionGroup.TransactionCategory, "Despesas Variáveis", null),
+            (SelectableOptionGroup.TransactionCategory, "Despesas Veículos", null),
+            (SelectableOptionGroup.TransactionCategory, "Diversos", null),
+            (SelectableOptionGroup.TransactionCategory, "Funcionários", null),
+            (SelectableOptionGroup.TransactionCategory, "Recebimentos", null),
+            (SelectableOptionGroup.FuelLogStatus, "Agendado", null),
+            (SelectableOptionGroup.FuelLogStatus, "Cancelado", null),
+            (SelectableOptionGroup.FuelLogStatus, "Concluído", null),
+            (SelectableOptionGroup.EventType, "Reunião", "#3788d8"),
+            (SelectableOptionGroup.EventType, "Prazo", "#e63757"),
+            (SelectableOptionGroup.EventType, "Lembrete", "#f5a623"),
+            (SelectableOptionGroup.EventType, "Aniversário", "#8e44ad"),
+            (SelectableOptionGroup.EventType, "Outro", "#6c757d"),
         ];
 
         // Old English key -> new Portuguese label, for the two groups that used to store the key.
@@ -85,7 +90,7 @@ namespace TSI.Friday.Data.Seed
             {
                 var context = provider.GetRequiredService<MyDBContextEF>();
 
-                foreach (var (group, value) in DefaultOptions)
+                foreach (var (group, value, color) in DefaultOptions)
                 {
                     var alreadyExists = await context.SelectableOption.AnyAsync(o =>
                         o.Group == group && o.Value == value
@@ -96,7 +101,7 @@ namespace TSI.Friday.Data.Seed
                     }
 
                     await context.SelectableOption.AddAsync(
-                        new SelectableOption { Group = group, Value = value }
+                        new SelectableOption { Group = group, Value = value, Color = color }
                     );
                     logger?.LogInformation(
                         "SelectableOptionSeeder: created default option {Group}/{Value}",

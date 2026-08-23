@@ -63,5 +63,7 @@ namespace TSI.Friday.Contracts.Models
         public virtual ICollection<Passenger> Passengers { get; set; } = new List<Passenger>();
 
         public virtual ICollection<Attachment> Attachments { get; set; }
+
+        public virtual ICollection<Event> Events { get; set; }
     }
 }

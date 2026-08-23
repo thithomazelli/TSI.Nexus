@@ -107,6 +107,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IFeatureToggleService, FeatureToggleService>();
             services.AddScoped<IAlertConfigService, AlertConfigService>();
             services.AddScoped<ISelectableOptionService, SelectableOptionService>();
+            services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IEventParticipantService, EventParticipantService>();
 
             #endregion Services
 
@@ -129,6 +131,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<FeatureToggle>, Repository<FeatureToggle>>();
             services.AddScoped<IRepository<AlertConfig>, Repository<AlertConfig>>();
             services.AddScoped<IRepository<SelectableOption>, Repository<SelectableOption>>();
+            services.AddScoped<IRepository<Event>, Repository<Event>>();
+            services.AddScoped<IRepository<EventParticipant>, Repository<EventParticipant>>();
             services.AddScoped<IRepository<Transaction>, Repository<Transaction>>();
             services.AddScoped<IRepository<Payment>, Repository<Payment>>();
             services.AddScoped<IRepository<Product>, Repository<Product>>();

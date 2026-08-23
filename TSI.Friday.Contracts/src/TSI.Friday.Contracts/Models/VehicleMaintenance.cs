@@ -38,6 +38,8 @@ namespace TSI.Friday.Contracts.Models
 
         public ICollection<Attachment> Attachments { get; set; } = [];
 
+        public ICollection<Event> Events { get; set; } = [];
+
         public VehicleMaintenance() { }
 
         public VehicleMaintenance(Vehicle vehicle)

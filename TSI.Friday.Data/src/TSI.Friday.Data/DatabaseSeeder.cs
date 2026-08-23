@@ -257,6 +257,12 @@ namespace TSI.Friday.Data
                         Description: "Controla a exibição de Anexos em todo o sistema.",
                         GroupKey: (string?)null
                     ),
+                    (
+                        Key: FeatureToggleKeys.AgendaModule,
+                        Name: "Agenda / Calendário",
+                        Description: "Controla a exibição da Agenda em todo o sistema: a tela própria, a aba Agenda em cada entidade, e o sino de próximos eventos na navbar.",
+                        GroupKey: (string?)null
+                    ),
                     // Fleet/Viagens entities
                     (Key: FeatureToggleKeys.Trip, Name: "Viagens", Description: "Controla a exibição de Viagens.", GroupKey: FeatureToggleKeys.FleetModule),
                     (Key: FeatureToggleKeys.TripLeg, Name: "Trechos de Viagem", Description: "Controla a exibição de Trechos de Viagem.", GroupKey: FeatureToggleKeys.FleetModule),
@@ -283,6 +289,9 @@ namespace TSI.Friday.Data
                     (Key: FeatureToggleKeys.StockAlert, Name: "Alerta de Estoque", Description: "Controla a exibição do alerta de produtos sem estoque ou com estoque baixo na navbar.", GroupKey: FeatureToggleKeys.PurchaseOrdersModule),
                     // Anexos entities
                     (Key: FeatureToggleKeys.Attachment, Name: "Anexos", Description: "Controla a exibição de Anexos.", GroupKey: FeatureToggleKeys.AttachmentsModule),
+                    // Agenda entities
+                    (Key: FeatureToggleKeys.Event, Name: "Eventos", Description: "Controla a exibição de Eventos da Agenda.", GroupKey: FeatureToggleKeys.AgendaModule),
+                    (Key: FeatureToggleKeys.UpcomingEventAlert, Name: "Alerta de Próximos Eventos", Description: "Controla a exibição do alerta de próximos eventos na navbar.", GroupKey: FeatureToggleKeys.AgendaModule),
                 };
 
                 foreach (var toggle in featureToggles)
@@ -328,6 +337,12 @@ namespace TSI.Friday.Data
                         Name: "Licença de Motorista a Vencer",
                         Description: "Alerta disparado quando a licença de transporte (CNH) de um motorista já expirou ou expira dentro do prazo configurado.",
                         ThresholdDays: (int?)60
+                    ),
+                    (
+                        Key: AlertConfigKeys.UpcomingEventReminder,
+                        Name: "Próximos Eventos",
+                        Description: "Alerta disparado para eventos da Agenda que começam dentro do prazo configurado.",
+                        ThresholdDays: (int?)1
                     ),
                 };
 

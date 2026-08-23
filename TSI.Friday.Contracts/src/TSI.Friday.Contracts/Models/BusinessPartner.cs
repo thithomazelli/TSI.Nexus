@@ -32,5 +32,7 @@ namespace TSI.Friday.Contracts.Models
         public ICollection<Transaction> Transactions { get; set; }
 
         public ICollection<Attachment> Attachments { get; set; }
+
+        public ICollection<Event> Events { get; set; }
     }
 }

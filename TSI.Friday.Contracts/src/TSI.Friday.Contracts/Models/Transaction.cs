@@ -36,5 +36,7 @@ namespace TSI.Friday.Contracts.Models
         public BusinessPartner BusinessPartner { get; set; }
 
         public ICollection<Attachment> Attachments { get; set; }
+
+        public ICollection<Event> Events { get; set; }
     }
 }
