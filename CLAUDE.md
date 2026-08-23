@@ -20,8 +20,8 @@ Material/AdminLTE + ag-Grid + ApexCharts no frontend.
 ```bash
 dotnet build TSI.Friday.sln                 # build completo (todas as camadas)
 dotnet test                                  # todos os testes (xUnit/Moq/FluentAssertions)
-dotnet test --filter "FullyQualifiedName~TripServiceTests"   # uma classe de teste
-dotnet test --filter "FullyQualifiedName~TripService_Add_ShouldAddTripSuccessfully_WhenMethodIsCalledWithAValidObject"  # um teste
+dotnet test --filter "FullyQualifiedName~BusinessPartnerServiceTests"   # uma classe de teste
+dotnet test --filter "FullyQualifiedName~BusinessPartnerService_Remove_ShouldRemoveBusinessPartnerSuccessfully_WhenMethodIsCalledWithAValidObject"  # um teste
 dotnet test TSI.Friday.Services/tests/TSI.Friday.Services.Tests   # só um projeto de teste
 ```
 Projetos de teste (um por camada): `TSI.Friday.Contracts.Tests`, `TSI.Friday.Data.Tests`,
@@ -93,7 +93,7 @@ Desenho completo em `docs/feature-toggle-design.md`.
 
 - **XML doc**: toda interface (`Contracts/Interfaces`) documenta seus métodos com `///` seguindo o
   padrão já usado nos arquivos existentes; a implementação em `Services` importa esse texto via
-  `/// <inheritdoc />` em vez de duplicar a doc (ver `TripDriverService.cs` como referência).
+  `/// <inheritdoc />` em vez de duplicar a doc (ver `BusinessPartnerService.cs` como referência).
   Controllers seguem o mesmo padrão de XML doc nos endpoints.
 - **Regions**: estruturar a classe nas mesmas regions já usadas nos arquivos existentes do mesmo
   tipo (ex.: `#region Properties`, `#region Public methods` num service) — manter a mesma ordem,
@@ -132,9 +132,8 @@ código novo; todo componente novo é standalone e declara seus próprios `impor
 
 - **Organização de pastas/nomenclatura**: seguir a mesma estrutura já usada nas outras features —
   `<feature>/components/<entidade>-list`, `<entidade>-form`, `<entidade>-details-modal` (ou
-  `-details-page`), etc. (ver `vehicles/components/` como referência: `vehicle-form`,
-  `vehicle-details-modal`, `vehicle-details-page`, mais `fuel-log-list`/`fuel-log-details-modal`
-  para as sub-entidades 1-N).
+  `-details-page`), etc. (ver `business-partner/components/` como referência:
+  `business-partner-form`, `business-partner-details-modal`, `business-partner-details-page`).
 - **Componentes por entidade/módulo**: o component base na raiz da feature é a **lista**; dentro
   de `components/`, um component pro **form**, um pro **modal** e um pros **detalhes**.
 - **Botões padrão**: Adicionar sempre abre modal (form dentro de modal); Editar sempre abre modal
@@ -147,7 +146,7 @@ código novo; todo componente novo é standalone e declara seus próprios `impor
   1-N usa `app-grid`, com os mesmos botões e funcionalidades (add/edit/view, etc.) já usados nas
   outras entidades — não criar uma tabela/lista customizada pra isso.
 - **Inputs de formulário**: `form-floating` dentro de um `input-group`, com o ícone no
-  `input-group-text` à direita do campo (ver `vehicle-form.component.html`).
+  `input-group-text` à direita do campo (ver `business-partner-form.component.html`).
 - **Validação visual**: campos obrigatórios usam `[class.is-invalid]="isInvalid('campo')"` /
   `[class.is-valid]="isValid('campo')"` (herdados de `core/base/form-base.component.ts`) —
   vermelho quando inválido, verde quando válido, igual ao resto dos formulários.
