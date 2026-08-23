@@ -1,4 +1,4 @@
-import { OrderProductStatus, ProductType } from '../enums';
+import { ProductType } from '../enums';
 import { BaseModel } from './base.model';
 
 export interface OrderProduct extends BaseModel {
@@ -9,9 +9,6 @@ export interface OrderProduct extends BaseModel {
   discount?: number;
   price?: number;
   totalPrice?: number;
-  startDate?: Date;
-  endDate?: Date;
-  status: OrderProductStatus;
   orderId?: string;
   orderNumber?: string;
   businessPartnerId?: string;

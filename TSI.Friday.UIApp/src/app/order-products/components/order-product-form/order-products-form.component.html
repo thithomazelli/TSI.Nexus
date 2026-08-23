@@ -1,10 +1,4 @@
 <div class="order-product-form-wrapper" [ngClass]="{ compact: compact }">
-  @if (isEdit) {
-    <app-alert-banner-component
-      [status]="data?.status"
-      [entity]="'ORDER_PRODUCTS.ITEM_ENTITY' | translate"
-    ></app-alert-banner-component>
-  }
   <form [formGroup]="form">
     <div class="modal-scrollable-area">
       <!-- Sessão 1: Informações do Produto -->
@@ -122,57 +116,10 @@
               <div class="input-group-text"><i class="bi bi-tag"></i></div>
             </div>
           </div>
-          <div class="col-6">
-            <div class="input-group">
-              <div class="form-floating flex-grow-1">
-                <select
-                  formControlName="status"
-                  class="form-select"
-                  id="status"
-                >
-                  <option value="" disabled selected>{{ 'COMMON.STATUS' | translate }}</option>
-                  <option
-                    *ngFor="let option of orderProductStatusOptions; trackBy: trackByOptionValue"
-                    [value]="option.value"
-                  >
-                    {{ option.label }}
-                  </option>
-                </select>
-                <label for="status">{{ 'COMMON.STATUS' | translate }}</label>
-              </div>
-              <div class="input-group-text">
-                <i class="bi bi-info-circle"></i>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      <!-- Sessão 2: Dados (apenas para Rental) -->
-      <ng-container>
-        <section>
-          <h5 class="mt-4 mb-2">{{ 'ORDER_PRODUCTS.DATA_SECTION' | translate }}</h5>
-          <!-- Datas -->
-          <div class="row g-1 mb-1">
-            <div class="col-6">
-              <app-date-field
-                formControlName="startDate"
-                [label]="'ORDER_PRODUCTS.PICKUP_DATE' | translate"
-                [isDisabled]="data?.status === 'Returned'"
-              ></app-date-field>
-            </div>
-            <div class="col-6">
-              <app-date-field
-                formControlName="endDate"
-                [label]="'ORDER_PRODUCTS.RETURN_DATE' | translate"
-                [isDisabled]="data?.status === 'Returned'"
-              ></app-date-field>
-            </div>
-          </div>
-        </section>
-      </ng-container>
-
-      <!-- Sessão 3: Painel de Preços -->
+      <!-- Sessão 2: Painel de Preços -->
       <section>
         <h5 class="mt-4 mb-2">{{ 'PRODUCTS.PRICE_PANEL' | translate }}</h5>
         <div class="row g-1 mb-1">
@@ -237,7 +184,6 @@
         [appClick]="submit.bind(this)"
         type="submit"
         class="btn btn-success"
-        [disabled]="data?.status === 'Returned'"
       >
         {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>

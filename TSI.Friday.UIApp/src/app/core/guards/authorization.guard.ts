@@ -60,9 +60,8 @@ export class AuthorizationGuard implements CanActivateChild {
 
         // A module behind a feature flag disappears entirely - route included - while off, the
         // same way its data disappears from every API response and the sidebar link. Routes that
-        // need both their group AND their own entity toggle (e.g. Relatório de Locações needs
-        // SalesOrdersModule and RentalReport) can list an array here - every flag has to be
-        // enabled for the route to be reachable.
+        // need both their group AND their own entity toggle can list an array here - every flag
+        // has to be enabled for the route to be reachable.
         const featureFlagData = route.data['featureFlag'] as
           | string
           | string[]

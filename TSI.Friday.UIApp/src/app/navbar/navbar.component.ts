@@ -9,7 +9,6 @@ import {
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { AccountService, PhotoService, User } from '@friday/core';
 import { NgIf, AsyncPipe, TitleCasePipe } from '@angular/common';
-import { OrderProductNotificationComponent } from './components/order-product-notification/order-product-notification.component';
 import { PaymentNotificationComponent } from './components/payment-notification/payment-notification.component';
 import { VehicleBlockedNotificationComponent } from './components/vehicle-blocked-notification/vehicle-blocked-notification.component';
 import { DriverLicenseNotificationComponent } from './components/driver-license-notification/driver-license-notification.component';
@@ -26,7 +25,6 @@ import { FeatureToggleKeys } from '../core/models/feature-toggle.model';
     styleUrls: ['./navbar.component.scss'],
     imports: [
         NgIf,
-        OrderProductNotificationComponent,
         PaymentNotificationComponent,
         VehicleBlockedNotificationComponent,
         DriverLicenseNotificationComponent,
@@ -44,11 +42,10 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   data: User | null = null;
 
   // Shown only when both the alert's own toggle and its module's group toggle are enabled -
-  // same "group AND entity" rule documented on FeatureToggleKeys/RentalReport, so each alert can
-  // be silenced individually or hidden along with its whole module.
+  // same "group AND entity" rule documented on FeatureToggleKeys, so each alert can be silenced
+  // individually or hidden along with its whole module.
   isDriverLicenseAlertEnabled = true;
   isVehicleBlockedAlertEnabled = true;
-  isOrderProductAlertEnabled = true;
   isPaymentAlertEnabled = true;
 
   private lastBlobUrl?: string;
@@ -109,8 +106,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.DriverLicenseAlert),
       this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleBlockedAlert),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.SalesOrdersModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.OrderProductAlert),
       this.featureFlagService.isEnabled(FeatureToggleKeys.FinanceModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.PaymentAlert),
     ]).subscribe(
@@ -118,14 +113,11 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
         fleetEnabled,
         driverLicenseAlert,
         vehicleBlockedAlert,
-        salesOrdersEnabled,
-        orderProductAlert,
         financeEnabled,
         paymentAlert,
       ]) => {
         this.isDriverLicenseAlertEnabled = fleetEnabled && driverLicenseAlert;
         this.isVehicleBlockedAlertEnabled = fleetEnabled && vehicleBlockedAlert;
-        this.isOrderProductAlertEnabled = salesOrdersEnabled && orderProductAlert;
         this.isPaymentAlertEnabled = financeEnabled && paymentAlert;
       },
     );

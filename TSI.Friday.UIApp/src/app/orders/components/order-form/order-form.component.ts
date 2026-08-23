@@ -29,7 +29,6 @@ import {
   OrderService,
   OrderProductService,
   OrderProduct,
-  OrderProductStatus,
   ProductService,
   Product,
   ProductType,
@@ -125,7 +124,6 @@ export class OrderFormComponent
 
   private _subscriptions: Subscription[] = [];
   private _baseEndPoint = ApiType.Orders;
-  private statusSubscription?: Subscription;
   private totalOfPaymentsSubscription?: Subscription;
 
   constructor(
@@ -149,7 +147,6 @@ export class OrderFormComponent
     this.patchFormWithData();
     this.setupAutoComplete();
     this.totalPriceChange();
-    this.setupStatusWatcher();
     this.setupTotalOfPaymentsWatcher();
     // The inline staged-product table (and its SKU autocomplete) only renders in Add mode - see
     // *ngIf="!isEdit" on that section in the template - so setting it up in Edit mode was just an
@@ -178,15 +175,11 @@ export class OrderFormComponent
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.data && this.form) {
       this.patchFormWithData();
-      this.setupStatusWatcher();
       this.setupTotalOfPaymentsWatcher();
     }
   }
 
   ngOnDestroy(): void {
-    if (this.statusSubscription) {
-      this.statusSubscription.unsubscribe();
-    }
     if (this.totalOfPaymentsSubscription) {
       this.totalOfPaymentsSubscription.unsubscribe();
     }
@@ -209,11 +202,6 @@ export class OrderFormComponent
         rawValue.transaction.businessPartnerName = rawValue.businessPartnerName;
       }
 
-      // Ensure markAllOrderProductsAsReturned is sent
-      if (rawValue.markAllOrderProductsAsReturned !== undefined) {
-        this.data!.markAllProductsAsReturned =
-          rawValue.markAllOrderProductsAsReturned;
-      }
     }
 
     // Garante que o id da transação seja preservado
@@ -454,9 +442,6 @@ export class OrderFormComponent
     const quantity = Number(raw.quantity) || 1;
     const price = Number(raw.price) || 0;
     const totalPrice = price * quantity;
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(startDate.getDate() + 5);
 
     const orderProduct = {
       productId: raw.productId,
@@ -469,9 +454,6 @@ export class OrderFormComponent
       discount: 0,
       totalPrice,
       totalPriceFormatted: this.currencyService.formatCurrencyBRL(totalPrice),
-      startDate,
-      endDate,
-      status: OrderProductStatus.InProgress,
     } as unknown as OrderProduct;
 
     this.orderProductService.addTemporary(orderProduct).subscribe();
@@ -765,47 +747,6 @@ export class OrderFormComponent
     if (!this.isEdit && transactionGroup) {
       transactionGroup.get('paymentTotalPrice')?.setValue(total);
     }
-  }
-
-  private setupStatusWatcher(): void {
-    if (!this.isEdit || !this.form || !this.data?.hasOpenedProducts) {
-      return;
-    }
-    // Remove previous subscription if any
-    if (this.statusSubscription) {
-      this.statusSubscription.unsubscribe();
-    }
-    // Add the field to the form if it does not exist
-    if (!this.form.contains('markAllOrderProductsAsReturned')) {
-      this.form.addControl(
-        'markAllOrderProductsAsReturned',
-        this.formBuilder.control(false),
-      );
-    }
-    this.statusSubscription = this.form
-      .get('status')
-      ?.valueChanges.subscribe(async (newStatus: OrderStatus) => {
-        if (newStatus === OrderStatus.Closed) {
-          const confirmed = await this.modalService
-            .showConfirmation({
-              title: this.translationService.instant('ORDERS.CLOSE_ORDER'),
-              message: this.translationService.instant('ORDERS.CONFIRM_RETURN_ALL'),
-              confirmButtonText: this.translationService.instant('COMMON.YES'),
-              cancelButtonText: this.translationService.instant('COMMON.NO'),
-            })
-            .afterClosed()
-            .toPromise();
-          this.form
-            .get('markAllOrderProductsAsReturned')
-            ?.setValue(!!confirmed);
-          if (this.data) {
-            this.data.markAllProductsAsReturned = !!confirmed;
-          }
-        } else {
-          this.form.get('markAllOrderProductsAsReturned')?.setValue(false);
-          if (this.data) this.data.markAllProductsAsReturned = false;
-        }
-      });
   }
 
   private setupTotalOfPaymentsWatcher(): void {

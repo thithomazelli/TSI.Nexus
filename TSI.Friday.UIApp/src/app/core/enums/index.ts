@@ -1,6 +1,5 @@
 export * from './api-type.enum';
 export * from './business-partner-type.enum';
-export * from './order-product-status.enum';
 export * from './order-status.enum';
 export * from './payment-condition.enum';
 export * from './payment-method.enum';

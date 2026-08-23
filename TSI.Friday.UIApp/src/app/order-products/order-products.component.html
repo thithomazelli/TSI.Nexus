@@ -1,90 +1,13 @@
-<app-header
-  *ngIf="!compact"
-  [title]="'ORDER_PRODUCTS.REPORT_TITLE' | translate"
-  [navigationMenus]="[
-    { label: 'COMMON.HOME' | translate, link: '/home' },
-    { label: 'ORDER_PRODUCTS.REPORT_TITLE' | translate, link: '' },
-  ]"
-></app-header>
-
-<div class="app-content">
+<div class="order-products-list">
   <app-grid
+    [className]="'ORDER_PRODUCTS.ITEM_ENTITY' | translate"
     [compactView]="compact"
-    [className]="'ORDER_PRODUCTS.TITLE' | translate"
-    [rowData]="filteredRowData"
+    [rowData]="rowData"
     [columnDefs]="columnDefs"
-    [baseEndPoint]="baseEndPoint"
-    [refresh]="refreshOrderProducts.bind(this)"
-    [delete]="deleteOrderProduct.bind(this)"
-    [update]="updateOrderProductStatus.bind(this)"
+    [canAdd]="!isFromProductsView"
+    [refresh]="refresh.bind(this)"
+    [update]="noop.bind(this)"
+    [delete]="isFromProductsView ? noop.bind(this) : deleteOrderProduct.bind(this)"
     (openModal)="openModal($event)"
-    [filtersTemplate]="filtersTpl"
-    [showFilters]="showFiltersOnInit"
-    [canAdd]="!isFullList"
   ></app-grid>
-
-  <ng-template #filtersTpl>
-    <div class="row g-1 mb-2 flex-column flex-md-row">
-      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0">
-        <app-date-field
-          [(ngModel)]="filterStartDate"
-          (ngModelChange)="applyFilters()"
-          [label]="'COMMON.RANGE_START' | translate"
-          class="w-100 p-0"
-        ></app-date-field>
-      </div>
-      <div class="date-filter-area col-12 col-md-auto mb-2 mb-md-0 p-0 ms-md-1">
-        <app-date-field
-          [(ngModel)]="filterEndDate"
-          (ngModelChange)="applyFilters()"
-          [label]="'COMMON.RANGE_END' | translate"
-          class="w-100 p-0"
-        ></app-date-field>
-      </div>
-      <!-- Status filter: full width on mobile, auto on desktop -->
-      <div class="col-12 col-md-auto d-flex align-items-end mb-2 mb-md-0 p-0">
-        <div class="filter-group-box position-relative w-100 w-md-auto ms-md-1">
-          <span class="filter-group-label">{{ 'COMMON.STATUS' | translate }}</span>
-          <div class="d-flex flex-wrap align-items-center pt-2 gap-2">
-            <label class="form-check-label ms-2">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                [(ngModel)]="filterStatus.InProgress"
-                (change)="applyFilters()"
-              />
-              {{ 'ORDER_PRODUCTS.STATUS_IN_PROGRESS' | translate }}
-            </label>
-            <label class="form-check-label ms-2">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                [(ngModel)]="filterStatus.Delayed"
-                (change)="applyFilters()"
-              />
-              {{ 'REPORTS.STATUS_DELAYED' | translate }}
-            </label>
-            <label class="form-check-label ms-2">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                [(ngModel)]="filterStatus.Returned"
-                (change)="applyFilters()"
-              />
-              {{ 'ORDER_PRODUCTS.STATUS_RETURNED' | translate }}
-            </label>
-          </div>
-        </div>
-      </div>
-      <!-- Limpar button: own row on mobile, inline on desktop -->
-      <div class="col-12 col-md-auto d-flex align-items-end p-0">
-        <button
-          class="btn btn-secondary w-100 mt-2 mt-md-0 ms-md-1"
-          (click)="clearFilters()"
-        >
-          {{ 'COMMON.CLEAR' | translate }}
-        </button>
-      </div>
-    </div>
-  </ng-template>
 </div>

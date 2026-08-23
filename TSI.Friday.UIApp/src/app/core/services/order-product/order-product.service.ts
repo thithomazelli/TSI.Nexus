@@ -43,12 +43,6 @@ export class OrderProductService {
       );
   }
 
-  getDelayed(): Observable<WebApiResponse<OrderProduct[]>> {
-    return this.apiService.get<WebApiResponse<OrderProduct[]>>(
-      `${this._baseEndPoint}/getDelayed`,
-    );
-  }
-
   add(orderProduct: OrderProduct): Observable<WebApiResponse<OrderProduct>> {
     return this.apiService
       .post<

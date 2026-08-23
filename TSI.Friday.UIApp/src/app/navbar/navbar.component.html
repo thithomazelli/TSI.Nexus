@@ -20,11 +20,6 @@
     <!--begin::End Navbar Links-->
     <ng-container *ngIf="user$ | async as user">
       <ul class="navbar-nav ms-auto">
-        <!--begin::Messages Dropdown Menu-->
-        <li class="nav-item dropdown" *ngIf="isOrderProductAlertEnabled">
-          <app-order-product-notification></app-order-product-notification>
-        </li>
-        <!--end::Messages Dropdown Menu-->
         <!--begin::Notifications Dropdown Menu-->
         <li class="nav-item dropdown" *ngIf="isPaymentAlertEnabled">
           <app-payment-notification class=""></app-payment-notification>

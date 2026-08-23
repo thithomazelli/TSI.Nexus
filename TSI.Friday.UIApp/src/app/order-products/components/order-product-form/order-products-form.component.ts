@@ -5,7 +5,6 @@ import {
   OnDestroy,
   OnInit,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -13,7 +12,6 @@ import {
   Product,
   ProductService,
   FormBaseComponent,
-  OrderProductStatus,
   ModalService,
   ProductType,
   WebApiResponse,
@@ -35,10 +33,8 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
 import { OrderProductsDetailsModalComponent } from '../order-product-details-modal/order-products-details-modal.component';
 import { NgClass, NgFor, NgIf, AsyncPipe } from '@angular/common';
-import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
 import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
 import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
-import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
 import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
 import { ClickDirective } from '../../../core/directives/click.directive';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
@@ -49,7 +45,6 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     styleUrl: './order-products-form.component.scss',
     imports: [
         NgClass,
-        AlertBannerComponentComponent,
         ReactiveFormsModule,
         MatAutocompleteTrigger,
         MatAutocomplete,
@@ -57,7 +52,6 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         MatOption,
         LinkFieldComponent,
         NgIf,
-        DateFieldComponent,
         CurrencyFieldComponent,
         ClickDirective,
         AsyncPipe,
@@ -73,9 +67,6 @@ export class OrderProductsFormComponent
 
   @Input()
   isEdit = false;
-
-  @ViewChild('endDateField')
-  endDateField: any;
 
   @Input()
   parentId: string | null = null;
@@ -105,36 +96,13 @@ export class OrderProductsFormComponent
     ];
   }
 
-  get orderProductStatusOptions() {
-    return [
-      { label: this.translationService.instant('ORDER_PRODUCTS.STATUS_IN_PROGRESS'), value: OrderProductStatus.InProgress },
-      { label: this.translationService.instant('REPORTS.STATUS_DELAYED'), value: OrderProductStatus.Delayed },
-      { label: this.translationService.instant('ORDER_PRODUCTS.STATUS_RETURNED'), value: OrderProductStatus.Returned },
-    ];
-  }
-
-  // productTypeOptions/orderProductStatusOptions are getters, so *ngFor's default identity-based
+  // productTypeOptions is a getter, so *ngFor's default identity-based
   // tracking sees brand new arrays/objects on every change-detection pass and keeps destroying/
   // recreating the <option> elements - severe enough churn on a bound <select> to trip NG0103
   // (infinite change detection).
   trackByOptionValue(_index: number, option: { value: string; label: string }): string {
     return option.value;
   }
-
-  orderProductInfo = [
-    {
-      InProgress: 'Vigente',
-      data: { icon: 'info', message: 'Pedido em andamento.' },
-    },
-    {
-      Delayed: 'Atrasado',
-      data: { icon: 'exclamation', message: 'Pedido em atrasado.' },
-    },
-    {
-      Returned: 'Devolvido',
-      data: { icon: 'check', message: 'Produto devolvido.' },
-    },
-  ];
 
   private _subscriptions: Subscription[] = [];
 
@@ -450,33 +418,7 @@ export class OrderProductsFormComponent
     this.updateTotalPrice();
   }
 
-  validateEndDate(): void {
-    const start = this.form.get('startDate')?.value;
-    const end = this.form.get('endDate')?.value;
-    if (start && end) {
-      // Compare only day/month/year, ignore time
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(0, 0, 0, 0);
-      if (endDate < startDate) {
-        // Clear the field visually and logically
-        if (this.endDateField && this.endDateField.clear) {
-          this.endDateField.clear();
-        }
-        this.modalService.showNotification(
-          false,
-          this.translationService.instant('COMMON.DATE_INVALID'),
-          this.translationService.instant('ORDER_PRODUCTS.INVALID_END_DATE'),
-        );
-      }
-    }
-  }
-
   private initForm(): void {
-    const today = new Date();
-    const fiveDaysLater = new Date();
-    fiveDaysLater.setDate(today.getDate() + 5);
     this.form = this.formBuilder.group({
       productId: ['', Validators.required],
       productSku: [''],
@@ -487,25 +429,6 @@ export class OrderProductsFormComponent
       price: [0, [Validators.required]],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       totalPrice: [{ value: 0, disabled: true }],
-      startDate: [today],
-      endDate: [fiveDaysLater],
-      status: [OrderProductStatus.InProgress, Validators.required],
-    });
-
-    // Validação: endDate >= startDate
-    this.form.get('endDate')?.valueChanges.subscribe(() => {
-      this.validateEndDate();
-    });
-    this.form.get('startDate')?.valueChanges.subscribe(() => {
-      const start = this.form.get('startDate')?.value;
-      if (start) {
-        const startDate = new Date(start);
-        const endDateControl = this.form.get('endDate');
-        const newEndDate = new Date(startDate);
-        newEndDate.setDate(startDate.getDate() + 5);
-        endDateControl?.setValue(newEndDate);
-      }
-      this.validateEndDate();
     });
 
     if (this.isEdit) {
@@ -533,9 +456,7 @@ export class OrderProductsFormComponent
   }
 
   private disableEditFields(): void {
-    if (this.data?.status === OrderProductStatus.Returned) {
-      this.form.disable();
-    } else if (this.isEdit && this.form) {
+    if (this.isEdit && this.form) {
       this.form.get('productSku')?.disable();
       this.form.get('productName')?.disable();
     }
