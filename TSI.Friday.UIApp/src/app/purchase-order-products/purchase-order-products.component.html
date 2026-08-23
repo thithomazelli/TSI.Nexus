@@ -1,0 +1,13 @@
+<div class="purchase-order-products-list">
+  <app-grid
+    [className]="'PURCHASE_ORDER_PRODUCTS.ITEM_ENTITY' | translate"
+    [compactView]="compact"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [canAdd]="true"
+    [refresh]="refresh.bind(this)"
+    [update]="noop.bind(this)"
+    [delete]="deletePurchaseOrderProduct.bind(this)"
+    (openModal)="openModal($event)"
+  ></app-grid>
+</div>

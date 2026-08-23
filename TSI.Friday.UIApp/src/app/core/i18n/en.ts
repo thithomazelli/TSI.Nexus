@@ -214,6 +214,7 @@ export const EN = {
     ORDERS_TAB: 'Orders',
     CLIENT_SINGULAR: 'Client',
     SUPPLIER_SINGULAR: 'Supplier',
+    SUPPLIER_NAME: 'Supplier Name',
   },
   VEHICLES: {
     SINGULAR: 'Vehicle',
@@ -323,6 +324,14 @@ export const EN = {
     ORDER_PRODUCTS_REFRESHED: 'Order products refreshed successfully',
     RETURNED_QUESTION: 'Returned?',
     RETURN_DATE_COLUMN: 'Return Date',
+  },
+  PURCHASE_ORDER_PRODUCTS: {
+    ITEM_ENTITY: 'Purchase order item',
+    TITLE: 'Purchase Order Products',
+    EDIT_ITEM: 'Edit Purchase Order Product',
+    ADD_ITEM: 'Add Product to Purchase Order',
+    ITEM_DELETED: 'Item deleted',
+    PURCHASE_ORDER_PRODUCTS_REFRESHED: 'Purchase order products refreshed successfully',
   },
   USERS: {
     PROFILE: 'Profile',
@@ -471,6 +480,15 @@ export const EN = {
     CLOSE_ORDER: 'Close order',
     CONFIRM_RETURN_ALL: 'Do you want to mark all products as returned?',
     ORDER_ADDED: 'Order added',
+  },
+  PURCHASE_ORDERS: {
+    SINGULAR: 'Purchase Order',
+    TITLE: 'Purchase Orders',
+    PURCHASE_ORDER_NUMBER: 'Purchase Order Number',
+    PURCHASE_ORDERS_REFRESHED: 'Purchase orders refreshed successfully',
+    PRODUCT_ADDED_SUCCESS: 'Product added to purchase order successfully.',
+    REMOVE_ERROR: 'Error removing',
+    PURCHASE_ORDER_ADDED: 'Purchase order added',
   },
   DASHBOARD: {
     TITLE: 'Dashboard',

@@ -76,6 +76,15 @@ export const routes: Routes = [
       import('./payments/payments.routes').then((m) => m.PAYMENTS_ROUTES),
   },
   {
+    path: 'purchase-orders',
+    canActivateChild: [AuthorizationGuard],
+    data: { featureFlag: 'PurchaseOrdersModule' },
+    loadChildren: () =>
+      import('./purchase-orders/purchase-orders.routes').then(
+        (m) => m.PURCHASE_ORDERS_ROUTES,
+      ),
+  },
+  {
     path: 'products',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>

@@ -214,6 +214,7 @@ export const ES = {
     ORDERS_TAB: 'Pedidos',
     CLIENT_SINGULAR: 'Cliente',
     SUPPLIER_SINGULAR: 'Proveedor',
+    SUPPLIER_NAME: 'Nombre del Proveedor',
   },
   VEHICLES: {
     SINGULAR: 'Vehículo',
@@ -323,6 +324,14 @@ export const ES = {
     ORDER_PRODUCTS_REFRESHED: 'Productos del pedido actualizados con éxito',
     RETURNED_QUESTION: '¿Devuelto?',
     RETURN_DATE_COLUMN: 'Fecha de Devolución',
+  },
+  PURCHASE_ORDER_PRODUCTS: {
+    ITEM_ENTITY: 'Ítem del pedido de compra',
+    TITLE: 'Productos del Pedido de Compra',
+    EDIT_ITEM: 'Editar Producto del Pedido de Compra',
+    ADD_ITEM: 'Agregar Producto al Pedido de Compra',
+    ITEM_DELETED: 'Ítem eliminado',
+    PURCHASE_ORDER_PRODUCTS_REFRESHED: 'Productos del pedido de compra actualizados con éxito',
   },
   USERS: {
     PROFILE: 'Perfil',
@@ -471,6 +480,15 @@ export const ES = {
     CLOSE_ORDER: 'Cerrar pedido',
     CONFIRM_RETURN_ALL: '¿Deseas marcar todos los productos como devueltos?',
     ORDER_ADDED: 'Pedido agregado',
+  },
+  PURCHASE_ORDERS: {
+    SINGULAR: 'Pedido de Compra',
+    TITLE: 'Pedidos de Compra',
+    PURCHASE_ORDER_NUMBER: 'Número del Pedido de Compra',
+    PURCHASE_ORDERS_REFRESHED: 'Pedidos de compra actualizados con éxito',
+    PRODUCT_ADDED_SUCCESS: 'Producto agregado al pedido de compra con éxito.',
+    REMOVE_ERROR: 'Error al eliminar',
+    PURCHASE_ORDER_ADDED: 'Pedido de compra agregado',
   },
   DASHBOARD: {
     TITLE: 'Panel',

@@ -1,0 +1,18 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ (isEdit ? "PURCHASE_ORDER_PRODUCTS.EDIT_ITEM" : "PURCHASE_ORDER_PRODUCTS.ADD_ITEM") | translate }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-purchase-order-products-form
+    [isModal]="true"
+    [isEdit]="isEdit"
+    [data]="data"
+    [dialogRef]="dialogRef"
+    [parentId]="parentId"
+    [parentData]="parentData"
+    [compact]="false"
+  ></app-purchase-order-products-form>
+</div>

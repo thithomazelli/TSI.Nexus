@@ -1,0 +1,110 @@
+<app-header
+  [title]="(isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('PURCHASE_ORDERS.SINGULAR' | translate) }"
+  [navigationMenus]="[
+    { label: 'COMMON.HOME' | translate, link: '/home' },
+    { label: 'PURCHASE_ORDERS.TITLE' | translate, link: '/purchase-orders' },
+    { label: (isEdit ? 'COMMON.EDIT_ENTITY' : 'COMMON.ADD_ENTITY') | translate: { entity: ('PURCHASE_ORDERS.SINGULAR' | translate) }, link: '' },
+  ]"
+></app-header>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Coluna de informações do pedido de compra -->
+      <div class="col-md-3">
+        <div class="card card-secondary card-outline mb-2">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <i class="bi bi-bag-check" style="font-size: 4rem"></i>
+              <div class="box-profile">
+                <div class="text-center">
+                  <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                      <b>{{ 'PURCHASE_ORDERS.PURCHASE_ORDER_NUMBER' | translate }}: </b>
+                      <span class="float-right">{{ data?.purchaseOrderNumber }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>{{ 'BUSINESS_PARTNER.SUPPLIER_SINGULAR' | translate }}: </b>
+                      <span class="float-right">{{
+                        data?.businessPartnerName
+                      }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>{{ 'COMMON.STATUS' | translate }}: </b>
+                      <span class="float-right">{{ getStatusLabel() }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+        <div class="card card-secondary card-outline">
+          <div class="card-body">
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
+                  >{{ 'COMMON.DETAILS' | translate }}</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'products'"
+                  (click)="activeTab = 'products'"
+                  >{{ 'SIDEBAR.PRODUCTS' | translate }}</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'payments'"
+                  (click)="activeTab = 'payments'"
+                  >{{ 'SIDEBAR.PAYMENTS' | translate }}</a
+                >
+              </li>
+              <li class="nav-item" *ngIf="isEdit">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'audit'"
+                  (click)="activeTab = 'audit'"
+                  >{{ 'AUDIT.TAB' | translate }}</a
+                >
+              </li>
+            </ul>
+            <div *ngIf="activeTab === 'details'">
+              <app-purchase-order-form
+                [isEdit]="isEdit"
+                [data]="data"
+                [compact]="false"
+              ></app-purchase-order-form>
+            </div>
+
+            <div *ngIf="activeTab === 'products'">
+              <app-purchase-order-products
+                [compact]="true"
+                [parentId]="data?.id"
+              ></app-purchase-order-products>
+            </div>
+            <div *ngIf="activeTab === 'payments'">
+              <app-payments
+                [compact]="true"
+                [canAdd]="true"
+                [entity]="'PurchaseOrder'"
+                [parentData]="data"
+              ></app-payments>
+            </div>
+            <div *ngIf="activeTab === 'audit'">
+              <app-audit-tab [data]="data"></app-audit-tab>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

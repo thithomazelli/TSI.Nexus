@@ -68,6 +68,13 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByOrderId(Guid? orderId);
 
         /// <summary>
+        /// Method responsible to get a list of Payments based on the PurchaseOrderID received as parameter.
+        /// </summary>
+        /// <param name="purchaseOrderId">The ID to be used on the search.</param>
+        /// <returns>List of payments according to the PurchaseOrderID defined as parameter.</returns>
+        Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByPurchaseOrderId(Guid? purchaseOrderId);
+
+        /// <summary>
         /// Method responsible to get a list of Payments based on the TripID received as parameter.
         /// </summary>
         /// <param name="tripId">The ID to be used on the search.</param>

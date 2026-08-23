@@ -322,6 +322,36 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByPurchaseOrderId(
+            Guid? purchaseOrderId
+        )
+        {
+            WebApiResponse<IEnumerable<PaymentDto>> result = new();
+
+            try
+            {
+                var payments = await _repository.QueryAsync(
+                    p => p.PurchaseOrderId == purchaseOrderId,
+                    c => c.BusinessPartner,
+                    o => o.PurchaseOrder,
+                    t => t.Transaction
+                );
+                result.Data = _mapper.Map<IEnumerable<PaymentDto>>(payments).OrderBy(_ => _.Date);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "PaymentService.FindByPurchaseOrderId", purchaseOrderId);
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os Pagamentos do Transação baseado no Pedido de Compra {purchaseOrderId}. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
         public async Task<WebApiResponse<IEnumerable<PaymentDto>>> FindByTripId(Guid? tripId)
         {
             WebApiResponse<IEnumerable<PaymentDto>> result = new();

@@ -387,6 +387,14 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByPurchaseOrderId(
+            Guid purchaseOrderId
+        )
+        {
+            return QueryAsync(q => q.Where(a => a.PurchaseOrderId == purchaseOrderId));
+        }
+
+        /// <inheritdoc />
         public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByTransactionId(
             Guid transactionId
         )

@@ -8,6 +8,8 @@ export enum ApiType {
   Orders = 'orders',
   Trips = 'trips',
   OrderProducts = 'orderproducts',
+  PurchaseOrders = 'purchaseorders',
+  PurchaseOrderProducts = 'purchaseorderproducts',
   TripDrivers = 'tripdrivers',
   Quotes = 'quotes',
   QuoteProducts = 'quoteproducts',

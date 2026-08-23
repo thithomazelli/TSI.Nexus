@@ -1,0 +1,17 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ (isEdit ? "COMMON.EDIT_ENTITY" : "COMMON.ADD_ENTITY") | translate: { entity: ("PURCHASE_ORDERS.SINGULAR" | translate) } }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-purchase-order-form
+    [isModal]="true"
+    [isEdit]="isEdit"
+    [data]="data"
+    [dialogRef]="dialogRef"
+    [preselectedProductId]="preselectedProductId"
+    [compact]="true"
+  ></app-purchase-order-form>
+</div>

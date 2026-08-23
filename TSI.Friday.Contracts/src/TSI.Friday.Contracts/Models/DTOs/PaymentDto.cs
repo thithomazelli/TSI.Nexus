@@ -41,6 +41,8 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public Guid? PurchaseOrderId { get; set; }
 
+        public string PurchaseOrderNumber { get; set; }
+
         public Guid? TripId { get; set; }
 
         public string TripNumber { get; set; }

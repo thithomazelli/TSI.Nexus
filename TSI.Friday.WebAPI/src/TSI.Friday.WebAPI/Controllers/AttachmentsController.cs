@@ -99,6 +99,17 @@ namespace TSI.Friday.WebAPI.Controllers
             return await _attachmentService.GetByTripId(id);
         }
 
+        [HttpGet("GetByPurchaseOrderId/{id}")]
+        [Authorize]
+        public async Task<
+            ActionResult<
+                WebApiResponse<System.Collections.Generic.IEnumerable<AttachmentResponseDto>>
+            >
+        > GetByPurchaseOrderId(Guid id)
+        {
+            return await _attachmentService.GetByPurchaseOrderId(id);
+        }
+
         [HttpGet("GetByTransactionId/{id}")]
         [Authorize]
         public async Task<

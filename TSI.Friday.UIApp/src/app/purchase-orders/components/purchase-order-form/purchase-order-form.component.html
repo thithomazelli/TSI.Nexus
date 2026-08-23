@@ -1,0 +1,197 @@
+<div class="purchase-order-form-wrapper custom-modal">
+  @if (isEdit) {
+    <app-alert-banner-component
+      [status]="data?.status"
+      [entity]="'PURCHASE_ORDERS.SINGULAR' | translate"
+    ></app-alert-banner-component>
+  }
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="modal-scrollable-area">
+      <section>
+        <div class="row g-1 mb-1">
+          <div *ngIf="isEdit" class="col-12 col-md-4">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="purchaseOrderNumber"
+                  type="text"
+                  [placeholder]="'PURCHASE_ORDERS.PURCHASE_ORDER_NUMBER' | translate"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('purchaseOrderNumber')"
+                  [class.is-valid]="isValid('purchaseOrderNumber')"
+                />
+                <label for="purchaseOrderNumber">{{ 'PURCHASE_ORDERS.PURCHASE_ORDER_NUMBER' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-hash"></i></div>
+            </div>
+          </div>
+
+          <div class="col-12" [ngClass]="isEdit ? 'col-md-8' : 'col-md-12'">
+            <div class="input-group">
+              <div class="form-floating">
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="businessPartnerName"
+                    class="form-control"
+                    [matAutocomplete]="auto"
+                    #firstInput
+                    [class.is-invalid]="isInvalid('businessPartnerName')"
+                    [class.is-valid]="isValid('businessPartnerName')"
+                    [placeholder]="'BUSINESS_PARTNER.SUPPLIER_SINGULAR' | translate"
+                    (blur)="onSupplierBlur()"
+                  />
+                  <label for="businessPartnerName">{{ 'BUSINESS_PARTNER.SUPPLIER_SINGULAR' | translate }}</label>
+                  <mat-autocomplete #auto="matAutocomplete">
+                    <mat-option
+                      *ngFor="
+                        let businessPartner of filteredBusinessPartners$ | async
+                      "
+                      [value]="businessPartner.name"
+                    >
+                      {{ businessPartner.name }}
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'BUSINESS_PARTNER.SUPPLIER_SINGULAR' | translate"
+                    [text]="form.get('businessPartnerName')?.value || ('BUSINESS_PARTNER.SUPPLIER_SINGULAR' | translate)"
+                    [linkUrl]="[
+                      '/suppliers',
+                      form.get('businessPartnerId')?.value,
+                    ]"
+                  >
+                  </app-link-field>
+                }
+              </div>
+              <div class="input-group-text"><i class="bi bi-building"></i></div>
+            </div>
+          </div>
+
+          <div *ngIf="!compact" class="col-12">
+            <div class="input-group">
+              <div class="form-floating">
+                <input
+                  formControlName="description"
+                  type="text"
+                  [placeholder]="'COMMON.DESCRIPTION' | translate"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('description')"
+                  [class.is-valid]="isValid('description')"
+                />
+                <label for="description">{{ 'COMMON.DESCRIPTION' | translate }}</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-card-text"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <app-date-field
+              formControlName="date"
+              [label]="'ORDERS.ORDER_DATE' | translate"
+            ></app-date-field>
+          </div>
+
+          <div class="col-12 col-md-5">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <select
+                  formControlName="status"
+                  class="form-select"
+                  [class.is-invalid]="isInvalid('status')"
+                  [class.is-valid]="isValid('status')"
+                >
+                  <option
+                    *ngFor="let s of orderStatusOptions; trackBy: trackByOptionValue"
+                    [value]="s.value"
+                  >
+                    {{ s.label }}
+                  </option>
+                </select>
+                <label for="status">{{ 'COMMON.STATUS' | translate }}</label>
+              </div>
+              <div class="input-group-text">
+                <i class="bi bi-info-circle"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  [placeholder]="'TRANSACTIONS.DISCOUNT' | translate"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('discount')"
+                  [class.is-valid]="isValid('discount')"
+                />
+                <label for="discount">{{ 'TRANSACTIONS.DISCOUNT' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-percent"></i></div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <app-currency-field
+              formControlName="price"
+              [label]="'COMMON.PRICE' | translate"
+            ></app-currency-field>
+          </div>
+
+          <div class="col-6">
+            <app-currency-field
+              formControlName="totalPrice"
+              [label]="'COMMON.TOTAL_PRICE_LABEL' | translate"
+            ></app-currency-field>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabela de produtos do pedido de compra -->
+      <app-product-picker-grid
+        *ngIf="!isEdit"
+        [items]="data?.purchaseOrderProducts"
+        [filterOutOfStock]="false"
+        (itemAdded)="onProductPickerItemAdded($event)"
+        (itemRemoved)="removeProduct($event)"
+        (openManualModal)="openPurchaseOrderProductsModal()"
+      ></app-product-picker-grid>
+
+      <section>
+        @if (canDisplayTransactionForm) {
+          <app-transaction-form
+            [isEdit]="isEdit"
+            [formGroup]="transactionFormGroup"
+            [compact]="true"
+            [data]="data?.transaction"
+            [parentData]="data"
+          ></app-transaction-form>
+        } @else {
+          <div [ngClass]="'callout callout-success mb-2'">
+            <i class="fas fa-check"></i>
+            {{ 'TRANSACTIONS.ADVANCE_PAYMENT_HINT' | translate }}
+          </div>
+        }
+      </section>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (isEdit) {
+        <button (click)="remove()" type="button" class="btn btn-danger me-2">{{ 'COMMON.REMOVE' | translate }}</button>
+      }
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success"
+      >
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
+      </button>
+    </div>
+  </form>
+</div>
