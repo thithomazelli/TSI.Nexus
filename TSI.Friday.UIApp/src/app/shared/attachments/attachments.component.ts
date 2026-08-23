@@ -47,6 +47,10 @@ export class AttachmentsComponent implements OnInit {
   @Input()
   tripNumber = '';
   @Input()
+  vehiclePlate = '';
+  @Input()
+  driverName = '';
+  @Input()
   entity = 'businessPartner';
 
   @Input()
@@ -369,6 +373,8 @@ export class AttachmentsComponent implements OnInit {
       transaction: 'transactionId',
       payment: 'paymentId',
       product: 'productId',
+      vehicle: 'vehicleId',
+      driver: 'driverId',
       user: 'userId',
     };
     return map[this.entity] ?? 'businessPartnerId';
@@ -426,6 +432,8 @@ export class AttachmentsComponent implements OnInit {
       transaction: (id) => this.attachmentService.getByTransactionId(id),
       payment: (id) => this.attachmentService.getByPaymentId(id),
       product: (id) => this.attachmentService.getByProductId(id),
+      vehicle: (id) => this.attachmentService.getByVehicleId(id),
+      driver: (id) => this.attachmentService.getByDriverId(id),
       user: (id) => this.attachmentService.getByUserId(id),
     };
 
@@ -468,6 +476,8 @@ export class AttachmentsComponent implements OnInit {
       transaction: 'Transactions',
       payment: 'Payments',
       product: 'Products',
+      vehicle: 'Vehicles',
+      driver: 'Drivers',
       user: 'Users',
     };
     return map[this.entity] ?? '';
@@ -488,6 +498,8 @@ export class AttachmentsComponent implements OnInit {
       'Transactions',
       'Payments',
       'Products',
+      'Vehicles',
+      'Drivers',
       'Users',
     ];
 

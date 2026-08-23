@@ -14,6 +14,8 @@ export interface Attachment {
   transactionId?: string | null;
   paymentId?: string | null;
   productId?: string | null;
+  vehicleId?: string | null;
+  driverId?: string | null;
   userId?: string | null;
   createDate?: Date;
   modifyDate?: Date;

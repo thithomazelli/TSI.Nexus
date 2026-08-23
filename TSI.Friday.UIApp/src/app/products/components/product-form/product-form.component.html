@@ -160,14 +160,14 @@
     </div>
 
     <div class="d-flex justify-content-end mt-3">
-      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
       @if (isEdit) {
-        <button (click)="remove()" type="button" class="btn btn-danger me-2">{{ 'COMMON.REMOVE' | translate }}</button>
+        <button (click)="remove()" type="button" class="btn btn-danger btn-sm me-2">{{ 'COMMON.REMOVE' | translate }}</button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
-        class="btn btn-success"
+        class="btn btn-success btn-sm"
       >
         {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
       </button>

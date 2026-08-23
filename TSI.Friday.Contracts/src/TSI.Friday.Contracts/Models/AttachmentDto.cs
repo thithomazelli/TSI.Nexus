@@ -52,6 +52,10 @@ namespace TSI.Friday.Contracts.Models
 
         public Guid? ProductId { get; set; }
 
+        public Guid? VehicleId { get; set; }
+
+        public Guid? DriverId { get; set; }
+
         public string UserId { get; set; }
     }
 }

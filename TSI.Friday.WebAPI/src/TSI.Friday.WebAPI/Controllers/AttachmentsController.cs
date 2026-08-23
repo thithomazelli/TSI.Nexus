@@ -143,6 +143,28 @@ namespace TSI.Friday.WebAPI.Controllers
             return await _attachmentService.GetByProductId(id);
         }
 
+        [HttpGet("GetByVehicleId/{id}")]
+        [Authorize]
+        public async Task<
+            ActionResult<
+                WebApiResponse<System.Collections.Generic.IEnumerable<AttachmentResponseDto>>
+            >
+        > GetByVehicleId(Guid id)
+        {
+            return await _attachmentService.GetByVehicleId(id);
+        }
+
+        [HttpGet("GetByDriverId/{id}")]
+        [Authorize]
+        public async Task<
+            ActionResult<
+                WebApiResponse<System.Collections.Generic.IEnumerable<AttachmentResponseDto>>
+            >
+        > GetByDriverId(Guid id)
+        {
+            return await _attachmentService.GetByDriverId(id);
+        }
+
         [HttpGet("GetByUserId/{id}")]
         [Authorize]
         public async Task<

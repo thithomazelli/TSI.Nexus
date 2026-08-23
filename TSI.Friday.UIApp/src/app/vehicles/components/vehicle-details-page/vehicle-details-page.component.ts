@@ -1,11 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Vehicle, VehicleService } from '@friday/core';
+import { TranslationService, Vehicle, VehicleService } from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { VehicleFormComponent } from '../vehicle-form/vehicle-form.component';
 import { VehicleMaintenanceListComponent } from '../vehicle-maintenance-list/vehicle-maintenance-list.component';
 import { FuelLogListComponent } from '../fuel-log-list/fuel-log-list.component';
+import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
@@ -18,6 +19,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         VehicleFormComponent,
         VehicleMaintenanceListComponent,
         FuelLogListComponent,
+        AttachmentsComponent,
         AuditTabComponent,
         TranslatePipe,
     ],
@@ -26,15 +28,33 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data?: Vehicle | null = null;
   loading = false;
-  activeTab: 'details' | 'maintenances' | 'fuel' | 'audit' = 'details';
+  activeTab: 'details' | 'maintenances' | 'fuel' | 'attachments' | 'audit' =
+    'details';
+
+  get statusMap(): { [key: string]: string } {
+    return {
+      Available: this.translationService.instant('VEHICLES.STATUS_AVAILABLE'),
+      InMaintenance: this.translationService.instant('VEHICLES.STATUS_IN_MAINTENANCE'),
+      Blocked: this.translationService.instant('VEHICLES.STATUS_BLOCKED'),
+      Inactive: this.translationService.instant('VEHICLES.STATUS_INACTIVE'),
+    };
+  }
 
   private _destroy$ = new Subject<void>();
 
   constructor(
     private activatedRoute: ActivatedRoute,
+    private translationService: TranslationService,
     private vehicleService: VehicleService,
     private routerService: Router,
   ) {}
+
+  getStatusLabel(): string {
+    if (!this.data?.status) {
+      return '';
+    }
+    return this.statusMap[this.data.status] || '';
+  }
 
   ngOnInit(): void {
     this.activatedRoute.paramMap

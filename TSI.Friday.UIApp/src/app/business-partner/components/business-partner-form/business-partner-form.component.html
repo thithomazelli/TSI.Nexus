@@ -196,7 +196,7 @@
               @if (isEdit) {
                 <button
                   type="button"
-                  class="btn btn-secondary me-2"
+                  class="btn btn-secondary btn-sm me-2"
                   [attr.aria-disabled]="submitted"
                   (click)="$event.preventDefault(); cancelAddress()"
                 >
@@ -204,7 +204,7 @@
                 </button>
                 <button
                   type="submit"
-                  class="btn btn-success"
+                  class="btn btn-success btn-sm"
                   [class.disabled]="!addressFormGroup.valid || submitted"
                   (click)="
                     $event.preventDefault(); saveAddress(addressFormGroup.value)
@@ -243,18 +243,18 @@
       class="d-flex justify-content-end mt-3"
       *ngIf="!isEditingAddressExclusively"
     >
-      <button type="button" class="btn btn-secondary me-2" (click)="cancel()">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="cancel()">
         {{ 'COMMON.CANCEL' | translate }}
       </button>
       @if (isEdit) {
-        <button type="button" class="btn btn-danger me-2" (click)="remove()">
+        <button type="button" class="btn btn-danger btn-sm me-2" (click)="remove()">
           {{ 'COMMON.REMOVE' | translate }}
         </button>
       }
       <button
         [appClick]="submit.bind(this)"
         type="submit"
-        class="btn btn-success"
+        class="btn btn-success btn-sm"
         [disabled]="isEditingAddressExclusively"
       >
         {{ (isEdit ? "COMMON.SAVE" : "COMMON.ADD") | translate }}

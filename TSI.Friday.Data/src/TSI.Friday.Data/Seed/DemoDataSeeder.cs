@@ -115,6 +115,23 @@ namespace TSI.Friday.Data.Seed
                 await context.Payment.AddRangeAsync(expenses);
                 await context.SaveChangesAsync();
 
+                // ---- Phase 7b2: PurchaseOrders + PurchaseOrderProducts + Payments (stock is
+                // NOT incremented here - PurchaseOrderStockIncrementingSaveChangesInterceptor only
+                // fires on a Status transition into Closed, not on a fresh insert already sitting
+                // at Closed) ----
+                var purchaseOrders = BuildPurchaseOrders(faker, suppliers, now, out var purchaseOrderTransactions);
+                await context.Transaction.AddRangeAsync(purchaseOrderTransactions);
+                await context.PurchaseOrder.AddRangeAsync(purchaseOrders);
+                await context.SaveChangesAsync();
+
+                var purchaseOrderProducts = BuildPurchaseOrderProducts(faker, purchaseOrders, products);
+                await context.PurchaseOrderProduct.AddRangeAsync(purchaseOrderProducts);
+                await context.SaveChangesAsync();
+
+                var purchaseOrderPayments = BuildPurchaseOrderPayments(faker, purchaseOrders, now);
+                await context.Payment.AddRangeAsync(purchaseOrderPayments);
+                await context.SaveChangesAsync();
+
                 // ---- Phase 7c: TripDrivers (a Trip can have any number of drivers now - each
                 // one's Amount becomes its own Outgoing Payment/expense on the Trip's own
                 // Transaction, see BuildTripDrivers) ----
@@ -154,6 +171,7 @@ namespace TSI.Friday.Data.Seed
 
                 // ---- Phase 13: Sequences - continue right after the numbers used above ----
                 await EnsureSequenceAsync(context, "OrderNumberSeq", orders.Count + 1);
+                await EnsureSequenceAsync(context, "PurchaseOrderNumberSeq", purchaseOrders.Count + 1);
                 await EnsureSequenceAsync(context, "QuoteNumberSeq", quotes.Count + 1);
                 await EnsureSequenceAsync(context, "TripNumberSeq", trips.Count + 1);
                 await context.SaveChangesAsync();
@@ -170,6 +188,7 @@ namespace TSI.Friday.Data.Seed
                 logger?.LogInformation(
                     "DemoDataSeeder: seeded {BusinessPartners} business partners, {Products} products, "
                         + "{Drivers} drivers, {Vehicles} vehicles, {Quotes} quotes, {Orders} orders, "
+                        + "{PurchaseOrders} purchase orders, "
                         + "{Trips} trips, {Payments} payments, {Expenses} expenses, {TripDrivers} trip drivers, "
                         + "{TripLegs} trip legs, "
                         + "{Passengers} passengers, {FuelLogs} fuel logs, {Maintenances} maintenances, "
@@ -180,8 +199,9 @@ namespace TSI.Friday.Data.Seed
                     vehicles.Count,
                     quotes.Count,
                     orders.Count,
+                    purchaseOrders.Count,
                     trips.Count,
-                    payments.Count + tripPayments.Count,
+                    payments.Count + tripPayments.Count + purchaseOrderPayments.Count,
                     expenses.Count,
                     tripDrivers.Count,
                     tripLegs.Count,
@@ -1070,6 +1090,154 @@ namespace TSI.Friday.Data.Seed
                             Price = faker.Random.Decimal(80, 3500),
                             TransactionId = transaction.Id,
                             BusinessPartnerId = supplier.Id,
+                        }
+                    );
+                }
+            }
+
+            return result;
+        }
+
+        // Mirrors BuildOrders, buying back from Suppliers instead of selling to Clients - no
+        // Quote conversion equivalent here, purchase orders start from scratch.
+        private static List<PurchaseOrder> BuildPurchaseOrders(
+            Faker faker,
+            List<BusinessPartner> suppliers,
+            DateTime now,
+            out List<Transaction> transactions
+        )
+        {
+            var purchaseOrders = new List<PurchaseOrder>();
+            transactions = new List<Transaction>();
+
+            if (suppliers.Count == 0)
+            {
+                return purchaseOrders;
+            }
+
+            const int totalPurchaseOrders = 15;
+
+            for (var i = 0; i < totalPurchaseOrders; i++)
+            {
+                var supplier = faker.PickRandom(suppliers);
+                var purchaseOrderDate = now.AddDays(-faker.Random.Number(0, 150));
+
+                var transaction = new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    Date = purchaseOrderDate,
+                    Description = "Transação do Pedido de Compra",
+                    BusinessPartnerId = supplier.Id,
+                };
+                transactions.Add(transaction);
+
+                var purchaseOrder = new PurchaseOrder
+                {
+                    Id = Guid.NewGuid(),
+                    PurchaseOrderNumber = $"COM-{i + 1:D5}",
+                    Date = purchaseOrderDate,
+                    Status = faker.PickRandom(OrderStatus.Open, OrderStatus.Closed, OrderStatus.WaitingPayment),
+                    Description = "Pedido de compra de produtos para reposição de estoque.",
+                    BusinessPartnerId = supplier.Id,
+                    TransactionId = transaction.Id,
+                };
+
+                purchaseOrders.Add(purchaseOrder);
+            }
+
+            return purchaseOrders;
+        }
+
+        // Mirrors BuildOrderProducts - draws from the full product catalog (including "Peças",
+        // unlike client-facing orders) since a purchase order's whole point is replenishing stock,
+        // parts included.
+        private static List<PurchaseOrderProduct> BuildPurchaseOrderProducts(
+            Faker faker,
+            List<PurchaseOrder> purchaseOrders,
+            List<Product> products
+        )
+        {
+            var result = new List<PurchaseOrderProduct>();
+
+            foreach (var purchaseOrder in purchaseOrders)
+            {
+                var items = faker.PickRandom(products, faker.Random.Number(1, 3)).ToList();
+                decimal price = 0m;
+                decimal total = 0m;
+
+                foreach (var product in items)
+                {
+                    var quantity = faker.Random.Number(5, 20);
+                    var discount = faker.Random.Number(0, 10);
+
+                    result.Add(
+                        new PurchaseOrderProduct
+                        {
+                            Id = Guid.NewGuid(),
+                            Description = product.Name,
+                            Quantity = quantity,
+                            Discount = discount,
+                            Price = product.Price * quantity,
+                            PurchaseOrderId = purchaseOrder.Id,
+                            ProductId = product.Id,
+                        }
+                    );
+
+                    price += product.Price * quantity;
+                    total += product.Price * quantity * (1 - discount / 100m);
+                }
+
+                // Same MySQL generated-column caveat as Order.Discount - see BuildOrderProducts.
+                purchaseOrder.Price = price;
+                purchaseOrder.Discount = price > 0 ? Math.Round((price - total) / price * 100, 2) : 0;
+            }
+
+            return result;
+        }
+
+        // Mirrors BuildPayments, but Outgoing (a purchase order is money leaving the business).
+        private static List<Payment> BuildPurchaseOrderPayments(
+            Faker faker,
+            List<PurchaseOrder> purchaseOrders,
+            DateTime now
+        )
+        {
+            var result = new List<Payment>();
+
+            foreach (var purchaseOrder in purchaseOrders)
+            {
+                var installments = faker.Random.Number(1, 3);
+                var installmentAmount = Math.Round(purchaseOrder.TotalPrice / installments, 2);
+                var method = faker.PickRandom(
+                    PaymentMethod.Cash,
+                    PaymentMethod.Pix,
+                    PaymentMethod.CreditCard,
+                    PaymentMethod.DebitCard
+                );
+
+                for (var n = 1; n <= installments; n++)
+                {
+                    var dueDate = purchaseOrder.Date.AddDays(30 * n);
+                    var status = dueDate < now
+                        ? faker.PickRandom(PaymentStatus.Approved, PaymentStatus.Approved, PaymentStatus.Delayed)
+                        : PaymentStatus.Pending;
+
+                    result.Add(
+                        new Payment
+                        {
+                            Id = Guid.NewGuid(),
+                            Type = PaymentType.Outgoing,
+                            Status = status,
+                            Condition = installments > 1 ? PaymentCondition.InInstallments : PaymentCondition.FullPayment,
+                            Method = method,
+                            Category = "Compra",
+                            Date = dueDate,
+                            Description = $"Parcela {n}/{installments} - Pedido de Compra {purchaseOrder.PurchaseOrderNumber}",
+                            PaymentNumber = n,
+                            Price = installmentAmount,
+                            TransactionId = purchaseOrder.TransactionId,
+                            BusinessPartnerId = purchaseOrder.BusinessPartnerId,
+                            PurchaseOrderId = purchaseOrder.Id,
                         }
                     );
                 }

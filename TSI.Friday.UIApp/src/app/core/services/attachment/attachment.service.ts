@@ -71,6 +71,18 @@ export class AttachmentService {
     );
   }
 
+  getByVehicleId(vehicleId: string): Observable<WebApiResponse<Attachment[]>> {
+    return this.apiService.get<WebApiResponse<Attachment[]>>(
+      `${this._baseEndPoint}/getByVehicleId/${vehicleId}`,
+    );
+  }
+
+  getByDriverId(driverId: string): Observable<WebApiResponse<Attachment[]>> {
+    return this.apiService.get<WebApiResponse<Attachment[]>>(
+      `${this._baseEndPoint}/getByDriverId/${driverId}`,
+    );
+  }
+
   getByUserId(userId: string): Observable<WebApiResponse<Attachment[]>> {
     return this.apiService.get<WebApiResponse<Attachment[]>>(
       `${this._baseEndPoint}/getByUserId/${userId}`,
@@ -133,6 +145,8 @@ export class AttachmentService {
       fd.append('transactionId', attachment.transactionId);
     if (attachment.paymentId) fd.append('paymentId', attachment.paymentId);
     if (attachment.productId) fd.append('productId', attachment.productId);
+    if (attachment.vehicleId) fd.append('vehicleId', attachment.vehicleId);
+    if (attachment.driverId) fd.append('driverId', attachment.driverId);
     if (attachment.userId) fd.append('userId', attachment.userId);
     return fd;
   }

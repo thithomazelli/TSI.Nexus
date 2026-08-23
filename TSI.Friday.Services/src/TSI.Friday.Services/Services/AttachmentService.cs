@@ -100,6 +100,8 @@ namespace TSI.Friday.Services
                     BusinessPartnerId = dto.BusinessPartnerId,
                     OrderId = dto.OrderId,
                     PurchaseOrderId = dto.PurchaseOrderId,
+                    VehicleId = dto.VehicleId,
+                    DriverId = dto.DriverId,
                     TripId = dto.TripId,
                     TransactionId = dto.TransactionId,
                     PaymentId = dto.PaymentId,
@@ -199,6 +201,8 @@ namespace TSI.Friday.Services
                 existing.TransactionId = dto.TransactionId;
                 existing.PaymentId = dto.PaymentId;
                 existing.ProductId = dto.ProductId;
+                existing.VehicleId = dto.VehicleId;
+                existing.DriverId = dto.DriverId;
                 existing.UserId = dto.UserId;
 
                 _db.Attachments.Update(existing);
@@ -421,6 +425,22 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByVehicleId(
+            Guid vehicleId
+        )
+        {
+            return QueryAsync(q => q.Where(a => a.VehicleId == vehicleId));
+        }
+
+        /// <inheritdoc />
+        public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByDriverId(
+            Guid driverId
+        )
+        {
+            return QueryAsync(q => q.Where(a => a.DriverId == driverId));
+        }
+
+        /// <inheritdoc />
         public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByUserId(string userId)
         {
             return QueryAsync(q => q.Where(a => a.UserId == userId));
@@ -451,6 +471,8 @@ namespace TSI.Friday.Services
                 TransactionId = attachment.TransactionId,
                 PaymentId = attachment.PaymentId,
                 ProductId = attachment.ProductId,
+                VehicleId = attachment.VehicleId,
+                DriverId = attachment.DriverId,
                 UserId = attachment.UserId,
                 CreateDate = attachment.CreateDate,
                 ModifyDate = attachment.ModifyDate,
@@ -702,6 +724,32 @@ namespace TSI.Friday.Services
                 }
             }
             else if (
+                root.Equals("Vehicles", StringComparison.OrdinalIgnoreCase)
+                && segments.Length >= 2
+            )
+            {
+                // Resolve VehicleId from plate
+                var plate = segments[1];
+                if (dto.VehicleId == null)
+                {
+                    var vehicle = await _db.Vehicle.FirstOrDefaultAsync(v => v.Plate == plate);
+                    dto.VehicleId ??= vehicle?.Id;
+                }
+            }
+            else if (
+                root.Equals("Drivers", StringComparison.OrdinalIgnoreCase)
+                && segments.Length >= 2
+            )
+            {
+                // Resolve DriverId from name
+                var driverName = segments[1];
+                if (dto.DriverId == null)
+                {
+                    var driver = await _db.Driver.FirstOrDefaultAsync(d => d.Name == driverName);
+                    dto.DriverId ??= driver?.Id;
+                }
+            }
+            else if (
                 root.Equals("Users", StringComparison.OrdinalIgnoreCase)
                 && segments.Length >= 2
             )
@@ -839,6 +887,28 @@ namespace TSI.Friday.Services
                         ? SanitizeFileName(product.Name)
                         : dto.ProductId.ToString();
                 return Path.Combine(basePath, "Products", productFolder);
+            }
+
+            // Vehicle → Vehicles/{Plate}
+            if (dto.VehicleId != null)
+            {
+                var vehicle = await _db.Vehicle.FindAsync(dto.VehicleId.Value);
+                var vehicleFolder =
+                    vehicle != null && !string.IsNullOrWhiteSpace(vehicle.Plate)
+                        ? SanitizeFileName(vehicle.Plate)
+                        : dto.VehicleId.ToString();
+                return Path.Combine(basePath, "Vehicles", vehicleFolder);
+            }
+
+            // Driver → Drivers/{Name}
+            if (dto.DriverId != null)
+            {
+                var driver = await _db.Driver.FindAsync(dto.DriverId.Value);
+                var driverFolder =
+                    driver != null && !string.IsNullOrWhiteSpace(driver.Name)
+                        ? SanitizeFileName(driver.Name)
+                        : dto.DriverId.ToString();
+                return Path.Combine(basePath, "Drivers", driverFolder);
             }
 
             // User → Users/{UserId}

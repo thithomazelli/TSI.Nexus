@@ -16,87 +16,130 @@
 ></app-header>
 <section class="content">
   <div class="container-fluid">
-    <div class="card card-secondary card-outline">
-      <div class="card-body">
-        @if (isEdit) {
-          <ul class="nav nav-tabs mb-3">
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                [class.active]="activeTab === 'details'"
-                (click)="activeTab = 'details'"
-                data-toggle="tab"
-                >{{ 'COMMON.DATA' | translate }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                [class.active]="activeTab === 'serviceOrders'"
-                (click)="activeTab = 'serviceOrders'"
-                data-toggle="tab"
-                >{{ 'DRIVERS.SERVICE_ORDERS_TAB' | translate }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                [class.active]="activeTab === 'trips'"
-                (click)="activeTab = 'trips'"
-                data-toggle="tab"
-                >{{ 'SIDEBAR.TRIPS' | translate }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                [class.active]="activeTab === 'payments'"
-                (click)="activeTab = 'payments'"
-                data-toggle="tab"
-                >{{ 'SIDEBAR.PAYMENTS' | translate }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                [class.active]="activeTab === 'audit'"
-                (click)="activeTab = 'audit'"
-                data-toggle="tab"
-                >{{ 'AUDIT.TAB' | translate }}</a
-              >
-            </li>
-          </ul>
-        }
+    <div class="row">
+      <!-- Coluna de informações do motorista -->
+      <div class="col-md-3">
+        <div class="card card-secondary card-outline mb-2">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <i class="bi bi-person-vcard" style="font-size: 4rem"></i>
+              <div class="box-profile">
+                <div class="text-center">
+                  <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                      <b>{{ 'DRIVERS.DRIVER_NAME' | translate }}: </b>
+                      <span class="float-right">{{ data?.name }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>{{ 'DRIVERS.LICENSE_NUMBER' | translate }}: </b>
+                      <span class="float-right">{{ data?.licenseNumber }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>{{ 'COMMON.STATUS' | translate }}: </b>
+                      <span class="float-right">{{ getStatusLabel() }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+        <div class="card card-secondary card-outline">
+          <div class="card-body">
+            @if (isEdit) {
+              <ul class="nav nav-tabs mb-3">
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    [class.active]="activeTab === 'details'"
+                    (click)="activeTab = 'details'"
+                    >{{ 'COMMON.DATA' | translate }}</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    [class.active]="activeTab === 'serviceOrders'"
+                    (click)="activeTab = 'serviceOrders'"
+                    >{{ 'DRIVERS.SERVICE_ORDERS_TAB' | translate }}</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    [class.active]="activeTab === 'trips'"
+                    (click)="activeTab = 'trips'"
+                    >{{ 'SIDEBAR.TRIPS' | translate }}</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    [class.active]="activeTab === 'payments'"
+                    (click)="activeTab = 'payments'"
+                    >{{ 'SIDEBAR.PAYMENTS' | translate }}</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    [class.active]="activeTab === 'attachments'"
+                    (click)="activeTab = 'attachments'"
+                    >{{ 'COMMON.ATTACHMENTS' | translate }}</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    [class.active]="activeTab === 'audit'"
+                    (click)="activeTab = 'audit'"
+                    >{{ 'AUDIT.TAB' | translate }}</a
+                  >
+                </li>
+              </ul>
+            }
 
-        @if (loading) {
-          <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
-        }
-        @if (!loading) {
-          @if (activeTab === 'details') {
-            <app-driver-form [isEdit]="isEdit" [data]="data"></app-driver-form>
-          }
-          @if (activeTab === 'serviceOrders' && data?.id) {
-            <app-service-order-list [driverId]="data!.id"></app-service-order-list>
-          }
-          @if (activeTab === 'trips' && data?.id) {
-            <app-trips
-              [compact]="true"
-              [entity]="'Driver'"
-              [parentData]="data"
-            ></app-trips>
-          }
-          @if (activeTab === 'payments' && data?.id) {
-            <app-payments
-              [compact]="true"
-              [canAdd]="false"
-              [entity]="'Driver'"
-              [parentData]="data"
-            ></app-payments>
-          }
-          @if (activeTab === 'audit') {
-            <app-audit-tab [data]="data"></app-audit-tab>
-          }
-        }
+            @if (loading) {
+              <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
+            }
+            @if (!loading) {
+              @if (activeTab === 'details') {
+                <app-driver-form [isEdit]="isEdit" [data]="data"></app-driver-form>
+              }
+              @if (activeTab === 'serviceOrders' && data?.id) {
+                <app-service-order-list [driverId]="data!.id"></app-service-order-list>
+              }
+              @if (activeTab === 'trips' && data?.id) {
+                <app-trips
+                  [compact]="true"
+                  [entity]="'Driver'"
+                  [parentData]="data"
+                ></app-trips>
+              }
+              @if (activeTab === 'payments' && data?.id) {
+                <app-payments
+                  [compact]="true"
+                  [canAdd]="false"
+                  [entity]="'Driver'"
+                  [parentData]="data"
+                ></app-payments>
+              }
+              @if (activeTab === 'attachments' && data?.id) {
+                <app-attachments
+                  [entity]="'driver'"
+                  [entityId]="data!.id"
+                  [driverName]="data!.name"
+                ></app-attachments>
+              }
+              @if (activeTab === 'audit') {
+                <app-audit-tab [data]="data"></app-audit-tab>
+              }
+            }
+          </div>
+        </div>
       </div>
     </div>
   </div>

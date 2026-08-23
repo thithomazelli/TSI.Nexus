@@ -123,7 +123,7 @@ export class PurchaseOrderFormComponent
 
   private _subscriptions: Subscription[] = [];
   private _baseEndPoint = ApiType.PurchaseOrders;
-  private totalOfPaymentsSubscription?: Subscription;
+  private totalOfExpensesSubscription?: Subscription;
 
   constructor(
     private businessPartnerService: BusinessPartnerService,
@@ -146,7 +146,7 @@ export class PurchaseOrderFormComponent
     this.patchFormWithData();
     this.setupAutoComplete();
     this.totalPriceChange();
-    this.setupTotalOfPaymentsWatcher();
+    this.setupTotalOfExpensesWatcher();
     this.applyPreselectedProduct();
 
     this._subscriptions.push(
@@ -170,13 +170,13 @@ export class PurchaseOrderFormComponent
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.data && this.form) {
       this.patchFormWithData();
-      this.setupTotalOfPaymentsWatcher();
+      this.setupTotalOfExpensesWatcher();
     }
   }
 
   ngOnDestroy(): void {
-    if (this.totalOfPaymentsSubscription) {
-      this.totalOfPaymentsSubscription.unsubscribe();
+    if (this.totalOfExpensesSubscription) {
+      this.totalOfExpensesSubscription.unsubscribe();
     }
     this._subscriptions.forEach((sub) => sub.unsubscribe());
   }
@@ -459,24 +459,18 @@ export class PurchaseOrderFormComponent
           },
         ],
         totalOfPayments: [
+          { value: 0, disabled: this.isEdit ? true : false },
+          [Validators.min(0)],
+        ],
+        paymentTotalPrice: [{ value: 0, disabled: true }, [Validators.min(0)]],
+        totalOfExpenses: [
           {
             value: 1,
             disabled: this.isEdit ? true : false,
           },
           Validators.required,
         ],
-        paymentTotalPrice: [{ value: 0, disabled: true }, [Validators.min(0)]],
-        totalOfExpenses: [
-          {
-            value: 0,
-            disabled: this.isEdit ? true : false,
-          },
-          Validators.required,
-        ],
-        expenseTotalPrice: [
-          { value: 0, disabled: this.isEdit ? true : false },
-          [Validators.min(0)],
-        ],
+        expenseTotalPrice: [{ value: 0, disabled: true }, [Validators.min(0)]],
       });
       this.form.addControl('transaction', transactionGroup);
     }
@@ -484,17 +478,17 @@ export class PurchaseOrderFormComponent
 
   private patchFormWithData(): void {
     if (this.data && this.form) {
-      const paymentTotalPrice = !this.isEdit
+      const expenseTotalPrice = !this.isEdit
         ? (this.data.totalPrice ?? 0) /
-          (this.data.transaction?.totalOfPayments || 1)
-        : this.data.transaction?.paymentTotalPrice;
+          (this.data.transaction?.totalOfExpenses || 1)
+        : this.data.transaction?.expenseTotalPrice;
 
       const patch = {
         ...this.data,
         transaction: {
           ...this.data.transaction,
           id: this.data.transaction?.id ?? null,
-          paymentTotalPrice,
+          expenseTotalPrice,
         },
       };
 
@@ -564,19 +558,19 @@ export class PurchaseOrderFormComponent
 
     const transactionGroup = this.form.get('transaction') as FormGroup | null;
     if (!this.isEdit && transactionGroup) {
-      transactionGroup.get('paymentTotalPrice')?.setValue(total);
+      transactionGroup.get('expenseTotalPrice')?.setValue(total);
     }
   }
 
-  private setupTotalOfPaymentsWatcher(): void {
+  private setupTotalOfExpensesWatcher(): void {
     // Remove subscription anterior se existir
-    if (this.totalOfPaymentsSubscription) {
-      this.totalOfPaymentsSubscription.unsubscribe();
+    if (this.totalOfExpensesSubscription) {
+      this.totalOfExpensesSubscription.unsubscribe();
     }
     const transactionGroup = this.form.get('transaction') as FormGroup | null;
-    if (transactionGroup && transactionGroup.get('totalOfPayments')) {
-      this.totalOfPaymentsSubscription = transactionGroup
-        .get('totalOfPayments')!
+    if (transactionGroup && transactionGroup.get('totalOfExpenses')) {
+      this.totalOfExpensesSubscription = transactionGroup
+        .get('totalOfExpenses')!
         .valueChanges.subscribe(() => {
           this.updateTotalPriceFields();
         });
