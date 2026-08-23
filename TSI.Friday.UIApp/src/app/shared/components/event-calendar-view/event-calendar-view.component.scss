@@ -1,0 +1,42 @@
+.event-calendar-view {
+  width: 100%;
+
+  :host ::ng-deep .fc {
+    font-family: inherit;
+  }
+
+  ::ng-deep .fc-daygrid-event,
+  ::ng-deep .fc-timegrid-event {
+    cursor: pointer;
+    border: none;
+  }
+
+  ::ng-deep .fc .fc-button-primary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+  }
+
+  ::ng-deep .fc .fc-button-primary:not(:disabled).fc-button-active,
+  ::ng-deep .fc .fc-button-primary:not(:disabled):active {
+    background-color: #495057;
+    border-color: #495057;
+  }
+}
+
+:host-context([data-bs-theme='dark']) .event-calendar-view {
+  ::ng-deep .fc {
+    --fc-border-color: #495057;
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: #343a40;
+    --fc-list-event-hover-bg-color: #343a40;
+    --fc-today-bg-color: rgba(255, 255, 255, 0.08);
+  }
+
+  ::ng-deep .fc-col-header-cell,
+  ::ng-deep .fc-daygrid-day-number,
+  ::ng-deep .fc-list-day-text,
+  ::ng-deep .fc-list-day-side-text,
+  ::ng-deep .fc-toolbar-title {
+    color: #dee2e6;
+  }
+}

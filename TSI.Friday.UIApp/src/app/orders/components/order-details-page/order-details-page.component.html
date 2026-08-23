@@ -88,6 +88,14 @@
                   >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                 >
               </li>
+              <li class="nav-item" *ngIf="isEdit && isAgendaEnabled">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'agenda'"
+                  (click)="activeTab = 'agenda'"
+                  >{{ 'AGENDA.TITLE' | translate }}</a
+                >
+              </li>
               <li class="nav-item" *ngIf="isEdit">
                 <a
                   class="nav-link"
@@ -125,6 +133,13 @@
                 [entityId]="data!.id!"
                 [orderNumber]="data!.orderNumber!"
               ></app-attachments>
+            </div>
+            <div *ngIf="activeTab === 'agenda'">
+              <app-event-list
+                [entity]="'order'"
+                [entityId]="data!.id!"
+                [entityLabel]="data!.orderNumber"
+              ></app-event-list>
             </div>
             <div *ngIf="activeTab === 'audit'">
               <app-audit-tab [data]="data"></app-audit-tab>

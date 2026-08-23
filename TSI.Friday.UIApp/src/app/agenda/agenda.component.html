@@ -1,0 +1,11 @@
+<app-header
+  [title]="'AGENDA.TITLE' | translate"
+  [navigationMenus]="[
+    { label: 'COMMON.HOME' | translate, link: '/home' },
+    { label: 'AGENDA.TITLE' | translate, link: '' },
+  ]"
+></app-header>
+
+<div class="app-content">
+  <app-event-list [showFilters]="true" [onlyMine]="onlyMine"></app-event-list>
+</div>

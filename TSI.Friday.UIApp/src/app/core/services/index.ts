@@ -22,6 +22,8 @@ export * from './user/user.service';
 export * from './vehicle/vehicle.service';
 export * from './vehicle-maintenance/vehicle-maintenance.service';
 export * from './vehicle-maintenance-product/vehicle-maintenance-product.service';
+export * from './event/event.service';
+export * from './event-participant/event-participant.service';
 export * from './driver/driver.service';
 export * from './trip-leg/trip-leg.service';
 export * from './passenger/passenger.service';

@@ -5,12 +5,15 @@ import {
   VehicleMaintenance,
   VehicleMaintenanceService,
 } from '@friday/core';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { VehicleMaintenanceFormComponent } from '../vehicle-maintenance-form/vehicle-maintenance-form.component';
 import { VehicleMaintenanceProductsComponent } from '../../../vehicle-maintenance-products/vehicle-maintenance-products.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -23,13 +26,15 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         VehicleMaintenanceProductsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
 export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy {
   data: VehicleMaintenance | null = null;
   loading = false;
-  activeTab: 'details' | 'products' | 'attachments' | 'audit' = 'details';
+  isAgendaEnabled = true;
+  activeTab: 'details' | 'products' | 'attachments' | 'agenda' | 'audit' = 'details';
 
   get statusMap(): { [key: string]: { label: string; color: string } } {
     return {
@@ -48,6 +53,7 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
     private translationService: TranslationService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private routerService: Router,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   getStatusInfo(): { label: string; color: string } {
@@ -59,6 +65,14 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
   }
 
   ngOnInit(): void {
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     this.activatedRoute.paramMap
       .pipe(takeUntil(this._destroy$))
       .subscribe((paramMap) => {

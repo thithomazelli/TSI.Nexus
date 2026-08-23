@@ -10,7 +10,7 @@ import {
   DocumentTemplateService,
   downloadLetterheadPdf,
 } from '@friday/core';
-import { Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
+import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { buildQuotePages } from '../../utilities/quote-documents';
@@ -20,6 +20,9 @@ import { QuoteFormComponent } from '../quote-form/quote-form.component';
 import { QuoteProductsComponent } from '../../../quote-products/quote-products.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -33,6 +36,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         QuoteProductsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
@@ -41,8 +45,9 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
   data?: Quote | null = null;
   id: string | null = null;
   loading = false;
+  isAgendaEnabled = true;
 
-  activeTab: 'details' | 'products' | 'attachments' | 'audit' = 'details';
+  activeTab: 'details' | 'products' | 'attachments' | 'agenda' | 'audit' = 'details';
 
   quoteStatusOptions: Record<QuoteStatus, string> = {
     [QuoteStatus.Open]: 'Em aberto',
@@ -63,9 +68,18 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     private routerService: Router,
     private businessPartnerService: BusinessPartnerService,
     private documentTemplateService: DocumentTemplateService,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   ngOnInit(): void {
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     const idOrNumber = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idOrNumber && idOrNumber !== 'new') {

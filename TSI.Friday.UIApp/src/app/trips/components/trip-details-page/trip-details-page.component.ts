@@ -16,6 +16,7 @@ import {
   downloadLetterheadPdf,
 } from '@friday/core';
 import {
+  combineLatest,
   Subject,
   Subscription,
   switchMap,
@@ -36,6 +37,9 @@ import { PassengerListComponent } from '../passenger-list/passenger-list.compone
 import { PaymentsComponent } from '../../../payments/payments.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -52,6 +56,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         PaymentsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
@@ -60,6 +65,7 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
   data?: Trip | null = null;
   id: string | null = null;
   loading = false;
+  isAgendaEnabled = true;
 
   activeTab:
     | 'details'
@@ -68,6 +74,7 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
     | 'passengers'
     | 'payments'
     | 'attachments'
+    | 'agenda'
     | 'audit' = 'details';
 
   tripStatusOptions: Record<OrderStatus, string> = {
@@ -94,9 +101,18 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
     private passengerService: PassengerService,
     private serviceOrderService: ServiceOrderService,
     private documentTemplateService: DocumentTemplateService,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   ngOnInit(): void {
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
     if (idParam && idParam !== 'new') {
       this.isEdit = true;

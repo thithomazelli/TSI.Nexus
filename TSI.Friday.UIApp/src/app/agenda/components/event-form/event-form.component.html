@@ -1,0 +1,239 @@
+<div class="event-form-wrapper">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="modal-scrollable-area">
+      <div class="row g-2">
+        <div class="col-12">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="text"
+                formControlName="title"
+                class="form-control"
+                [class.is-invalid]="isInvalid('title')"
+                [class.is-valid]="isValid('title')"
+                [placeholder]="'AGENDA.EVENT_TITLE' | translate"
+                id="eventTitle"
+              />
+              <label for="eventTitle">{{ 'AGENDA.EVENT_TITLE' | translate }}</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-calendar-event"></i></div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <textarea
+                formControlName="description"
+                class="form-control"
+                [placeholder]="'AGENDA.DESCRIPTION' | translate"
+                id="eventDescription"
+                style="height: 80px"
+              ></textarea>
+              <label for="eventDescription">{{ 'AGENDA.DESCRIPTION' | translate }}</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-text-paragraph"></i></div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <app-date-field formControlName="startDate" [label]="'AGENDA.START_DATE' | translate"></app-date-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="time"
+                formControlName="startTime"
+                class="form-control"
+                id="eventStartTime"
+              />
+              <label for="eventStartTime">{{ 'AGENDA.START_TIME' | translate }}</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-clock"></i></div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <app-date-field formControlName="endDate" [label]="'AGENDA.END_DATE' | translate"></app-date-field>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="time"
+                formControlName="endTime"
+                class="form-control"
+                id="eventEndTime"
+              />
+              <label for="eventEndTime">{{ 'AGENDA.END_TIME' | translate }}</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-clock-history"></i></div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select
+                formControlName="eventTypeOptionId"
+                class="form-select"
+                [class.is-invalid]="isInvalid('eventTypeOptionId')"
+                [class.is-valid]="isValid('eventTypeOptionId')"
+                id="eventTypeOptionId"
+              >
+                <option value="" disabled>{{ 'AGENDA.EVENT_TYPE' | translate }}</option>
+                @for (option of eventTypeOptions; track option.id) {
+                  <option [ngValue]="option.id">{{ option.value }}</option>
+                }
+              </select>
+              <label for="eventTypeOptionId">{{ 'AGENDA.EVENT_TYPE' | translate }}</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-tag-fill"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <h6 class="section-title">{{ 'AGENDA.LINKED_ENTITY' | translate }}</h6>
+
+      @if (lockedLinkField) {
+        <div class="row g-2">
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  type="text"
+                  class="form-control"
+                  [value]="lockedLinkLabel"
+                  disabled
+                  id="eventLockedLink"
+                />
+                <label for="eventLockedLink">{{ 'AGENDA.LINKED_ENTITY' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-link-45deg"></i></div>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="row g-2">
+          @for (config of linkConfigs; track config.key) {
+            <div class="col-12 col-md-6">
+              <div class="input-group">
+                <div class="form-floating flex-fill">
+                  <input
+                    type="text"
+                    [formControlName]="config.labelField"
+                    class="form-control"
+                    [matAutocomplete]="linkAuto"
+                    [placeholder]="config.translationKey | translate"
+                    [id]="'eventLink-' + config.key"
+                    (blur)="onLinkBlur(config)"
+                  />
+                  <label [for]="'eventLink-' + config.key">{{ config.translationKey | translate }}</label>
+                  <mat-autocomplete #linkAuto="matAutocomplete" (optionSelected)="selectLink(config, $event.option.value)">
+                    @for (item of config.filtered$ | async; track item.id) {
+                      <mat-option [value]="item">{{ item.label }}</mat-option>
+                    }
+                  </mat-autocomplete>
+                </div>
+                <div class="input-group-text"><i [class]="'bi ' + config.icon"></i></div>
+                @if (form.get(config.labelField)?.value) {
+                  <button type="button" class="btn btn-outline-secondary" (click)="clearLink(config)">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <hr />
+
+      <h6 class="section-title">{{ 'AGENDA.PARTICIPANTS' | translate }}</h6>
+
+      <div class="row g-2">
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="text"
+                formControlName="participantSearch"
+                class="form-control"
+                [matAutocomplete]="userAuto"
+                [placeholder]="'AGENDA.SEARCH_USER' | translate"
+                id="eventParticipantSearch"
+              />
+              <label for="eventParticipantSearch">{{ 'AGENDA.SEARCH_USER' | translate }}</label>
+              <mat-autocomplete #userAuto="matAutocomplete" (optionSelected)="selectUser($event.option.value)">
+                @for (user of filteredUsers$ | async; track user.id) {
+                  <mat-option [value]="user">{{ user.firstName }} {{ user.lastName }}</mat-option>
+                }
+              </mat-autocomplete>
+            </div>
+            <div class="input-group-text"><i class="bi bi-person-check"></i></div>
+          </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="text"
+                formControlName="participantName"
+                class="form-control"
+                [placeholder]="'AGENDA.CONTACT_NAME' | translate"
+                id="eventParticipantName"
+              />
+              <label for="eventParticipantName">{{ 'AGENDA.CONTACT_NAME' | translate }}</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-2">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="email"
+                formControlName="participantEmail"
+                class="form-control"
+                [placeholder]="'AGENDA.CONTACT_EMAIL' | translate"
+                id="eventParticipantEmail"
+              />
+              <label for="eventParticipantEmail">{{ 'AGENDA.CONTACT_EMAIL' | translate }}</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-1 d-grid">
+          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="addFreeformParticipant()">
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (participants.length) {
+        <ul class="list-group participants-list mt-2">
+          @for (participant of participants; track $index) {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-person me-2"></i>{{ participant.displayName || participant.name || participant.email }}</span>
+              <button type="button" class="btn btn-sm btn-link text-danger p-0" (click)="removeParticipant($index)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (isEdit) {
+        <button (click)="remove()" type="button" class="btn btn-danger btn-sm me-2">{{ 'COMMON.REMOVE' | translate }}</button>
+      }
+      <button [appClick]="submit.bind(this)" type="submit" class="btn btn-success btn-sm">
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
+      </button>
+    </div>
+  </form>
+</div>

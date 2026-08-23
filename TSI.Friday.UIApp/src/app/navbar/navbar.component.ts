@@ -13,6 +13,7 @@ import { PaymentNotificationComponent } from './components/payment-notification/
 import { VehicleBlockedNotificationComponent } from './components/vehicle-blocked-notification/vehicle-blocked-notification.component';
 import { DriverLicenseNotificationComponent } from './components/driver-license-notification/driver-license-notification.component';
 import { StockAlertNotificationComponent } from './components/stock-alert-notification/stock-alert-notification.component';
+import { UpcomingEventNotificationComponent } from './components/upcoming-event-notification/upcoming-event-notification.component';
 import { PhotoComponent } from '../shared/photo/photo.component';
 import { UserPreferencesComponent } from '../shared/components/user-preferences/user-preferences.component';
 import { RouterLink } from '@angular/router';
@@ -30,6 +31,7 @@ import { FeatureToggleKeys } from '../core/models/feature-toggle.model';
         VehicleBlockedNotificationComponent,
         DriverLicenseNotificationComponent,
         StockAlertNotificationComponent,
+        UpcomingEventNotificationComponent,
         PhotoComponent,
         UserPreferencesComponent,
         RouterLink,
@@ -50,6 +52,8 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   isVehicleBlockedAlertEnabled = true;
   isPaymentAlertEnabled = true;
   isStockAlertEnabled = true;
+  isUpcomingEventAlertEnabled = true;
+  isAgendaModuleEnabled = true;
 
   private lastBlobUrl?: string;
   private mobileBreakpoint = 992;
@@ -113,6 +117,8 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
       this.featureFlagService.isEnabled(FeatureToggleKeys.PaymentAlert),
       this.featureFlagService.isEnabled(FeatureToggleKeys.PurchaseOrdersModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.StockAlert),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.UpcomingEventAlert),
     ]).subscribe(
       ([
         fleetEnabled,
@@ -122,11 +128,15 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
         paymentAlert,
         purchaseOrdersEnabled,
         stockAlert,
+        agendaModuleEnabled,
+        upcomingEventAlert,
       ]) => {
         this.isDriverLicenseAlertEnabled = fleetEnabled && driverLicenseAlert;
         this.isVehicleBlockedAlertEnabled = fleetEnabled && vehicleBlockedAlert;
         this.isPaymentAlertEnabled = financeEnabled && paymentAlert;
         this.isStockAlertEnabled = purchaseOrdersEnabled && stockAlert;
+        this.isAgendaModuleEnabled = agendaModuleEnabled;
+        this.isUpcomingEventAlertEnabled = agendaModuleEnabled && upcomingEventAlert;
       },
     );
   }

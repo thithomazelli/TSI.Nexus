@@ -78,6 +78,15 @@
                   >{{ 'PREFERENCES.TITLE' | translate }}</a
                 >
               </li>
+              <li class="nav-item" *ngIf="isEdit && isAgendaEnabled">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'agenda'"
+                  (click)="activeTab = 'agenda'"
+                  data-toggle="tab"
+                  >{{ 'AGENDA.TITLE' | translate }}</a
+                >
+              </li>
               <li class="nav-item" *ngIf="isEdit">
                 <a
                   class="nav-link"
@@ -113,6 +122,12 @@
                 }
                 @if (activeTab === "preferences" && isOwnProfile) {
                   <app-user-preferences></app-user-preferences>
+                }
+                @if (activeTab === "agenda") {
+                  <app-event-list
+                    [entity]="'user'"
+                    [entityId]="data!.id"
+                  ></app-event-list>
                 }
                 @if (activeTab === "audit") {
                   <app-audit-tab [data]="data"></app-audit-tab>

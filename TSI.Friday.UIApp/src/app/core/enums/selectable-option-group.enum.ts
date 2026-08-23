@@ -3,4 +3,5 @@ export enum SelectableOptionGroup {
   ProductCategory = 'ProductCategory',
   TransactionCategory = 'TransactionCategory',
   FuelLogStatus = 'FuelLogStatus',
+  EventType = 'EventType',
 }

@@ -23,6 +23,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'agenda',
+    canActivateChild: [AuthorizationGuard],
+    data: { featureFlag: 'AgendaModule' },
+    loadChildren: () =>
+      import('./agenda/agenda.routes').then((m) => m.AGENDA_ROUTES),
+  },
+  {
     path: 'clients',
     canActivateChild: [AuthorizationGuard],
     loadChildren: () =>

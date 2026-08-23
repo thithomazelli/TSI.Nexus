@@ -44,13 +44,22 @@ export class SelectableOptionsComponent implements OnInit {
       value: SelectableOptionGroup.FuelLogStatus,
       labelKey: 'SELECTABLE_OPTIONS.GROUP_FUEL_LOG_STATUS',
     },
+    {
+      value: SelectableOptionGroup.EventType,
+      labelKey: 'SELECTABLE_OPTIONS.GROUP_EVENT_TYPE',
+    },
   ];
 
   activeGroup: SelectableOptionGroup = SelectableOptionGroup.AddressType;
   options: SelectableOption[] = [];
   newValue = '';
+  newColor = '#3788d8';
   loading = false;
   saving = false;
+
+  get isEventTypeGroup(): boolean {
+    return this.activeGroup === SelectableOptionGroup.EventType;
+  }
 
   constructor(
     private selectableOptionService: SelectableOptionService,
@@ -80,7 +89,11 @@ export class SelectableOptionsComponent implements OnInit {
 
     this.saving = true;
     this.selectableOptionService
-      .add({ group: this.activeGroup, value })
+      .add({
+        group: this.activeGroup,
+        value,
+        color: this.isEventTypeGroup ? this.newColor : null,
+      })
       .subscribe({
         next: (response) => {
           this.saving = false;
@@ -98,6 +111,23 @@ export class SelectableOptionsComponent implements OnInit {
           );
         },
       });
+  }
+
+  updateColor(option: SelectableOption, color: string): void {
+    this.selectableOptionService.update({ ...option, color }).subscribe({
+      next: (response) => {
+        if (response.status === ResponseStatus.Success) {
+          option.color = color;
+        }
+        this.notificationService.showMessage(response.status, response.message);
+      },
+      error: () => {
+        this.notificationService.showMessage(
+          'Error',
+          this.translationService.instant('COMMON.SAVE_ERROR'),
+        );
+      },
+    });
   }
 
   remove(option: SelectableOption): void {

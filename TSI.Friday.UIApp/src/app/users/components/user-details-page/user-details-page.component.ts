@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AccountService, PhotoService, User, UserService } from '@friday/core';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { PhotoComponent } from '../../../shared/photo/photo.component';
 import { NgIf } from '@angular/common';
@@ -9,6 +9,9 @@ import { UserFormComponent } from '../user-form/user-form.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { UserPreferencesComponent } from '../../../shared/components/user-preferences/user-preferences.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -23,6 +26,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         AttachmentsComponent,
         UserPreferencesComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
@@ -31,8 +35,9 @@ export class UserDetailsPageComponent {
   data?: User | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'attachments' | 'preferences' | 'audit' = 'details';
+  activeTab: 'details' | 'attachments' | 'agenda' | 'preferences' | 'audit' = 'details';
   isOwnProfile = false;
+  isAgendaEnabled = true;
 
   private _destroy$ = new Subject<void>();
 
@@ -42,9 +47,18 @@ export class UserDetailsPageComponent {
     private photoService: PhotoService,
     private userService: UserService,
     private accountService: AccountService,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   ngOnInit(): void {
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     this.activatedRoute.paramMap.subscribe((params) => {
       const idParam = params.get('id');
 

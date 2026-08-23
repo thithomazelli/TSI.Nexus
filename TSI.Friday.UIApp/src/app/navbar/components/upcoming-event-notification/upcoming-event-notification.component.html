@@ -1,0 +1,40 @@
+<a
+  class="nav-link"
+  data-bs-toggle="dropdown"
+  href="#"
+  [title]="'NAVBAR.UPCOMING_EVENT_TITLE' | translate"
+>
+  <i class="bi bi-calendar-event"></i>
+  <span *ngIf="showBadge" class="navbar-badge badge text-bg-info">{{
+    total
+  }}</span>
+</a>
+<div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+  <span class="dropdown-item dropdown-header">{{ 'NAVBAR.UPCOMING_EVENT_HEADER' | translate }}</span>
+  <div class="dropdown-divider"></div>
+
+  <a
+    *ngFor="let event of upcomingEvents"
+    href="#"
+    class="dropdown-item px-2 py-2"
+    (click)="openEvent(event); $event.preventDefault()"
+  >
+    <div class="d-flex justify-content-between align-items-center w-100 small">
+      <span class="fw-semibold">{{ event.title }}</span>
+      <span
+        class="badge"
+        [style.background-color]="event.eventTypeColor || '#6c757d'"
+        >{{ event.startDate | date: 'dd/MM HH:mm' }}</span
+      >
+    </div>
+  </a>
+
+  <span *ngIf="!showBadge" class="dropdown-item-text small text-muted px-3 py-2">
+    {{ 'NAVBAR.UPCOMING_EVENT_EMPTY' | translate }}
+  </span>
+
+  <div class="dropdown-divider"></div>
+  <a href="#" class="dropdown-item dropdown-footer" (click)="onSeeAll(); $event.preventDefault()"
+    >{{ 'NAVBAR.SEE_ALL_EVENTS' | translate }}</a
+  >
+</div>

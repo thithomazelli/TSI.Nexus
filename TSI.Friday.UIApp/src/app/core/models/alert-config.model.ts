@@ -13,4 +13,5 @@ export const AlertConfigKeys = {
   VehicleMaintenanceOverdue: 'VehicleMaintenanceOverdue',
   DashboardOverdueReturns: 'DashboardOverdueReturns',
   DriverLicenseExpiry: 'DriverLicenseExpiry',
+  UpcomingEventReminder: 'UpcomingEventReminder',
 } as const;

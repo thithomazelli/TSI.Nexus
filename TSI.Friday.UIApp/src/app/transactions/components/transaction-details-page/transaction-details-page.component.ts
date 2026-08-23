@@ -9,13 +9,16 @@ import {
   TransactionService,
   TranslationService,
 } from '@friday/core';
-import { merge, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
+import { combineLatest, merge, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { NgIf } from '@angular/common';
 import { TransactionFormComponent } from '../transactions-form/transaction-form.component';
 import { PaymentsComponent } from '../../../payments/payments.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -29,6 +32,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         PaymentsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
@@ -37,7 +41,8 @@ export class TransactionDetailsPageComponent {
   data?: Transaction | null = null;
   id: string | null = null;
   loading = false;
-  activeTab: 'details' | 'payments' | 'attachments' | 'audit' = 'details';
+  isAgendaEnabled = true;
+  activeTab: 'details' | 'payments' | 'attachments' | 'agenda' | 'audit' = 'details';
 
   get paymentTypeOptions(): Record<PaymentType, string> {
     return {
@@ -63,9 +68,18 @@ export class TransactionDetailsPageComponent {
     private routerService: Router,
     private transactionService: TransactionService,
     private translationService: TranslationService,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   ngOnInit(): void {
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {

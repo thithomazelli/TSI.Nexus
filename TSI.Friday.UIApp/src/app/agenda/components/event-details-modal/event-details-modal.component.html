@@ -1,0 +1,20 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ (isEdit ? 'AGENDA.EDIT_EVENT' : 'AGENDA.ADD_EVENT') | translate }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-event-form
+    [isModal]="true"
+    [isEdit]="isEdit"
+    [data]="data"
+    [dialogRef]="dialogRef"
+    [prefillStart]="prefillStart"
+    [prefillEnd]="prefillEnd"
+    [lockedLinkField]="lockedLinkField"
+    [lockedLinkId]="lockedLinkId"
+    [lockedLinkLabel]="lockedLinkLabel"
+  ></app-event-form>
+</div>

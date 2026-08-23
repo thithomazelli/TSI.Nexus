@@ -91,6 +91,16 @@
                     >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                   >
                 </li>
+                @if (isAgendaEnabled) {
+                  <li class="nav-item">
+                    <a
+                      class="nav-link"
+                      [class.active]="activeTab === 'agenda'"
+                      (click)="activeTab = 'agenda'"
+                      >{{ 'AGENDA.TITLE' | translate }}</a
+                    >
+                  </li>
+                }
                 <li class="nav-item">
                   <a
                     class="nav-link"
@@ -133,6 +143,13 @@
                   [entityId]="data!.id"
                   [driverName]="data!.name"
                 ></app-attachments>
+              }
+              @if (activeTab === 'agenda' && data?.id) {
+                <app-event-list
+                  [entity]="'driver'"
+                  [entityId]="data!.id"
+                  [entityLabel]="data!.name"
+                ></app-event-list>
               }
               @if (activeTab === 'audit') {
                 <app-audit-tab [data]="data"></app-audit-tab>

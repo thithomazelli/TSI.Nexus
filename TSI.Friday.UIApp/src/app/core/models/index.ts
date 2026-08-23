@@ -28,6 +28,8 @@ export * from './quote-product.model';
 export * from './vehicle.model';
 export * from './vehicle-maintenance.model';
 export * from './vehicle-maintenance-product.model';
+export * from './event.model';
+export * from './event-participant.model';
 export * from './driver.model';
 export * from './trip-leg.model';
 export * from './passenger.model';

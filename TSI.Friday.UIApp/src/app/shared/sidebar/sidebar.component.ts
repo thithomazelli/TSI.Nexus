@@ -36,6 +36,7 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private purchaseOrdersModuleSub: Subscription | null = null;
   private vehicleMaintenanceSub: Subscription | null = null;
   private fuelLogSub: Subscription | null = null;
+  private agendaModuleSub: Subscription | null = null;
 
   isAdmin = false;
   isMaster = false;
@@ -45,6 +46,7 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   isPurchaseOrdersModuleEnabled = true;
   isVehicleMaintenanceEnabled = true;
   isFuelLogEnabled = true;
+  isAgendaModuleEnabled = true;
 
   constructor(
     private el: ElementRef,
@@ -89,6 +91,12 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
       this.featureFlagService.isEnabled(FeatureToggleKeys.FuelLog),
     ]).subscribe(([groupEnabled, entityEnabled]) => {
       this.isFuelLogEnabled = groupEnabled && entityEnabled;
+    });
+    this.agendaModuleSub = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ]).subscribe(([groupEnabled, entityEnabled]) => {
+      this.isAgendaModuleEnabled = groupEnabled && entityEnabled;
     });
   }
 
@@ -321,6 +329,10 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.fuelLogSub) {
       this.fuelLogSub.unsubscribe();
       this.fuelLogSub = null;
+    }
+    if (this.agendaModuleSub) {
+      this.agendaModuleSub.unsubscribe();
+      this.agendaModuleSub = null;
     }
   }
 

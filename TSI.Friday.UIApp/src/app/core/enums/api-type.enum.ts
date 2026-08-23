@@ -31,4 +31,6 @@ export enum ApiType {
   AlertConfigs = 'alertconfigs',
   DocumentTemplates = 'documenttemplates',
   SelectableOptions = 'selectableoptions',
+  Events = 'events',
+  EventParticipants = 'eventparticipants',
 }

@@ -1,0 +1,70 @@
+<div class="event-list-wrapper">
+  @if (showFilters) {
+    <div class="d-flex justify-content-end mb-2">
+      <button
+        type="button"
+        class="btn btn-outline-primary"
+        [ngClass]="filtersOpen ? 'active' : ''"
+        (click)="toggleFilters()"
+      >
+        <i class="bi bi-funnel"></i> {{ 'GRID.FILTERS' | translate }}
+      </button>
+    </div>
+    <div class="event-list-filters-animated" [@cardCollapse]="filtersOpen ? 'open' : 'closed'">
+      <div class="form-check form-switch mb-3">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          id="eventListOnlyMine"
+          [(ngModel)]="onlyMine"
+          (ngModelChange)="load(false)"
+        />
+        <label class="form-check-label" for="eventListOnlyMine">{{ 'AGENDA.ONLY_MINE' | translate }}</label>
+      </div>
+    </div>
+  }
+
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link" [class.active]="viewMode === 'grid'" href="javascript:void(0)" (click)="viewMode = 'grid'">
+        <i class="bi bi-table"></i> {{ 'AGENDA.VIEW_GRID' | translate }}
+      </a>
+    </li>
+    <li class="nav-item">
+      <a
+        class="nav-link"
+        [class.active]="viewMode === 'calendar'"
+        href="javascript:void(0)"
+        (click)="viewMode = 'calendar'"
+      >
+        <i class="bi bi-calendar3"></i> {{ 'AGENDA.VIEW_CALENDAR' | translate }}
+      </a>
+    </li>
+  </ul>
+
+  @if (viewMode === 'grid') {
+    <app-grid
+      [className]="'AGENDA.TITLE' | translate"
+      [compactView]="compact"
+      [rowData]="rowData"
+      [columnDefs]="columnDefs"
+      [canAdd]="true"
+      [refresh]="refresh.bind(this)"
+      [update]="noop.bind(this)"
+      [delete]="deleteEvent.bind(this)"
+      (openModal)="openModal($event)"
+    ></app-grid>
+  } @else {
+    <div class="d-flex justify-content-end mb-2">
+      <button type="button" class="btn btn-success btn-sm" (click)="openModal({ isEdit: false })">
+        <i class="bi bi-plus-lg"></i> {{ 'COMMON.ADD' | translate }}
+      </button>
+    </div>
+    <app-event-calendar-view
+      [events]="events"
+      (eventClicked)="openModal({ isEdit: true, data: $event })"
+      (rangeSelected)="onRangeSelected($event)"
+    ></app-event-calendar-view>
+  }
+</div>

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Driver, DriverService, TranslationService } from '@friday/core';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { DriverFormComponent } from '../driver-form/driver-form.component';
 import { ServiceOrderListComponent } from '../service-order-list/service-order-list.component';
@@ -9,6 +9,9 @@ import { TripsComponent } from '../../../trips/trips.component';
 import { PaymentsComponent } from '../../../payments/payments.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -23,6 +26,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         PaymentsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
@@ -30,12 +34,14 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data?: Driver | null = null;
   loading = false;
+  isAgendaEnabled = true;
   activeTab:
     | 'details'
     | 'serviceOrders'
     | 'trips'
     | 'payments'
     | 'attachments'
+    | 'agenda'
     | 'audit' = 'details';
 
   get statusMap(): { [key: string]: string } {
@@ -53,6 +59,7 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private driverService: DriverService,
     private routerService: Router,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   getStatusLabel(): string {
@@ -63,6 +70,14 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     this.activatedRoute.paramMap
       .pipe(takeUntil(this._destroy$))
       .subscribe((paramMap) => {

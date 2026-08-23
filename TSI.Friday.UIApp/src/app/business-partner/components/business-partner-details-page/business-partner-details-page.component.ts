@@ -7,7 +7,7 @@ import {
   Individual,
   TranslationService,
 } from '@friday/core';
-import { Subject, takeUntil } from 'rxjs';
+import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { PhotoComponent } from '../../../shared/photo/photo.component';
 import { NgIf } from '@angular/common';
@@ -18,6 +18,9 @@ import { TransactionsComponent } from '../../../transactions/transactions.compon
 import { PaymentsComponent } from '../../../payments/payments.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -35,6 +38,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         PaymentsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
@@ -50,10 +54,12 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
     | 'transaction'
     | 'payments'
     | 'attachments'
+    | 'agenda'
     | 'audit' = 'details';
   title: string = '';
   baseEndPoint: string = '';
   canDisplayOrdersTab = true;
+  isAgendaEnabled = true;
 
   private _destroy$ = new Subject<void>();
 
@@ -62,6 +68,7 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
     private businessPartnerService: BusinessPartnerService,
     private routerService: Router,
     private translationService: TranslationService,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +76,14 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => this.initialize());
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {

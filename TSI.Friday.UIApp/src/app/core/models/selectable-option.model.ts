@@ -5,4 +5,5 @@ export interface SelectableOption extends BaseModel {
   id?: string;
   group?: SelectableOptionGroup;
   value?: string;
+  color?: string | null;
 }

@@ -8,7 +8,7 @@ import {
   PurchaseOrderProductService,
   PaymentService,
 } from '@friday/core';
-import { Subject, Subscription, switchMap, takeUntil, merge } from 'rxjs';
+import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge } from 'rxjs';
 
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { NgIf } from '@angular/common';
@@ -17,6 +17,9 @@ import { PurchaseOrderProductsComponent } from '../../../purchase-order-products
 import { PaymentsComponent } from '../../../payments/payments.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
+import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -31,6 +34,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         PaymentsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        EventListComponent,
         TranslatePipe,
     ],
 })
@@ -39,8 +43,9 @@ export class PurchaseOrderDetailsPageComponent implements OnInit, OnDestroy {
   data?: PurchaseOrder | null = null;
   id: string | null = null;
   loading = false;
+  isAgendaEnabled = true;
 
-  activeTab: 'details' | 'products' | 'payments' | 'attachments' | 'audit' =
+  activeTab: 'details' | 'products' | 'payments' | 'attachments' | 'agenda' | 'audit' =
     'details';
 
   purchaseOrderStatusOptions: Record<OrderStatus, string> = {
@@ -58,9 +63,18 @@ export class PurchaseOrderDetailsPageComponent implements OnInit, OnDestroy {
     private purchaseOrderProductService: PurchaseOrderProductService,
     private paymentService: PaymentService,
     private routerService: Router,
+    private featureFlagService: FeatureFlagService,
   ) {}
 
   ngOnInit(): void {
+    combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ])
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(([groupEnabled, entityEnabled]) => {
+        this.isAgendaEnabled = groupEnabled && entityEnabled;
+      });
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
     if (idParam && idParam !== 'new') {
       this.isEdit = true;

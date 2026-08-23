@@ -37,6 +37,13 @@
           />
           <label>{{ 'SELECTABLE_OPTIONS.NEW_VALUE' | translate }}</label>
         </div>
+        <input
+          *ngIf="isEventTypeGroup"
+          type="color"
+          class="form-control form-control-color"
+          [title]="'SELECTABLE_OPTIONS.COLOR' | translate"
+          [(ngModel)]="newColor"
+        />
         <button
           type="button"
           class="btn btn-success"
@@ -60,15 +67,25 @@
           *ngFor="let option of options"
           class="list-group-item d-flex justify-content-between align-items-center"
         >
-          {{ option.value }}
-          <button
-            type="button"
-            class="btn btn-link p-0 text-danger"
-            [title]="'COMMON.REMOVE' | translate"
-            (click)="remove(option)"
-          >
-            <i class="bi bi-trash"></i>
-          </button>
+          <span>{{ option.value }}</span>
+          <div class="d-flex align-items-center gap-2">
+            <input
+              *ngIf="isEventTypeGroup"
+              type="color"
+              class="form-control form-control-color form-control-sm"
+              [title]="'SELECTABLE_OPTIONS.COLOR' | translate"
+              [ngModel]="option.color"
+              (ngModelChange)="updateColor(option, $event)"
+            />
+            <button
+              type="button"
+              class="btn btn-link p-0 text-danger"
+              [title]="'COMMON.REMOVE' | translate"
+              (click)="remove(option)"
+            >
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
         </li>
       </ul>
     </div>
