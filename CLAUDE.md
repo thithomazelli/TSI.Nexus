@@ -166,6 +166,15 @@ código novo; todo componente novo é standalone e declara seus próprios `impor
   outras (mesma ordem de seções, mesmos padrões de header/ações) — não introduzir um layout novo
   pra uma entidade sem justificativa.
 
+**Antes de considerar uma tela nova/alterada concluída, checar essa lista de padrões explicitamente
+— inclusive (e principalmente) quando o ponto de partida é um componente já existente**, seja de
+uma sessão anterior, seja escrito às pressas mais cedo na mesma sessão. Código já existente não é
+prova de que segue o padrão: já aconteceu de um modal com `<form>` inline (em vez de componente de
+form separado) e uma lista com `<table>` custom (em vez de `app-grid`) servirem de base pra um
+ajuste incremental, e o ajuste herdou as duas violações sem ninguém perceber até o usuário notar
+visualmente. Tratar "bate com o arquivo que já estava lá" como suficiente é o erro — o critério é
+"bate com os bullets acima", e vale auditar o arquivo-base contra eles antes de estender.
+
 ### Convenções recorrentes desta sessão
 
 - Filtro de intervalo de datas em relatórios: área de filtro escondida por padrão, animação
