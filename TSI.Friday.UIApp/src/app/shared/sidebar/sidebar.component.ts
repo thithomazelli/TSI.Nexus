@@ -31,11 +31,13 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private osInstance: any = null;
   private userSub: Subscription | null = null;
   private featureFlagSub: Subscription | null = null;
+  private salesOrdersModuleSub: Subscription | null = null;
   private rentalReportSub: Subscription | null = null;
 
   isAdmin = false;
   isMaster = false;
   isFleetModuleEnabled = true;
+  isSalesOrdersModuleEnabled = true;
   isRentalReportEnabled = true;
 
   constructor(
@@ -54,6 +56,11 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
       .isEnabled(FeatureToggleKeys.FleetModule)
       .subscribe((enabled) => {
         this.isFleetModuleEnabled = enabled;
+      });
+    this.salesOrdersModuleSub = this.featureFlagService
+      .isEnabled(FeatureToggleKeys.SalesOrdersModule)
+      .subscribe((enabled) => {
+        this.isSalesOrdersModuleEnabled = enabled;
       });
     // Shown only when both the Pedidos de Venda group and its own entity toggle are enabled -
     // same "group AND entity" rule documented on FeatureToggleKeys, so it can be hidden either
@@ -275,6 +282,10 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.featureFlagSub) {
       this.featureFlagSub.unsubscribe();
       this.featureFlagSub = null;
+    }
+    if (this.salesOrdersModuleSub) {
+      this.salesOrdersModuleSub.unsubscribe();
+      this.salesOrdersModuleSub = null;
     }
     if (this.rentalReportSub) {
       this.rentalReportSub.unsubscribe();
