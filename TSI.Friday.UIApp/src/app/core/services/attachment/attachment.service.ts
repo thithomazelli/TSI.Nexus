@@ -83,6 +83,14 @@ export class AttachmentService {
     );
   }
 
+  getByVehicleMaintenanceId(
+    vehicleMaintenanceId: string,
+  ): Observable<WebApiResponse<Attachment[]>> {
+    return this.apiService.get<WebApiResponse<Attachment[]>>(
+      `${this._baseEndPoint}/getByVehicleMaintenanceId/${vehicleMaintenanceId}`,
+    );
+  }
+
   getByUserId(userId: string): Observable<WebApiResponse<Attachment[]>> {
     return this.apiService.get<WebApiResponse<Attachment[]>>(
       `${this._baseEndPoint}/getByUserId/${userId}`,
@@ -147,6 +155,8 @@ export class AttachmentService {
     if (attachment.productId) fd.append('productId', attachment.productId);
     if (attachment.vehicleId) fd.append('vehicleId', attachment.vehicleId);
     if (attachment.driverId) fd.append('driverId', attachment.driverId);
+    if (attachment.vehicleMaintenanceId)
+      fd.append('vehicleMaintenanceId', attachment.vehicleMaintenanceId);
     if (attachment.userId) fd.append('userId', attachment.userId);
     return fd;
   }

@@ -124,6 +124,15 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByDriverId(Guid driverId);
 
         /// <summary>
+        /// Gets attachments linked to a specific vehicle maintenance, including download URLs.
+        /// </summary>
+        /// <param name="vehicleMaintenanceId">VehicleMaintenance id.</param>
+        /// <returns>Collection of attachment response DTOs.</returns>
+        Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByVehicleMaintenanceId(
+            Guid vehicleMaintenanceId
+        );
+
+        /// <summary>
         /// Gets attachments linked to a specific user, including download URLs.
         /// </summary>
         /// <param name="userId">User id.</param>

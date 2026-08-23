@@ -102,6 +102,7 @@ namespace TSI.Friday.Services
                     PurchaseOrderId = dto.PurchaseOrderId,
                     VehicleId = dto.VehicleId,
                     DriverId = dto.DriverId,
+                    VehicleMaintenanceId = dto.VehicleMaintenanceId,
                     TripId = dto.TripId,
                     TransactionId = dto.TransactionId,
                     PaymentId = dto.PaymentId,
@@ -203,6 +204,7 @@ namespace TSI.Friday.Services
                 existing.ProductId = dto.ProductId;
                 existing.VehicleId = dto.VehicleId;
                 existing.DriverId = dto.DriverId;
+                existing.VehicleMaintenanceId = dto.VehicleMaintenanceId;
                 existing.UserId = dto.UserId;
 
                 _db.Attachments.Update(existing);
@@ -441,6 +443,14 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByVehicleMaintenanceId(
+            Guid vehicleMaintenanceId
+        )
+        {
+            return QueryAsync(q => q.Where(a => a.VehicleMaintenanceId == vehicleMaintenanceId));
+        }
+
+        /// <inheritdoc />
         public Task<WebApiResponse<IEnumerable<AttachmentResponseDto>>> GetByUserId(string userId)
         {
             return QueryAsync(q => q.Where(a => a.UserId == userId));
@@ -473,6 +483,7 @@ namespace TSI.Friday.Services
                 ProductId = attachment.ProductId,
                 VehicleId = attachment.VehicleId,
                 DriverId = attachment.DriverId,
+                VehicleMaintenanceId = attachment.VehicleMaintenanceId,
                 UserId = attachment.UserId,
                 CreateDate = attachment.CreateDate,
                 ModifyDate = attachment.ModifyDate,
@@ -735,6 +746,18 @@ namespace TSI.Friday.Services
                     var vehicle = await _db.Vehicle.FirstOrDefaultAsync(v => v.Plate == plate);
                     dto.VehicleId ??= vehicle?.Id;
                 }
+
+                // Check for Maintenances sub-folder (VehicleMaintenanceId, a Guid segment - there's
+                // no human-friendly number for a maintenance the way OrderNumber/TripNumber are)
+                if (
+                    segments.Length >= 4
+                    && segments[2].Equals("Maintenances", StringComparison.OrdinalIgnoreCase)
+                    && dto.VehicleMaintenanceId == null
+                    && Guid.TryParse(segments[3], out var maintenanceId)
+                )
+                {
+                    dto.VehicleMaintenanceId = maintenanceId;
+                }
             }
             else if (
                 root.Equals("Drivers", StringComparison.OrdinalIgnoreCase)
@@ -887,6 +910,29 @@ namespace TSI.Friday.Services
                         ? SanitizeFileName(product.Name)
                         : dto.ProductId.ToString();
                 return Path.Combine(basePath, "Products", productFolder);
+            }
+
+            // VehicleMaintenance → Vehicles/{Plate}/Maintenances/{MaintenanceId}
+            if (dto.VehicleMaintenanceId != null)
+            {
+                var maintenance = await _db.VehicleMaintenance.FindAsync(
+                    dto.VehicleMaintenanceId.Value
+                );
+                var maintenanceVehicle =
+                    maintenance != null
+                        ? await _db.Vehicle.FindAsync(maintenance.VehicleId)
+                        : null;
+                var maintenanceVehicleFolder =
+                    maintenanceVehicle != null && !string.IsNullOrWhiteSpace(maintenanceVehicle.Plate)
+                        ? SanitizeFileName(maintenanceVehicle.Plate)
+                        : maintenance?.VehicleId.ToString() ?? "Unknown";
+                return Path.Combine(
+                    basePath,
+                    "Vehicles",
+                    maintenanceVehicleFolder,
+                    "Maintenances",
+                    dto.VehicleMaintenanceId.ToString()
+                );
             }
 
             // Vehicle → Vehicles/{Plate}

@@ -1,0 +1,79 @@
+<div class="vehicle-maintenance-form-wrapper">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="modal-scrollable-area">
+    <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select formControlName="type" class="form-select" id="maintenanceType">
+              @for (option of typeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="maintenanceType">{{ 'COMMON.TYPE' | translate }}</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <app-date-field
+          formControlName="scheduledDate"
+          [label]="'VEHICLES.SCHEDULED_DATE' | translate"
+        ></app-date-field>
+      </div>
+      <div class="col-12">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              formControlName="description"
+              type="text"
+              [placeholder]="'COMMON.DESCRIPTION' | translate"
+              class="form-control"
+              id="maintenanceDescription"
+            />
+            <label for="maintenanceDescription">{{ 'COMMON.DESCRIPTION' | translate }}</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <app-currency-field
+          formControlName="cost"
+          [label]="'VEHICLES.COST' | translate"
+        ></app-currency-field>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill select-floating">
+            <select formControlName="status" class="form-select" id="maintenanceStatus">
+              @for (option of statusOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            <label for="maintenanceStatus">{{ 'COMMON.STATUS' | translate }}</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <app-product-picker-grid
+      [items]="vehicleMaintenanceProducts"
+      [filterOutOfStock]="true"
+      (itemAdded)="onProductPickerItemAdded($event)"
+      (itemRemoved)="removeProduct($event)"
+    ></app-product-picker-grid>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (isEdit) {
+        <button (click)="remove()" type="button" class="btn btn-danger btn-sm me-2">{{ 'COMMON.REMOVE' | translate }}</button>
+      }
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success btn-sm"
+      >
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
+      </button>
+    </div>
+  </form>
+</div>

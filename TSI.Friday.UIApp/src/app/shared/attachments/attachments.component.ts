@@ -375,6 +375,7 @@ export class AttachmentsComponent implements OnInit {
       product: 'productId',
       vehicle: 'vehicleId',
       driver: 'driverId',
+      vehicleMaintenance: 'vehicleMaintenanceId',
       user: 'userId',
     };
     return map[this.entity] ?? 'businessPartnerId';
@@ -434,6 +435,8 @@ export class AttachmentsComponent implements OnInit {
       product: (id) => this.attachmentService.getByProductId(id),
       vehicle: (id) => this.attachmentService.getByVehicleId(id),
       driver: (id) => this.attachmentService.getByDriverId(id),
+      vehicleMaintenance: (id) =>
+        this.attachmentService.getByVehicleMaintenanceId(id),
       user: (id) => this.attachmentService.getByUserId(id),
     };
 
@@ -478,6 +481,7 @@ export class AttachmentsComponent implements OnInit {
       product: 'Products',
       vehicle: 'Vehicles',
       driver: 'Drivers',
+      vehicleMaintenance: 'Maintenances',
       user: 'Users',
     };
     return map[this.entity] ?? '';
@@ -500,6 +504,7 @@ export class AttachmentsComponent implements OnInit {
       'Products',
       'Vehicles',
       'Drivers',
+      'Maintenances',
       'Users',
     ];
 
@@ -552,6 +557,17 @@ export class AttachmentsComponent implements OnInit {
           const prefix =
             att.path.split(`/Transactions/${this.entityId}`)[0] +
             `/Transactions/${this.entityId}`;
+          return { prefix, rootName: 'Anexos' };
+        }
+      }
+    }
+    // Para manutenção, corta até attachments/Vehicles/{Placa}/Maintenances/{VehicleMaintenanceId}
+    if (this.entity === 'vehicleMaintenance' && this.entityId) {
+      for (const att of this.attachments) {
+        if (att.path && att.path.includes(`/Maintenances/${this.entityId}/`)) {
+          const prefix =
+            att.path.split(`/Maintenances/${this.entityId}`)[0] +
+            `/Maintenances/${this.entityId}`;
           return { prefix, rootName: 'Anexos' };
         }
       }

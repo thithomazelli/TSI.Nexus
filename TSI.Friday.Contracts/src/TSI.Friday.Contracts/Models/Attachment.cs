@@ -60,6 +60,11 @@ namespace TSI.Friday.Contracts.Models
         public Guid? DriverId { get; set; }
         public Driver? Driver { get; set; }
 
+        // Optional link to VehicleMaintenance
+        [ForeignKey("VehicleMaintenance")]
+        public Guid? VehicleMaintenanceId { get; set; }
+        public VehicleMaintenance? VehicleMaintenance { get; set; }
+
         // Optional link to User
         public string UserId { get; set; }
         public User? User { get; set; }

@@ -7,80 +7,16 @@
   ]"
 ></app-header>
 
-<div class="vehicle-maintenance-list" [class.app-content]="!compact">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h5 class="mb-0" *ngIf="compact">{{ 'VEHICLES.MAINTENANCES' | translate }}</h5>
-    <button
-      *ngIf="vehicleId"
-      type="button"
-      class="btn btn-success btn-sm ms-auto"
-      (click)="openModal()"
-    >
-      <i class="bi bi-plus-lg"></i> {{ 'VEHICLES.NEW_MAINTENANCE' | translate }}
-    </button>
-  </div>
-
-  <table class="table table-sm">
-    <thead>
-      <tr>
-        <th *ngIf="!vehicleId">{{ 'VEHICLES.SINGULAR' | translate }}</th>
-        <th>{{ 'COMMON.TYPE' | translate }}</th>
-        <th>{{ 'COMMON.DESCRIPTION' | translate }}</th>
-        <th>{{ 'VEHICLES.SCHEDULED_DATE' | translate }}</th>
-        <th>{{ 'COMMON.STATUS' | translate }}</th>
-        <th>{{ 'VEHICLES.COST' | translate }}</th>
-        <th style="width: 180px"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (m of maintenances; track m.id) {
-        <tr>
-          <td *ngIf="!vehicleId">{{ m.vehicle?.plate }}</td>
-          <td>{{ (m.type === 'Preventive' ? 'VEHICLES.PREVENTIVE' : 'VEHICLES.CORRECTIVE') | translate }}</td>
-          <td>{{ m.description }}</td>
-          <td>{{ m.scheduledDate | date: 'dd/MM/yyyy' }}</td>
-          <td>
-            <span class="badge bg-{{ getStatusInfo(m.status).color }}">
-              {{ getStatusInfo(m.status).label }}
-            </span>
-          </td>
-          <td>{{ m.cost | currency: 'BRL' }}</td>
-          <td>
-            <button
-              type="button"
-              class="btn btn-link btn-sm p-0 me-2"
-              [title]="'COMMON.EDIT' | translate"
-              (click)="openModal(m)"
-            >
-              <i class="bi bi-pencil"></i>
-            </button>
-            @if (m.status === 'Scheduled' || m.status === 'InProgress' || m.status === 'Overdue') {
-              <button
-                type="button"
-                class="btn btn-link btn-sm p-0 me-2"
-                [title]="'VEHICLES.COMPLETE' | translate"
-                (click)="completeMaintenance(m)"
-              >
-                <i class="bi bi-check-circle text-success"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-link btn-sm p-0"
-                [title]="'COMMON.CANCEL' | translate"
-                (click)="cancelMaintenance(m)"
-              >
-                <i class="bi bi-x-circle text-danger"></i>
-              </button>
-            }
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td [attr.colspan]="vehicleId ? 6 : 7" class="text-center text-muted small py-3">
-            {{ 'VEHICLES.NO_MAINTENANCE_REGISTERED' | translate }}
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+<div [class.app-content]="!compact">
+  <app-grid
+    [compactView]="compact"
+    [className]="'VEHICLES.MAINTENANCES' | translate"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [baseEndPoint]="baseEndPoint"
+    [canAdd]="!!vehicleId"
+    [refresh]="refresh.bind(this)"
+    [delete]="deleteMaintenance.bind(this)"
+    (openModal)="openModal($event)"
+  ></app-grid>
 </div>

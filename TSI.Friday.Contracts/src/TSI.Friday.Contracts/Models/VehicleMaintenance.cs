@@ -36,6 +36,8 @@ namespace TSI.Friday.Contracts.Models
         // MaintenancePartsStockAdjustingSaveChangesInterceptor).
         public ICollection<VehicleMaintenanceProduct> VehicleMaintenanceProducts { get; set; } = [];
 
+        public ICollection<Attachment> Attachments { get; set; } = [];
+
         public VehicleMaintenance() { }
 
         public VehicleMaintenance(Vehicle vehicle)

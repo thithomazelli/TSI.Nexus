@@ -287,6 +287,13 @@ namespace TSI.Friday.Data
 
             modelBuilder
                 .Entity<Attachment>()
+                .HasOne(a => a.VehicleMaintenance)
+                .WithMany(m => (ICollection<Attachment>)m.Attachments)
+                .HasForeignKey(a => a.VehicleMaintenanceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
                 .HasOne(a => a.User)
                 .WithMany(u => (ICollection<Attachment>)u.Attachments)
                 .HasForeignKey(a => a.UserId)

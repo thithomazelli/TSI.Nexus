@@ -7,19 +7,21 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {
-  MaintenanceStatus,
   ModalService,
   NotificationService,
+  ResponseStatus,
   VehicleMaintenance,
   VehicleMaintenanceService,
   TranslationService,
   WebApiResponse,
 } from '@friday/core';
+import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 import { Subject, takeUntil } from 'rxjs';
+import { NgIf } from '@angular/common';
 
 import { VehicleMaintenanceDetailsModalComponent } from '../vehicle-maintenance-details-modal/vehicle-maintenance-details-modal.component';
-import { CurrencyPipe, DatePipe, NgIf } from '@angular/common';
 import { HeaderComponent } from '../../../shared/header/header.component';
+import { GridComponent } from '../../../shared/grid/grid.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -28,9 +30,8 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     styleUrl: './vehicle-maintenance-list.component.scss',
     imports: [
         NgIf,
-        CurrencyPipe,
-        DatePipe,
         HeaderComponent,
+        GridComponent,
         TranslatePipe,
     ],
 })
@@ -43,7 +44,11 @@ export class VehicleMaintenanceListComponent
   @Input()
   compact = false;
 
-  maintenances: VehicleMaintenance[] = [];
+  baseEndPoint = 'vehicle-maintenances';
+  rowData: VehicleMaintenance[] = [];
+  columnDefs: ColDef[] = [];
+
+  private _destroy$ = new Subject<void>();
 
   get statusMap(): { [key: string]: { label: string; color: string } } {
     return {
@@ -55,8 +60,6 @@ export class VehicleMaintenanceListComponent
     };
   }
 
-  private _destroy$ = new Subject<void>();
-
   constructor(
     private notificationService: NotificationService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
@@ -65,6 +68,10 @@ export class VehicleMaintenanceListComponent
   ) {}
 
   ngOnInit(): void {
+    this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
     this.load();
     this.vehicleMaintenanceService.maintenanceChanged$
       .pipe(takeUntil(this._destroy$))
@@ -82,45 +89,146 @@ export class VehicleMaintenanceListComponent
     this._destroy$.complete();
   }
 
-  getStatusInfo(status: string): { label: string; color: string } {
-    return this.statusMap[status] ?? { label: status, color: 'secondary' };
-  }
-
-  openModal(maintenance?: VehicleMaintenance): void {
+  openModal(initialState: any): void {
     this.modalService.showTemplateModal(VehicleMaintenanceDetailsModalComponent, {
-      vehicleId: maintenance?.vehicleId ?? this.vehicleId,
-      data: maintenance ?? null,
+      ...initialState,
+      vehicleId: initialState?.data?.vehicleId ?? this.vehicleId,
     });
   }
 
-  completeMaintenance(maintenance: VehicleMaintenance): void {
-    this.updateStatus(maintenance, MaintenanceStatus.Completed);
-  }
-
-  cancelMaintenance(maintenance: VehicleMaintenance): void {
-    this.updateStatus(maintenance, MaintenanceStatus.Cancelled);
-  }
-
-  private updateStatus(
-    maintenance: VehicleMaintenance,
-    status: MaintenanceStatus,
-  ): void {
-    const updated: VehicleMaintenance = { ...maintenance, status };
+  deleteMaintenance(maintenance: VehicleMaintenance): void {
     this.vehicleMaintenanceService
-      .update(updated)
+      .delete(maintenance)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<VehicleMaintenance>) => {
-        this.notificationService.showMessage(response.status, response.message);
+        if (response.status === ResponseStatus.Success) {
+          this.rowData = this.rowData.filter((m) => m.id !== maintenance.id);
+        }
+        this.modalService.hideModal();
+        this.modalService.showSweetNotification('', response.message, response.status);
       });
   }
 
-  private load(): void {
+  refresh(): void {
+    this.load(true);
+  }
+
+  private initializeGrid(): void {
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        sortable: true,
+        filter: true,
+        hide: true,
+      },
+      {
+        field: 'vehicle.plate',
+        headerName: this.translationService.instant('VEHICLES.SINGULAR'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        hide: !!this.vehicleId,
+      },
+      {
+        field: 'type',
+        headerName: this.translationService.instant('COMMON.TYPE'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams) =>
+          this.translationService.instant(
+            params.value === 'Preventive' ? 'VEHICLES.PREVENTIVE' : 'VEHICLES.CORRECTIVE',
+          ),
+      },
+      {
+        field: 'description',
+        headerName: this.translationService.instant('COMMON.DESCRIPTION'),
+        sortable: true,
+        filter: true,
+        flex: 2,
+      },
+      {
+        field: 'scheduledDate',
+        headerName: this.translationService.instant('VEHICLES.SCHEDULED_DATE'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams) => this.formatDateBR(params.value),
+      },
+      {
+        field: 'cost',
+        headerName: this.translationService.instant('VEHICLES.COST'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams): string => {
+          const v = params.value;
+          if (v == null || v === '') return '';
+          const n = Number(v);
+          if (Number.isNaN(n)) return String(v);
+          return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        },
+      },
+      {
+        field: 'status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        cellRenderer: (params: ICellRendererParams) => {
+          const info = this.statusMap[params.value] ?? { label: params.value, color: 'secondary' };
+          return `<span class="badge bg-${info.color}">${info.label}</span>`;
+        },
+      },
+      {
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
+        flex: 1,
+        minWidth: 150,
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellRenderer: () => {
+          return `
+            <button class="btn btn-primary btn-sm" data-action="view">
+              <i class="fas fa-eye" data-action="view"></i>
+            </button>
+            <button class="btn btn-info btn-sm" data-action="edit">
+              <i class="fas fa-edit" data-action="edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" data-action="delete">
+              <i class="fas fa-trash" data-action="delete"></i>
+            </button>
+          `;
+        },
+      },
+    ];
+  }
+
+  private load(isRefresh = false): void {
     const request$ = this.vehicleId
       ? this.vehicleMaintenanceService.getByVehicle(this.vehicleId)
       : this.vehicleMaintenanceService.getAll();
 
     request$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
-      this.maintenances = response.data ?? [];
+      this.rowData = response.data ?? [];
+      if (isRefresh) {
+        this.notificationService.showMessage(response.status, response.message);
+      }
     });
+  }
+
+  private formatDateBR(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 }

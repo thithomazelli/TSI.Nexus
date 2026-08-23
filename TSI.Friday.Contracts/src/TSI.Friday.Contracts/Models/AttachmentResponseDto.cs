@@ -42,6 +42,8 @@ namespace TSI.Friday.Contracts.Models
 
         public Guid? DriverId { get; set; }
 
+        public Guid? VehicleMaintenanceId { get; set; }
+
         public string UserId { get; set; }
 
         public DateTime CreateDate { get; set; }

@@ -1,0 +1,99 @@
+<app-header
+  [title]="'VEHICLES.EDIT_MAINTENANCE' | translate"
+  [navigationMenus]="[
+    { label: 'COMMON.HOME' | translate, link: '/home' },
+    { label: 'VEHICLES.MAINTENANCES' | translate, link: '/vehicle-maintenances' },
+    { label: 'VEHICLES.EDIT_MAINTENANCE' | translate, link: '' },
+  ]"
+></app-header>
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Coluna de informações da manutenção -->
+      <div class="col-md-3">
+        <div class="card card-secondary card-outline mb-2">
+          <div class="card-body box-profile">
+            <div class="text-center">
+              <i class="bi bi-tools" style="font-size: 4rem"></i>
+              <div class="box-profile">
+                <div class="text-center">
+                  <ul class="list-group list-group-unbordered mb-3">
+                    <li class="list-group-item">
+                      <b>{{ 'VEHICLES.SINGULAR' | translate }}: </b>
+                      <span class="float-right">{{ data?.vehicle?.plate }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>{{ 'COMMON.TYPE' | translate }}: </b>
+                      <span class="float-right">{{ (data?.type === 'Preventive' ? 'VEHICLES.PREVENTIVE' : 'VEHICLES.CORRECTIVE') | translate }}</span>
+                    </li>
+                    <li class="list-group-item">
+                      <b>{{ 'COMMON.STATUS' | translate }}: </b>
+                      <span class="float-right">
+                        <span class="badge bg-{{ getStatusInfo().color }}">{{ getStatusInfo().label }}</span>
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /.col -->
+      <div class="col-md-9">
+        <div class="card card-secondary card-outline">
+          <div class="card-body">
+            <ul class="nav nav-tabs mb-3">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'details'"
+                  (click)="activeTab = 'details'"
+                  >{{ 'COMMON.DATA' | translate }}</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'attachments'"
+                  (click)="activeTab = 'attachments'"
+                  >{{ 'COMMON.ATTACHMENTS' | translate }}</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'audit'"
+                  (click)="activeTab = 'audit'"
+                  >{{ 'AUDIT.TAB' | translate }}</a
+                >
+              </li>
+            </ul>
+
+            @if (loading) {
+              <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
+            }
+            @if (!loading && data) {
+              @if (activeTab === 'details') {
+                <app-vehicle-maintenance-form
+                  [isEdit]="true"
+                  [data]="data"
+                  [vehicleId]="data.vehicleId"
+                ></app-vehicle-maintenance-form>
+              }
+              @if (activeTab === 'attachments') {
+                <app-attachments
+                  [entity]="'vehicleMaintenance'"
+                  [entityId]="data.id"
+                ></app-attachments>
+              }
+              @if (activeTab === 'audit') {
+                <app-audit-tab [data]="data"></app-audit-tab>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
