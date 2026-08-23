@@ -1,9 +1,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslationService, VehicleMaintenance, VehicleMaintenanceService } from '@friday/core';
+import {
+  NotificationService,
+  ResponseStatus,
+  TranslationService,
+  VehicleMaintenance,
+  VehicleMaintenanceProduct,
+  VehicleMaintenanceService,
+  WebApiResponse,
+} from '@friday/core';
 import { Subject, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { VehicleMaintenanceFormComponent } from '../vehicle-maintenance-form/vehicle-maintenance-form.component';
+import { ProductPickerGridComponent } from '../../../shared/components/product-picker-grid/product-picker-grid.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
@@ -15,6 +24,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     imports: [
         HeaderComponent,
         VehicleMaintenanceFormComponent,
+        ProductPickerGridComponent,
         AttachmentsComponent,
         AuditTabComponent,
         TranslatePipe,
@@ -23,7 +33,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy {
   data: VehicleMaintenance | null = null;
   loading = false;
-  activeTab: 'details' | 'attachments' | 'audit' = 'details';
+  activeTab: 'details' | 'products' | 'attachments' | 'audit' = 'details';
 
   get statusMap(): { [key: string]: { label: string; color: string } } {
     return {
@@ -42,6 +52,7 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
     private translationService: TranslationService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private routerService: Router,
+    private notificationService: NotificationService,
   ) {}
 
   getStatusInfo(): { label: string; color: string } {
@@ -69,6 +80,37 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
+  }
+
+  onProductAdded(item: VehicleMaintenanceProduct): void {
+    if (!this.data) {
+      return;
+    }
+    this.data.vehicleMaintenanceProducts = [...(this.data.vehicleMaintenanceProducts ?? []), item];
+    this.persistProducts();
+  }
+
+  removeProduct(index: number): void {
+    if (!this.data?.vehicleMaintenanceProducts) {
+      return;
+    }
+    this.data.vehicleMaintenanceProducts.splice(index, 1);
+    this.persistProducts();
+  }
+
+  private persistProducts(): void {
+    if (!this.data) {
+      return;
+    }
+    this.vehicleMaintenanceService
+      .update(this.data)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe((response: WebApiResponse<VehicleMaintenance>) => {
+        this.notificationService.showMessage(response.status, response.message);
+        if (response.status === ResponseStatus.Success && response.data) {
+          this.data = response.data;
+        }
+      });
   }
 
   private getMaintenanceById(id: string): void {

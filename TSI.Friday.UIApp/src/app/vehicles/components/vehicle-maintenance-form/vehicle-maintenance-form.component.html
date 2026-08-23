@@ -2,6 +2,21 @@
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="modal-scrollable-area">
     <div class="row g-2">
+      @if (!vehicleId) {
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill select-floating">
+              <select formControlName="vehicleId" class="form-select" id="maintenanceVehicle">
+                <option [ngValue]="null" disabled>{{ 'VEHICLES.SINGULAR' | translate }}</option>
+                @for (vehicle of vehicles; track vehicle.id) {
+                  <option [ngValue]="vehicle.id">{{ vehicle.plate }} - {{ vehicle.model }}</option>
+                }
+              </select>
+              <label for="maintenanceVehicle">{{ 'VEHICLES.SINGULAR' | translate }}</label>
+            </div>
+          </div>
+        </div>
+      }
       <div class="col-12 col-md-6">
         <div class="input-group">
           <div class="form-floating flex-fill select-floating">
@@ -55,6 +70,7 @@
     </div>
 
     <app-product-picker-grid
+      *ngIf="!isEdit"
       [items]="vehicleMaintenanceProducts"
       [filterOutOfStock]="true"
       (itemAdded)="onProductPickerItemAdded($event)"

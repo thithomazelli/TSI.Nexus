@@ -37,7 +37,7 @@ export const EN = {
     DRIVER: 'Driver',
     CHARTERING: 'Chartering',
     MAINTENANCES: 'Maintenance',
-    REFUELINGS: 'Fuel',
+    REFUELINGS: 'Refueling',
   },
   NAVBAR: {
     PROFILE: 'Profile',

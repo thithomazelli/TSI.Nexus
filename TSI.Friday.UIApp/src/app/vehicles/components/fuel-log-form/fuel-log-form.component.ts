@@ -19,6 +19,8 @@ import {
   SelectableOptionGroup,
   SelectableOptionService,
   TranslationService,
+  Vehicle,
+  VehicleService,
   WebApiResponse,
 } from '@friday/core';
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
@@ -63,6 +65,9 @@ export class FuelLogFormComponent
   @Input()
   data?: FuelLog | null;
 
+  // Pre-set when the form is embedded inside a Vehicle's own screens - left empty when opened
+  // from the standalone /fuel-logs list's "Adicionar" button, in which case the user picks the
+  // Vehicle themselves via the select below.
   @Input()
   vehicleId = '';
 
@@ -72,6 +77,7 @@ export class FuelLogFormComponent
   @Input()
   dialogRef?: MatDialogRef<FuelLogDetailsModalComponent>;
 
+  vehicles: Vehicle[] = [];
   statusOptions: SelectableOption[] = [];
   filteredProductsSku$!: Observable<Product[]>;
   filteredProductsName$!: Observable<Product[]>;
@@ -89,6 +95,7 @@ export class FuelLogFormComponent
     private routerService: Router,
     private selectableOptionService: SelectableOptionService,
     private translationService: TranslationService,
+    private vehicleService: VehicleService,
   ) {
     super();
   }
@@ -98,6 +105,11 @@ export class FuelLogFormComponent
     this.patchFormWithData();
     this.loadStatusOptions();
     this.setupAutoComplete();
+    if (!this.vehicleId) {
+      this.vehicleService.getAll().subscribe((response) => {
+        this.vehicles = response.data ?? [];
+      });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -165,7 +177,7 @@ export class FuelLogFormComponent
       ...raw,
       date: this.toDate(raw.date),
       totalCost: raw.liters * raw.pricePerLiter,
-      vehicleId: this.vehicleId,
+      vehicleId: this.vehicleId || raw.vehicleId,
       productId: raw.productId || null,
       productSku: raw.productId ? raw.productSku : null,
       productName: raw.productId ? raw.productName : null,
@@ -240,6 +252,10 @@ export class FuelLogFormComponent
       productId: [null as string | null],
       productSku: [''],
       productName: [''],
+      vehicleId: [
+        this.vehicleId || null,
+        this.vehicleId ? [] : [Validators.required],
+      ],
     };
 
     this.form = !this.isEdit

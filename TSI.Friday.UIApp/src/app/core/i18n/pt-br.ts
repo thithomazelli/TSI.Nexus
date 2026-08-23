@@ -37,7 +37,7 @@ export const PT_BR = {
     DRIVER: 'Motorista',
     CHARTERING: 'Fretamento',
     MAINTENANCES: 'Manutenção',
-    REFUELINGS: 'Combustível',
+    REFUELINGS: 'Abastecimento',
   },
   NAVBAR: {
     PROFILE: 'Perfil',

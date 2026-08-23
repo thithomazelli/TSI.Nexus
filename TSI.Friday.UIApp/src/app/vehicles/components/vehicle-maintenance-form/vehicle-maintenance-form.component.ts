@@ -11,12 +11,15 @@ import {
   ModalService,
   NotificationService,
   ResponseStatus,
+  Vehicle,
   VehicleMaintenance,
   VehicleMaintenanceProduct,
   VehicleMaintenanceService,
+  VehicleService,
   TranslationService,
   WebApiResponse,
 } from '@friday/core';
+import { NgIf } from '@angular/common';
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
 import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
 import { ProductPickerGridComponent } from '../../../shared/components/product-picker-grid/product-picker-grid.component';
@@ -36,6 +39,7 @@ import { VehicleMaintenanceDetailsModalComponent } from '../vehicle-maintenance-
     styleUrl: './vehicle-maintenance-form.component.scss',
     imports: [
         ReactiveFormsModule,
+        NgIf,
         DateFieldComponent,
         CurrencyFieldComponent,
         ProductPickerGridComponent,
@@ -56,6 +60,10 @@ export class VehicleMaintenanceFormComponent
   @Input()
   data?: VehicleMaintenance | null;
 
+  // Pre-set when the form is embedded inside a Vehicle's own screens (tab or modal opened from
+  // there) - the form then never shows its own vehicle picker. Left empty when opened from a
+  // vehicle-agnostic context (the standalone /vehicle-maintenances list's "Adicionar" button), in
+  // which case the user has to pick the Vehicle themselves via the select below.
   @Input()
   vehicleId = '';
 
@@ -65,6 +73,7 @@ export class VehicleMaintenanceFormComponent
   @Input()
   dialogRef?: MatDialogRef<VehicleMaintenanceDetailsModalComponent>;
 
+  vehicles: Vehicle[] = [];
   vehicleMaintenanceProducts: VehicleMaintenanceProduct[] = [];
 
   private readonly _baseEndPoint = 'vehicle-maintenances';
@@ -91,6 +100,7 @@ export class VehicleMaintenanceFormComponent
     private modalService: ModalService,
     private notificationService: NotificationService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
+    private vehicleService: VehicleService,
     private routerService: Router,
     private translationService: TranslationService,
   ) {
@@ -100,6 +110,11 @@ export class VehicleMaintenanceFormComponent
   ngOnInit(): void {
     this.initForm();
     this.patchFormWithData();
+    if (!this.vehicleId) {
+      this.vehicleService.getAll().subscribe((response) => {
+        this.vehicles = response.data ?? [];
+      });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -125,7 +140,7 @@ export class VehicleMaintenanceFormComponent
     const raw = this.form.getRawValue();
     const maintenance = {
       ...raw,
-      vehicleId: this.vehicleId,
+      vehicleId: this.vehicleId || raw.vehicleId,
       vehicleMaintenanceProducts: this.vehicleMaintenanceProducts,
     } as VehicleMaintenance;
 
@@ -194,6 +209,10 @@ export class VehicleMaintenanceFormComponent
       scheduledDate: ['', Validators.required],
       cost: [0, [Validators.min(0)]],
       status: [MaintenanceStatus.Scheduled, Validators.required],
+      vehicleId: [
+        this.vehicleId || null,
+        this.vehicleId ? [] : [Validators.required],
+      ],
     };
 
     this.form = !this.isEdit
