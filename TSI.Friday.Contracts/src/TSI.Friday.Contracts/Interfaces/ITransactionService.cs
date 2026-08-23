@@ -33,6 +33,13 @@ namespace TSI.Friday.Contracts.Interfaces
         Task<WebApiResponse<TransactionDto>> UpdateOrderId(TransactionDto transactionDto);
 
         /// <summary>
+        /// Update the PurchaseOrderId in a Transaction based on the object received.
+        /// </summary>
+        /// <param name="transactionDto">The transaction object updated.</param>
+        /// <returns>Return an WebApiReponse with the results for this operation.</returns>
+        Task<WebApiResponse<TransactionDto>> UpdatePurchaseOrderId(TransactionDto transactionDto);
+
+        /// <summary>
         /// Update the TripId in a Transaction based on the object received.
         /// </summary>
         /// <param name="transactionDto">The transaction object updated.</param>

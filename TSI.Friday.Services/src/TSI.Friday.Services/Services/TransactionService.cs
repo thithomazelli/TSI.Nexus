@@ -185,6 +185,62 @@ namespace TSI.Friday.Services
         }
 
         /// <inheritdoc />
+        public async Task<WebApiResponse<TransactionDto>> UpdatePurchaseOrderId(
+            TransactionDto transactionDto
+        )
+        {
+            WebApiResponse<TransactionDto> result = new();
+
+            try
+            {
+                // Load tracked transaction with payments from DB
+                var transactionEntity = await _repository.GetByIdAsync(
+                    transactionDto.Id,
+                    p => p.Payments
+                );
+                if (transactionEntity == null)
+                {
+                    var message = $"Transação com Id {transactionDto.Id} não encontrado.";
+                    _logService.LogException(
+                        new Exception(message),
+                        "TransactionService.UpdatePurchaseOrderId",
+                        transactionDto
+                    );
+                    result.Status = ResponseStatus.Error;
+                    result.Message = message;
+                    return result;
+                }
+
+                // Map scalar fields (do not replace collection instance)
+                _mapper.Map(transactionDto, transactionEntity);
+
+                foreach (var payments in transactionEntity.Payments)
+                {
+                    payments.PurchaseOrderId = transactionDto.PurchaseOrderId;
+                }
+
+                await _repository.UpdateAsync(transactionEntity);
+
+                result.Data = _mapper.Map<TransactionDto>(transactionEntity);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"Transação {transactionDto.Description} atualizado com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(
+                    ex,
+                    "TransactionService.UpdatePurchaseOrderId",
+                    transactionDto
+                );
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível atualizar os dados do Transação {transactionDto?.Description} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
         public async Task<WebApiResponse<TransactionDto>> UpdateTripId(
             TransactionDto transactionDto
         )

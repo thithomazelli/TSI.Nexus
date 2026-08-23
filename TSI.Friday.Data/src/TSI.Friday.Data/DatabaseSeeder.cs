@@ -246,6 +246,12 @@ namespace TSI.Friday.Data
                         GroupKey: (string?)null
                     ),
                     (
+                        Key: FeatureToggleKeys.PurchaseOrdersModule,
+                        Name: "Pedidos de Compra",
+                        Description: "Controla a exibição de Pedidos de Compra em todo o sistema.",
+                        GroupKey: (string?)null
+                    ),
+                    (
                         Key: FeatureToggleKeys.AttachmentsModule,
                         Name: "Anexos",
                         Description: "Controla a exibição de Anexos em todo o sistema.",
@@ -272,8 +278,9 @@ namespace TSI.Friday.Data
                     // Pedidos de Venda entities
                     (Key: FeatureToggleKeys.Order, Name: "Pedidos de Venda", Description: "Controla a exibição de Pedidos de Venda.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
                     (Key: FeatureToggleKeys.OrderProduct, Name: "Itens de Pedido", Description: "Controla a exibição de Itens de Pedido.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
-                    (Key: FeatureToggleKeys.RentalReport, Name: "Relatório de Locações", Description: "Controla a exibição do menu Relatório de Locações.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
-                    (Key: FeatureToggleKeys.OrderProductAlert, Name: "Alerta de Itens de Pedido em Atraso", Description: "Controla a exibição do alerta de itens de pedido em atraso na navbar.", GroupKey: FeatureToggleKeys.SalesOrdersModule),
+                    // Pedidos de Compra entities
+                    (Key: FeatureToggleKeys.PurchaseOrder, Name: "Pedidos de Compra", Description: "Controla a exibição de Pedidos de Compra.", GroupKey: FeatureToggleKeys.PurchaseOrdersModule),
+                    (Key: FeatureToggleKeys.StockAlert, Name: "Alerta de Estoque", Description: "Controla a exibição do alerta de produtos sem estoque ou com estoque baixo na navbar.", GroupKey: FeatureToggleKeys.PurchaseOrdersModule),
                     // Anexos entities
                     (Key: FeatureToggleKeys.Attachment, Name: "Anexos", Description: "Controla a exibição de Anexos.", GroupKey: FeatureToggleKeys.AttachmentsModule),
                 };

@@ -468,7 +468,6 @@ namespace TSI.Friday.Services
                             Price = qp.Price,
                             TotalPrice = qp.TotalPrice,
                             ProductType = qp.ProductType,
-                            Status = qp.Status,
                             BusinessPartnerId = quoteDto.BusinessPartnerId,
                             BusinessPartnerName = quoteDto.BusinessPartnerName,
                         })

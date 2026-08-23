@@ -68,8 +68,7 @@ namespace TSI.Friday.Data.Interceptors
                 .ToList();
 
             // load originals in one query
-            var originals =
-                new Dictionary<Guid, (Guid ProductId, int Quantity, OrderProductStatus Status)>();
+            var originals = new Dictionary<Guid, (Guid ProductId, int Quantity)>();
             if (idsToLoad.Any())
             {
                 var rows = await context
@@ -80,13 +79,12 @@ namespace TSI.Friday.Data.Interceptors
                         op.Id,
                         op.ProductId,
                         op.Quantity,
-                        op.Status,
                     })
                     .ToListAsync(cancellationToken);
 
                 foreach (var r in rows)
                 {
-                    originals[r.Id] = (r.ProductId, Convert.ToInt32(r.Quantity), r.Status);
+                    originals[r.Id] = (r.ProductId, Convert.ToInt32(r.Quantity));
                 }
             }
 
@@ -111,7 +109,6 @@ namespace TSI.Friday.Data.Interceptors
                 // read current values
                 Guid currentProductId = Guid.Empty;
                 int currentQty = 0;
-                OrderProductStatus currentStatus = OrderProductStatus.InProgress;
 
                 if (entry.CurrentValues.Properties.Any(p => p.Name == "ProductId"))
                 {
@@ -134,26 +131,10 @@ namespace TSI.Friday.Data.Interceptors
                     currentQty = Convert.ToInt32(op.Quantity);
                 }
 
-                if (entry.CurrentValues.Properties.Any(p => p.Name == "Status"))
-                {
-                    var val = entry.CurrentValues["Status"];
-                    if (val != null)
-                        currentStatus = (OrderProductStatus)Convert.ToInt32(val);
-                    else
-                        currentStatus = op.Status;
-                }
-                else
-                {
-                    currentStatus = op.Status;
-                }
-
                 if (entry.State == EntityState.Added)
                 {
-                    // adding reserves stock unless already Returned
-                    if (currentStatus != OrderProductStatus.Returned)
-                    {
-                        add(currentProductId, -currentQty);
-                    }
+                    // adding a sale line reserves/deducts stock right away
+                    add(currentProductId, -currentQty);
                 }
                 else if (entry.State == EntityState.Deleted)
                 {
@@ -191,13 +172,11 @@ namespace TSI.Friday.Data.Interceptors
 
                     Guid originalProductId = Guid.Empty;
                     int originalQty = 0;
-                    OrderProductStatus originalStatus = OrderProductStatus.InProgress;
 
                     if (id != Guid.Empty && originals.TryGetValue(id, out var o))
                     {
                         originalProductId = o.ProductId;
                         originalQty = o.Quantity;
-                        originalStatus = o.Status;
                     }
                     else
                     {
@@ -221,17 +200,6 @@ namespace TSI.Friday.Data.Interceptors
                         {
                             originalQty = Convert.ToInt32(op.Quantity);
                         }
-
-                        if (entry.OriginalValues.Properties.Any(p => p.Name == "Status"))
-                        {
-                            var val = entry.OriginalValues["Status"];
-                            if (val != null)
-                                originalStatus = (OrderProductStatus)Convert.ToInt32(val);
-                        }
-                        else
-                        {
-                            originalStatus = op.Status;
-                        }
                     }
 
                     // If product changed, treat as delete from original product + add to new product
@@ -240,11 +208,8 @@ namespace TSI.Friday.Data.Interceptors
                         // return original reservation
                         add(originalProductId, originalQty);
 
-                        // reserve on new product unless returned
-                        if (currentStatus != OrderProductStatus.Returned)
-                        {
-                            add(currentProductId, -currentQty);
-                        }
+                        // reserve on new product
+                        add(currentProductId, -currentQty);
 
                         // no further processing for same-product deltas
                         continue;
@@ -255,24 +220,6 @@ namespace TSI.Friday.Data.Interceptors
                     if (qtyDelta != 0)
                     {
                         add(currentProductId, qtyDelta);
-                    }
-
-                    // status transitions
-                    if (
-                        originalStatus != OrderProductStatus.Returned
-                        && currentStatus == OrderProductStatus.Returned
-                    )
-                    {
-                        // returned -> put back the original reserved quantity
-                        add(currentProductId, originalQty);
-                    }
-                    else if (
-                        originalStatus == OrderProductStatus.Returned
-                        && currentStatus != OrderProductStatus.Returned
-                    )
-                    {
-                        // was returned and now not returned -> reserve stock (subtract current qty)
-                        add(currentProductId, -currentQty);
                     }
                 }
             }

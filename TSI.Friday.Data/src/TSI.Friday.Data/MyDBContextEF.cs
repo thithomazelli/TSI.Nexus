@@ -32,6 +32,10 @@ namespace TSI.Friday.Data
 
         public DbSet<OrderProduct> OrderProduct { get; set; }
 
+        public DbSet<PurchaseOrder> PurchaseOrder { get; set; }
+
+        public DbSet<PurchaseOrderProduct> PurchaseOrderProduct { get; set; }
+
         public DbSet<Transaction> Transaction { get; set; }
 
         public DbSet<Payment> Payment { get; set; }
@@ -126,6 +130,21 @@ namespace TSI.Friday.Data
                     stored: true
                 );
 
+            modelBuilder.Entity<PurchaseOrder>().HasIndex(o => o.PurchaseOrderNumber).IsUnique();
+
+            modelBuilder
+                .Entity<PurchaseOrder>()
+                .Property(po => po.TotalPrice)
+                .HasComputedColumnSql("(Price - (Price * Discount /100.0))", stored: true);
+
+            modelBuilder
+                .Entity<PurchaseOrderProduct>()
+                .Property(pop => pop.TotalPrice)
+                .HasComputedColumnSql(
+                    "((Price * Quantity) - ((Price * Quantity) * Discount /100.0))",
+                    stored: true
+                );
+
             // Quote entity uses QuoteNumber property
             modelBuilder.Entity<Quote>().HasIndex(q => q.QuoteNumber).IsUnique();
 
@@ -166,6 +185,13 @@ namespace TSI.Friday.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder
+                .Entity<PurchaseOrder>()
+                .HasOne(o => o.Transaction)
+                .WithOne(p => p.PurchaseOrder)
+                .HasForeignKey<PurchaseOrder>(o => o.TransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
                 .Entity<Transaction>()
                 .HasMany(p => p.Payments)
                 .WithOne(i => i.Transaction)
@@ -178,6 +204,13 @@ namespace TSI.Friday.Data
                 .HasOne(pi => pi.Order)
                 .WithMany(o => o.Payments)
                 .HasForeignKey(pi => pi.OrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder
+                .Entity<Payment>()
+                .HasOne(pi => pi.PurchaseOrder)
+                .WithMany(o => o.Payments)
+                .HasForeignKey(pi => pi.PurchaseOrderId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder
@@ -199,6 +232,13 @@ namespace TSI.Friday.Data
                 .HasOne(a => a.Order)
                 .WithMany(o => (ICollection<Attachment>)o.Attachments)
                 .HasForeignKey(a => a.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<Attachment>()
+                .HasOne(a => a.PurchaseOrder)
+                .WithMany(o => (ICollection<Attachment>)o.Attachments)
+                .HasForeignKey(a => a.PurchaseOrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder

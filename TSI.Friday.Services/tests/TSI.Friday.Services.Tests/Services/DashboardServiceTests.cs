@@ -13,7 +13,6 @@ namespace TSI.Friday.Services.Tests.Services
     {
         private readonly Mock<IRepository<Order>> _orderRepoMock;
         private readonly Mock<IRepository<Payment>> _paymentRepoMock;
-        private readonly Mock<IRepository<OrderProduct>> _orderProductRepoMock;
         private readonly Mock<ILogger<DashboardService>> _loggerMock;
         private readonly DashboardService _service;
 
@@ -21,13 +20,11 @@ namespace TSI.Friday.Services.Tests.Services
         {
             _orderRepoMock = new Mock<IRepository<Order>>();
             _paymentRepoMock = new Mock<IRepository<Payment>>();
-            _orderProductRepoMock = new Mock<IRepository<OrderProduct>>();
             _loggerMock = new Mock<ILogger<DashboardService>>();
 
             _service = new DashboardService(
                 _orderRepoMock.Object,
                 _paymentRepoMock.Object,
-                _orderProductRepoMock.Object,
                 _loggerMock.Object
             );
         }
@@ -74,13 +71,6 @@ namespace TSI.Friday.Services.Tests.Services
                 },
             };
 
-            var delayedItems = new List<OrderProduct>
-            {
-                new OrderProduct { Id = Guid.NewGuid(), Status = OrderProductStatus.Delayed },
-                new OrderProduct { Id = Guid.NewGuid(), Status = OrderProductStatus.Delayed },
-                new OrderProduct { Id = Guid.NewGuid(), Status = OrderProductStatus.Delayed },
-            };
-
             // Setup repository aggregations
             _orderRepoMock
                 .Setup(r =>
@@ -109,10 +99,6 @@ namespace TSI.Friday.Services.Tests.Services
                 .ReturnsAsync(total) // first call -> totalPayments
                 .ReturnsAsync(approved) // second call -> approvedSum
                 .ReturnsAsync(pending); // third call -> pendingDelayedSum
-
-            _orderProductRepoMock
-                .Setup(r => r.CountAsync(It.IsAny<Expression<Func<OrderProduct, bool>>>()))
-                .ReturnsAsync(delayedItems.Count);
 
             // Act
             var response = await _service.GetInfoCardsAsync(days);
@@ -157,12 +143,9 @@ namespace TSI.Friday.Services.Tests.Services
             receivedCard.Value.Should().Be(approvedPct.ToString() + "%");
             waitingCard.Value.Should().Be(pendingPct.ToString() + "%");
 
-            // Delayed items count
-            var delayedCard = cards.FirstOrDefault(c =>
-                c.Title.Contains("Devoluções") || c.Title.Contains("Itens Atrasados")
-            );
-            delayedCard.Should().NotBeNull();
-            delayedCard.Value.Should().Be(delayedItems.Count.ToString());
+            // 4th card: fixed placeholder now that the rental/return cycle is gone
+            var placeholderCard = cards.FirstOrDefault(c => c.Title.Contains("Em Breve"));
+            placeholderCard.Should().NotBeNull();
 
             // Verify repo calls
             _orderRepoMock.Verify(
@@ -180,10 +163,6 @@ namespace TSI.Friday.Services.Tests.Services
                         It.IsAny<Expression<Func<Payment, decimal>>>()
                     ),
                 Times.Exactly(3)
-            );
-            _orderProductRepoMock.Verify(
-                r => r.CountAsync(It.IsAny<Expression<Func<OrderProduct, bool>>>()),
-                Times.Once
             );
         }
     }

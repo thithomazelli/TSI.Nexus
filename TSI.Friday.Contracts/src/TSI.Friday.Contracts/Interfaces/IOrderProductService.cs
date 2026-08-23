@@ -55,11 +55,5 @@ namespace TSI.Friday.Contracts.Interfaces
         /// <param name="id">The ID to be used on the search.</param>
         /// <returns>One OrderProduct object according to the ID defined as parameter.</returns>
         Task<WebApiResponse<OrderProductDto>> FindById(Guid? id);
-
-        /// <summary>
-        /// Method responsible to get OrderProducts considered delayed/overdue for notifications.
-        /// Rules: status == Delayed OR (status != Returned && EndDate < today) — compare dates using only day/month/year (UTC).
-        /// </summary>
-        Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindDelayed();
     }
 }

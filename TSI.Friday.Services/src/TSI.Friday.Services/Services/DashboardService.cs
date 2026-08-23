@@ -12,19 +12,16 @@ namespace TSI.Friday.Services
     {
         private readonly IRepository<Order> _orderRepo;
         private readonly IRepository<Payment> _paymentRepo;
-        private readonly IRepository<OrderProduct> _orderProductRepo;
         private readonly ILogger<DashboardService> _logger;
 
         public DashboardService(
             IRepository<Order> orderRepo,
             IRepository<Payment> paymentRepo,
-            IRepository<OrderProduct> orderProductRepo,
             ILogger<DashboardService> logger
         )
         {
             _orderRepo = orderRepo;
             _paymentRepo = paymentRepo;
-            _orderProductRepo = orderProductRepo;
             _logger = logger;
         }
 
@@ -90,16 +87,12 @@ namespace TSI.Friday.Services
                     }
                 );
 
-                //4. Total order items with status = Delayed (DB count)
-                var delayedCount = await _orderProductRepo.CountAsync(op =>
-                    op.Status == OrderProductStatus.Delayed
-                );
+                //4. Placeholder card - Pedido de Venda dropped the rental/return cycle this fed
+                // off of (OrderProductStatus.Delayed no longer exists). Fixed/fictitious value
+                // until a real 4th metric is decided; kept only so the dashboard isn't left with
+                // 3 cards.
                 cards.Add(
-                    new DashboardCardDto
-                    {
-                        Title = "Devoluções em Atraso",
-                        Value = delayedCount.ToString(),
-                    }
+                    new DashboardCardDto { Title = "Em Breve", Value = "--" }
                 );
 
                 result.Data = cards;

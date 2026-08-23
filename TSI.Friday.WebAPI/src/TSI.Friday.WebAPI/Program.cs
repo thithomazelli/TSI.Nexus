@@ -67,6 +67,9 @@ builder.Services.AddDbContextPool<MyDBContextEF>(
         options.AddInterceptors(
             sp.GetRequiredService<MaintenancePartsStockAdjustingSaveChangesInterceptor>()
         );
+        options.AddInterceptors(
+            sp.GetRequiredService<PurchaseOrderStockIncrementingSaveChangesInterceptor>()
+        );
     }
 );
 

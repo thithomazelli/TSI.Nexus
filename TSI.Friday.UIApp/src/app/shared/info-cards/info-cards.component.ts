@@ -38,8 +38,8 @@ export class InfoCardsComponent implements OnInit {
     'Recebidos (%)': `<svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" ><path d="M9 16.2l-3.5-3.5a1 1 0 1 1 1.4-1.4l2.1 2.09 5.59-5.59a1 1 0 1 1 1.41 1.41l-6.3 6.29a1 1 0 0 1-1.4 0z"/><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm0-2c4.41 0 8-3.59 8-8s-3.59-8-8-8-8 3.59-8 8 3.59 8 8 8z"/></svg>`,
     // Relógio
     'Aguardando (%)': `<svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" ><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`,
-    // Alerta/erro
-    'Devoluções em Atraso': `<svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" ><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M12 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`,
+    // Placeholder (card 4, ainda sem métrica definida)
+    'Em Breve': `<svg class="small-box-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" ><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="7" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="17" cy="12" r="1" fill="currentColor"/></svg>`,
   };
 
   constructor(
@@ -105,11 +105,8 @@ export class InfoCardsComponent implements OnInit {
           route: ['/payments'],
           queryParams: { startDate, endDate, status: 'Pending,Delayed' },
         };
-      case 'Devoluções em Atraso':
-        return {
-          route: ['/order-products'],
-          queryParams: { status: 'Delayed' },
-        };
+      case 'Em Breve':
+        return { route: ['/'] };
       default:
         return { route: ['/'] };
     }

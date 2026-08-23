@@ -14,10 +14,11 @@ export const FeatureToggleKeys = {
   FinanceModule: 'FinanceModule',
   QuotesModule: 'QuotesModule',
   SalesOrdersModule: 'SalesOrdersModule',
+  PurchaseOrdersModule: 'PurchaseOrdersModule',
   AttachmentsModule: 'AttachmentsModule',
-  RentalReport: 'RentalReport',
   DriverLicenseAlert: 'DriverLicenseAlert',
   VehicleBlockedAlert: 'VehicleBlockedAlert',
-  OrderProductAlert: 'OrderProductAlert',
   PaymentAlert: 'PaymentAlert',
+  PurchaseOrder: 'PurchaseOrder',
+  StockAlert: 'StockAlert',
 } as const;

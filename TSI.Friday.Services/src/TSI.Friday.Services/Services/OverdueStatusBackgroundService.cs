@@ -55,8 +55,7 @@ namespace TSI.Friday.Services.Services
                     var service = scope.ServiceProvider.GetRequiredService<IOverdueService>();
                     var result = await service.RunOverdueUpdateAsync();
                     _logger.LogInformation(
-                        "Overdue update executed. OrderProducts: {Ops}, Payments: {Payments}",
-                        result.OrderProductsUpdated,
+                        "Overdue update executed. Payments: {Payments}",
                         result.PaymentsUpdated
                     );
                 }

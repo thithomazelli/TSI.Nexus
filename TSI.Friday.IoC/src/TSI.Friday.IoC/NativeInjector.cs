@@ -54,6 +54,7 @@ namespace TSI.Friday.IoC
             services.AddSingleton<AuditingSaveChangesInterceptor>();
             services.AddSingleton<StockAdjustingSaveChangesInterceptor>();
             services.AddSingleton<MaintenancePartsStockAdjustingSaveChangesInterceptor>();
+            services.AddSingleton<PurchaseOrderStockIncrementingSaveChangesInterceptor>();
 
             #endregion
 
@@ -78,6 +79,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IOrderProductService, OrderProductService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IPurchaseOrderProductService, PurchaseOrderProductService>();
+            services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
             services.AddScoped<ITripService, TripService>();
             services.AddScoped<ITripDriverService, TripDriverService>();
             services.AddScoped<ITransactionService, TransactionService>();
@@ -115,6 +118,8 @@ namespace TSI.Friday.IoC
             services.AddScoped<IRepository<Individual>, Repository<Individual>>();
             services.AddScoped<IRepository<Order>, Repository<Order>>();
             services.AddScoped<IRepository<OrderProduct>, Repository<OrderProduct>>();
+            services.AddScoped<IRepository<PurchaseOrder>, Repository<PurchaseOrder>>();
+            services.AddScoped<IRepository<PurchaseOrderProduct>, Repository<PurchaseOrderProduct>>();
             services.AddScoped<IRepository<Trip>, Repository<Trip>>();
             services.AddScoped<IRepository<TripDriver>, Repository<TripDriver>>();
             services.AddScoped<IRepository<QuoteTrip>, Repository<QuoteTrip>>();

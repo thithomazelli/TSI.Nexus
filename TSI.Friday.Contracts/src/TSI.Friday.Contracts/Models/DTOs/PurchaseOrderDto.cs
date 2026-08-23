@@ -4,11 +4,11 @@ using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
 {
-    public class OrderDto
+    public class PurchaseOrderDto
     {
         public Guid Id { get; set; }
 
-        public string OrderNumber { get; set; }
+        public string PurchaseOrderNumber { get; set; }
 
         public DateTime Date { get; set; }
 
@@ -34,14 +34,10 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal TotalPrice { get; set; }
 
-        public Guid? QuoteId { get; set; }
-
-        public string? QuoteNumber { get; set; }
-
         public Guid? TransactionId { get; set; }
 
         public TransactionDto? Transaction { get; set; }
 
-        public ICollection<OrderProductDto> OrderProducts { get; set; } = [];
+        public ICollection<PurchaseOrderProductDto> PurchaseOrderProducts { get; set; } = [];
     }
 }

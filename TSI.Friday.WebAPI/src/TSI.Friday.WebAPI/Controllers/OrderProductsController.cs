@@ -118,16 +118,5 @@ namespace TSI.Friday.WebAPI.Controllers
             var webApiResponse = await _orderProductService.FindById(orderProductId);
             return Ok(webApiResponse);
         }
-
-        /// <summary>
-        /// Get delayed/overdue order products for notifications
-        /// </summary>
-        [HttpGet]
-        [Route("GetDelayed")]
-        public async Task<IActionResult> GetDelayed()
-        {
-            var webApiResponse = await _orderProductService.FindDelayed();
-            return Ok(webApiResponse);
-        }
     }
 }

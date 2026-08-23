@@ -53,8 +53,6 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Item1",
                     OrderId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     ProductId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-                    Status = OrderProductStatus.InProgress,
-                    EndDate = DateTime.UtcNow.Date.AddDays(-1), // past
                 },
                 new OrderProduct
                 {
@@ -62,8 +60,6 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Item2",
                     OrderId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                     ProductId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-                    Status = OrderProductStatus.Delayed,
-                    EndDate = DateTime.UtcNow.Date.AddDays(-5),
                 },
                 new OrderProduct
                 {
@@ -71,8 +67,6 @@ namespace TSI.Friday.Services.Tests.Services
                     Description = "Item3",
                     OrderId = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                     ProductId = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-                    Status = OrderProductStatus.Returned,
-                    EndDate = DateTime.UtcNow.Date.AddDays(-2),
                 },
             };
         }
@@ -261,59 +255,5 @@ namespace TSI.Friday.Services.Tests.Services
             _repository.Verify(r => r.GetByIdAsync(id), Times.Once);
         }
 
-        [Fact]
-        public async Task OrderProductService_FindDelayed_ShouldReturnDelayedAndPastItems()
-        {
-            // Arrange
-            var today = DateTime.UtcNow.Date;
-            var tomorrowUtc = today.AddDays(1);
-            var expectedItems = _itemsMock
-                .Where(i =>
-                    i.Status == OrderProductStatus.Delayed
-                    || (
-                        i.Status != OrderProductStatus.Returned
-                        && i.EndDate != default(DateTime)
-                        // include past and today: EndDate < tomorrowUtc
-                        && i.EndDate < tomorrowUtc
-                    )
-                )
-                .ToList();
-
-            _repository
-                .Setup(r =>
-                    r.QueryAsync(
-                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
-                        op => op.Order,
-                        op => op.Order.BusinessPartner,
-                        op => op.Product
-                    )
-                )
-                .ReturnsAsync(expectedItems);
-
-            // Act
-            var result = await _orderProductService.FindDelayed();
-
-            // Assert basic success
-            Assert.Equal(ResponseStatus.Success, result.Status);
-            // Ensure returned count matches expected
-            var data = result.Data?.ToList() ?? new List<OrderProductDto>();
-            Assert.Equal(expectedItems.Count, data.Count);
-
-            // Ensure returned items IDs match expected IDs
-            var expectedIds = expectedItems.Select(e => e.Id).OrderBy(id => id).ToList();
-            var resultIds = data.Select(d => d.Id).OrderBy(id => id).ToList();
-            Assert.Equal(expectedIds, resultIds);
-
-            _repository.Verify(
-                r =>
-                    r.QueryAsync(
-                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
-                        op => op.Order,
-                        op => op.Order.BusinessPartner,
-                        op => op.Product
-                    ),
-                Times.Once
-            );
-        }
     }
 }

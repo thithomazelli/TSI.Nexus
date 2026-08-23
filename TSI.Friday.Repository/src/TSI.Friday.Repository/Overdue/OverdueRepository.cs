@@ -15,29 +15,6 @@ namespace TSI.Friday.Repository.Overdue
         }
 
         /// <inheritdoc />
-        public async Task<int> MarkOverdueOrderProductsAsync(string systemUserId)
-        {
-            var today = DateTime.UtcNow.Date;
-
-            var opQuery = _context
-                .Set<OrderProduct>()
-                .Where(op =>
-                    op.Status == OrderProductStatus.InProgress
-                    && op.EndDate != default(DateTime)
-                    // compare only dates (day/month/year) by comparing to today's midnight
-                    && op.EndDate < today
-                );
-
-            var updatedOps = await opQuery.ExecuteUpdateAsync(s =>
-                s.SetProperty(op => op.Status, op => OrderProductStatus.Delayed)
-                    .SetProperty(op => op.ModifyDate, op => DateTime.UtcNow)
-                    .SetProperty(op => op.ModifyUserId, op => systemUserId)
-            );
-
-            return updatedOps;
-        }
-
-        /// <inheritdoc />
         public async Task<int> MarkOverduePaymentsAsync(string systemUserId)
         {
             var today = DateTime.UtcNow.Date;

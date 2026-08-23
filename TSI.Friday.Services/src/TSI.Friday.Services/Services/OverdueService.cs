@@ -29,13 +29,12 @@ namespace TSI.Friday.Services.Services
         {
             if (!await _alertConfigService.IsEnabledAsync(AlertConfigKeys.DashboardOverdueReturns))
             {
-                return new OverdueResult { OrderProductsUpdated = 0, PaymentsUpdated = 0 };
+                return new OverdueResult { PaymentsUpdated = 0 };
             }
 
-            var ops = await _repo.MarkOverdueOrderProductsAsync(_systemUserId);
             var payments = await _repo.MarkOverduePaymentsAsync(_systemUserId);
 
-            return new OverdueResult { OrderProductsUpdated = ops, PaymentsUpdated = payments };
+            return new OverdueResult { PaymentsUpdated = payments };
         }
 
         #endregion Public methods

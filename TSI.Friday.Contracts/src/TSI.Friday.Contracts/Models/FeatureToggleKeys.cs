@@ -25,6 +25,9 @@ namespace TSI.Friday.Contracts.Models
         /// <summary>Gates Sales Orders (Order, OrderProduct).</summary>
         public const string SalesOrdersModule = "SalesOrdersModule";
 
+        /// <summary>Gates Purchase Orders (PurchaseOrder, PurchaseOrderProduct).</summary>
+        public const string PurchaseOrdersModule = "PurchaseOrdersModule";
+
         /// <summary>Gates Attachments.</summary>
         public const string AttachmentsModule = "AttachmentsModule";
 
@@ -63,15 +66,12 @@ namespace TSI.Friday.Contracts.Models
         public const string Order = "Order";
         public const string OrderProduct = "OrderProduct";
 
-        /// <summary>
-        /// Gates the standalone Relatório de Locações page/sidebar link only - unlike
-        /// <see cref="OrderProduct"/>, it doesn't affect order-product data used elsewhere (e.g.
-        /// the embedded list inside an Order's own page).
-        /// </summary>
-        public const string RentalReport = "RentalReport";
+        // --- Entities (Pedidos de Compra group) -------------------------------------------------
 
-        /// <summary>Gates the delayed order-products notification bell in the navbar.</summary>
-        public const string OrderProductAlert = "OrderProductAlert";
+        public const string PurchaseOrder = "PurchaseOrder";
+
+        /// <summary>Gates the out-of-stock/low-stock notification bell in the navbar.</summary>
+        public const string StockAlert = "StockAlert";
 
         // --- Entities (Anexos group) -------------------------------------------------------------
 

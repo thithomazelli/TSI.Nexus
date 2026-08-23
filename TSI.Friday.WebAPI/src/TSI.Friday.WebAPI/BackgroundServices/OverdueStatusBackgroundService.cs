@@ -65,32 +65,6 @@ namespace TSI.Friday.WebAPI.BackgroundServices
 
  var nowUtc = DateTime.UtcNow;
 
- // Update OrderProducts: InProgress -> Delayed when EndDate < now
- try
- {
- var opQuery = context.Set<OrderProduct>().Where(op =>
- op.Status == OrderProductStatus.InProgress
- && op.EndDate != default(DateTime)
- && op.EndDate < nowUtc
- );
-
- // Use ExecuteUpdateAsync to perform in-database update without loading entities
- var updatedOps = await opQuery.ExecuteUpdateAsync(s => s
- .SetProperty(op => op.Status, op => OrderProductStatus.Delayed)
- .SetProperty(op => op.ModifyDate, op => DateTime.UtcNow)
- .SetProperty(op => op.ModifyUserId, op => "system")
- , cancellationToken);
-
- if (updatedOps >0)
- {
- _logger.LogInformation("Marked {Count} OrderProduct(s) as Delayed", updatedOps);
- }
- }
- catch (Exception ex)
- {
- _logger.LogError(ex, "Failed to update overdue OrderProducts");
- }
-
  // Update Payments: Pending -> Delayed when Date < now
  try
  {

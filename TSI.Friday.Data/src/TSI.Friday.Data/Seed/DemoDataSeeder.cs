@@ -879,8 +879,6 @@ namespace TSI.Friday.Data.Seed
                 {
                     var quantity = faker.Random.Number(1, 3);
                     var discount = faker.Random.Number(0, 10);
-                    var lineStart = order.Date;
-                    var lineEnd = order.Date.AddDays(faker.Random.Number(1, 7));
 
                     result.Add(
                         new OrderProduct
@@ -890,9 +888,6 @@ namespace TSI.Friday.Data.Seed
                             Quantity = quantity,
                             Discount = discount,
                             Price = product.Price * quantity,
-                            StartDate = lineStart,
-                            EndDate = lineEnd,
-                            Status = OrderProductStatus.InProgress,
                             OrderId = order.Id,
                             ProductId = product.Id,
                         }

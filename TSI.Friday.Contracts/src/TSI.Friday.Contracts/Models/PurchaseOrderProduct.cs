@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TSI.Friday.Contracts.Models
 {
-    public class OrderProduct : BaseModel
+    public class PurchaseOrderProduct : BaseModel
     {
         public string Description { get; set; } = string.Empty;
 
@@ -17,11 +17,11 @@ namespace TSI.Friday.Contracts.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public decimal TotalPrice { get; private set; }
 
-        [ForeignKey("Order")]
-        public Guid OrderId { get; set; }
+        [ForeignKey("PurchaseOrder")]
+        public Guid PurchaseOrderId { get; set; }
 
         [Required]
-        public virtual Order Order { get; set; } = null!;
+        public virtual PurchaseOrder PurchaseOrder { get; set; } = null!;
 
         [ForeignKey("Product")]
         public Guid ProductId { get; set; }
@@ -29,12 +29,12 @@ namespace TSI.Friday.Contracts.Models
         [Required]
         public virtual Product Product { get; set; } = null!;
 
-        public OrderProduct() { }
+        public PurchaseOrderProduct() { }
 
-        public OrderProduct(Order order, Product product)
+        public PurchaseOrderProduct(PurchaseOrder purchaseOrder, Product product)
         {
-            Order = order ?? throw new ArgumentNullException(nameof(order));
-            OrderId = order.Id;
+            PurchaseOrder = purchaseOrder ?? throw new ArgumentNullException(nameof(purchaseOrder));
+            PurchaseOrderId = purchaseOrder.Id;
 
             Product = product ?? throw new ArgumentNullException(nameof(product));
             ProductId = product.Id;

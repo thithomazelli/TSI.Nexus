@@ -47,9 +47,6 @@ namespace TSI.Friday.Services
 
             try
             {
-                // Ensure status consistent with EndDate
-                UpdateOrderProductStatusByDate(orderProductDto);
-
                 var orderProductEntity = _mapper.Map<OrderProduct>(orderProductDto);
                 await _repository.AddAsync(orderProductEntity);
 
@@ -82,9 +79,6 @@ namespace TSI.Friday.Services
 
             try
             {
-                // Ensure status consistent with EndDate
-                UpdateOrderProductStatusByDate(orderProductDto);
-
                 var entity = _mapper.Map<OrderProduct>(orderProductDto);
                 await _repository.UpdateAsync(entity);
 
@@ -249,45 +243,6 @@ namespace TSI.Friday.Services
             return result;
         }
 
-        /// <inheritdoc />
-        public async Task<WebApiResponse<IEnumerable<OrderProductDto>>> FindDelayed()
-        {
-            WebApiResponse<IEnumerable<OrderProductDto>> result = new();
-
-            try
-            {
-                var todayUtc = DateTime.UtcNow.Date; // compare only date
-                var tomorrowUtc = todayUtc.AddDays(1);
-
-                var items = await _repository.QueryAsync(
-                    op =>
-                        op.Status == OrderProductStatus.Delayed
-                        || (
-                            op.Status != OrderProductStatus.Returned
-                            && op.EndDate != default(DateTime)
-                            // include past and today: EndDate < tomorrowUtc
-                            && op.EndDate < tomorrowUtc
-                        ),
-                    op => op.Order,
-                    op => op.Order.BusinessPartner,
-                    op => op.Product
-                );
-
-                result.Data = _mapper.Map<IEnumerable<OrderProductDto>>(items);
-                result.Status = ResponseStatus.Success;
-                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
-            }
-            catch (Exception ex)
-            {
-                _logService.LogException(ex, "OrderProductService.FindDelayed", null);
-                result.Status = ResponseStatus.Error;
-                result.Message =
-                    $"Não foi possível acessar os registros de Itens do Pedido. Erro: {ex.Message}";
-            }
-
-            return result;
-        }
-
         #endregion Public methods
 
         #region Private methods
@@ -309,33 +264,6 @@ namespace TSI.Friday.Services
 
             order.Price = sum;
             await _orderRepository.UpdateAsync(order);
-        }
-
-        /// <summary>
-        /// Ensure the OrderProduct status is consistent with the EndDate.
-        /// If EndDate (UTC date only) is before today's UTC date, set the status to Delayed.
-        /// This enforces business rule for both Add and Update.
-        /// </summary>
-        /// <param name="orderProductDto"></param>
-        private static void UpdateOrderProductStatusByDate(OrderProductDto orderProductDto)
-        {
-            if (orderProductDto == null || orderProductDto.Status == OrderProductStatus.Returned)
-            {
-                return;
-            }
-
-            var endDateUtc = orderProductDto.EndDate;
-            if (orderProductDto.EndDate != DateTime.UtcNow)
-            {
-                endDateUtc = orderProductDto.EndDate.ToUniversalTime();
-            }
-
-            var todayUtcDate = DateTime.UtcNow.Date;
-
-            if (orderProductDto.EndDate != default(DateTime) && endDateUtc.Date < todayUtcDate)
-            {
-                orderProductDto.Status = OrderProductStatus.Delayed;
-            }
         }
 
         #endregion Private methods

@@ -106,15 +106,6 @@ namespace TSI.Friday.IoC
                             src.BusinessPartner != null ? src.BusinessPartner.Name : null
                         )
                 )
-                .ForMember(
-                    dest => dest.HasOpenedProducts,
-                    opt =>
-                        opt.MapFrom(src =>
-                            src.OrderProducts != null
-                            && src.OrderProducts.Any()
-                            && src.OrderProducts.Any(op => op.Status != OrderProductStatus.Returned)
-                        )
-                )
                 .ForMember(dest => dest.Transaction, opt => opt.MapFrom(src => src.Transaction))
                 // also map nested flags directly from entity Transaction.Payments when possible
                 .ForPath(
@@ -187,6 +178,132 @@ namespace TSI.Friday.IoC
                 opts.Condition((src, dest, srcMember) => srcMember != null)
             );
             // removed AfterMap here because transaction status should be computed when mapping to DTO (entity -> dto)
+
+            // PurchaseOrder mappings
+            CreateMap<PurchaseOrder, PurchaseOrderDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.BusinessPartner != null ? src.BusinessPartner.Name : null
+                        )
+                )
+                .ForMember(dest => dest.Transaction, opt => opt.MapFrom(src => src.Transaction))
+                .ForPath(
+                    dest => dest.Transaction.HasOpenedPayments,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Transaction != null
+                            && src.Transaction.Payments != null
+                            && src.Transaction.Payments.Any(p => p.Status != PaymentStatus.Approved)
+                        )
+                )
+                .ForPath(
+                    dest => dest.Transaction.MarkAllPaymentsAsApproved,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Transaction != null
+                            && src.Transaction.Payments != null
+                            && src.Transaction.Payments.Any()
+                            && src.Transaction.Payments.All(p => p.Status == PaymentStatus.Approved)
+                        )
+                )
+                .AfterMap(
+                    (src, dest) =>
+                    {
+                        if (dest?.Transaction != null)
+                        {
+                            var payments =
+                                dest.Transaction.Payments?.ToList() ?? new List<PaymentDto>();
+                            if (payments.Any())
+                            {
+                                if (payments.Any(p => p.Status == PaymentStatus.Delayed))
+                                {
+                                    dest.Transaction.Status = PaymentStatus.Delayed;
+                                }
+                                else if (payments.Any(p => p.Status == PaymentStatus.Pending))
+                                {
+                                    dest.Transaction.Status = PaymentStatus.Pending;
+                                }
+                                else if (payments.All(p => p.Status == PaymentStatus.Approved))
+                                {
+                                    dest.Transaction.Status = PaymentStatus.Approved;
+                                }
+
+                                dest.Transaction.HasOpenedPayments = payments.Any(p =>
+                                    p.Status != PaymentStatus.Approved
+                                );
+
+                                dest.Transaction.MarkAllPaymentsAsApproved =
+                                    payments.Any()
+                                    && payments.All(p => p.Status == PaymentStatus.Approved);
+                            }
+                            else
+                            {
+                                dest.Transaction.HasOpenedPayments = false;
+                                dest.Transaction.MarkAllPaymentsAsApproved = false;
+                            }
+                        }
+                    }
+                );
+
+            var purchaseOrderDtoToPurchaseOrderMap = CreateMap<PurchaseOrderDto, PurchaseOrder>();
+            purchaseOrderDtoToPurchaseOrderMap.ForMember(
+                dest => dest.Transaction,
+                opt => opt.MapFrom(src => src.Transaction)
+            );
+            purchaseOrderDtoToPurchaseOrderMap.ForAllMembers(opts =>
+                opts.Condition((src, dest, srcMember) => srcMember != null)
+            );
+
+            // PurchaseOrderProduct mappings
+            CreateMap<PurchaseOrderProduct, PurchaseOrderProductDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(
+                    dest => dest.PurchaseOrderNumber,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.PurchaseOrder != null ? src.PurchaseOrder.PurchaseOrderNumber : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.ProductSku,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.Sku : null)
+                )
+                .ForMember(
+                    dest => dest.ProductName,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : null)
+                )
+                .ForMember(
+                    dest => dest.ProductType,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Product != null ? src.Product.Type : ProductType.Sale
+                        )
+                )
+                .ForMember(
+                    dest => dest.BusinessPartnerId,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.PurchaseOrder != null
+                                ? src.PurchaseOrder.BusinessPartnerId
+                                : Guid.Empty
+                        )
+                )
+                .ForMember(
+                    dest => dest.BusinessPartnerName,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.PurchaseOrder != null && src.PurchaseOrder.BusinessPartner != null
+                                ? src.PurchaseOrder.BusinessPartner.Name
+                                : null
+                        )
+                )
+                .ForMember(dest => dest.PreviousQuantity, opt => opt.MapFrom(src => src.Quantity));
+
+            CreateMap<PurchaseOrderProductDto, PurchaseOrderProduct>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             // Trip mappings
             CreateMap<Trip, TripDto>()

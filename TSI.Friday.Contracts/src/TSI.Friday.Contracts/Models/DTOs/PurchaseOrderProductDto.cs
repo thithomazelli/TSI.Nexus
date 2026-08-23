@@ -1,11 +1,9 @@
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using TSI.Friday.Contracts.Enums;
 
 namespace TSI.Friday.Contracts.Models.DTOs
 {
-    public class OrderProductDto
+    public class PurchaseOrderProductDto
     {
         public Guid Id { get; set; }
 
@@ -21,9 +19,9 @@ namespace TSI.Friday.Contracts.Models.DTOs
 
         public decimal TotalPrice { get; set; }
 
-        public Guid OrderId { get; set; }
+        public Guid PurchaseOrderId { get; set; }
 
-        public string OrderNumber { get; set; }
+        public string PurchaseOrderNumber { get; set; }
 
         public Guid BusinessPartnerId { get; set; }
 
