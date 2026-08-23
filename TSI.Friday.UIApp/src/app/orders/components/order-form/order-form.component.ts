@@ -29,9 +29,6 @@ import {
   OrderService,
   OrderProductService,
   OrderProduct,
-  ProductService,
-  Product,
-  ProductType,
   TranslationService,
 } from '@friday/core';
 
@@ -42,15 +39,15 @@ import { Observable, startWith, map, combineLatestWith } from 'rxjs';
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 import { OrderProductsDetailsModalComponent } from '../../../order-products/components/order-product-details-modal/order-products-details-modal.component';
 import { OrderDetailsModalComponent } from '../order-details-modal/order-details-modal.component';
-import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
 import { Router } from '@angular/router';
 import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
-import { NgIf, NgClass, NgFor, AsyncPipe, CurrencyPipe } from '@angular/common';
+import { NgIf, NgClass, NgFor, AsyncPipe } from '@angular/common';
 import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
 import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
 import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
 import { TransactionFormComponent } from '../../../transactions/components/transactions-form/transaction-form.component';
+import { ProductPickerGridComponent } from '../../../shared/components/product-picker-grid/product-picker-grid.component';
 import { ClickDirective } from '../../../core/directives/click.directive';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
@@ -71,9 +68,9 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         DateFieldComponent,
         CurrencyFieldComponent,
         TransactionFormComponent,
+        ProductPickerGridComponent,
         ClickDirective,
         AsyncPipe,
-        CurrencyPipe,
         TranslatePipe,
     ],
 })
@@ -103,10 +100,6 @@ export class OrderFormComponent
   businessPartnersArray$!: Observable<BusinessPartner[]>;
   filteredBusinessPartners$!: Observable<BusinessPartner[]>;
 
-  inlineProductForm!: FormGroup;
-  filteredInlineProductsSku$!: Observable<Product[]>;
-  private _products: Product[] = [];
-
   get orderStatusOptions() {
     return [
       { value: OrderStatus.Open, label: this.translationService.instant('QUOTES.STATUS_OPEN') },
@@ -134,7 +127,6 @@ export class OrderFormComponent
     private notificationService: NotificationService,
     private orderService: OrderService,
     private orderProductService: OrderProductService,
-    private productService: ProductService,
     private routerService: Router,
     private translationService: TranslationService,
   ) {
@@ -148,13 +140,6 @@ export class OrderFormComponent
     this.setupAutoComplete();
     this.totalPriceChange();
     this.setupTotalOfPaymentsWatcher();
-    // The inline staged-product table (and its SKU autocomplete) only renders in Add mode - see
-    // *ngIf="!isEdit" on that section in the template - so setting it up in Edit mode was just an
-    // unused productService.getAll() call on every order opened for editing.
-    if (!this.isEdit) {
-      this.initInlineProductForm();
-      this.setupInlineProductAutoComplete();
-    }
 
     this._subscriptions.push(
       this.orderProductService.orderProductAdded$.subscribe((orderProduct) => {
@@ -338,126 +323,10 @@ export class OrderFormComponent
     );
   }
 
-  async onInlineProductSkuBlur(): Promise<void> {
-    setTimeout(() => {
-      const productSku = this.inlineProductForm.get('productSku')!.value?.trim();
-      if (!productSku) {
-        this.cleanInlineProductSelection();
-        return;
-      }
-      const found = this._products.find((p) => p.sku === productSku);
-      if (found) {
-        return;
-      }
-      const confirmRef = this.modalService.showConfirmation({
-        title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('PRODUCTS.SINGULAR') }),
-        message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('PRODUCTS.SINGULAR').toLowerCase(), name: productSku }),
-        cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
-        confirmButtonText: this.translationService.instant('COMMON.YES'),
-      });
-      confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-        if (confirmed) {
-          const productFormRef: MatDialogRef<any> = this.modalService.showTemplateModal(
-            ProductDetailsModalComponent,
-            {
-              data: { sku: productSku },
-              disableClose: true,
-            },
-          );
-          productFormRef
-            .afterClosed()
-            .subscribe((result: WebApiResponse<Product> | undefined) => {
-              if (result) {
-                this._products.push(result.data);
-                this.selectInlineProduct(result.data);
-              } else {
-                this.cleanInlineProductSelection();
-              }
-            });
-        } else {
-          this.cleanInlineProductSelection();
-        }
-      });
-    }, 200);
-  }
-
-  selectInlineProduct(product: Product): void {
-    if (!product) {
-      return;
-    }
-
-    if (
-      product.type !== ProductType.Service &&
-      (product.quantityInStock === undefined ||
-        product.quantityInStock === null ||
-        product.quantityInStock <= 0)
-    ) {
-      this.modalService.showNotification(
-        false,
-        this.translationService.instant('PRODUCTS.OUT_OF_STOCK_TITLE'),
-        this.translationService.instant('PRODUCTS.OUT_OF_STOCK_MESSAGE', { name: product.name + '' }),
-      );
-      this.cleanInlineProductSelection();
-      return;
-    }
-
-    this.inlineProductForm.patchValue({
-      productId: product.id,
-      productSku: product.sku,
-      productName: product.name,
-      productType: product.type,
-      price: product.price,
-    });
-  }
-
-  onInlineQuantityBlur(): void {
-    const quantityControl = this.inlineProductForm.get('quantity');
-    const productSku = this.inlineProductForm.get('productSku')?.value;
-    if (!quantityControl || !productSku) {
-      return;
-    }
-
-    const product = this._products.find((p) => p.sku === productSku);
-    if (product?.quantityInStock == null) {
-      return;
-    }
-
-    const quantity = Number(quantityControl.value);
-    if (quantity > product.quantityInStock) {
-      this.modalService.showNotification(
-        false,
-        this.translationService.instant('PRODUCTS.STOCK_EXCEEDED_TITLE'),
-        this.translationService.instant('PRODUCTS.STOCK_EXCEEDED_MESSAGE', { qty: quantity + '', stock: product.quantityInStock + '' }),
-      );
-      quantityControl.setValue(1);
-    }
-  }
-
-  addInlineProduct(): void {
-    const raw = this.inlineProductForm.getRawValue();
-    if (!raw.productId || !raw.productSku) {
-      return;
-    }
-
-    const quantity = Number(raw.quantity) || 1;
-    const price = Number(raw.price) || 0;
-    const totalPrice = price * quantity;
-
-    const orderProduct = {
-      productId: raw.productId,
-      productSku: raw.productSku,
-      productName: raw.productName,
-      productType: raw.productType,
-      quantity,
-      price,
-      priceFormatted: this.currencyService.formatCurrencyBRL(price),
-      discount: 0,
-      totalPrice,
-      totalPriceFormatted: this.currencyService.formatCurrencyBRL(totalPrice),
-    } as unknown as OrderProduct;
-
-    this.orderProductService.addTemporary(orderProduct).subscribe();
-    this.cleanInlineProductSelection();
+  onProductPickerItemAdded(item: OrderProduct): void {
+    this.data?.orderProducts?.push(item);
+    this.updatePriceFields();
+    this.updateTotalPriceFields();
   }
 
   get transactionFormGroup(): FormGroup {
@@ -655,64 +524,6 @@ export class OrderFormComponent
           );
         }),
       );
-  }
-
-  private initInlineProductForm(): void {
-    this.inlineProductForm = this.formBuilder.group({
-      productId: [''],
-      productSku: [''],
-      productName: [''],
-      productType: [''],
-      price: [0],
-      quantity: [1, [Validators.min(1)]],
-    });
-  }
-
-  private setupInlineProductAutoComplete(): void {
-    const productsArray$ = this.productService.getAll().pipe(
-      map((response) => response.data ?? []),
-    );
-
-    this._subscriptions.push(
-      productsArray$.subscribe((products) => (this._products = products)),
-    );
-
-    this.filteredInlineProductsSku$ = this.inlineProductForm
-      .get('productSku')!
-      .valueChanges.pipe(
-        startWith(''),
-        combineLatestWith(productsArray$),
-        map(([value, products]) => {
-          const filterValue = (typeof value === 'string' ? value : '').toLowerCase();
-          if (!filterValue) {
-            return [];
-          }
-          return products
-            .filter((product: Product) =>
-              (product.sku || '').toLowerCase().includes(filterValue),
-            )
-            .map((product: Product) => ({
-              ...product,
-              alreadyUsed: this.data?.orderProducts?.some(
-                (op) => op.productId === product.id,
-              ),
-              disabled:
-                product.quantityInStock !== undefined &&
-                product.quantityInStock <= 0,
-            }));
-        }),
-      );
-  }
-
-  private cleanInlineProductSelection(): void {
-    this.inlineProductForm.reset({
-      productId: '',
-      productSku: '',
-      productName: '',
-      productType: '',
-      price: 0,
-      quantity: 1,
-    });
   }
 
   private disableEditFields(): void {

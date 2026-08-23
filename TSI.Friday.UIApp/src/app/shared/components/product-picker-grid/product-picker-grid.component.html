@@ -1,0 +1,97 @@
+<section class="product-picker-grid mt-2">
+  <h5 class="">{{ 'SIDEBAR.PRODUCTS' | translate }}</h5>
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="table-header-title" scope="col">{{ 'PRODUCTS.SKU' | translate }}</th>
+        <th class="table-header-title" scope="col">{{ 'COMMON.NAME' | translate }}</th>
+        <th class="table-header-title" scope="col">{{ 'COMMON.TOTAL_PRICE_LABEL' | translate }}</th>
+        <th class="table-header-title" scope="col">{{ 'COMMON.QUANTITY' | translate }}</th>
+        <th class="" scope="col" style="width: 40px">
+          <button type="button" class="address-link" (click)="openModal()">{{ 'ORDERS.ADD_PRODUCT_BUTTON' | translate }}</button>
+        </th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider table-body">
+      <tr class="inline-product-row" [formGroup]="inlineProductForm">
+        <td>
+          <input
+            type="text"
+            formControlName="productSku"
+            class="form-control form-control-sm grid-input"
+            [matAutocomplete]="inlineSkuAuto"
+            [placeholder]="'PRODUCTS.SKU' | translate"
+            (blur)="onProductSkuBlur()"
+          />
+          <mat-autocomplete
+            #inlineSkuAuto="matAutocomplete"
+            (optionSelected)="selectProduct($event.option.value)"
+          >
+            <mat-option
+              *ngFor="let product of filteredProductsSku$ | async"
+              [value]="product"
+              [disabled]="product.disabled || product.alreadyUsed"
+              [ngClass]="{ 'text-muted': product.disabled || product.alreadyUsed }"
+            >
+              {{ product.sku }}
+              <span class="ms-2 text-muted">
+                @if (product.alreadyUsed) {
+                  {{ 'PRODUCTS.ALREADY_USED' | translate }}
+                } @else if (product.disabled) {
+                  {{ 'PRODUCTS.UNAVAILABLE' | translate }}
+                }
+              </span>
+            </mat-option>
+          </mat-autocomplete>
+        </td>
+        <td class="table-cell-info">{{ inlineProductForm.get('productName')?.value }}</td>
+        <td class="table-cell-info">
+          {{ (inlineProductForm.get('price')?.value * (inlineProductForm.get('quantity')?.value || 1)) | currency: "BRL" }}
+        </td>
+        <td>
+          <input
+            type="number"
+            min="1"
+            formControlName="quantity"
+            class="form-control form-control-sm grid-input"
+            (blur)="onQuantityBlur()"
+          />
+        </td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-link p-0"
+            [disabled]="!inlineProductForm.get('productId')?.value"
+            [title]="'ORDERS.ADD_PRODUCT_BUTTON' | translate"
+            (click)="addProduct()"
+          >
+            <i class="bi bi-plus-circle"></i>
+          </button>
+        </td>
+      </tr>
+      <tr *ngFor="let item of items; let i = index">
+        <td class="table-cell-info">{{ item.productSku }}</td>
+        <td class="table-cell-info">{{ item.productName }}</td>
+        <td class="table-cell-info">
+          {{ item.totalPrice | currency: "BRL" }}
+        </td>
+        <td class="table-cell-info">{{ item.quantity }}</td>
+        <td class="table-cell-info">
+          <button
+            type="button"
+            class="btn btn-link p-0 text-danger"
+            [title]="'COMMON.REMOVE' | translate"
+            (click)="removeItem(i)"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+      <tr *ngIf="!items || items.length === 0">
+        <td colspan="5" class="text-center text-muted small py-3">
+          {{ 'QUOTES.NO_PRODUCTS_ADDED' | translate }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>
