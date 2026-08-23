@@ -1,0 +1,183 @@
+<div class="vehicle-maintenance-product-form-wrapper" [ngClass]="{ compact: compact }">
+  <form [formGroup]="form">
+    <div class="modal-scrollable-area">
+      <!-- Sessão 1: Informações do Produto -->
+      <section>
+        <h5 class="mt-3 mb-2">{{ 'PRODUCTS.PRODUCT_INFO' | translate }}</h5>
+        <div class="row g-1 mb-1">
+          <div class="col-6">
+            <div class="input-group position-relative">
+              <div class="form-floating flex-grow-1">
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="productSku"
+                    class="form-control"
+                    [matAutocomplete]="skuAuto"
+                    [class.is-invalid]="isInvalid('productSku')"
+                    placeholder="SKU"
+                    (blur)="onProductSkuBlur()"
+                  />
+                  <label for="productSku">{{ 'PRODUCTS.SKU' | translate }}</label>
+                  <mat-autocomplete
+                    #skuAuto="matAutocomplete"
+                    (optionSelected)="selectProduct($event.option.value)"
+                  >
+                    <mat-option
+                      *ngFor="let product of filteredProductsSku$ | async"
+                      [value]="product"
+                      [disabled]="product.alreadyUsed"
+                      [ngClass]="{ 'text-muted': product.alreadyUsed }"
+                    >
+                      {{ product.sku }}
+                      <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                        >{{ 'PRODUCTS.ALREADY_USED' | translate }}</span
+                      >
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'SKU'"
+                    [text]="form.get('productSku')?.value || 'SKU'"
+                    [linkUrl]="['/products', form.get('productId')?.value]"
+                  >
+                  </app-link-field>
+                }
+              </div>
+              <div class="input-group-text"><i class="bi bi-upc"></i></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="input-group position-relative">
+              <div class="form-floating flex-grow-1">
+                @if (!isEdit) {
+                  <input
+                    type="text"
+                    formControlName="productName"
+                    class="form-control"
+                    [class.is-invalid]="isInvalid('productName')"
+                    [placeholder]="'PRODUCTS.PRODUCT_NAME' | translate"
+                    [matAutocomplete]="nameAuto"
+                    (blur)="onProductNameBlur()"
+                  />
+                  <label for="productName">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
+                  <mat-autocomplete
+                    #nameAuto="matAutocomplete"
+                    (optionSelected)="selectProduct($event.option.value)"
+                  >
+                    <mat-option
+                      *ngFor="let product of filteredProductsName$ | async"
+                      [value]="product"
+                      [disabled]="product.alreadyUsed"
+                      [ngClass]="{ 'text-muted': product.alreadyUsed }"
+                    >
+                      {{ product.name }}
+                      <span *ngIf="product.alreadyUsed" class="ms-2 text-muted"
+                        >{{ 'PRODUCTS.ALREADY_USED' | translate }}</span
+                      >
+                    </mat-option>
+                  </mat-autocomplete>
+                } @else {
+                  <app-link-field
+                    [placeHolder]="'PRODUCTS.PRODUCT_NAME' | translate"
+                    [text]="form.get('productName')?.value || ('PRODUCTS.PRODUCT_NAME' | translate)"
+                    [linkUrl]="['/products', form.get('productId')?.value]"
+                  >
+                  </app-link-field>
+                }
+              </div>
+              <div class="input-group-text"><i class="bi bi-tag"></i></div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <select formControlName="productType" class="form-select">
+                  <option value="" disabled selected>{{ 'COMMON.TYPE' | translate }}</option>
+                  <option
+                    *ngFor="let option of productTypeOptions; trackBy: trackByOptionValue"
+                    [value]="option.value"
+                  >
+                    {{ option.label }}
+                  </option>
+                </select>
+                <label for="productType">{{ 'COMMON.TYPE' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-tag"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sessão 2: Painel de Preços -->
+      <section>
+        <h5 class="mt-4 mb-2">{{ 'PRODUCTS.PRICE_PANEL' | translate }}</h5>
+        <div class="row g-1 mb-1">
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="quantity"
+                  type="number"
+                  min="1"
+                  [placeholder]="'COMMON.QUANTITY' | translate"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('quantity')"
+                  (blur)="onQuantityBlur()"
+                />
+                <label for="quantity">{{ 'COMMON.QUANTITY' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-123"></i></div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="input-group">
+              <div class="form-floating flex-grow-1">
+                <input
+                  formControlName="discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  [placeholder]="'TRANSACTIONS.DISCOUNT' | translate"
+                  class="form-control"
+                  [class.is-invalid]="isInvalid('discount')"
+                />
+                <label for="discount">{{ 'TRANSACTIONS.DISCOUNT' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-percent"></i></div>
+            </div>
+          </div>
+
+          <div class="col-6">
+            <app-currency-field
+              formControlName="price"
+              [label]="'PRODUCTS.SUGGESTED_PRICE' | translate"
+            ></app-currency-field>
+          </div>
+          <div class="col-6">
+            <app-currency-field
+              formControlName="totalPrice"
+              [label]="'COMMON.TOTAL_PRICE_LABEL' | translate"
+            ></app-currency-field>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="d-flex justify-content-end mt-3 gap-2">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="cancel()">{{ 'COMMON.CANCEL' | translate }}</button>
+      @if (isEdit) {
+        <button (click)="remove()" type="button" class="btn btn-danger btn-sm">{{ 'COMMON.REMOVE' | translate }}</button>
+      }
+      <button
+        [appClick]="submit.bind(this)"
+        type="submit"
+        class="btn btn-success btn-sm"
+      >
+        {{ (isEdit ? 'COMMON.SAVE' : 'COMMON.ADD') | translate }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -305,6 +305,47 @@ namespace TSI.Friday.IoC
             CreateMap<PurchaseOrderProductDto, PurchaseOrderProduct>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
+            // VehicleMaintenanceProduct mappings
+            CreateMap<VehicleMaintenanceProduct, VehicleMaintenanceProductDto>()
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))
+                .ForMember(
+                    dest => dest.VehicleId,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.VehicleMaintenance != null
+                                ? src.VehicleMaintenance.VehicleId
+                                : Guid.Empty
+                        )
+                )
+                .ForMember(
+                    dest => dest.VehiclePlate,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.VehicleMaintenance != null && src.VehicleMaintenance.Vehicle != null
+                                ? src.VehicleMaintenance.Vehicle.Plate
+                                : null
+                        )
+                )
+                .ForMember(
+                    dest => dest.ProductSku,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.Sku : null)
+                )
+                .ForMember(
+                    dest => dest.ProductName,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.Name : null)
+                )
+                .ForMember(
+                    dest => dest.ProductType,
+                    opt =>
+                        opt.MapFrom(src =>
+                            src.Product != null ? src.Product.Type : ProductType.Sale
+                        )
+                )
+                .ForMember(dest => dest.PreviousQuantity, opt => opt.MapFrom(src => src.Quantity));
+
+            CreateMap<VehicleMaintenanceProductDto, VehicleMaintenanceProduct>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
             // Trip mappings
             CreateMap<Trip, TripDto>()
                 .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice))

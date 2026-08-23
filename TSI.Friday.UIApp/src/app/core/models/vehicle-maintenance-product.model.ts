@@ -4,6 +4,7 @@ import { BaseModel } from './base.model';
 export interface VehicleMaintenanceProduct extends BaseModel {
   id: string;
   description?: string;
+  readonly previousQuantity?: number;
   quantity?: number;
   discount?: number;
   price?: number;

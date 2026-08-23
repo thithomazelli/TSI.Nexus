@@ -81,6 +81,7 @@ export class FuelLogFormComponent
   statusOptions: SelectableOption[] = [];
   filteredProductsSku$!: Observable<Product[]>;
   filteredProductsName$!: Observable<Product[]>;
+  filteredVehiclesPlate$!: Observable<Vehicle[]>;
 
   private _products: Product[] = [];
   private _subscriptions: Subscription[] = [];
@@ -108,6 +109,7 @@ export class FuelLogFormComponent
     if (!this.vehicleId) {
       this.vehicleService.getAll().subscribe((response) => {
         this.vehicles = response.data ?? [];
+        this.setupVehicleAutoComplete();
       });
     }
   }
@@ -166,13 +168,40 @@ export class FuelLogFormComponent
     });
   }
 
+  async onVehiclePlateBlur(): Promise<void> {
+    setTimeout(() => {
+      const typed = this.form.get('vehiclePlate')!.value?.trim();
+      if (!typed) {
+        this.cleanVehicleSelection();
+        return;
+      }
+      const found = this.vehicles.find((v) => v.plate === typed);
+      if (found) {
+        this.selectVehicle(found);
+      } else {
+        this.cleanVehicleSelection();
+      }
+    }, 200);
+  }
+
+  selectVehicle(vehicle: Vehicle): void {
+    if (!vehicle) {
+      return;
+    }
+
+    this.form.patchValue({
+      vehicleId: vehicle.id,
+      vehiclePlate: vehicle.plate,
+    });
+  }
+
   submit(): Observable<WebApiResponse<FuelLog> | null> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return of(null);
     }
 
-    const raw = this.form.getRawValue();
+    const { vehiclePlate, ...raw } = this.form.getRawValue();
     const fuelLog = {
       ...raw,
       date: this.toDate(raw.date),
@@ -256,6 +285,7 @@ export class FuelLogFormComponent
         this.vehicleId || null,
         this.vehicleId ? [] : [Validators.required],
       ],
+      vehiclePlate: [''],
     };
 
     this.form = !this.isEdit
@@ -266,6 +296,9 @@ export class FuelLogFormComponent
   private patchFormWithData(): void {
     if (this.data && this.form) {
       this.form.patchValue(this.data);
+      if (this.data.vehicle?.plate) {
+        this.form.patchValue({ vehiclePlate: this.data.vehicle.plate });
+      }
     }
   }
 
@@ -323,6 +356,25 @@ export class FuelLogFormComponent
 
   private cleanProductSelection(): void {
     this.form.patchValue({ productId: null, productSku: '', productName: '' });
+  }
+
+  private cleanVehicleSelection(): void {
+    this.form.patchValue({ vehicleId: null, vehiclePlate: '' });
+  }
+
+  private setupVehicleAutoComplete(): void {
+    this.filteredVehiclesPlate$ = this.form.get('vehiclePlate')!.valueChanges.pipe(
+      startWith(''),
+      map((value) => {
+        const filterValue = (typeof value === 'string' ? value : '').toLowerCase();
+        if (!filterValue) {
+          return [];
+        }
+        return this.vehicles.filter((vehicle) =>
+          (vehicle.plate || '').toLowerCase().includes(filterValue),
+        );
+      }),
+    );
   }
 
   private loadStatusOptions(): void {

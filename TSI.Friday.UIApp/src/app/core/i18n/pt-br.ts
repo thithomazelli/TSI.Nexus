@@ -342,6 +342,14 @@ export const PT_BR = {
     ITEM_DELETED: 'Item excluído',
     PURCHASE_ORDER_PRODUCTS_REFRESHED: 'Produtos do pedido de compra atualizados com sucesso',
   },
+  VEHICLE_MAINTENANCE_PRODUCTS: {
+    ITEM_ENTITY: 'Peça da manutenção',
+    TITLE: 'Produtos da Manutenção',
+    EDIT_ITEM: 'Editar Peça da Manutenção',
+    ADD_ITEM: 'Adicionar Peça à Manutenção',
+    ITEM_DELETED: 'Item excluído',
+    VEHICLE_MAINTENANCE_PRODUCTS_REFRESHED: 'Produtos da manutenção atualizados com sucesso',
+  },
   USERS: {
     PROFILE: 'Perfil',
     PASSWORD: 'Senha',

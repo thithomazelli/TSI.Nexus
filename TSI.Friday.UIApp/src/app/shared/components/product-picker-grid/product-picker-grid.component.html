@@ -44,7 +44,36 @@
             </mat-option>
           </mat-autocomplete>
         </td>
-        <td class="table-cell-info">{{ inlineProductForm.get('productName')?.value }}</td>
+        <td>
+          <input
+            type="text"
+            formControlName="productName"
+            class="form-control form-control-sm grid-input"
+            [matAutocomplete]="inlineNameAuto"
+            [placeholder]="'COMMON.NAME' | translate"
+            (blur)="onProductNameBlur()"
+          />
+          <mat-autocomplete
+            #inlineNameAuto="matAutocomplete"
+            (optionSelected)="selectProduct($event.option.value)"
+          >
+            <mat-option
+              *ngFor="let product of filteredProductsName$ | async"
+              [value]="product"
+              [disabled]="product.disabled || product.alreadyUsed"
+              [ngClass]="{ 'text-muted': product.disabled || product.alreadyUsed }"
+            >
+              {{ product.name }}
+              <span class="ms-2 text-muted">
+                @if (product.alreadyUsed) {
+                  {{ 'PRODUCTS.ALREADY_USED' | translate }}
+                } @else if (product.disabled) {
+                  {{ 'PRODUCTS.UNAVAILABLE' | translate }}
+                }
+              </span>
+            </mat-option>
+          </mat-autocomplete>
+        </td>
         <td class="table-cell-info">
           {{ (inlineProductForm.get('price')?.value * (inlineProductForm.get('quantity')?.value || 1)) | currency: "BRL" }}
         </td>

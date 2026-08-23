@@ -69,6 +69,7 @@ export class ProductPickerGridComponent implements OnInit, OnDestroy {
 
   inlineProductForm!: FormGroup;
   filteredProductsSku$!: Observable<Product[]>;
+  filteredProductsName$!: Observable<Product[]>;
 
   private _products: Product[] = [];
   private _destroy$ = new Subject<void>();
@@ -100,38 +101,60 @@ export class ProductPickerGridComponent implements OnInit, OnDestroy {
       }
       const found = this._products.find((p) => p.sku === productSku);
       if (found) {
+        this.selectProduct(found);
         return;
       }
-      const confirmRef = this.modalService.showConfirmation({
-        title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('PRODUCTS.SINGULAR') }),
-        message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('PRODUCTS.SINGULAR').toLowerCase(), name: productSku }),
-        cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
-        confirmButtonText: this.translationService.instant('COMMON.YES'),
-      });
-      confirmRef.afterClosed().subscribe((confirmed: boolean) => {
-        if (confirmed) {
-          const productFormRef: MatDialogRef<any> = this.modalService.showTemplateModal(
-            ProductDetailsModalComponent,
-            {
-              data: { sku: productSku },
-              disableClose: true,
-            },
-          );
-          productFormRef
-            .afterClosed()
-            .subscribe((result: WebApiResponse<Product> | undefined) => {
-              if (result) {
-                this._products.push(result.data);
-                this.selectProduct(result.data);
-              } else {
-                this.cleanSelection();
-              }
-            });
-        } else {
-          this.cleanSelection();
-        }
-      });
+      this.confirmAndCreateProduct({ sku: productSku });
     }, 200);
+  }
+
+  async onProductNameBlur(): Promise<void> {
+    setTimeout(() => {
+      const productName = this.inlineProductForm.get('productName')!.value?.trim();
+      if (!productName) {
+        this.cleanSelection();
+        return;
+      }
+      const found = this._products.find((p) => p.name === productName);
+      if (found) {
+        this.selectProduct(found);
+        return;
+      }
+      this.confirmAndCreateProduct({ name: productName });
+    }, 200);
+  }
+
+  private confirmAndCreateProduct(data: { sku?: string; name?: string }): void {
+    const nameOrSku = data.sku ?? data.name ?? '';
+    const confirmRef = this.modalService.showConfirmation({
+      title: this.translationService.instant('COMMON.ENTITY_NOT_FOUND', { entity: this.translationService.instant('PRODUCTS.SINGULAR') }),
+      message: this.translationService.instant('COMMON.CONFIRM_ADD_ENTITY', { entityLower: this.translationService.instant('PRODUCTS.SINGULAR').toLowerCase(), name: nameOrSku }),
+      cancelButtonText: this.translationService.instant('COMMON.CANCEL'),
+      confirmButtonText: this.translationService.instant('COMMON.YES'),
+    });
+    confirmRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        const productFormRef: MatDialogRef<any> = this.modalService.showTemplateModal(
+          ProductDetailsModalComponent,
+          {
+            data,
+            disableClose: true,
+          },
+        );
+        productFormRef
+          .afterClosed()
+          .subscribe((result: WebApiResponse<Product> | undefined) => {
+            if (result) {
+              this._products.push(result.data);
+              this.selectProduct(result.data);
+            } else {
+              this.cleanSelection();
+            }
+          });
+      } else {
+        this.cleanSelection();
+      }
+    });
   }
 
   selectProduct(product: Product): void {
@@ -257,6 +280,31 @@ export class ProductPickerGridComponent implements OnInit, OnDestroy {
           return products
             .filter((product: Product) =>
               (product.sku || '').toLowerCase().includes(filterValue),
+            )
+            .map((product: Product) => ({
+              ...product,
+              alreadyUsed: this.items?.some((op) => op.productId === product.id),
+              disabled:
+                this.filterOutOfStock &&
+                product.quantityInStock !== undefined &&
+                product.quantityInStock <= 0,
+            }));
+        }),
+      );
+
+    this.filteredProductsName$ = this.inlineProductForm
+      .get('productName')!
+      .valueChanges.pipe(
+        startWith(''),
+        combineLatestWith(productsArray$),
+        map(([value, products]) => {
+          const filterValue = (typeof value === 'string' ? value : '').toLowerCase();
+          if (!filterValue) {
+            return [];
+          }
+          return products
+            .filter((product: Product) =>
+              (product.name || '').toLowerCase().includes(filterValue),
             )
             .map((product: Product) => ({
               ...product,

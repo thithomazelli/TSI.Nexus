@@ -57,7 +57,7 @@
                   class="nav-link"
                   [class.active]="activeTab === 'products'"
                   (click)="activeTab = 'products'"
-                  >{{ 'COMMON.PRODUCTS' | translate }}</a
+                  >{{ 'SIDEBAR.PRODUCTS' | translate }}</a
                 >
               </li>
               <li class="nav-item">
@@ -90,12 +90,10 @@
                 ></app-vehicle-maintenance-form>
               }
               @if (activeTab === 'products') {
-                <app-product-picker-grid
-                  [items]="data.vehicleMaintenanceProducts"
-                  [filterOutOfStock]="true"
-                  (itemAdded)="onProductAdded($event)"
-                  (itemRemoved)="removeProduct($event)"
-                ></app-product-picker-grid>
+                <app-vehicle-maintenance-products
+                  [parentId]="data.id"
+                  [compact]="true"
+                ></app-vehicle-maintenance-products>
               }
               @if (activeTab === 'attachments') {
                 <app-attachments

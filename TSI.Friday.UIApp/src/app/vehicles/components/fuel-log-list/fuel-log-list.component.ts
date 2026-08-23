@@ -123,6 +123,10 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
         filter: true,
         flex: 1,
         hide: !!this.vehicleId,
+        cellRenderer: (params: ICellRendererParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="edit" class="ag-link">${value}</a>`;
+        },
       },
       {
         field: 'date',

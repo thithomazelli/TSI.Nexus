@@ -1,0 +1,13 @@
+<div class="vehicle-maintenance-products-list">
+  <app-grid
+    [className]="'VEHICLE_MAINTENANCE_PRODUCTS.ITEM_ENTITY' | translate"
+    [compactView]="compact"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [canAdd]="true"
+    [refresh]="refresh.bind(this)"
+    [update]="noop.bind(this)"
+    [delete]="deleteVehicleMaintenanceProduct.bind(this)"
+    (openModal)="openModal($event)"
+  ></app-grid>
+</div>

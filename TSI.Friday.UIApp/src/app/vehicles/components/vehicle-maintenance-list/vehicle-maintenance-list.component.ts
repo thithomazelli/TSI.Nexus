@@ -123,12 +123,27 @@ export class VehicleMaintenanceListComponent
         hide: true,
       },
       {
+        field: 'description',
+        headerName: this.translationService.instant('COMMON.DESCRIPTION'),
+        sortable: true,
+        filter: true,
+        flex: 2,
+        cellRenderer: (params: ICellRendererParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
+      },
+      {
         field: 'vehicle.plate',
         headerName: this.translationService.instant('VEHICLES.SINGULAR'),
         sortable: true,
         filter: true,
         flex: 1,
         hide: !!this.vehicleId,
+        cellRenderer: (params: ICellRendererParams) => {
+          const value = params.value ?? '';
+          return `<a data-action="view" class="ag-link">${value}</a>`;
+        },
       },
       {
         field: 'type',
@@ -136,17 +151,12 @@ export class VehicleMaintenanceListComponent
         sortable: true,
         filter: true,
         flex: 1,
-        valueFormatter: (params: ValueFormatterParams) =>
-          this.translationService.instant(
+        cellRenderer: (params: ICellRendererParams) => {
+          const label = this.translationService.instant(
             params.value === 'Preventive' ? 'VEHICLES.PREVENTIVE' : 'VEHICLES.CORRECTIVE',
-          ),
-      },
-      {
-        field: 'description',
-        headerName: this.translationService.instant('COMMON.DESCRIPTION'),
-        sortable: true,
-        filter: true,
-        flex: 2,
+          );
+          return `<a data-action="view" class="ag-link">${label}</a>`;
+        },
       },
       {
         field: 'scheduledDate',

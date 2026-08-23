@@ -1,0 +1,18 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    {{ (isEdit ? "VEHICLE_MAINTENANCE_PRODUCTS.EDIT_ITEM" : "VEHICLE_MAINTENANCE_PRODUCTS.ADD_ITEM") | translate }}
+  </h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <app-vehicle-maintenance-product-form
+    [isModal]="true"
+    [isEdit]="isEdit"
+    [data]="data"
+    [dialogRef]="dialogRef"
+    [parentId]="parentId"
+    [parentData]="parentData"
+    [compact]="false"
+  ></app-vehicle-maintenance-product-form>
+</div>

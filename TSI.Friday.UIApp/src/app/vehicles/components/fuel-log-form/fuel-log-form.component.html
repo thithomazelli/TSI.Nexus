@@ -2,18 +2,80 @@
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="modal-scrollable-area">
     <div class="row g-2">
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              type="text"
+              formControlName="productSku"
+              class="form-control"
+              [matAutocomplete]="fuelLogSkuAuto"
+              [placeholder]="'PRODUCTS.SKU' | translate"
+              id="fuelLogProductSku"
+              (blur)="onProductSkuBlur()"
+            />
+            <label for="fuelLogProductSku">{{ 'PRODUCTS.SKU' | translate }}</label>
+            <mat-autocomplete
+              #fuelLogSkuAuto="matAutocomplete"
+              (optionSelected)="selectProduct($event.option.value)"
+            >
+              <mat-option *ngFor="let product of filteredProductsSku$ | async" [value]="product">
+                {{ product.sku }}
+              </mat-option>
+            </mat-autocomplete>
+          </div>
+          <div class="input-group-text"><i class="bi bi-upc"></i></div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="input-group">
+          <div class="form-floating flex-fill">
+            <input
+              type="text"
+              formControlName="productName"
+              class="form-control"
+              [matAutocomplete]="fuelLogNameAuto"
+              [placeholder]="'PRODUCTS.PRODUCT_NAME' | translate"
+              id="fuelLogProductName"
+              (blur)="onProductNameBlur()"
+            />
+            <label for="fuelLogProductName">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
+            <mat-autocomplete
+              #fuelLogNameAuto="matAutocomplete"
+              (optionSelected)="selectProduct($event.option.value)"
+            >
+              <mat-option *ngFor="let product of filteredProductsName$ | async" [value]="product">
+                {{ product.name }}
+              </mat-option>
+            </mat-autocomplete>
+          </div>
+          <div class="input-group-text"><i class="bi bi-tag"></i></div>
+        </div>
+      </div>
       @if (!vehicleId) {
         <div class="col-12 col-md-6">
           <div class="input-group">
-            <div class="form-floating flex-fill select-floating">
-              <select formControlName="vehicleId" class="form-select" id="fuelLogVehicle">
-                <option [ngValue]="null" disabled>{{ 'VEHICLES.SINGULAR' | translate }}</option>
-                @for (vehicle of vehicles; track vehicle.id) {
-                  <option [ngValue]="vehicle.id">{{ vehicle.plate }} - {{ vehicle.model }}</option>
-                }
-              </select>
-              <label for="fuelLogVehicle">{{ 'VEHICLES.SINGULAR' | translate }}</label>
+            <div class="form-floating flex-fill">
+              <input
+                type="text"
+                formControlName="vehiclePlate"
+                class="form-control"
+                [matAutocomplete]="fuelLogVehicleAuto"
+                [placeholder]="'VEHICLES.SINGULAR' | translate"
+                id="fuelLogVehiclePlate"
+                (blur)="onVehiclePlateBlur()"
+              />
+              <label for="fuelLogVehiclePlate">{{ 'VEHICLES.SINGULAR' | translate }}</label>
+              <mat-autocomplete
+                #fuelLogVehicleAuto="matAutocomplete"
+                (optionSelected)="selectVehicle($event.option.value)"
+              >
+                <mat-option *ngFor="let vehicle of filteredVehiclesPlate$ | async" [value]="vehicle">
+                  {{ vehicle.plate }} - {{ vehicle.model }}
+                </mat-option>
+              </mat-autocomplete>
             </div>
+            <div class="input-group-text"><i class="bi bi-truck"></i></div>
           </div>
         </div>
       }
@@ -85,57 +147,6 @@
             </select>
             <label for="fuelLogStatus">{{ 'COMMON.STATUS' | translate }}</label>
           </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              type="text"
-              formControlName="productSku"
-              class="form-control"
-              [matAutocomplete]="fuelLogSkuAuto"
-              [placeholder]="'PRODUCTS.SKU' | translate"
-              id="fuelLogProductSku"
-              (blur)="onProductSkuBlur()"
-            />
-            <label for="fuelLogProductSku">{{ 'PRODUCTS.SKU' | translate }}</label>
-            <mat-autocomplete
-              #fuelLogSkuAuto="matAutocomplete"
-              (optionSelected)="selectProduct($event.option.value)"
-            >
-              <mat-option *ngFor="let product of filteredProductsSku$ | async" [value]="product">
-                {{ product.sku }}
-              </mat-option>
-            </mat-autocomplete>
-          </div>
-          <div class="input-group-text"><i class="bi bi-upc"></i></div>
-        </div>
-      </div>
-      <div class="col-12 col-md-6">
-        <div class="input-group">
-          <div class="form-floating flex-fill">
-            <input
-              type="text"
-              formControlName="productName"
-              class="form-control"
-              [matAutocomplete]="fuelLogNameAuto"
-              [placeholder]="'PRODUCTS.PRODUCT_NAME' | translate"
-              id="fuelLogProductName"
-              (blur)="onProductNameBlur()"
-            />
-            <label for="fuelLogProductName">{{ 'PRODUCTS.PRODUCT_NAME' | translate }}</label>
-            <mat-autocomplete
-              #fuelLogNameAuto="matAutocomplete"
-              (optionSelected)="selectProduct($event.option.value)"
-            >
-              <mat-option *ngFor="let product of filteredProductsName$ | async" [value]="product">
-                {{ product.name }}
-              </mat-option>
-            </mat-autocomplete>
-          </div>
-          <div class="input-group-text"><i class="bi bi-tag"></i></div>
         </div>
       </div>
     </div>
