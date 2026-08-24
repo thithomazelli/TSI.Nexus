@@ -775,7 +775,11 @@ namespace TSI.Nexus.Data.Seed
             var orders = new List<Order>();
             transactions = new List<Transaction>();
 
-            const int totalOrders = 22;
+            // Kept well above totalPurchaseOrders/BuildExpenses volume (see BuildPurchaseOrders,
+            // BuildExpenses) so demo incoming payments clearly outweigh outgoing ones - purchase
+            // orders buy in bulk (5-20 units/line) while orders sell in small quantities
+            // (1-3 units/line), so matching order counts alone isn't enough to flip the balance.
+            const int totalOrders = 130;
 
             for (var i = 0; i < totalOrders; i++)
             {
@@ -837,7 +841,10 @@ namespace TSI.Nexus.Data.Seed
             var activeDrivers = drivers.Where(d => d.Status == DriverStatus.Active).ToList();
             var availableVehicles = vehicles.Where(v => v.Status != VehicleStatus.Blocked).ToList();
 
-            const int totalTrips = 12;
+            // Raised alongside totalOrders (see BuildOrders) to boost incoming volume - each trip
+            // nets far more incoming (its own payments) than the outgoing it adds via
+            // BuildTripDrivers, so more trips also helps the income/expense balance.
+            const int totalTrips = 40;
 
             for (var i = 0; i < totalTrips; i++)
             {
