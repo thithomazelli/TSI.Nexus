@@ -4,17 +4,17 @@
 
 O produto já foi rebatizado de "Friday" para "Nexus" na marca (logo/título já mostram
 "NEXUS" na UI) mas o código, os nomes de arquivo/pasta e o repositório ainda carregam o
-nome antigo em todo lugar: namespaces .NET (`TSI.Friday.*`), pastas de projeto, o `.sln`,
-o path alias do frontend (`@friday/core`), os workflows do GitHub Actions, o `web.config`,
+nome antigo em todo lugar: namespaces .NET (`TSI.Nexus.*`), pastas de projeto, o `.sln`,
+o path alias do frontend (`@nexus/core`), os workflows do GitHub Actions, o `web.config`,
 e a documentação (README/CLAUDE.md).
 
 Decisões já validadas com o usuário:
 - **Escopo**: renomeação completa (namespaces, pastas/projetos, alias, CI/CD, docs) — não
   só cosmético.
-- **Prefixo `TSI.`**: mantido. `TSI.Friday.WebAPI` vira `TSI.Nexus.WebAPI` (não vira só
+- **Prefixo `TSI.`**: mantido. `TSI.Nexus.WebAPI` vira `TSI.Nexus.WebAPI` (não vira só
   `Nexus.WebAPI`).
 - **Nome do repositório no GitHub**: já foi renomeado pelo usuário, de
-  `thithomazelli/TSI.Friday` pra `thithomazelli/TSI.Nexus` (confirmado via API - eu não
+  `thithomazelli/TSI.Nexus` pra `thithomazelli/TSI.Nexus` (confirmado via API - eu não
   tenho ferramenta pra fazer esse rename sozinho, só editar arquivo/PR). O remote local
   precisou ser atualizado (`git remote set-url origin
   https://github.com/thithomazelli/TSI.Nexus`) - o push por `git` direto parou de
@@ -28,11 +28,11 @@ Decisões já validadas com o usuário:
 - **`web.config` de produção nos servidores** (`web.config.Production.xml` /
   `web.config.Production.Serodio.xml` — gitignored por design, vivem só nos servidores):
   o `processPath`/`arguments` desses arquivos referencia o nome do executável gerado
-  (`TSI.Friday.WebAPI.exe`/`.dll`), que muda com a renomeação. Ficam fora do meu alcance
+  (`TSI.Nexus.WebAPI.exe`/`.dll`), que muda com a renomeação. Ficam fora do meu alcance
   (não estão no git) — usuário confirmou que atualiza manualmente depois do deploy.
 
 **Fora de escopo** (não foi pedido, e mudar teria risco/operação bem maiores que o resto):
-- Nome do banco de dados (`Database=tsi_friday` nas connection strings/appsettings) —
+- Nome do banco de dados (`Database=tsi_nexus` nas connection strings/appsettings) —
   mudar o nome de um banco em produção é uma operação de infra separada, não uma
   renomeação de código.
 
@@ -42,45 +42,45 @@ Decisões já validadas com o usuário:
 
 | Atual | Novo |
 |---|---|
-| `TSI.Friday.sln` | `TSI.Nexus.sln` |
-| `TSI.Friday.Contracts/` (+ `.csproj`, `.Tests.csproj`) | `TSI.Nexus.Contracts/` |
-| `TSI.Friday.Data/` | `TSI.Nexus.Data/` |
-| `TSI.Friday.IoC/` | `TSI.Nexus.IoC/` |
-| `TSI.Friday.Repository/` | `TSI.Nexus.Repository/` |
-| `TSI.Friday.Services/` | `TSI.Nexus.Services/` |
-| `TSI.Friday.WebAPI/` | `TSI.Nexus.WebAPI/` |
+| `TSI.Nexus.sln` | `TSI.Nexus.sln` |
+| `TSI.Nexus.Contracts/` (+ `.csproj`, `.Tests.csproj`) | `TSI.Nexus.Contracts/` |
+| `TSI.Nexus.Data/` | `TSI.Nexus.Data/` |
+| `TSI.Nexus.IoC/` | `TSI.Nexus.IoC/` |
+| `TSI.Nexus.Repository/` | `TSI.Nexus.Repository/` |
+| `TSI.Nexus.Services/` | `TSI.Nexus.Services/` |
+| `TSI.Nexus.WebAPI/` | `TSI.Nexus.WebAPI/` |
 
-- `namespace TSI.Friday...` → `namespace TSI.Nexus...` em **316 arquivos `.cs`**.
+- `namespace TSI.Nexus...` → `namespace TSI.Nexus...` em **316 arquivos `.cs`**.
 - `<RootNamespace>`/`<AssemblyName>` implícitos (herdados do nome do `.csproj`) mudam
   junto quando os `.csproj` são renomeados.
 - `ProjectReference` dentro de cada `.csproj` e as entradas do `.sln` apontam pros
   caminhos/nomes antigos — precisam ser reescritos.
 - `web.config` (o committado, não os `.Production.*.xml`): `processPath`/`arguments`
-  referenciam `TSI.Friday.WebAPI.exe`.
+  referenciam `TSI.Nexus.WebAPI.exe`.
 
 **Frontend (Angular)**:
-- Pasta `TSI.Friday.UIApp/` → `TSI.Nexus.UIApp/`.
-- `package.json`/`package-lock.json`: `"name": "tsi.friday.uiapp"` → `"tsi.nexus.uiapp"`.
-- `angular.json`: chave do projeto (`"TSI.Friday.UIApp"`) e `outputPath`
-  (`dist/tsi.friday.uiapp`) → `dist/tsi.nexus.uiapp`.
-- `tsconfig.json`: alias `"@friday/core": ["./src/app/core"]` → `"@nexus/core"`.
-- **146 arquivos `.ts`** importando de `@friday/core` → `@nexus/core`.
+- Pasta `TSI.Nexus.UIApp/` → `TSI.Nexus.UIApp/`.
+- `package.json`/`package-lock.json`: `"name": "tsi.nexus.uiapp"` → `"tsi.nexus.uiapp"`.
+- `angular.json`: chave do projeto (`"TSI.Nexus.UIApp"`) e `outputPath`
+  (`dist/tsi.nexus.uiapp`) → `dist/tsi.nexus.uiapp`.
+- `tsconfig.json`: alias `"@nexus/core": ["./src/app/core"]` → `"@nexus/core"`.
+- **146 arquivos `.ts`** importando de `@nexus/core` → `@nexus/core`.
 
-**CI/CD** (`.github/workflows/deploy.yml`): todos os caminhos `TSI.Friday.WebAPI/...`,
-`TSI.Friday.UIApp/...`, `dist/tsi.friday.uiapp/...` nos 4 jobs (deploy-frontend,
+**CI/CD** (`.github/workflows/deploy.yml`): todos os caminhos `TSI.Nexus.WebAPI/...`,
+`TSI.Nexus.UIApp/...`, `dist/tsi.nexus.uiapp/...` nos 4 jobs (deploy-frontend,
 deploy-backend, deploy-frontend-serodio, deploy-backend-serodio).
 
 **Documentação**: `README.md` (9 menções) e `CLAUDE.md` (10 menções) — nomes de pasta,
-comandos (`dotnet build TSI.Friday.sln`, `cd TSI.Friday.WebAPI/...`), texto descritivo.
+comandos (`dotnet build TSI.Nexus.sln`, `cd TSI.Nexus.WebAPI/...`), texto descritivo.
 
 ## Ordem de execução
 
 1. Checkout local de `main` (atualizada com `origin/main`), working tree limpo.
 2. `git mv` de cada pasta/arquivo (preserva histórico) — projetos backend primeiro, depois
-   `TSI.Friday.UIApp/`.
-3. Find/replace em massa (`namespace TSI.Friday` → `namespace TSI.Nexus`, `TSI.Friday.` →
-   `TSI.Nexus.` em `.csproj`/`.sln`/`web.config`, `@friday/core` → `@nexus/core` nos 146
-   arquivos, `tsi.friday.uiapp` → `tsi.nexus.uiapp` em `package.json`/`angular.json`).
+   `TSI.Nexus.UIApp/`.
+3. Find/replace em massa (`namespace TSI.Nexus` → `namespace TSI.Nexus`, `TSI.Nexus.` →
+   `TSI.Nexus.` em `.csproj`/`.sln`/`web.config`, `@nexus/core` → `@nexus/core` nos 146
+   arquivos, `tsi.nexus.uiapp` → `tsi.nexus.uiapp` em `package.json`/`angular.json`).
 4. Atualizar `.github/workflows/deploy.yml`, `README.md`, `CLAUDE.md`.
 5. `dotnet build TSI.Nexus.sln` — 0 erros.
 6. `dotnet test` — suíte completa passando (376 testes atualmente).

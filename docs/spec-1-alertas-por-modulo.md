@@ -24,7 +24,7 @@ módulo — só o `*ngIf="user$ | async as user"` genérico de "está logado"):
 | Itens de pedido em atraso/andamento | `OrderProductNotificationComponent` | `OrderProductService.getDelayed()` | **SalesOrdersModule** |
 | Pagamentos atrasados/pendentes | `PaymentNotificationComponent` | `PaymentService.getDelayed()` | **FinanceModule** |
 
-Todos os 4 vivem em `TSI.Friday.UIApp/src/app/navbar/components/`, montados direto em
+Todos os 4 vivem em `TSI.Nexus.UIApp/src/app/navbar/components/`, montados direto em
 `navbar.component.html` (linhas 25, 30, 34, 37).
 
 **Fora de escopo desta spec**: o card "Devoluções em Atraso" do dashboard (Home) é o mesmo domínio
@@ -140,13 +140,13 @@ precisa de migration.
 ## 4. Arquivos a alterar
 
 **Backend:**
-- `TSI.Friday.Contracts/src/TSI.Friday.Contracts/Models/FeatureToggleKeys.cs`
-- `TSI.Friday.Data/src/TSI.Friday.Data/DatabaseSeeder.cs`
+- `TSI.Nexus.Contracts/src/TSI.Nexus.Contracts/Models/FeatureToggleKeys.cs`
+- `TSI.Nexus.Data/src/TSI.Nexus.Data/DatabaseSeeder.cs`
 
 **Frontend:**
-- `TSI.Friday.UIApp/src/app/core/models/feature-toggle.model.ts`
-- `TSI.Friday.UIApp/src/app/navbar/navbar.component.ts`
-- `TSI.Friday.UIApp/src/app/navbar/navbar.component.html`
+- `TSI.Nexus.UIApp/src/app/core/models/feature-toggle.model.ts`
+- `TSI.Nexus.UIApp/src/app/navbar/navbar.component.ts`
+- `TSI.Nexus.UIApp/src/app/navbar/navbar.component.html`
 
 ## 5. Verificação
 

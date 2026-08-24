@@ -1,0 +1,15 @@
+using System;
+using System.Threading.Tasks;
+
+namespace TSI.Nexus.Repository.Overdue
+{
+    public interface IOverdueRepository
+    {
+        /// <summary>
+        /// Marks Payments whose due date has passed and are still pending as overdue.
+        /// </summary>
+        /// <param name="systemUserId">The user ID to be recorded as the modifier of the affected records.</param>
+        /// <returns>How many Payments were marked as overdue.</returns>
+        Task<int> MarkOverduePaymentsAsync(string systemUserId);
+    }
+}

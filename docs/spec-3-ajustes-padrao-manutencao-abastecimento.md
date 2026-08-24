@@ -209,14 +209,14 @@ class="nav-header">` inline; "Fretamento" segue o mesmo mecanismo.
 ## 7. Arquivos a criar/alterar (visão geral)
 
 **Backend:**
-- `TSI.Friday.Contracts/.../Models/VehicleMaintenanceProduct.cs` (novo), `FuelLog.cs` (+`ProductId`,
+- `TSI.Nexus.Contracts/.../Models/VehicleMaintenanceProduct.cs` (novo), `FuelLog.cs` (+`ProductId`,
   `ProductSku`, `ProductName`, `Status`), `VehicleMaintenance.cs` (-`ProductId`/`PartQuantity`),
   `Attachment.cs` (+`VehicleId`, `DriverId`), `SelectableOptionGroup.cs` (+`FuelLogStatus`)
-- `TSI.Friday.Data/.../Interceptors/MaintenancePartsStockAdjustingSaveChangesInterceptor.cs`
+- `TSI.Nexus.Data/.../Interceptors/MaintenancePartsStockAdjustingSaveChangesInterceptor.cs`
   (reescrito), `FuelLogStockAdjustingSaveChangesInterceptor.cs` (novo)
-- `TSI.Friday.Data/.../Seed/SelectableOptionSeeder.cs` (+3 valores), `DemoDataSeeder.cs`
+- `TSI.Nexus.Data/.../Seed/SelectableOptionSeeder.cs` (+3 valores), `DemoDataSeeder.cs`
   (+BuildPurchaseOrders/BuildPurchaseOrderProducts/pagamentos), migrations novas
-- `TSI.Friday.Services/.../VehicleMaintenanceService.cs`, `FuelLogService.cs`,
+- `TSI.Nexus.Services/.../VehicleMaintenanceService.cs`, `FuelLogService.cs`,
   `TransactionService.cs` (sem mudança de lógica, só o que já existe passa a ser exercitado),
   `AttachmentService.cs` (+GetByVehicleId/GetByDriverId + path resolution)
 - Controllers: `VehicleMaintenanceProductsController.cs` (novo), `FuelLogsController.cs` (+campos),

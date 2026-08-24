@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TSI.Friday.UIApp
+        working-directory: TSI.Nexus.UIApp
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +31,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: TSI.Friday.UIApp/dist/tsi.friday.uiapp/browser/
+          local-dir: TSI.Nexus.UIApp/dist/tsi.nexus.uiapp/browser/
           server-dir: /www/app/
 
   deploy-backend:
@@ -47,7 +47,7 @@ jobs:
       - name: Publish API (self-contained win-x64)
         run: >
           dotnet publish
-          TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/TSI.Friday.WebAPI.csproj
+          TSI.Nexus.WebAPI/src/TSI.Nexus.WebAPI/TSI.Nexus.WebAPI.csproj
           -c Release -r win-x64 --self-contained true
           -o publish/backend
 
@@ -59,7 +59,7 @@ jobs:
           MailJet__ApiKey: ${{ secrets.MAILJET_API_KEY }}
           MailJet__SecretKey: ${{ secrets.MAILJET_SECRET_KEY }}
         run: |
-          envsubst < TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.example.xml > publish/backend/web.config
+          envsubst < TSI.Nexus.WebAPI/src/TSI.Nexus.WebAPI/web.config.Production.example.xml > publish/backend/web.config
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TSI.Friday.UIApp
+        working-directory: TSI.Nexus.UIApp
     steps:
       - uses: actions/checkout@v4
 
@@ -112,7 +112,7 @@ jobs:
             set ssl:verify-certificate no;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
-            mirror -R --verbose --parallel=1 --no-perms dist/tsi.friday.uiapp/browser/ /www/serodio-app/;
+            mirror -R --verbose --parallel=1 --no-perms dist/tsi.nexus.uiapp/browser/ /www/serodio-app/;
             bye
           "
 
@@ -131,7 +131,7 @@ jobs:
         # installed and launches via the shared "dotnet" command (see web.config.Production.example.xml).
         run: >
           dotnet publish
-          TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/TSI.Friday.WebAPI.csproj
+          TSI.Nexus.WebAPI/src/TSI.Nexus.WebAPI/TSI.Nexus.WebAPI.csproj
           -c Release
           -o publish/backend
 
@@ -139,7 +139,7 @@ jobs:
         # Sem secrets, sem envsubst: ConnectionStrings/JWT/MailJet vivem só no appsettings.json
         # mantido manualmente no servidor (veja o exclude abaixo).
         run: |
-          cp TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.Serodio.xml publish/backend/web.config
+          cp TSI.Nexus.WebAPI/src/TSI.Nexus.WebAPI/web.config.Production.Serodio.xml publish/backend/web.config
 
       - name: Deploy to FTP
         # SamKirkland/FTP-Deploy-Action (Node/basic-ftp) hits the same "ECONNRESET (data socket)"

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  web.config de produção do branch serodioturismo, publicado direto pelo workflow
+  .github/workflows/deploy.yml (job deploy-backend-serodio) a cada push —sem placeholders,
+  sem envsubst, sem GitHub Secrets envolvidos.
+
+  Nada sensível fica aqui: ConnectionStrings/JWT/MailJet vivem só no appsettings.json mantido
+  manualmente no servidor (excluído do sync do FTP-Deploy-Action de propósito, pra nunca ser
+  sobrescrito por um deploy). Só ASPNETCORE_ENVIRONMENT=Production é necessário aqui, e é isso
+  que faz o ASP.NET Core carregar esse appsettings.json.
+-->
+<configuration>
+  <system.webServer>
+    <handlers accessPolicy="Read, Write, Script">
+      <add
+        name="aspNetCore"
+        path="*"
+        verb="*"
+        modules="AspNetCoreModuleV2"
+        resourceType="Unspecified"
+      />
+    </handlers>
+
+    <aspNetCore
+      processPath="dotnet"
+      arguments=".\TSI.Nexus.WebAPI.dll"
+      stdoutLogEnabled="false"
+      stdoutLogFile=".\stdout"
+      hostingModel="OutOfProcess"
+    >
+      <environmentVariables>
+        <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
+      </environmentVariables>
+    </aspNetCore>
+
+    <directoryBrowse enabled="false" />
+    <urlCompression doDynamicCompression="false" />
+    <defaultDocument enabled="true">
+      <files>
+        <clear />
+        <add value="index.htm" />
+        <add value="index.html" />
+        <add value="index.php" />
+        <add value="index.asp" />
+        <add value="default.asp" />
+        <add value="index.aspx" />
+        <add value="default.aspx" />
+      </files>
+    </defaultDocument>
+  </system.webServer>
+</configuration>

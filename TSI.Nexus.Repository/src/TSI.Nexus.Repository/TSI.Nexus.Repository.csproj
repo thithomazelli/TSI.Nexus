@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TSI.Nexus.Contracts\src\TSI.Nexus.Contracts\TSI.Nexus.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Nexus.Data\src\TSI.Nexus.Data\TSI.Nexus.Data.csproj" />
+  </ItemGroup>
+
+  <!-- Direct package references to override transitive older versions and avoid NU1605 package downgrade errors -->
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

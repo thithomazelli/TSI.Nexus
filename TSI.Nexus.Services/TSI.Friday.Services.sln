@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSI.Nexus.Services", "src\TSI.Nexus.Services\TSI.Nexus.Services.csproj", "{FDEE635A-BFB9-45B8-8850-ACC4193783E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSI.Nexus.Services.Tests", "tests\TSI.Nexus.Services.Tests\TSI.Nexus.Services.Tests.csproj", "{A3809196-EB3D-4AD3-9CFF-3567C6DBC7EB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDEE635A-BFB9-45B8-8850-ACC4193783E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDEE635A-BFB9-45B8-8850-ACC4193783E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDEE635A-BFB9-45B8-8850-ACC4193783E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDEE635A-BFB9-45B8-8850-ACC4193783E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3809196-EB3D-4AD3-9CFF-3567C6DBC7EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3809196-EB3D-4AD3-9CFF-3567C6DBC7EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3809196-EB3D-4AD3-9CFF-3567C6DBC7EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3809196-EB3D-4AD3-9CFF-3567C6DBC7EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {85C403DD-5A9F-44C1-8AD5-2882E04F14A3}
+	EndGlobalSection
+EndGlobal

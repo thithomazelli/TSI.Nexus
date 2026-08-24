@@ -1,0 +1,42 @@
+using Microsoft.Extensions.Configuration;
+using TSI.Nexus.Contracts.Interfaces;
+using TSI.Nexus.Contracts.Models;
+using TSI.Nexus.Repository.Overdue;
+
+namespace TSI.Nexus.Services.Services
+{
+    public class OverdueService : IOverdueService
+    {
+        private readonly IOverdueRepository _repo;
+        private readonly IAlertConfigService _alertConfigService;
+        private readonly string _systemUserId;
+
+        #region Public methods
+
+        public OverdueService(
+            IOverdueRepository repo,
+            IAlertConfigService alertConfigService,
+            IConfiguration configuration
+        )
+        {
+            _repo = repo;
+            _alertConfigService = alertConfigService;
+            _systemUserId = configuration["OverdueSystemUserId"] ?? "overdue-batch";
+        }
+
+        /// <inheritdoc />
+        public async Task<OverdueResult> RunOverdueUpdateAsync()
+        {
+            if (!await _alertConfigService.IsEnabledAsync(AlertConfigKeys.DashboardOverdueReturns))
+            {
+                return new OverdueResult { PaymentsUpdated = 0 };
+            }
+
+            var payments = await _repo.MarkOverduePaymentsAsync(_systemUserId);
+
+            return new OverdueResult { PaymentsUpdated = payments };
+        }
+
+        #endregion Public methods
+    }
+}

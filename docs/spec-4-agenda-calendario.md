@@ -94,7 +94,7 @@ biblioteca não é uma decisão que costumo tomar sozinho.
 
 O pedido foi *"ligação com praticamente todas as entidades do projeto, todas as que tiverem datas
 dentro dela"*. Levantamento de todo `DateTime` que não é `CreateDate`/`ModifyDate` em
-`TSI.Friday.Contracts/Models/*.cs`:
+`TSI.Nexus.Contracts/Models/*.cs`:
 
 | Entidade | Campo(s) de data |
 |---|---|
@@ -416,22 +416,22 @@ no painel existente (`alert-configs.component.ts` itera todas as `AlertConfig` d
 ## 8. Arquivos a criar/alterar
 
 **Backend:**
-- `TSI.Friday.Contracts/Models/Event.cs` (novo)
-- `TSI.Friday.Contracts/Models/EventParticipant.cs` (novo)
-- `TSI.Friday.Contracts/Models/SelectableOption.cs` (+ `Color`)
-- `TSI.Friday.Contracts/Enums/SelectableOptionGroup.cs` (+ `EventType`)
-- `TSI.Friday.Contracts/Models/FeatureToggleKeys.cs` (+ `AgendaModule`, `Event`, `UpcomingEventAlert`)
-- `TSI.Friday.Contracts/Models/AlertConfigKeys.cs` (+ `UpcomingEventReminder`)
-- `TSI.Friday.Contracts/Models/DTOs/EventDto.cs`, `EventParticipantDto.cs` (novos)
-- `TSI.Friday.Contracts/Interfaces/IEventService.cs`, `IEventParticipantService.cs` (novos)
-- `TSI.Friday.Services/Services/EventService.cs`, `EventParticipantService.cs` (novos)
-- `TSI.Friday.Services/tests/.../EventServiceTests.cs`, `EventParticipantServiceTests.cs` (novos)
-- `TSI.Friday.WebAPI/Controllers/EventsController.cs`, `EventParticipantsController.cs` (novos)
-- `TSI.Friday.IoC/MappingProfile.cs` (+ mapeamentos `Event`/`EventParticipant`)
-- `TSI.Friday.IoC/NativeInjector.cs` (+ registros de serviço/repositório)
-- `TSI.Friday.Data/MyDBContextEF.cs` (+ `DbSet<Event>`, `DbSet<EventParticipant>`)
+- `TSI.Nexus.Contracts/Models/Event.cs` (novo)
+- `TSI.Nexus.Contracts/Models/EventParticipant.cs` (novo)
+- `TSI.Nexus.Contracts/Models/SelectableOption.cs` (+ `Color`)
+- `TSI.Nexus.Contracts/Enums/SelectableOptionGroup.cs` (+ `EventType`)
+- `TSI.Nexus.Contracts/Models/FeatureToggleKeys.cs` (+ `AgendaModule`, `Event`, `UpcomingEventAlert`)
+- `TSI.Nexus.Contracts/Models/AlertConfigKeys.cs` (+ `UpcomingEventReminder`)
+- `TSI.Nexus.Contracts/Models/DTOs/EventDto.cs`, `EventParticipantDto.cs` (novos)
+- `TSI.Nexus.Contracts/Interfaces/IEventService.cs`, `IEventParticipantService.cs` (novos)
+- `TSI.Nexus.Services/Services/EventService.cs`, `EventParticipantService.cs` (novos)
+- `TSI.Nexus.Services/tests/.../EventServiceTests.cs`, `EventParticipantServiceTests.cs` (novos)
+- `TSI.Nexus.WebAPI/Controllers/EventsController.cs`, `EventParticipantsController.cs` (novos)
+- `TSI.Nexus.IoC/MappingProfile.cs` (+ mapeamentos `Event`/`EventParticipant`)
+- `TSI.Nexus.IoC/NativeInjector.cs` (+ registros de serviço/repositório)
+- `TSI.Nexus.Data/MyDBContextEF.cs` (+ `DbSet<Event>`, `DbSet<EventParticipant>`)
 - Migration nova (tabelas `Event`, `EventParticipant`, coluna `SelectableOption.Color`)
-- `TSI.Friday.Data/Seed/DatabaseSeeder.cs` (feature toggles + alert config + tipos de evento)
+- `TSI.Nexus.Data/Seed/DatabaseSeeder.cs` (feature toggles + alert config + tipos de evento)
 
 **Frontend:**
 - `package.json` (+ `@fullcalendar/angular`, `@fullcalendar/core`, `@fullcalendar/daygrid`,

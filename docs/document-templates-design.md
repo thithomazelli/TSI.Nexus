@@ -51,9 +51,9 @@ o "esqueleto" HTML de um template em vez de ter o HTML inteiro fixo na função.
 
 ```csharp
 using System;
-using TSI.Friday.Contracts.Enums;
+using TSI.Nexus.Contracts.Enums;
 
-namespace TSI.Friday.Contracts.Models
+namespace TSI.Nexus.Contracts.Models
 {
     public class DocumentTemplate : BaseModel
     {
@@ -71,7 +71,7 @@ namespace TSI.Friday.Contracts.Models
 ```
 
 ```csharp
-namespace TSI.Friday.Contracts.Enums
+namespace TSI.Nexus.Contracts.Enums
 {
     public enum DocumentTemplateType
     {

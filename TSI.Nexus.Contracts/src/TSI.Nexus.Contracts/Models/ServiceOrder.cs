@@ -1,0 +1,39 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using TSI.Nexus.Contracts.Enums;
+
+namespace TSI.Nexus.Contracts.Models
+{
+    public class ServiceOrder : BaseModel
+    {
+        public string Number { get; set; } = string.Empty;
+
+        public DateTime IssueDate { get; set; }
+
+        public DateTime? CompletionDate { get; set; }
+
+        public string Description { get; set; } = string.Empty;
+
+        public ServiceOrderStatus Status { get; set; }
+
+        [ForeignKey("Trip")]
+        public Guid TripId { get; set; }
+
+        [Required]
+        public virtual Trip Trip { get; set; } = null!;
+
+        [ForeignKey("Driver")]
+        public Guid DriverId { get; set; }
+
+        [Required]
+        public virtual Driver Driver { get; set; } = null!;
+
+        [ForeignKey("Vehicle")]
+        public Guid? VehicleId { get; set; }
+
+        public virtual Vehicle? Vehicle { get; set; }
+
+        public virtual Commission? Commission { get; set; }
+    }
+}

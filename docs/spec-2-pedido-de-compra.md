@@ -239,24 +239,24 @@ pra `SalesOrdersModule`/`QuotesModule`). Rota com `data: { featureFlag: 'Purchas
 ## 7. Arquivos a criar/alterar
 
 **Backend:**
-- `TSI.Friday.Contracts/.../Models/PurchaseOrder.cs`, `PurchaseOrderProduct.cs` (novos)
-- `TSI.Friday.Contracts/.../Models/OrderProduct.cs` (-`StartDate`/`EndDate`/`Status`)
-- `TSI.Friday.Contracts/.../Enums/OrderProductStatus.cs` (removido)
-- `TSI.Friday.Contracts/.../Models/FeatureToggleKeys.cs` (+`PurchaseOrdersModule`, +`StockAlert`,
+- `TSI.Nexus.Contracts/.../Models/PurchaseOrder.cs`, `PurchaseOrderProduct.cs` (novos)
+- `TSI.Nexus.Contracts/.../Models/OrderProduct.cs` (-`StartDate`/`EndDate`/`Status`)
+- `TSI.Nexus.Contracts/.../Enums/OrderProductStatus.cs` (removido)
+- `TSI.Nexus.Contracts/.../Models/FeatureToggleKeys.cs` (+`PurchaseOrdersModule`, +`StockAlert`,
   -`RentalReport`, -`OrderProductAlert`)
-- `TSI.Friday.Contracts/.../Models/Attachment.cs` (+`PurchaseOrderId`)
-- `TSI.Friday.Contracts/.../Interfaces/IPurchaseOrderService.cs`, `IPurchaseOrderProductService.cs`
-- `TSI.Friday.Services/.../PurchaseOrderService.cs`, `PurchaseOrderProductService.cs`
-- `TSI.Friday.Services/.../OrderProductService.cs`, `OrderService.cs`, `QuoteProductService.cs`
+- `TSI.Nexus.Contracts/.../Models/Attachment.cs` (+`PurchaseOrderId`)
+- `TSI.Nexus.Contracts/.../Interfaces/IPurchaseOrderService.cs`, `IPurchaseOrderProductService.cs`
+- `TSI.Nexus.Services/.../PurchaseOrderService.cs`, `PurchaseOrderProductService.cs`
+- `TSI.Nexus.Services/.../OrderProductService.cs`, `OrderService.cs`, `QuoteProductService.cs`
   (remover uso de `OrderProductStatus`)
-- `TSI.Friday.Services/.../DashboardService.cs` (card 4 vira placeholder fixo)
-- `TSI.Friday.Data/.../Interceptors/StockAdjustingSaveChangesInterceptor.cs` (simplificar, sem
+- `TSI.Nexus.Services/.../DashboardService.cs` (card 4 vira placeholder fixo)
+- `TSI.Nexus.Data/.../Interceptors/StockAdjustingSaveChangesInterceptor.cs` (simplificar, sem
   branches de `Returned`)
-- `TSI.Friday.Data/.../Interceptors/PurchaseOrderStockIncrementingSaveChangesInterceptor.cs` (novo)
-- `TSI.Friday.Data/.../DatabaseSeeder.cs` (+3 toggles, -2 toggles), migration nova
-- `TSI.Friday.Services/.../AttachmentService.cs` (+`GetByPurchaseOrderId`)
-- `TSI.Friday.IoC/.../MappingProfile.cs`, DI registration
-- `TSI.Friday.WebAPI/.../PurchaseOrderController.cs`, `PurchaseOrderProductController.cs`
+- `TSI.Nexus.Data/.../Interceptors/PurchaseOrderStockIncrementingSaveChangesInterceptor.cs` (novo)
+- `TSI.Nexus.Data/.../DatabaseSeeder.cs` (+3 toggles, -2 toggles), migration nova
+- `TSI.Nexus.Services/.../AttachmentService.cs` (+`GetByPurchaseOrderId`)
+- `TSI.Nexus.IoC/.../MappingProfile.cs`, DI registration
+- `TSI.Nexus.WebAPI/.../PurchaseOrderController.cs`, `PurchaseOrderProductController.cs`
 - Testes unitários correspondentes em cada projeto `.Tests` (novos + ajustados pela remoção de
   status)
 

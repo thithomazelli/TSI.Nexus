@@ -18,23 +18,23 @@ Material/AdminLTE + ag-Grid + ApexCharts no frontend.
 
 **Backend** (a partir da raiz do repo):
 ```bash
-dotnet build TSI.Friday.sln                 # build completo (todas as camadas)
+dotnet build TSI.Nexus.sln                 # build completo (todas as camadas)
 dotnet test                                  # todos os testes (xUnit/Moq/FluentAssertions)
 dotnet test --filter "FullyQualifiedName~BusinessPartnerServiceTests"   # uma classe de teste
 dotnet test --filter "FullyQualifiedName~BusinessPartnerService_Remove_ShouldRemoveBusinessPartnerSuccessfully_WhenMethodIsCalledWithAValidObject"  # um teste
-dotnet test TSI.Friday.Services/tests/TSI.Friday.Services.Tests   # só um projeto de teste
+dotnet test TSI.Nexus.Services/tests/TSI.Nexus.Services.Tests   # só um projeto de teste
 ```
-Projetos de teste (um por camada): `TSI.Friday.Contracts.Tests`, `TSI.Friday.Data.Tests`,
-`TSI.Friday.Repository.Tests`, `TSI.Friday.Services.Tests`, `TSI.Friday.IoC.Tests`,
-`TSI.Friday.WebAPI.Tests`.
+Projetos de teste (um por camada): `TSI.Nexus.Contracts.Tests`, `TSI.Nexus.Data.Tests`,
+`TSI.Nexus.Repository.Tests`, `TSI.Nexus.Services.Tests`, `TSI.Nexus.IoC.Tests`,
+`TSI.Nexus.WebAPI.Tests`.
 
 ```bash
-cd TSI.Friday.WebAPI/src/TSI.Friday.WebAPI
+cd TSI.Nexus.WebAPI/src/TSI.Nexus.WebAPI
 dotnet ef database update    # aplica migrations no MySQL configurado
 dotnet run
 ```
 
-**Frontend** (a partir de `TSI.Friday.UIApp/`):
+**Frontend** (a partir de `TSI.Nexus.UIApp/`):
 ```bash
 npm start                              # ng serve
 npm run build                          # build produção + replace-index-href
@@ -56,7 +56,7 @@ Todo código novo (backend e frontend) segue **SOLID** e usa **design patterns**
 simplificam em vez de complicar — não como caixa a marcar, mas porque a base já é construída em
 cima disso: a separação em camadas (`WebAPI → IoC → Services → Repository → Data → Contracts`) é
 SRP/DIP aplicados na prática, o `Repository<T>` genérico é o Repository pattern, a injeção de
-interfaces (`I*Service`, `I*Repository`) via `TSI.Friday.IoC` é o que viabiliza testar cada camada
+interfaces (`I*Service`, `I*Repository`) via `TSI.Nexus.IoC` é o que viabiliza testar cada camada
 isolada com mock. Ao adicionar uma classe/serviço/componente novo, preferir manter essa mesma
 disciplina (interface + implementação, responsabilidade única, favorecer composição/injeção a
 herança ou a `if/switch` gigante) em vez de atalhos que quebrem esse desenho — é isso que mantém o
@@ -80,7 +80,7 @@ WebAPI → IoC → Services → Repository → Data → Contracts
 ### Sistema de feature toggles (módulos)
 
 Tabela `FeatureToggle` (`Key`, `Name`, `Description`, `GroupKey` nullable, `Enabled`). Dois tipos
-de chave, ambos em `FeatureToggleKeys.cs` (`TSI.Friday.Contracts`):
+de chave, ambos em `FeatureToggleKeys.cs` (`TSI.Nexus.Contracts`):
 - **Group keys** (`GroupKey = null`): os 5 módulos top-level — `FleetModule`, `FinanceModule`,
   `QuotesModule`, `SalesOrdersModule`, `AttachmentsModule`.
 - **Entity keys** (`GroupKey` = a chave do grupo dono): controle fino dentro de um módulo.
@@ -119,7 +119,7 @@ Desenho completo em `docs/feature-toggle-design.md`.
 
 ## Arquitetura do frontend
 
-`TSI.Friday.UIApp/src/app` — **100% standalone components**, sem `NgModule` (bootstrap via
+`TSI.Nexus.UIApp/src/app` — **100% standalone components**, sem `NgModule` (bootstrap via
 `app.config.ts` + `bootstrapApplication`, rotas via `app.routes.ts` com `loadChildren` apontando
 para `*.routes.ts` por feature, não para módulos). Um `*-shared.module.ts`/`.module.ts` residual
 ainda aparece em alguns diretórios (`orders`, `trips`, `business-partner`, `order-products`, etc.)

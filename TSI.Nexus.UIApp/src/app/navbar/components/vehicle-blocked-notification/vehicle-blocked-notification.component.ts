@@ -1,0 +1,43 @@
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { Vehicle, VehicleService, VehicleStatus, WebApiResponse } from '@nexus/core';
+import { NgIf, NgFor } from '@angular/common';
+import { TranslatePipe } from '../../../core/pipes/translate.pipe';
+
+@Component({
+    selector: 'app-vehicle-blocked-notification',
+    templateUrl: './vehicle-blocked-notification.component.html',
+    styleUrl: './vehicle-blocked-notification.component.scss',
+    imports: [
+        NgIf,
+        NgFor,
+        RouterLink,
+        TranslatePipe,
+    ],
+})
+export class VehicleBlockedNotificationComponent implements OnInit {
+  vehicles: Vehicle[] = [];
+  total = 0;
+
+  constructor(
+    private vehicleService: VehicleService,
+    private router: Router,
+  ) {}
+
+  ngOnInit(): void {
+    this.vehicleService.getAll().subscribe((response: WebApiResponse<Vehicle[]>) => {
+      this.vehicles = (response?.data || []).filter(
+        (v) => v.status === VehicleStatus.Blocked,
+      );
+      this.total = this.vehicles.length;
+    });
+  }
+
+  get showBadge(): boolean {
+    return this.total > 0;
+  }
+
+  openVehicle(vehicle: Vehicle): void {
+    this.router.navigateByUrl(`/vehicles/${vehicle.id}`);
+  }
+}

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Publish as self-contained by default targeting Windows x64. Override on CLI with -r or properties if needed. -->
+    <!-- Optional: create a single-file executable (test thoroughly before enabling) -->
+    <!-- <PublishSingleFile>true</PublishSingleFile> -->
+    <!-- Optional: disable trimming to avoid reflection/runtime issues -->
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <!-- Exclude runtime-generated directories from build -->
+  <ItemGroup>
+    <Content Remove="attachments\**" />
+    <None Remove="attachments\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\TSI.Nexus.Contracts\src\TSI.Nexus.Contracts\TSI.Nexus.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Nexus.Data\src\TSI.Nexus.Data\TSI.Nexus.Data.csproj" />
+    <ProjectReference Include="..\..\..\TSI.Nexus.IoC\src\TSI.Nexus.IoC\TSI.Nexus.IoC.csproj" />
+  </ItemGroup>
+
+  <!-- web.config file is present in project folder and will be included by default implicit content items -->
+</Project>

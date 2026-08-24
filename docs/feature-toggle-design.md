@@ -59,9 +59,9 @@ já são hoje.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using TSI.Friday.Contracts.Enums;
+using TSI.Nexus.Contracts.Enums;
 
-namespace TSI.Friday.Contracts.Models
+namespace TSI.Nexus.Contracts.Models
 {
     public class Trip : BaseModel
     {

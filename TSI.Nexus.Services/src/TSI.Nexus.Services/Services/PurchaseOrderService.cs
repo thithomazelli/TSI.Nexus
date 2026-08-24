@@ -1,0 +1,452 @@
+using System.Text.RegularExpressions;
+using AutoMapper;
+using TSI.Nexus.Contracts.Enums;
+using TSI.Nexus.Contracts.Interfaces;
+using TSI.Nexus.Contracts.Models;
+using TSI.Nexus.Contracts.Models.DTOs;
+using TSI.Nexus.Contracts.Utilities;
+
+namespace TSI.Nexus.Services
+{
+    public class PurchaseOrderService : IPurchaseOrderService
+    {
+        #region Properties
+
+        private readonly IRepository<PurchaseOrder> _repository;
+        private readonly ITransactionService _transactionService;
+        private readonly ISequenceService _sequenceService;
+        private readonly ICurrentUserService _currentUserService;
+        private readonly IMapper _mapper;
+        private readonly IFeatureToggleService _featureToggleService;
+        private readonly ILogService _logService;
+
+        #endregion Properties
+
+        #region Public methods
+
+        public PurchaseOrderService(
+            IRepository<PurchaseOrder> repository,
+            ITransactionService transactionService,
+            ISequenceService sequenceService,
+            ICurrentUserService currentUserService,
+            IMapper mapper,
+            IFeatureToggleService featureToggleService,
+            ILogService logService
+        )
+        {
+            _repository = repository;
+            _transactionService = transactionService;
+            _sequenceService = sequenceService;
+            _currentUserService = currentUserService;
+            _mapper = mapper;
+            _featureToggleService = featureToggleService;
+            _logService = logService;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<PurchaseOrderDto>> Add(PurchaseOrderDto purchaseOrderDto)
+        {
+            WebApiResponse<PurchaseOrderDto> result = new();
+
+            try
+            {
+                var prefix = BuildPrefixFromBusinessPartnerName(
+                    purchaseOrderDto.BusinessPartnerName
+                );
+                var next = await _sequenceService.GetNextValue("PurchaseOrderNumberSeq");
+                purchaseOrderDto.PurchaseOrderNumber = $"{prefix}-{next:D5}";
+                purchaseOrderDto.Description = string.IsNullOrEmpty(purchaseOrderDto.Description)
+                    ? $"Pedido de Compra -  {purchaseOrderDto.PurchaseOrderNumber}"
+                    : purchaseOrderDto.Description;
+
+                // Save Transaction first (if provided) so we can assign TransactionId to
+                // PurchaseOrder before saving PurchaseOrder
+                var transactionResult = new WebApiResponse<TransactionDto>();
+
+                var transactionDto = purchaseOrderDto.Transaction;
+                if (transactionDto != null)
+                {
+                    transactionDto.Description =
+                        $"Transação do Pedido de Compra - {purchaseOrderDto.PurchaseOrderNumber}";
+                    transactionResult = await _transactionService.Add(transactionDto);
+                    purchaseOrderDto.Transaction = null;
+                    purchaseOrderDto.TransactionId = transactionResult.Data?.Id ?? null;
+                }
+                else if (purchaseOrderDto.TransactionId != null)
+                {
+                    transactionResult = await _transactionService.FindById(
+                        purchaseOrderDto.TransactionId.Value
+                    );
+                    if (
+                        transactionResult.Status == ResponseStatus.Success
+                        && transactionResult.Data != null
+                    )
+                    {
+                        purchaseOrderDto.TransactionId = transactionResult.Data.Id;
+                    }
+                }
+
+                var purchaseOrderEntity = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
+
+                await _repository.AddAsync(purchaseOrderEntity);
+
+                if (transactionResult?.Data != null)
+                {
+                    transactionResult.Data.PurchaseOrderId = purchaseOrderEntity.Id;
+                    await _transactionService.UpdatePurchaseOrderId(transactionResult.Data);
+                }
+
+                var responseDto = _mapper.Map<PurchaseOrderDto>(purchaseOrderEntity);
+
+                result.Data = responseDto;
+                result.Status = ResponseStatus.Success;
+                result.Message =
+                    $"Pedido de Compra {purchaseOrderDto.PurchaseOrderNumber} cadastrado com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "PurchaseOrderService.Add", purchaseOrderDto);
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível cadastrar o Pedido de Compra {purchaseOrderDto?.PurchaseOrderNumber} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<PurchaseOrderDto>> Update(
+            PurchaseOrderDto purchaseOrderDto
+        )
+        {
+            WebApiResponse<PurchaseOrderDto> result = new();
+
+            try
+            {
+                var purchaseOrderEntity = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
+
+                var ownershipMessage = await GetOwnershipErrorMessageByPurchaseOrderId(
+                    purchaseOrderEntity.Id
+                );
+                if (!string.IsNullOrEmpty(ownershipMessage))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message = ownershipMessage;
+                    return result;
+                }
+
+                await _repository.UpdateAsync(purchaseOrderEntity);
+
+                if (purchaseOrderDto.Transaction != null)
+                {
+                    var transactionDto = purchaseOrderDto.Transaction;
+                    transactionDto.PurchaseOrderId = purchaseOrderEntity.Id;
+
+                    var updRes = await _transactionService.Update(transactionDto);
+                    if (updRes.Status == ResponseStatus.Success && updRes.Data != null)
+                    {
+                        purchaseOrderDto.Transaction = updRes.Data;
+                    }
+                }
+
+                result.Data = _mapper.Map<PurchaseOrderDto>(purchaseOrderEntity);
+                result.Data.Transaction = purchaseOrderDto.Transaction;
+
+                result.Status = ResponseStatus.Success;
+                result.Message =
+                    $"Pedido de Compra {purchaseOrderDto.PurchaseOrderNumber} atualizado com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "PurchaseOrderService.Update", purchaseOrderDto);
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível atualizar os dados do Pedido de Compra {purchaseOrderDto?.PurchaseOrderNumber} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<PurchaseOrderDto>> Remove(
+            PurchaseOrderDto purchaseOrderDto
+        )
+        {
+            WebApiResponse<PurchaseOrderDto> result = new();
+
+            try
+            {
+                var purchaseOrderEntity = await _repository.GetByIdAsync(
+                    purchaseOrderDto.Id,
+                    o => o.PurchaseOrderProducts,
+                    p => p.Transaction
+                );
+
+                if (purchaseOrderEntity == null)
+                {
+                    _logService.LogException(
+                        new Exception(
+                            $"Pedido de Compra {purchaseOrderDto.PurchaseOrderNumber} não encontrado."
+                        ),
+                        "PurchaseOrderService.Remove",
+                        purchaseOrderDto
+                    );
+                    result.Data = null;
+                    result.Status = ResponseStatus.Error;
+                    result.Message =
+                        $"Pedido de Compra {purchaseOrderDto.PurchaseOrderNumber} não encontrado.";
+                    return result;
+                }
+
+                var ownershipMessage = GetOwnershipErrorMessage(purchaseOrderEntity.CreateUserId);
+                if (!string.IsNullOrEmpty(ownershipMessage))
+                {
+                    result.Status = ResponseStatus.Warning;
+                    result.Message = ownershipMessage;
+                    return result;
+                }
+
+                await _repository.RemoveAsync(purchaseOrderEntity);
+
+                var transactionDto = _mapper.Map<TransactionDto>(purchaseOrderEntity.Transaction);
+                await _transactionService.Remove(transactionDto);
+
+                result.Data = purchaseOrderDto;
+                result.Status = ResponseStatus.Success;
+                result.Message =
+                    $"Pedido de Compra {purchaseOrderDto.PurchaseOrderNumber} removido com sucesso.";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "PurchaseOrderService.Remove", purchaseOrderDto);
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível remover o Pedido de Compra {purchaseOrderDto?.PurchaseOrderNumber} na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<PurchaseOrderDto>>> FindAll()
+        {
+            WebApiResponse<IEnumerable<PurchaseOrderDto>> result = new();
+
+            try
+            {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.PurchaseOrder,
+                        FeatureToggleKeys.PurchaseOrdersModule
+                    )
+                )
+                {
+                    result.Data = [];
+                    result.Status = ResponseStatus.Success;
+                    result.Message = "0 registro(s) encontrado(s).";
+                    return result;
+                }
+
+                var purchaseOrders = await _repository.GetAllAsync(
+                    o => o.BusinessPartner,
+                    o => o.PurchaseOrderProducts,
+                    t => t.Transaction,
+                    p => p.Payments
+                );
+
+                result.Data = _mapper.Map<IEnumerable<PurchaseOrderDto>>(purchaseOrders);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "PurchaseOrderService.FindAll", null);
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de Pedidos de Compra na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<PurchaseOrderDto>> FindById(Guid? id)
+        {
+            WebApiResponse<PurchaseOrderDto> result = new();
+
+            try
+            {
+                if (
+                    !await _featureToggleService.IsEnabledAsync(
+                        FeatureToggleKeys.PurchaseOrder,
+                        FeatureToggleKeys.PurchaseOrdersModule
+                    )
+                )
+                {
+                    result.Status = ResponseStatus.Success;
+                    result.Message = $"Nenhum Pedido de Compra com o ID {id} foi encontrado";
+                    return result;
+                }
+
+                var purchaseOrder = await _repository.GetByIdAsync(
+                    id,
+                    o => o.BusinessPartner,
+                    op => op.PurchaseOrderProducts,
+                    t => t.Transaction,
+                    p => p.Transaction.Payments
+                );
+
+                if (purchaseOrder != null)
+                {
+                    var ownershipMessage = GetOwnershipErrorMessage(purchaseOrder.CreateUserId);
+                    if (!string.IsNullOrEmpty(ownershipMessage))
+                    {
+                        result.Status = ResponseStatus.Warning;
+                        result.Message = ownershipMessage;
+                        return result;
+                    }
+                }
+
+                result.Data = _mapper.Map<PurchaseOrderDto>(purchaseOrder);
+                result.Status = ResponseStatus.Success;
+                result.Message =
+                    result.Data != null
+                        ? $"Pedido de Compra {result.Data.PurchaseOrderNumber} encontrado com sucesso"
+                        : $"Nenhum Pedido de Compra com o ID {id} foi encontrado";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(ex, "PurchaseOrderService.FindById", id);
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os registros de Pedidos de Compra na base de dados. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<WebApiResponse<IEnumerable<PurchaseOrderDto>>> FindByBusinessPartnerId(
+            Guid? businessPartnerId
+        )
+        {
+            WebApiResponse<IEnumerable<PurchaseOrderDto>> result = new();
+
+            try
+            {
+                var purchaseOrders = await _repository.QueryAsync(
+                    o => o.BusinessPartnerId == businessPartnerId,
+                    p => p.Transaction
+                );
+                result.Data = _mapper.Map<IEnumerable<PurchaseOrderDto>>(purchaseOrders);
+                result.Status = ResponseStatus.Success;
+                result.Message = $"{result.Data?.Count() ?? 0} registro(s) encontrado(s).";
+            }
+            catch (Exception ex)
+            {
+                _logService.LogException(
+                    ex,
+                    "PurchaseOrderService.FindByBusinessPartnerId",
+                    businessPartnerId
+                );
+                result.Status = ResponseStatus.Error;
+                result.Message =
+                    $"Não foi possível acessar os Pedidos de Compra do BusinessPartner {businessPartnerId}. Erro: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        #endregion Public methods
+
+        #region Private methods
+
+        /// <summary>
+        /// Returns an error message when the current user is neither the creator of the
+        /// PurchaseOrder nor an Admin. Admins and requests with no resolvable current user (e.g.
+        /// system/background jobs) always pass through.
+        /// </summary>
+        private string GetOwnershipErrorMessage(string createUserId)
+        {
+            if (_currentUserService == null || _currentUserService.IsInRole("Admin"))
+            {
+                return string.Empty;
+            }
+
+            var currentUserId = _currentUserService.GetUserId();
+
+            if (string.IsNullOrEmpty(currentUserId) || string.IsNullOrEmpty(createUserId))
+            {
+                return string.Empty;
+            }
+
+            return createUserId == currentUserId
+                ? string.Empty
+                : "Você não tem permissão para acessar este Pedido de Compra, pois foi criado por outro usuário.";
+        }
+
+        /// <summary>
+        /// Looks up the PurchaseOrder's original creator on the database and validates ownership.
+        /// Used before Update, where the entity mapped from the incoming DTO has no CreateUserId
+        /// yet.
+        /// </summary>
+        private async Task<string> GetOwnershipErrorMessageByPurchaseOrderId(Guid purchaseOrderId)
+        {
+            if (_currentUserService == null || _currentUserService.IsInRole("Admin"))
+            {
+                return string.Empty;
+            }
+
+            var existingPurchaseOrders = await _repository.QueryAsync(o =>
+                o.Id == purchaseOrderId
+            );
+            var existing = existingPurchaseOrders.FirstOrDefault();
+
+            return existing == null ? string.Empty : GetOwnershipErrorMessage(existing.CreateUserId);
+        }
+
+        private static string BuildPrefixFromBusinessPartnerName(string businessPartnerName)
+        {
+            // Remove non-letter characters and whitespace, keep only A-Z letters
+            var cleaned = string.Empty;
+            if (!string.IsNullOrWhiteSpace(businessPartnerName))
+            {
+                cleaned = Regex.Replace(businessPartnerName.Normalize(), "[^A-Za-z]", string.Empty);
+                cleaned = cleaned.ToUpperInvariant();
+            }
+
+            var letters = cleaned ?? string.Empty;
+
+            char GetRandomLetter()
+            {
+                var rnd = Random.Shared;
+                return (char)('A' + rnd.Next(0, 26));
+            }
+
+            string prefix;
+
+            if (letters.Length >= 3)
+            {
+                var first = letters[0];
+                var middle = letters[letters.Length / 2];
+                var last = letters[letters.Length - 1];
+                prefix = string.Concat(first, middle, last);
+            }
+            else
+            {
+                var chars = new List<char>();
+                for (int i = 0; i < letters.Length; i++)
+                    chars.Add(letters[i]);
+
+                while (chars.Count < 3)
+                    chars.Add(GetRandomLetter());
+
+                prefix = new string(chars.ToArray());
+            }
+
+            return prefix;
+        }
+
+        #endregion Private methods
+    }
+}
