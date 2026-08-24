@@ -31,7 +31,12 @@ import {
 import { Observable, of, Subscription } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { ProductDetailsModalComponent } from '../product-details-modal/product-details-modal.component';
+// Type-only: ProductDetailsModalComponent imports this form back (renders <app-product-form> in
+// its template), so a normal import here would form a module-load-order circular dependency
+// between the two files - `import type` is erased at compile time and can't contribute to that
+// cycle. The one place this component needs the class itself at runtime (reopening the modal
+// after a cancelled delete, in remove() below) loads it dynamically instead, for the same reason.
+import type { ProductDetailsModalComponent } from '../product-details-modal/product-details-modal.component';
 import { NgClass } from '@angular/common';
 import { CurrencyFieldComponent } from '../../../shared/components/currency-field/currency-field.component';
 import { ClickDirective } from '../../../core/directives/click.directive';
@@ -230,10 +235,14 @@ export class ProductFormComponent
               data: this.data,
               id: this.data?.id,
             };
-            this.modalService.showTemplateModal(
-              ProductDetailsModalComponent,
-              initialState,
-            );
+            import(
+              '../product-details-modal/product-details-modal.component'
+            ).then(({ ProductDetailsModalComponent }) => {
+              this.modalService.showTemplateModal(
+                ProductDetailsModalComponent,
+                initialState,
+              );
+            });
           }
         }
       });

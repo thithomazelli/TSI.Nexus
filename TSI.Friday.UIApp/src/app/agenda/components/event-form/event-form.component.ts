@@ -36,7 +36,10 @@ import {
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
 import { ClickDirective } from '../../../core/directives/click.directive';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
-import { EventDetailsModalComponent } from '../event-details-modal/event-details-modal.component';
+// Type-only: EventDetailsModalComponent imports this form back (renders <app-event-form> in its
+// template), so a normal import would form a module-load-order circular dependency between the
+// two files - `import type` is erased at compile time and can't contribute to that cycle.
+import type { EventDetailsModalComponent } from '../event-details-modal/event-details-modal.component';
 import { cardCollapseAnimation } from '../../../core/animations/card-collapse.animation';
 
 interface LinkOption {

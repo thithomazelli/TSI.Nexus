@@ -27,7 +27,13 @@ import {
 
 import { Observable, of, tap } from 'rxjs';
 
-import { BusinessPartnerDetailsModalComponent } from '../business-partner-details-modal/business-partner-details-modal.component';
+// Type-only: BusinessPartnerDetailsModalComponent imports this form back (it renders
+// <app-business-partner-form> in its template), so a normal import here would form a
+// module-load-order circular dependency between the two files - `import type` is erased at
+// compile time and can't contribute to that cycle. The one place this component needs the
+// class itself at runtime (reopening the modal after a cancelled delete, in remove() below)
+// loads it dynamically instead, for the same reason.
+import type { BusinessPartnerDetailsModalComponent } from '../business-partner-details-modal/business-partner-details-modal.component';
 import { NgClass, NgIf, NgFor } from '@angular/common';
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
 import { NgxMaskDirective } from 'ngx-mask';
@@ -390,10 +396,14 @@ export class BusinessPartnerFormComponent
               data: this.data,
               id: this.data?.id,
             };
-            this.modalService.showTemplateModal(
-              BusinessPartnerDetailsModalComponent,
-              initialState,
-            );
+            import(
+              '../business-partner-details-modal/business-partner-details-modal.component'
+            ).then(({ BusinessPartnerDetailsModalComponent }) => {
+              this.modalService.showTemplateModal(
+                BusinessPartnerDetailsModalComponent,
+                initialState,
+              );
+            });
           }
         }
       });

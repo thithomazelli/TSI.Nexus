@@ -25,7 +25,12 @@ import {
 } from '@friday/core';
 import { HttpClient } from '@angular/common/http';
 import { MatDialogRef } from '@angular/material/dialog';
-import { AddressDetailsModalComponent } from '../address-details-modal/address-details-modal.component';
+// Type-only: AddressDetailsModalComponent imports this form back (renders <app-address-form> in
+// its template), so a normal import here would form a module-load-order circular dependency
+// between the two files - `import type` is erased at compile time and can't contribute to that
+// cycle. The one place this component needs the class itself at runtime (reopening the modal
+// after a cancelled delete, in remove() below) loads it dynamically instead, for the same reason.
+import type { AddressDetailsModalComponent } from '../address-details-modal/address-details-modal.component';
 import { NgClass, NgFor } from '@angular/common';
 import { NgxMaskDirective } from 'ngx-mask';
 import { ClickDirective } from '../../../core/directives/click.directive';
@@ -199,10 +204,14 @@ export class AddressFormComponent
               data: this.data,
               id: this.data?.id,
             };
-            this.modalService.showTemplateModal(
-              AddressDetailsModalComponent,
-              initialState,
-            );
+            import(
+              '../address-details-modal/address-details-modal.component'
+            ).then(({ AddressDetailsModalComponent }) => {
+              this.modalService.showTemplateModal(
+                AddressDetailsModalComponent,
+                initialState,
+              );
+            });
           }
         }
       });

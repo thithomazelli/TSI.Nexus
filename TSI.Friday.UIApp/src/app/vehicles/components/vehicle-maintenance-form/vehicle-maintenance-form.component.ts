@@ -25,7 +25,11 @@ import { CurrencyFieldComponent } from '../../../shared/components/currency-fiel
 import { ProductPickerGridComponent } from '../../../shared/components/product-picker-grid/product-picker-grid.component';
 import { ClickDirective } from '../../../core/directives/click.directive';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
-import { VehicleMaintenanceDetailsModalComponent } from '../vehicle-maintenance-details-modal/vehicle-maintenance-details-modal.component';
+// Type-only: VehicleMaintenanceDetailsModalComponent imports this form back (renders
+// <app-vehicle-maintenance-form> in its template), so a normal import would form a
+// module-load-order circular dependency between the two files - `import type` is erased at
+// compile time and can't contribute to that cycle.
+import type { VehicleMaintenanceDetailsModalComponent } from '../vehicle-maintenance-details-modal/vehicle-maintenance-details-modal.component';
 
 // Form logic for a VehicleMaintenance, shared by the Add/Edit modal and the details page's
 // Detalhes tab - mirrors VehicleFormComponent's isModal/compact/dialogRef contract so both hosts

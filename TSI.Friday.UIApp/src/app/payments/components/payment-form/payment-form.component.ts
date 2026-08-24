@@ -32,7 +32,12 @@ import {
 } from '@friday/core';
 
 import { Observable, of, Subscription, tap } from 'rxjs';
-import { PaymentDetailsModalComponent } from '../payment-details-modal/payment-details-modal.component';
+// Type-only: PaymentDetailsModalComponent imports this form back (renders <app-payment-form> in
+// its template), so a normal import here would form a module-load-order circular dependency
+// between the two files - `import type` is erased at compile time and can't contribute to that
+// cycle. The one place this component needs the class itself at runtime (reopening the modal
+// after a cancelled delete, in remove() below) loads it dynamically instead, for the same reason.
+import type { PaymentDetailsModalComponent } from '../payment-details-modal/payment-details-modal.component';
 import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
 import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
@@ -232,10 +237,14 @@ export class PaymentFormComponent
               data: this.data,
               id: this.data?.id,
             };
-            this.modalService.showTemplateModal(
-              PaymentDetailsModalComponent,
-              initialState,
-            );
+            import(
+              '../payment-details-modal/payment-details-modal.component'
+            ).then(({ PaymentDetailsModalComponent }) => {
+              this.modalService.showTemplateModal(
+                PaymentDetailsModalComponent,
+                initialState,
+              );
+            });
           }
         }
       });

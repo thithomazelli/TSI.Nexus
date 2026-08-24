@@ -27,7 +27,12 @@ import {
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { UserDetailsModalComponent } from '../user-details-modal/user-details-modal.component';
+// Type-only: UserDetailsModalComponent imports this form back (renders <app-user-form> in its
+// template), so a normal import here would form a module-load-order circular dependency between
+// the two files - `import type` is erased at compile time and can't contribute to that cycle.
+// The one place this component needs the class itself at runtime (reopening the modal after a
+// cancelled delete, in remove() below) loads it dynamically instead, for the same reason.
+import type { UserDetailsModalComponent } from '../user-details-modal/user-details-modal.component';
 import { ResetPasswordComponent } from '../../../account/reset-password/reset-password.component';
 import { NgClass, NgFor } from '@angular/common';
 import { ValidationMessagesComponent } from '../../../shared/components/errors/validation-messages/validation-messages.component';
@@ -218,10 +223,14 @@ export class UserFormComponent
               data: this.data,
               id: this.data?.id,
             };
-            this.modalService.showTemplateModal(
-              UserDetailsModalComponent,
-              initialState,
-            );
+            import(
+              '../user-details-modal/user-details-modal.component'
+            ).then(({ UserDetailsModalComponent }) => {
+              this.modalService.showTemplateModal(
+                UserDetailsModalComponent,
+                initialState,
+              );
+            });
           }
         }
       });

@@ -28,7 +28,10 @@ import {
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-import { DriverDetailsModalComponent } from '../driver-details-modal/driver-details-modal.component';
+// Type-only: DriverDetailsModalComponent imports this form back (renders <app-driver-form> in
+// its template), so a normal import would form a module-load-order circular dependency between
+// the two files - `import type` is erased at compile time and can't contribute to that cycle.
+import type { DriverDetailsModalComponent } from '../driver-details-modal/driver-details-modal.component';
 import { DateFieldComponent } from '../../../shared/components/date-field/date-field.component';
 import { ClickDirective } from '../../../core/directives/click.directive';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
