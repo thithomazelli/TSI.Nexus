@@ -424,6 +424,30 @@ mat-calendar {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+// The navbar's notification bell dropdowns (payment/vehicle-blocked/driver-license/stock-alert/
+// upcoming-event) use Bootstrap's `.dropdown-menu-end`, which end-aligns the menu to its toggle
+// and lets it grow leftward. Bootstrap's default Popper config only flips bottom<->top on
+// overflow, never start<->end, so a toggle sitting near the left edge of a narrow phone screen
+// (most of this group, since only the last one sits close to the right edge) opens a menu whose
+// left edge lands off-screen with no way to scroll back to it - confirmed via
+// getBoundingClientRect() showing negative `left` on a 393px-wide viewport. Below the point where
+// that geometry gets tight, pin the menu to the viewport itself instead of to the toggle: this
+// overrides Popper's inline `transform`/`position` (via !important, which beats an inline style)
+// so the menu always spans a fixed margin off both screen edges, regardless of which toggle
+// opened it or how many of the feature-toggled icons before it are enabled. Scoped away from
+// .user-menu, whose dropdown already sits at the right edge and renders correctly as-is.
+@media (max-width: 575.98px) {
+  .navbar-nav > li.nav-item.dropdown:not(.user-menu) .dropdown-menu {
+    position: fixed !important;
+    top: 60px !important;
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+}
+
 .swal-btn {
   min-width: 100px;
 }
