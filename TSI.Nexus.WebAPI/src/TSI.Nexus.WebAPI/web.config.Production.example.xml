@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Modelo de referência para o web.config publicado no servidor de produção/homolog.
+
+  Usado de duas formas:
+  1. Manualmente: copie para "web.config.Production.xml" (esse nome está no
+     .gitignore, nunca é commitado), substitua os placeholders ${...} pelos
+     valores reais, e suba esse arquivo por FTP no lugar do web.config gerado
+     pelo build a cada deploy manual.
+  2. Automaticamente: o workflow .github/workflows/deploy.yml usa `envsubst`
+     para preencher os mesmos placeholders a partir dos GitHub Actions
+     Secrets, gerando o web.config de produção a cada deploy.
+-->
+<configuration>
+  <system.webServer>
+    <handlers>
+      <add
+        name="aspNetCore"
+        path="*"
+        verb="*"
+        modules="AspNetCoreModuleV2"
+        resourceType="Unspecified"
+      />
+    </handlers>
+
+    <aspNetCore
+      processPath=".\TSI.Nexus.WebAPI.exe"
+      arguments=""
+      stdoutLogEnabled="false"
+      stdoutLogFile=".\stdout"
+      hostingModel="OutOfProcess"
+    >
+      <environmentVariables>
+        <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
+        <environmentVariable name="ConnectionStrings__DefaultConnection" value="${ConnectionStrings__DefaultConnection}" />
+        <environmentVariable name="ConnectionStrings__HomologConnection" value="${ConnectionStrings__HomologConnection}" />
+        <environmentVariable name="JWT__Key" value="${JWT__Key}" />
+        <environmentVariable name="MailJet__ApiKey" value="${MailJet__ApiKey}" />
+        <environmentVariable name="MailJet__SecretKey" value="${MailJet__SecretKey}" />
+      </environmentVariables>
+    </aspNetCore>
+  </system.webServer>
+</configuration>

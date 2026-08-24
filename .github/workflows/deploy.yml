@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: TSI.Friday.UIApp
+        working-directory: TSI.Nexus.UIApp
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +29,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: TSI.Friday.UIApp/dist/tsi.friday.uiapp/browser/
+          local-dir: TSI.Nexus.UIApp/dist/tsi.nexus.uiapp/browser/
           server-dir: /www/app/
 
   deploy-backend:
@@ -44,7 +44,7 @@ jobs:
       - name: Publish API (self-contained win-x64)
         run: >
           dotnet publish
-          TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/TSI.Friday.WebAPI.csproj
+          TSI.Nexus.WebAPI/src/TSI.Nexus.WebAPI/TSI.Nexus.WebAPI.csproj
           -c Release -r win-x64 --self-contained true
           -o publish/backend
 
@@ -56,7 +56,7 @@ jobs:
           MailJet__ApiKey: ${{ secrets.MAILJET_API_KEY }}
           MailJet__SecretKey: ${{ secrets.MAILJET_SECRET_KEY }}
         run: |
-          envsubst < TSI.Friday.WebAPI/src/TSI.Friday.WebAPI/web.config.Production.example.xml > publish/backend/web.config
+          envsubst < TSI.Nexus.WebAPI/src/TSI.Nexus.WebAPI/web.config.Production.example.xml > publish/backend/web.config
 
       - name: Deploy to FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
