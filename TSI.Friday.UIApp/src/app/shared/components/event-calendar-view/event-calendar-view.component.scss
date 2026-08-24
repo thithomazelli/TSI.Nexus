@@ -9,6 +9,10 @@
   ::ng-deep .fc-timegrid-event {
     cursor: pointer;
     border: none;
+    // eventDisplay: 'block' turns the event into a solid color bar with the text sitting
+    // directly inside it - FullCalendar's own default has no horizontal padding for that style,
+    // so the title/time run right up against the bar's edges.
+    padding: 2px 6px;
     transition: filter 0.15s ease, box-shadow 0.15s ease;
   }
 

@@ -57,6 +57,16 @@ export class EventCalendarViewComponent implements OnInit, OnChanges, OnDestroy 
     // Paints the whole event card in its EventType color instead of FullCalendar's default
     // small colored dot, so the color actually stands out on the calendar.
     eventDisplay: 'block',
+    // Without this, FullCalendar's default format (hour: 'numeric', omitZeroMinute: true) drops
+    // the leading zero and the minutes whenever an event starts exactly on the hour - "9" instead
+    // of "09:00" - while an event with non-zero minutes shows inconsistently as e.g. "2:56". Force
+    // a fixed HH:mm so every event's time reads the same way regardless of when it starts.
+    eventTimeFormat: {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      meridiem: false,
+    },
     events: [],
     eventClick: (arg: EventClickArg) => this.onEventClick(arg),
     select: (arg: DateSelectArg) => this.onRangeSelect(arg),
