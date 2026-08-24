@@ -175,6 +175,58 @@ namespace TSI.Friday.Data.Seed
                 await context.Commission.AddRangeAsync(commissions);
                 await context.SaveChangesAsync();
 
+                // ---- Phase 12b: Events (Agenda) - at least one per linkable entity type, so
+                // every entity's own "Agenda" tab has something to show out of the box. EventType
+                // options and the always-present system users come from SelectableOptionSeeder/
+                // DatabaseSeeder, both of which run before DemoDataSeeder (see Program.cs). ----
+                var eventTypeOptions = await context
+                    .SelectableOption.Where(o => o.Group == SelectableOptionGroup.EventType)
+                    .ToListAsync();
+                var systemUsers = await context
+                    .User.Where(u =>
+                        u.UserName == "admin"
+                        || u.UserName == "thiago.thomazelli@gmail.com"
+                        || u.UserName == "leonardothomazellif@gmail.com"
+                    )
+                    .ToListAsync();
+                var adminUserId =
+                    systemUsers.FirstOrDefault(u => u.UserName == "admin")?.Id ?? string.Empty;
+                var allTransactions = orderTransactions
+                    .Concat(tripTransactions)
+                    .Concat(expenseTransactions)
+                    .Concat(purchaseOrderTransactions)
+                    .ToList();
+                var allPayments = payments
+                    .Concat(tripPayments)
+                    .Concat(expenses)
+                    .Concat(purchaseOrderPayments)
+                    .Concat(tripDriverPayments)
+                    .ToList();
+
+                var events = BuildEvents(
+                    faker,
+                    now,
+                    eventTypeOptions,
+                    systemUsers,
+                    adminUserId,
+                    businessPartners,
+                    quotes,
+                    orders,
+                    purchaseOrders,
+                    trips,
+                    allTransactions,
+                    allPayments,
+                    vehicles,
+                    drivers,
+                    maintenances,
+                    fuelLogs,
+                    out var eventParticipants
+                );
+                await context.Event.AddRangeAsync(events);
+                await context.SaveChangesAsync();
+                await context.EventParticipant.AddRangeAsync(eventParticipants);
+                await context.SaveChangesAsync();
+
                 // ---- Phase 13: Sequences - continue right after the numbers used above ----
                 await EnsureSequenceAsync(context, "OrderNumberSeq", orders.Count + 1);
                 await EnsureSequenceAsync(context, "PurchaseOrderNumberSeq", purchaseOrders.Count + 1);
@@ -198,7 +250,8 @@ namespace TSI.Friday.Data.Seed
                         + "{Trips} trips, {Payments} payments, {Expenses} expenses, {TripDrivers} trip drivers, "
                         + "{TripLegs} trip legs, "
                         + "{Passengers} passengers, {FuelLogs} fuel logs, {Maintenances} maintenances, "
-                        + "{ServiceOrders} service orders, {Commissions} commissions.",
+                        + "{ServiceOrders} service orders, {Commissions} commissions, {Events} events, "
+                        + "{EventParticipants} event participants.",
                     businessPartners.Count,
                     products.Count,
                     drivers.Count,
@@ -215,7 +268,9 @@ namespace TSI.Friday.Data.Seed
                     fuelLogs.Count,
                     maintenances.Count,
                     serviceOrders.Count,
-                    commissions.Count
+                    commissions.Count,
+                    events.Count,
+                    eventParticipants.Count
                 );
             }
             catch (Exception ex)
@@ -353,6 +408,18 @@ namespace TSI.Friday.Data.Seed
                 );
             await context
                 .Commission.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .Event.Where(e => string.IsNullOrEmpty(e.CreateUserId))
+                .ExecuteUpdateAsync(s =>
+                    s.SetProperty(e => e.CreateUserId, adminUserId)
+                        .SetProperty(e => e.ModifyUserId, adminUserId)
+                );
+            await context
+                .EventParticipant.Where(e => string.IsNullOrEmpty(e.CreateUserId))
                 .ExecuteUpdateAsync(s =>
                     s.SetProperty(e => e.CreateUserId, adminUserId)
                         .SetProperty(e => e.ModifyUserId, adminUserId)
@@ -1508,6 +1575,341 @@ namespace TSI.Friday.Data.Seed
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region Event / EventParticipant
+
+        private static List<Event> BuildEvents(
+            Faker faker,
+            DateTime now,
+            List<SelectableOption> eventTypeOptions,
+            List<User> systemUsers,
+            string adminUserId,
+            List<BusinessPartner> businessPartners,
+            List<Quote> quotes,
+            List<Order> orders,
+            List<PurchaseOrder> purchaseOrders,
+            List<Trip> trips,
+            List<Transaction> transactions,
+            List<Payment> payments,
+            List<Vehicle> vehicles,
+            List<Driver> drivers,
+            List<VehicleMaintenance> maintenances,
+            List<FuelLog> fuelLogs,
+            out List<EventParticipant> eventParticipants
+        )
+        {
+            var events = new List<Event>();
+            var participants = new List<EventParticipant>();
+
+            Guid TypeId(string value) =>
+                eventTypeOptions.FirstOrDefault(o => o.Value == value)?.Id
+                ?? eventTypeOptions.First().Id;
+
+            var meetingType = TypeId("Reunião");
+            var deadlineType = TypeId("Prazo");
+            var reminderType = TypeId("Lembrete");
+            var birthdayType = TypeId("Aniversário");
+            var otherType = TypeId("Outro");
+
+            void AddParticipants(
+                Event evt,
+                params (string? UserId, string? Name, string? Email)[] people
+            )
+            {
+                foreach (var person in people)
+                {
+                    participants.Add(
+                        new EventParticipant
+                        {
+                            Id = Guid.NewGuid(),
+                            EventId = evt.Id,
+                            UserId = person.UserId,
+                            Name = person.Name,
+                            Email = person.Email,
+                        }
+                    );
+                }
+            }
+
+            DateTime NextOccurrence(DateTime birthday)
+            {
+                var next = new DateTime(now.Year, birthday.Month, birthday.Day);
+                return next < now.Date ? next.AddYears(1) : next;
+            }
+
+            // BusinessPartner - birthday reminders for individual clients/suppliers.
+            foreach (var bp in businessPartners.OfType<Individual>().Take(3))
+            {
+                var start = NextOccurrence(bp.Birthday).AddHours(9);
+
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Aniversário de {bp.Name}",
+                        Description = "Lembrete de aniversário do cliente/fornecedor.",
+                        StartDate = start,
+                        EndDate = start.AddMinutes(30),
+                        EventTypeOptionId = birthdayType,
+                        CreatedByUserId = adminUserId,
+                        BusinessPartnerId = bp.Id,
+                    }
+                );
+            }
+
+            // Quote - follow-up call on still-open quotes.
+            foreach (var quote in quotes.Where(q => q.Status == QuoteStatus.Open).Take(3))
+            {
+                var start = quote.Date.AddDays(faker.Random.Number(3, 10));
+                var evt = new Event
+                {
+                    Id = Guid.NewGuid(),
+                    Title = $"Follow-up do orçamento {quote.QuoteNumber}",
+                    Description = "Ligar para o cliente e confirmar interesse no orçamento.",
+                    StartDate = start,
+                    EndDate = start.AddMinutes(30),
+                    EventTypeOptionId = deadlineType,
+                    CreatedByUserId = adminUserId,
+                    QuoteId = quote.Id,
+                };
+                events.Add(evt);
+
+                if (systemUsers.Count > 0)
+                {
+                    AddParticipants(evt, (faker.PickRandom(systemUsers).Id, null, null));
+                }
+            }
+
+            // Order - delivery/service confirmation on open orders.
+            foreach (var order in orders.Where(o => o.Status == OrderStatus.Open).Take(3))
+            {
+                var start = order.Date.AddDays(faker.Random.Number(2, 15));
+
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Entrega do pedido {order.OrderNumber}",
+                        Description = "Confirmar entrega/serviço prestado ao cliente.",
+                        StartDate = start,
+                        EndDate = start.AddHours(1),
+                        EventTypeOptionId = deadlineType,
+                        CreatedByUserId = adminUserId,
+                        OrderId = order.Id,
+                    }
+                );
+            }
+
+            // PurchaseOrder - receiving confirmation on open purchase orders.
+            foreach (var po in purchaseOrders.Where(p => p.Status == OrderStatus.Open).Take(2))
+            {
+                var start = po.Date.AddDays(faker.Random.Number(2, 10));
+
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Recebimento da compra {po.PurchaseOrderNumber}",
+                        Description = "Conferir mercadoria recebida do fornecedor.",
+                        StartDate = start,
+                        EndDate = start.AddHours(1),
+                        EventTypeOptionId = deadlineType,
+                        CreatedByUserId = adminUserId,
+                        PurchaseOrderId = po.Id,
+                    }
+                );
+            }
+
+            // Trip - departure alignment meeting, with the driver and client as freeform
+            // participants (neither is a system User, so both go in as Name/Email contacts).
+            foreach (var trip in trips.Take(3))
+            {
+                var start = trip.Date.AddDays(-1).AddHours(16);
+                var evt = new Event
+                {
+                    Id = Guid.NewGuid(),
+                    Title = $"Alinhamento da viagem {trip.TripNumber}",
+                    Description =
+                        "Confirmar roteiro, horários e ponto de embarque com motorista e cliente.",
+                    StartDate = start,
+                    EndDate = start.AddHours(1),
+                    EventTypeOptionId = meetingType,
+                    CreatedByUserId = adminUserId,
+                    TripId = trip.Id,
+                };
+                events.Add(evt);
+
+                var driver = trip.DriverId.HasValue
+                    ? drivers.FirstOrDefault(d => d.Id == trip.DriverId.Value)
+                    : null;
+                var client = businessPartners.FirstOrDefault(bp => bp.Id == trip.BusinessPartnerId);
+                var people = new List<(string?, string?, string?)>();
+                if (driver != null)
+                {
+                    people.Add((null, driver.Name, driver.Email));
+                }
+                if (client != null)
+                {
+                    people.Add((null, client.Name, client.Email));
+                }
+                if (people.Count > 0)
+                {
+                    AddParticipants(evt, people.ToArray());
+                }
+            }
+
+            // Transaction - review reminder for standalone transactions (expenses), which aren't
+            // already covered by an Order/PurchaseOrder/Trip event above.
+            foreach (
+                var transaction in transactions
+                    .Where(t => t.OrderId == null && t.PurchaseOrderId == null && t.TripId == null)
+                    .Take(2)
+            )
+            {
+                var start = transaction.Date.AddDays(faker.Random.Number(1, 5));
+
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Revisar transação",
+                        Description = transaction.Description,
+                        StartDate = start,
+                        EndDate = start.AddMinutes(30),
+                        EventTypeOptionId = reminderType,
+                        CreatedByUserId = adminUserId,
+                        TransactionId = transaction.Id,
+                    }
+                );
+            }
+
+            // Payment - due-date reminder for pending payments.
+            foreach (var payment in payments.Where(p => p.Status == PaymentStatus.Pending).Take(3))
+            {
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Vencimento de pagamento",
+                        Description = payment.Description,
+                        StartDate = payment.Date,
+                        EndDate = payment.Date.AddMinutes(30),
+                        EventTypeOptionId = deadlineType,
+                        CreatedByUserId = adminUserId,
+                        PaymentId = payment.Id,
+                    }
+                );
+            }
+
+            // Vehicle - documentation/licensing check reminder.
+            foreach (var vehicle in vehicles.Take(2))
+            {
+                var start = now.AddDays(faker.Random.Number(10, 60));
+
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Verificar documentação - {vehicle.Plate}",
+                        Description = "Checar validade de licenciamento e seguro do veículo.",
+                        StartDate = start,
+                        EndDate = start.AddMinutes(30),
+                        EventTypeOptionId = otherType,
+                        CreatedByUserId = adminUserId,
+                        VehicleId = vehicle.Id,
+                    }
+                );
+            }
+
+            // Driver - birthday reminders.
+            foreach (var driver in drivers.Take(2))
+            {
+                var start = NextOccurrence(driver.Birthday).AddHours(9);
+
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Aniversário de {driver.Name}",
+                        Description = "Lembrete de aniversário do motorista.",
+                        StartDate = start,
+                        EndDate = start.AddMinutes(30),
+                        EventTypeOptionId = birthdayType,
+                        CreatedByUserId = adminUserId,
+                        DriverId = driver.Id,
+                    }
+                );
+            }
+
+            // VehicleMaintenance - reminder for maintenances still scheduled ahead.
+            foreach (
+                var maintenance in maintenances
+                    .Where(m => m.Status == MaintenanceStatus.Scheduled)
+                    .Take(3)
+            )
+            {
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Manutenção agendada - {maintenance.Description}",
+                        Description = "Levar o veículo à oficina no horário agendado.",
+                        StartDate = maintenance.ScheduledDate,
+                        EndDate = maintenance.ScheduledDate.AddHours(2),
+                        EventTypeOptionId = reminderType,
+                        CreatedByUserId = adminUserId,
+                        VehicleMaintenanceId = maintenance.Id,
+                    }
+                );
+            }
+
+            // FuelLog - reminder to confirm the fuel receipt/invoice.
+            foreach (var fuelLog in fuelLogs.Take(2))
+            {
+                events.Add(
+                    new Event
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Abastecimento - {fuelLog.GasStation}",
+                        Description = "Confirmar nota fiscal do abastecimento.",
+                        StartDate = fuelLog.Date,
+                        EndDate = fuelLog.Date.AddMinutes(20),
+                        EventTypeOptionId = otherType,
+                        CreatedByUserId = adminUserId,
+                        FuelLogId = fuelLog.Id,
+                    }
+                );
+            }
+
+            // One internal team meeting with every system User as a participant, to show the
+            // Participantes block populated from real Users (not just freeform contacts).
+            if (orders.Count > 0 && systemUsers.Count > 1)
+            {
+                var order = faker.PickRandom(orders);
+                var start = now.Date.AddDays(faker.Random.Number(1, 7)).AddHours(10);
+                var evt = new Event
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Reunião semanal de operações",
+                    Description = "Alinhamento interno da equipe.",
+                    StartDate = start,
+                    EndDate = start.AddHours(1),
+                    EventTypeOptionId = meetingType,
+                    CreatedByUserId = adminUserId,
+                    OrderId = order.Id,
+                };
+                events.Add(evt);
+                AddParticipants(
+                    evt,
+                    systemUsers.Select(u => (u.Id, (string?)null, (string?)null)).ToArray()
+                );
+            }
+
+            eventParticipants = participants;
+            return events;
         }
 
         #endregion
