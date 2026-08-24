@@ -22,6 +22,27 @@
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   }
 
+  // .fc-event-main-frame lays out time + title side by side. Without an explicit flex-shrink
+  // rule both shrink together when a long title doesn't fit, cutting the time itself down (e.g.
+  // "09:0" instead of "09:00") - the time should always stay intact and the title should give up
+  // the room instead, ending in an ellipsis rather than getting silently clipped mid-word.
+  ::ng-deep .fc-event-time {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    margin-right: 4px;
+  }
+
+  ::ng-deep .fc-event-title-container {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  ::ng-deep .fc-event-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   // Match the app-wide btn-sm sizing (Bootstrap's .btn-sm) so the toolbar isn't larger than the
   // rest of the screen's buttons (e.g. the "Adicionar" button above the calendar).
   ::ng-deep .fc .fc-button {
