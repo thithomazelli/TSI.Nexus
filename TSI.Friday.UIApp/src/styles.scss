@@ -156,6 +156,12 @@ a:hover {
   max-width: 900px !important;
   width: 100% !important;
   max-height: 90vh !important;
+  // iOS Safari's `vh` is fixed to the largest viewport (as if the address/tab bars were always
+  // hidden), so when they're actually showing - as they are right after opening a modal - a
+  // 90vh cap leaves the surface taller than what's really visible, pushing the footer action
+  // buttons behind the browser chrome with no way to scroll to them. `dvh` tracks the viewport
+  // that's actually on screen; unsupported browsers just ignore this line and keep the vh above.
+  max-height: 90dvh !important;
   display: flex !important;
   flex-direction: column !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
@@ -359,6 +365,9 @@ mat-calendar {
     min-width: 0 !important;
     max-width: 95vw !important;
     max-height: 95vh !important;
+    // Same dvh fallback as the base rule above - matters even more here since this is the
+    // breakpoint actually active on phones, where the address/tab bar overlap is visible.
+    max-height: 95dvh !important;
   }
 }
 
