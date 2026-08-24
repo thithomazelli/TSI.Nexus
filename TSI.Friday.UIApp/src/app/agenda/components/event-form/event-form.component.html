@@ -96,59 +96,71 @@
 
       <hr />
 
-      <h6 class="section-title">{{ 'AGENDA.LINKED_ENTITY' | translate }}</h6>
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="section-title mb-0">{{ 'AGENDA.LINKED_ENTITY' | translate }}</h6>
+        <button
+          type="button"
+          class="btn btn-link btn-sm p-0"
+          (click)="toggleLinkSection()"
+          [attr.aria-expanded]="linkSectionOpen"
+        >
+          <i class="bi" [class.bi-chevron-up]="linkSectionOpen" [class.bi-chevron-down]="!linkSectionOpen"></i>
+        </button>
+      </div>
 
-      @if (lockedLinkField) {
-        <div class="row g-2">
-          <div class="col-12">
-            <div class="input-group">
-              <div class="form-floating flex-fill">
-                <input
-                  type="text"
-                  class="form-control"
-                  [value]="lockedLinkLabel"
-                  disabled
-                  id="eventLockedLink"
-                />
-                <label for="eventLockedLink">{{ 'AGENDA.LINKED_ENTITY' | translate }}</label>
-              </div>
-              <div class="input-group-text"><i class="bi bi-link-45deg"></i></div>
-            </div>
-          </div>
-        </div>
-      } @else {
-        <div class="row g-2">
-          @for (config of linkConfigs; track config.key) {
-            <div class="col-12 col-md-6">
+      <div class="event-form-link-animated" [@cardCollapse]="linkSectionOpen ? 'open' : 'closed'">
+        @if (lockedLinkField) {
+          <div class="row g-2">
+            <div class="col-12">
               <div class="input-group">
                 <div class="form-floating flex-fill">
                   <input
                     type="text"
-                    [formControlName]="config.labelField"
                     class="form-control"
-                    [matAutocomplete]="linkAuto"
-                    [placeholder]="config.translationKey | translate"
-                    [id]="'eventLink-' + config.key"
-                    (blur)="onLinkBlur(config)"
+                    [value]="lockedLinkLabel"
+                    disabled
+                    id="eventLockedLink"
                   />
-                  <label [for]="'eventLink-' + config.key">{{ config.translationKey | translate }}</label>
-                  <mat-autocomplete #linkAuto="matAutocomplete" (optionSelected)="selectLink(config, $event.option.value)">
-                    @for (item of config.filtered$ | async; track item.id) {
-                      <mat-option [value]="item">{{ item.label }}</mat-option>
-                    }
-                  </mat-autocomplete>
+                  <label for="eventLockedLink">{{ 'AGENDA.LINKED_ENTITY' | translate }}</label>
                 </div>
-                <div class="input-group-text"><i [class]="'bi ' + config.icon"></i></div>
-                @if (form.get(config.labelField)?.value) {
-                  <button type="button" class="btn btn-outline-secondary" (click)="clearLink(config)">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
-                }
+                <div class="input-group-text"><i class="bi bi-link-45deg"></i></div>
               </div>
             </div>
-          }
-        </div>
-      }
+          </div>
+        } @else {
+          <div class="row g-2">
+            @for (config of linkConfigs; track config.key) {
+              <div class="col-12 col-md-6">
+                <div class="input-group">
+                  <div class="form-floating flex-fill">
+                    <input
+                      type="text"
+                      [formControlName]="config.labelField"
+                      class="form-control"
+                      [matAutocomplete]="linkAuto"
+                      [placeholder]="config.translationKey | translate"
+                      [id]="'eventLink-' + config.key"
+                      (blur)="onLinkBlur(config)"
+                    />
+                    <label [for]="'eventLink-' + config.key">{{ config.translationKey | translate }}</label>
+                    <mat-autocomplete #linkAuto="matAutocomplete" (optionSelected)="selectLink(config, $event.option.value)">
+                      @for (item of config.filtered$ | async; track item.id) {
+                        <mat-option [value]="item">{{ item.label }}</mat-option>
+                      }
+                    </mat-autocomplete>
+                  </div>
+                  <div class="input-group-text"><i [class]="'bi ' + config.icon"></i></div>
+                  @if (form.get(config.labelField)?.value) {
+                    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="clearLink(config)">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
 
       <hr />
 
@@ -156,6 +168,36 @@
 
       <div class="row g-2">
         <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="text"
+                formControlName="participantName"
+                class="form-control"
+                [placeholder]="'AGENDA.CONTACT_NAME' | translate"
+                id="eventParticipantName"
+              />
+              <label for="eventParticipantName">{{ 'AGENDA.CONTACT_NAME' | translate }}</label>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="input-group">
+            <div class="form-floating flex-fill">
+              <input
+                type="email"
+                formControlName="participantEmail"
+                class="form-control"
+                [placeholder]="'AGENDA.CONTACT_EMAIL' | translate"
+                id="eventParticipantEmail"
+              />
+              <label for="eventParticipantEmail">{{ 'AGENDA.CONTACT_EMAIL' | translate }}</label>
+            </div>
+            <div class="input-group-text"><i class="bi bi-envelope"></i></div>
+          </div>
+        </div>
+
+        <div class="col-12">
           <div class="input-group">
             <div class="form-floating flex-fill">
               <input
@@ -174,41 +216,10 @@
               </mat-autocomplete>
             </div>
             <div class="input-group-text"><i class="bi bi-person-check"></i></div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="addFreeformParticipant()">
+              <i class="bi bi-plus-lg"></i>
+            </button>
           </div>
-        </div>
-
-        <div class="col-6 col-md-3">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                type="text"
-                formControlName="participantName"
-                class="form-control"
-                [placeholder]="'AGENDA.CONTACT_NAME' | translate"
-                id="eventParticipantName"
-              />
-              <label for="eventParticipantName">{{ 'AGENDA.CONTACT_NAME' | translate }}</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-2">
-          <div class="input-group">
-            <div class="form-floating flex-fill">
-              <input
-                type="email"
-                formControlName="participantEmail"
-                class="form-control"
-                [placeholder]="'AGENDA.CONTACT_EMAIL' | translate"
-                id="eventParticipantEmail"
-              />
-              <label for="eventParticipantEmail">{{ 'AGENDA.CONTACT_EMAIL' | translate }}</label>
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-md-1 d-grid">
-          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="addFreeformParticipant()">
-            <i class="bi bi-plus-lg"></i>
-          </button>
         </div>
       </div>
 

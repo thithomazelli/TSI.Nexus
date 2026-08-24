@@ -37,6 +37,7 @@ import { DateFieldComponent } from '../../../shared/components/date-field/date-f
 import { ClickDirective } from '../../../core/directives/click.directive';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 import { EventDetailsModalComponent } from '../event-details-modal/event-details-modal.component';
+import { cardCollapseAnimation } from '../../../core/animations/card-collapse.animation';
 
 interface LinkOption {
   id: string;
@@ -63,6 +64,7 @@ interface LinkConfig {
     selector: 'app-event-form',
     templateUrl: './event-form.component.html',
     styleUrl: './event-form.component.scss',
+    animations: [cardCollapseAnimation],
     imports: [
         ReactiveFormsModule,
         AsyncPipe,
@@ -111,6 +113,7 @@ export class EventFormComponent extends FormBaseComponent implements OnInit, OnC
   filteredUsers$!: Observable<User[]>;
 
   linkConfigs: LinkConfig[] = [];
+  linkSectionOpen = true;
 
   private _linkValues: Record<string, string | null> = {};
   private _removedParticipantIds: string[] = [];
@@ -172,6 +175,10 @@ export class EventFormComponent extends FormBaseComponent implements OnInit, OnC
   clearLink(config: LinkConfig): void {
     this._linkValues[config.key] = null;
     this.form.get(config.labelField)?.setValue('');
+  }
+
+  toggleLinkSection(): void {
+    this.linkSectionOpen = !this.linkSectionOpen;
   }
 
   selectUser(user: User): void {

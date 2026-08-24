@@ -23,13 +23,13 @@
   <div class="d-flex gap-2 align-items-center mt-3 mt-md-0">
     <button
       *ngIf="filtersTemplate"
-      class="btn btn-outline-primary"
+      class="btn btn-outline-primary btn-sm"
       [ngClass]="showFilters ? 'active' : ''"
       (click)="toggleFilters()"
     >
       <i class="bi bi-funnel"></i> {{ 'GRID.FILTERS' | translate }}
     </button>
-    <button class="btn btn-secondary" (click)="refresh()">
+    <button class="btn btn-secondary btn-sm" (click)="refresh()">
       <i class="bi bi-arrow-clockwise"></i>
       {{ 'GRID.REFRESH' | translate }}
     </button>
@@ -37,7 +37,7 @@
       *ngIf="extraActionsTemplate"
       [ngTemplateOutlet]="extraActionsTemplate"
     ></ng-container>
-    <button *ngIf="canAdd" class="btn btn-success" (click)="openAddModal()">
+    <button *ngIf="canAdd" class="btn btn-success btn-sm" (click)="openAddModal()">
       <i class="bi bi-plus-lg"></i>
       {{ 'COMMON.ADD' | translate }}
     </button>

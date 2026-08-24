@@ -9,6 +9,26 @@
   ::ng-deep .fc-timegrid-event {
     cursor: pointer;
     border: none;
+    transition: filter 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  ::ng-deep .fc-daygrid-event:hover,
+  ::ng-deep .fc-timegrid-event:hover {
+    filter: brightness(0.9);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  }
+
+  // Match the app-wide btn-sm sizing (Bootstrap's .btn-sm) so the toolbar isn't larger than the
+  // rest of the screen's buttons (e.g. the "Adicionar" button above the calendar).
+  ::ng-deep .fc .fc-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+    line-height: 1.5;
+  }
+
+  ::ng-deep .fc .fc-toolbar-title {
+    font-size: 1.15rem;
   }
 
   ::ng-deep .fc .fc-button-primary {

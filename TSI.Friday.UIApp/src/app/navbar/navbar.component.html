@@ -92,7 +92,7 @@
             <!--begin::Agenda shortcut-->
             <li class="px-3 pb-2" *ngIf="isAgendaModuleEnabled">
               <a
-                class="btn btn-outline-secondary btn-sm w-100"
+                class="btn btn-outline-primary btn-sm w-100"
                 [routerLink]="['/agenda']"
                 [queryParams]="{ onlyMine: true }"
               >
@@ -104,12 +104,12 @@
 
             <li class="user-footer d-flex gap-2">
               <a
-                class="btn btn-primary btn-flat flex-fill"
+                class="btn btn-primary btn-flat btn-sm flex-fill"
                 [routerLink]="['/users/', user.id]"
-                >{{ 'NAVBAR.PROFILE' | translate }}</a
+                ><i class="bi bi-person"></i> {{ 'NAVBAR.PROFILE' | translate }}</a
               >
-              <a class="btn btn-danger btn-flat flex-fill" (click)="logout()"
-                >{{ 'NAVBAR.LOGOUT' | translate }}</a
+              <a class="btn btn-danger btn-flat btn-sm flex-fill" (click)="logout()"
+                ><i class="bi bi-box-arrow-right"></i> {{ 'NAVBAR.LOGOUT' | translate }}</a
               >
             </li>
             <!--end::Menu Footer-->

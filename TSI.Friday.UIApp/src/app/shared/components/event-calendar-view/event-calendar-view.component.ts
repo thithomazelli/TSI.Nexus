@@ -54,6 +54,9 @@ export class EventCalendarViewComponent implements OnInit, OnChanges, OnDestroy 
     selectMirror: true,
     editable: false,
     height: 'auto',
+    // Paints the whole event card in its EventType color instead of FullCalendar's default
+    // small colored dot, so the color actually stands out on the calendar.
+    eventDisplay: 'block',
     events: [],
     eventClick: (arg: EventClickArg) => this.onEventClick(arg),
     select: (arg: DateSelectArg) => this.onRangeSelect(arg),
