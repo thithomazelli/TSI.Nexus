@@ -593,7 +593,6 @@ export const EN = {
     DRIVERS_REFRESHED: 'Drivers refreshed successfully',
     DRIVERS_REFRESH_ERROR: 'Error refreshing drivers',
     SERVICE_ORDERS_TITLE: 'Service Orders & Commissions',
-    SERVICE_ORDERS_HINT: 'Automatically generated when a trip linked to this driver is marked as Closed.',
     OS_COLUMN: 'SO',
     ISSUE_DATE: 'Issue Date',
     BASE: 'Base',

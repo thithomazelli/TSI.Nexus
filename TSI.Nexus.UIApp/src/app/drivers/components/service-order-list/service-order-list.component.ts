@@ -95,8 +95,8 @@ export class ServiceOrderListComponent
   noop(): void {}
 
   // Repurposes app-grid's generic [update] hook (data-action="update") for the one action a
-  // Service Order actually supports - these rows are auto-generated (see
-  // DRIVERS.SERVICE_ORDERS_HINT) and never manually added/edited/deleted.
+  // Service Order actually supports - these rows are auto-generated when a trip linked to this
+  // driver is marked as Closed, and never manually added/edited/deleted.
   markAsPaid(serviceOrder: ServiceOrder): void {
     if (!serviceOrder.commission) {
       return;

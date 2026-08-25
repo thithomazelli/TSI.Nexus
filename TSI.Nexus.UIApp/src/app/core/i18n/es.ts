@@ -593,7 +593,6 @@ export const ES = {
     DRIVERS_REFRESHED: 'Conductores actualizados con éxito',
     DRIVERS_REFRESH_ERROR: 'Error al actualizar conductores',
     SERVICE_ORDERS_TITLE: 'Órdenes de Servicio y Comisiones',
-    SERVICE_ORDERS_HINT: 'Generadas automáticamente cuando un viaje vinculado a este conductor se marca como Cerrado.',
     OS_COLUMN: 'OS',
     ISSUE_DATE: 'Emisión',
     BASE: 'Base',

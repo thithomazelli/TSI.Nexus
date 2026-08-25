@@ -1,9 +1,4 @@
-<div class="service-order-list">
-  <h5 class="mb-2">{{ 'DRIVERS.SERVICE_ORDERS_TITLE' | translate }}</h5>
-  <p class="text-muted small">
-    {{ 'DRIVERS.SERVICE_ORDERS_HINT' | translate }}
-  </p>
-
+<div [class.app-content]="!compact">
   <app-grid
     [compactView]="compact"
     [className]="'DRIVERS.SERVICE_ORDERS_TITLE' | translate"

@@ -593,7 +593,6 @@ export const PT_BR = {
     DRIVERS_REFRESHED: 'Motoristas atualizados com sucesso',
     DRIVERS_REFRESH_ERROR: 'Erro ao atualizar motoristas',
     SERVICE_ORDERS_TITLE: 'Ordens de Serviço e Comissões',
-    SERVICE_ORDERS_HINT: 'Geradas automaticamente quando uma viagem vinculada a este motorista é marcada como Fechada.',
     OS_COLUMN: 'OS',
     ISSUE_DATE: 'Emissão',
     BASE: 'Base',
