@@ -8,6 +8,7 @@ import {
   NotificationService,
   Trip,
   TripService,
+  Vehicle,
   ResponseStatus,
   TranslationService,
   WebApiResponse,
@@ -48,7 +49,7 @@ export class TripsComponent implements OnInit, OnDestroy {
   entity: string | null = '';
 
   @Input()
-  parentData: Individual | Company | Driver | null | undefined = null;
+  parentData: Individual | Company | Driver | Vehicle | null | undefined = null;
 
   baseEndPoint = ApiType.Trips;
   rowData: Trip[] = [];
@@ -97,12 +98,21 @@ export class TripsComponent implements OnInit, OnDestroy {
   }
 
   openModal(initialState: any) {
-    if (this.parentData != null) {
+    if (this.parentData != null && this.entity === 'Vehicle') {
       initialState = {
         ...initialState,
         data: <Trip>{
-          businessPartnerId: this.parentData?.id,
-          businessPartnerName: this.parentData?.name,
+          vehicleId: this.parentData?.id,
+          vehiclePlate: (this.parentData as Vehicle)?.plate,
+        },
+      };
+    } else if (this.parentData != null) {
+      const parentData = this.parentData as Individual | Company | Driver;
+      initialState = {
+        ...initialState,
+        data: <Trip>{
+          businessPartnerId: parentData?.id,
+          businessPartnerName: parentData?.name,
         },
       };
     }
@@ -227,6 +237,7 @@ export class TripsComponent implements OnInit, OnDestroy {
         sortable: true,
         filter: true,
         width: 120,
+        hide: this.entity === 'Vehicle',
       },
       {
         field: 'driverName',
@@ -316,6 +327,8 @@ export class TripsComponent implements OnInit, OnDestroy {
     let trips$: Observable<WebApiResponse<Trip[]>>;
     if (this.entity === 'Driver' && this.parentData?.id != null) {
       trips$ = this.tripService.getByDriverId(this.parentData.id);
+    } else if (this.entity === 'Vehicle' && this.parentData?.id != null) {
+      trips$ = this.tripService.getByVehicleId(this.parentData.id);
     } else if (this.entity != '' && this.parentData?.id != null) {
       trips$ = this.tripService.getByBusinessPartnerId(this.parentData.id);
     } else {

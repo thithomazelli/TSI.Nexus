@@ -56,6 +56,18 @@ export class TripService {
       );
   }
 
+  getByVehicleId(vehicleId: string): Observable<WebApiResponse<Trip[]>> {
+    return this.apiService
+      .get<
+        WebApiResponse<Trip[]>
+      >(`${this._baseEndPoint}/getByVehicleId/${vehicleId}`)
+      .pipe(
+        tap((response) => {
+          this._trips$.next(response.data);
+        }),
+      );
+  }
+
   refreshTrips(): Observable<WebApiResponse<Trip[]>> {
     return this.getAll();
   }

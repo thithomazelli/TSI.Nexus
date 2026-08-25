@@ -160,16 +160,36 @@
         <div class="row g-1 mb-1">
           <div class="col-12">
             <div class="input-group">
-              <div class="form-floating flex-fill select-floating">
-                <select formControlName="vehicleId" class="form-select">
-                  <option [ngValue]="null">{{ 'TRIPS.NO_VEHICLE' | translate }}</option>
-                  <option *ngFor="let v of vehicles" [ngValue]="v.id">
-                    {{ v.plate }} - {{ v.brand }} {{ v.model }} ({{
-                      v.status
-                    }})
-                  </option>
-                </select>
+              <div class="form-floating flex-fill">
+                <input
+                  type="text"
+                  formControlName="vehiclePlate"
+                  class="form-control"
+                  [matAutocomplete]="vehicleAuto"
+                  [placeholder]="'VEHICLES.SINGULAR' | translate"
+                  (blur)="onVehiclePlateBlur()"
+                />
                 <label>{{ 'VEHICLES.SINGULAR' | translate }}</label>
+                <mat-autocomplete
+                  #vehicleAuto="matAutocomplete"
+                  (optionSelected)="selectVehicle($event.option.value)"
+                >
+                  <mat-option
+                    *ngFor="let v of filteredVehiclesByPlate$ | async"
+                    [value]="v"
+                  >
+                    {{ v.plate }} - {{ v.brand }} {{ v.model }} ({{ v.status }})
+                  </mat-option>
+                </mat-autocomplete>
+              </div>
+              <div class="input-group-text">
+                <button
+                  type="button"
+                  class="address-link"
+                  (click)="openVehiclePickerModal()"
+                >
+                  {{ 'COMMON.SEARCH' | translate }}
+                </button>
               </div>
               <div class="input-group-text"><i class="bi bi-bus-front"></i></div>
             </div>

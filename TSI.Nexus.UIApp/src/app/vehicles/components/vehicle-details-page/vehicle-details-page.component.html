@@ -70,6 +70,14 @@
                 <li class="nav-item">
                   <a
                     class="nav-link"
+                    [class.active]="activeTab === 'trips'"
+                    (click)="activeTab = 'trips'"
+                    >{{ 'SIDEBAR.TRIPS' | translate }}</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
                     [class.active]="activeTab === 'attachments'"
                     (click)="activeTab = 'attachments'"
                     >{{ 'COMMON.ATTACHMENTS' | translate }}</a
@@ -111,6 +119,13 @@
               }
               @if (activeTab === 'fuel' && data?.id) {
                 <app-fuel-log-list [vehicleId]="data!.id" [compact]="true"></app-fuel-log-list>
+              }
+              @if (activeTab === 'trips' && data?.id) {
+                <app-trips
+                  [entity]="'Vehicle'"
+                  [parentData]="data"
+                  [compact]="true"
+                ></app-trips>
               }
               @if (activeTab === 'attachments' && data?.id) {
                 <app-attachments

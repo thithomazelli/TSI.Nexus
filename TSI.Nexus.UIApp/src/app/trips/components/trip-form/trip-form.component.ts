@@ -41,6 +41,7 @@ import { Observable, startWith, map, forkJoin } from 'rxjs';
 
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 import { DriverDetailsModalComponent } from '../../../drivers/components/driver-details-modal/driver-details-modal.component';
+import { VehiclePickerModalComponent } from '../../../vehicles/components/vehicle-picker-modal/vehicle-picker-modal.component';
 import { TripDetailsModalComponent } from '../trip-details-modal/trip-details-modal.component';
 import { TripDriverDetailsModalComponent } from '../trip-driver-details-modal/trip-driver-details-modal.component';
 import { Router } from '@angular/router';
@@ -104,6 +105,7 @@ export class TripFormComponent
 
   vehicles: Vehicle[] = [];
   drivers: Driver[] = [];
+  filteredVehiclesByPlate$!: Observable<Vehicle[]>;
 
   tripStatusOptions = [
     { value: OrderStatus.Open, label: 'Em Aberto' },
@@ -138,7 +140,8 @@ export class TripFormComponent
     this.disableEditFields();
     this.patchFormWithData();
     this.setupAutoComplete();
-    this.loadVehiclesAndDrivers();
+    this.loadDrivers();
+    this.setupVehicleAutoComplete();
     this.setupInlineTripDriverForm();
     this.totalPriceChange();
     this.setupTotalOfPaymentsWatcher();
@@ -415,6 +418,7 @@ export class TripFormComponent
       totalPrice: [{ value: 0, disabled: true }],
       transactionId: [null],
       vehicleId: [null],
+      vehiclePlate: [''],
       route: [''],
       distanceKm: [0, [Validators.min(0)]],
       dailyCount: [0, [Validators.min(0)]],
@@ -544,14 +548,95 @@ export class TripFormComponent
       );
   }
 
-  private loadVehiclesAndDrivers(): void {
-    const vehicleSub = this.vehicleService
-      .getAll()
-      .subscribe((response) => (this.vehicles = response.data ?? []));
+  private loadDrivers(): void {
     const driverSub = this.driverService
       .getAll()
       .subscribe((response) => (this.drivers = response.data ?? []));
-    this._subscriptions.push(vehicleSub, driverSub);
+    this._subscriptions.push(driverSub);
+  }
+
+  private setupVehicleAutoComplete(): void {
+    const vehiclesArray$ = this.vehicleService
+      .getAll()
+      .pipe(map((response) => response.data ?? []));
+
+    this._subscriptions.push(
+      vehiclesArray$.subscribe((vehicles) => (this.vehicles = vehicles)),
+    );
+
+    this.filteredVehiclesByPlate$ = this.form
+      .get('vehiclePlate')!
+      .valueChanges.pipe(
+        startWith(''),
+        combineLatestWith(vehiclesArray$),
+        map(([value, vehicles]) => {
+          // mat-autocomplete briefly writes the selected option's whole object back through
+          // this same control before selectVehicle() overwrites it with vehicle.plate - guard
+          // against that non-string value the same way the driver/product filters already do.
+          const filterValue = (
+            typeof value === 'string' ? value : ''
+          ).toLowerCase();
+          if (!filterValue) {
+            return [];
+          }
+          return vehicles.filter(
+            (vehicle: Vehicle) =>
+              (vehicle.plate || '').toLowerCase().includes(filterValue) ||
+              (vehicle.brand || '').toLowerCase().includes(filterValue) ||
+              (vehicle.model || '').toLowerCase().includes(filterValue),
+          );
+        }),
+      );
+  }
+
+  selectVehicle(vehicle: Vehicle): void {
+    if (!vehicle) {
+      return;
+    }
+    this.form.patchValue({
+      vehicleId: vehicle.id,
+      vehiclePlate: vehicle.plate,
+    });
+  }
+
+  async onVehiclePlateBlur(): Promise<void> {
+    setTimeout(() => {
+      const plate = this.form.get('vehiclePlate')!.value?.trim();
+      if (!plate) {
+        this.cleanVehicleSelection();
+        return;
+      }
+      const found = this.vehicles.find((v) => v.plate === plate);
+      if (found) {
+        this.selectVehicle(found);
+        return;
+      }
+      this.modalService.showSweetNotification(
+        this.translationService.instant('TRIPS.VEHICLE_NOT_FOUND_TITLE'),
+        this.translationService.instant('TRIPS.VEHICLE_NOT_FOUND_MESSAGE', { plate }),
+        'warning',
+      );
+      this.cleanVehicleSelection();
+    }, 200);
+  }
+
+  openVehiclePickerModal(): void {
+    const pickerRef = this.modalService.showTemplateModal(
+      VehiclePickerModalComponent,
+      {},
+    );
+    const sub = pickerRef
+      .afterClosed()
+      .subscribe((vehicle: Vehicle | undefined) => {
+        if (vehicle) {
+          this.selectVehicle(vehicle);
+        }
+      });
+    this._subscriptions.push(sub);
+  }
+
+  private cleanVehicleSelection(): void {
+    this.form.patchValue({ vehicleId: null, vehiclePlate: '' });
   }
 
   private setupInlineTripDriverForm(): void {

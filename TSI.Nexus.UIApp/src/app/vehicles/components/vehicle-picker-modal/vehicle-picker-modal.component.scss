@@ -1,0 +1,21 @@
+.vehicle-picker-table {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+// styles.scss forces `.modal-body > *` and `.modal-body > * > *` into `flex-direction: column`
+// (a global height-passthrough hack for modals whose body wraps a single form component - see
+// the comment above that rule in styles.scss) - harmless for a single child, but it flips this
+// search bar's `.input-group` (and its own children) into a vertical stack instead of Bootstrap's
+// horizontal row, collapsing the input to its intrinsic width. Restore the row layout here.
+.input-group {
+  flex-direction: row !important;
+
+  input {
+    flex: 1 1 auto !important;
+  }
+
+  .input-group-text {
+    flex: 0 0 auto !important;
+  }
+}

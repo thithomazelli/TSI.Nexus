@@ -6,6 +6,7 @@ import { HeaderComponent } from '../../../shared/header/header.component';
 import { VehicleFormComponent } from '../vehicle-form/vehicle-form.component';
 import { VehicleMaintenanceListComponent } from '../vehicle-maintenance-list/vehicle-maintenance-list.component';
 import { FuelLogListComponent } from '../fuel-log-list/fuel-log-list.component';
+import { TripsComponent } from '../../../trips/trips.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
 import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
@@ -22,6 +23,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         VehicleFormComponent,
         VehicleMaintenanceListComponent,
         FuelLogListComponent,
+        TripsComponent,
         AttachmentsComponent,
         AuditTabComponent,
         EventListComponent,
@@ -33,8 +35,14 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
   data?: Vehicle | null = null;
   loading = false;
   isAgendaEnabled = true;
-  activeTab: 'details' | 'maintenances' | 'fuel' | 'attachments' | 'agenda' | 'audit' =
-    'details';
+  activeTab:
+    | 'details'
+    | 'maintenances'
+    | 'fuel'
+    | 'trips'
+    | 'attachments'
+    | 'agenda'
+    | 'audit' = 'details';
 
   get statusMap(): { [key: string]: string } {
     return {

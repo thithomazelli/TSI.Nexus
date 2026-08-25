@@ -1,0 +1,55 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ 'TRIPS.VEHICLE_PICKER_TITLE' | translate }}</h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <div class="input-group mb-3">
+    <input
+      type="text"
+      class="form-control"
+      [placeholder]="'COMMON.SEARCH' | translate"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="applyFilter()"
+    />
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+  </div>
+
+  <div class="table-responsive vehicle-picker-table">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          <th scope="col">{{ 'VEHICLES.PLATE' | translate }}</th>
+          <th scope="col">{{ 'VEHICLES.BRAND' | translate }} / {{ 'VEHICLES.MODEL' | translate }}</th>
+          <th scope="col">{{ 'COMMON.STATUS' | translate }}</th>
+          <th scope="col" style="width: 100px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let vehicle of filteredVehicles">
+          <td>{{ vehicle.plate }}</td>
+          <td>{{ vehicle.brand }} {{ vehicle.model }}</td>
+          <td>
+            <span class="badge bg-{{ statusMap[vehicle.status]?.color ?? 'secondary' }}">
+              {{ statusMap[vehicle.status]?.label ?? vehicle.status }}
+            </span>
+          </td>
+          <td>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="select(vehicle)"
+            >
+              {{ 'COMMON.SELECT' | translate }}
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredVehicles.length === 0">
+          <td colspan="4" class="text-center text-muted small py-3">
+            {{ 'COMMON.NO_RECORDS' | translate }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

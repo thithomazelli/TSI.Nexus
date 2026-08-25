@@ -131,6 +131,7 @@ export const ES = {
     SAVE_ERROR: 'Error al guardar',
     ENTITY_NOT_FOUND: '{entity} no encontrado',
     CONFIRM_ADD_ENTITY: 'El {entityLower} "{name}" no existe. ¿Deseas agregarlo?',
+    SELECT: 'Seleccionar',
   },
   ACCOUNT: {
     LOGIN: {
@@ -400,6 +401,9 @@ export const ES = {
   TRIPS: {
     TRIP_DATA: 'Datos del Viaje',
     NO_VEHICLE: 'Sin vehículo',
+    VEHICLE_NOT_FOUND_TITLE: 'Vehículo no encontrado',
+    VEHICLE_NOT_FOUND_MESSAGE: 'No se encontró ningún vehículo con la placa "{plate}". Seleccione un vehículo válido.',
+    VEHICLE_PICKER_TITLE: 'Seleccionar Vehículo',
     NO_DRIVER: 'Sin conductor',
     ROUTE: 'Ruta',
     DISTANCE_KM: 'Distancia (km)',
