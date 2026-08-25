@@ -59,6 +59,38 @@
               <div class="input-group-text"><i class="bi bi-clock"></i></div>
             </div>
           </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input
+                formControlName="sameDayArrival"
+                class="form-check-input"
+                type="checkbox"
+                id="legSameDayArrival"
+              />
+              <label class="form-check-label" for="legSameDayArrival">{{ 'TRIPS.SAME_DAY_ARRIVAL' | translate }}</label>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <app-date-field
+              formControlName="arrivalDateOnly"
+              [label]="'TRIPS.ARRIVAL_DATE' | translate"
+            ></app-date-field>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="arrivalTime"
+                  type="time"
+                  [placeholder]="'TRIPS.ARRIVAL_TIME' | translate"
+                  class="form-control"
+                  id="legArrivalTime"
+                />
+                <label for="legArrivalTime">{{ 'TRIPS.ARRIVAL_TIME' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-clock-history"></i></div>
+            </div>
+          </div>
           <div class="col-12 col-md-6">
             <div class="input-group">
               <div class="form-floating flex-fill">
@@ -159,6 +191,38 @@
                       <label [for]="'time-' + i">{{ 'TRIPS.DEPARTURE_TIME' | translate }}</label>
                     </div>
                     <div class="input-group-text"><i class="bi bi-clock"></i></div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check">
+                    <input
+                      formControlName="sameDayArrival"
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'sameDayArrival-' + i"
+                    />
+                    <label class="form-check-label" [for]="'sameDayArrival-' + i">{{ 'TRIPS.SAME_DAY_ARRIVAL' | translate }}</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <app-date-field
+                    formControlName="arrivalDateOnly"
+                    [label]="'TRIPS.ARRIVAL_DATE' | translate"
+                  ></app-date-field>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="arrivalTime"
+                        type="time"
+                        [placeholder]="'TRIPS.ARRIVAL_TIME' | translate"
+                        class="form-control"
+                        [id]="'arrivalTime-' + i"
+                      />
+                      <label [for]="'arrivalTime-' + i">{{ 'TRIPS.ARRIVAL_TIME' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-clock-history"></i></div>
                   </div>
                 </div>
                 <div class="col-12 col-md-6">

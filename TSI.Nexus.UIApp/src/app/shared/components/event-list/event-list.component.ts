@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   AccountService,
   AgendaEvent,
@@ -38,6 +39,9 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
   @Input() compact = false;
   @Input() showFilters = false;
   @Input() onlyMine = false;
+  // Read-only calendar cards built straight from another entity's own dates (see
+  // TripService.buildAgendaEvent) - merged in alongside real Events, never sent to the API.
+  @Input() extraEvents: AgendaEvent[] = [];
 
   viewMode: 'grid' | 'calendar' = 'grid';
   filtersOpen = false;
@@ -54,6 +58,7 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +76,10 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if ((changes['entity'] || changes['entityId']) && !changes['entity']?.firstChange) {
       this.load();
+    }
+    if (changes['extraEvents'] && !changes['extraEvents'].firstChange) {
+      this.events = [...this.events.filter((e) => !e.readOnly), ...this.extraEvents];
+      this.rowData = this.events;
     }
   }
 
@@ -91,6 +100,12 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
   noop(): void {}
 
   openModal(initialState: any): void {
+    const clicked: AgendaEvent | null = initialState?.data ?? null;
+    if (clicked?.readOnly && clicked.tripId) {
+      this.router.navigateByUrl(`/trips/${clicked.tripId}`);
+      return;
+    }
+
     const isEdit = !!initialState?.isEdit;
     const lockedLinkField = !isEdit && this.entity && this.entity !== 'user' ? `${this.entity}Id` : null;
     this.modalService.showTemplateModal(EventDetailsModalComponent, {
@@ -109,6 +124,9 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   deleteEvent(event: AgendaEvent): void {
+    if (event.readOnly) {
+      return;
+    }
     this.eventService
       .delete(event)
       .pipe(takeUntil(this._destroy$))
@@ -180,7 +198,14 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
         sortable: false,
         filter: false,
         resizable: false,
-        cellRenderer: () => {
+        cellRenderer: (params: ICellRendererParams) => {
+          if (params.data?.readOnly) {
+            return `
+              <button class="btn btn-info btn-sm" data-action="edit">
+                <i class="fas fa-eye" data-action="edit"></i>
+              </button>
+            `;
+          }
           return `
             <button class="btn btn-info btn-sm" data-action="edit">
               <i class="fas fa-edit" data-action="edit"></i>
@@ -200,7 +225,7 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     request$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
-      this.events = response.data ?? [];
+      this.events = [...(response.data ?? []), ...this.extraEvents];
       this.rowData = this.events;
       if (isRefresh) {
         this.notificationService.showMessage(response.status, response.message);

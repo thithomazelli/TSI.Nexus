@@ -248,9 +248,15 @@ a:hover {
   flex-shrink: 0;
 }
 
+/* :not(.d-flex) keeps this height-passthrough from reaching a modal's own action-button row
+   (every form footer uses Bootstrap's `.d-flex.justify-content-end` for a normal horizontal
+   row) - without it, the row gets forced into `flex-direction: column`, and its buttons then
+   stretch to the container's full width from the default `align-items: stretch` (see
+   trip-leg-details-modal and passenger-details-modal, whose footers collapsed into stacked
+   full-width buttons instead of the compact side-by-side pair every other modal uses). */
 .cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body,
-.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body > *,
-.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body > * > * {
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body > *:not(.d-flex),
+.cdk-overlay-pane.custom-modal .mat-mdc-dialog-surface .modal-body > * > *:not(.d-flex) {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;

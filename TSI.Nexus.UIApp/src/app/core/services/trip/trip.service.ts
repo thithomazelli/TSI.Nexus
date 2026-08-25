@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { ApiService, ApiType, WebApiResponse, Trip } from '@nexus/core';
+import { AgendaEvent, ApiService, ApiType, WebApiResponse, Trip, TripLeg } from '@nexus/core';
 
 @Injectable({
   providedIn: 'root',
@@ -70,6 +70,43 @@ export class TripService {
 
   refreshTrips(): Observable<WebApiResponse<Trip[]>> {
     return this.getAll();
+  }
+
+  // Builds a read-only calendar card straight from the Trip's own dates - departure of the
+  // first leg (by sequence) through arrival of the last one - instead of a separate Event row,
+  // the same way other entities' own dates (birthday, quote date, order date, ...) are meant to
+  // surface on a calendar without duplicating them into the Event table.
+  buildAgendaEvent(trip: Trip, legs: TripLeg[]): AgendaEvent {
+    const sortedLegs = [...legs].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+    const departures = sortedLegs
+      .map((leg) => new Date(leg.departureDate))
+      .filter((d) => !isNaN(d.getTime()));
+    const arrivals = sortedLegs
+      .map((leg) => new Date(leg.arrivalDate ?? leg.departureDate))
+      .filter((d) => !isNaN(d.getTime()));
+
+    const fallback = trip.date ? new Date(trip.date) : new Date();
+    const startDate = departures.length
+      ? new Date(Math.min(...departures.map((d) => d.getTime())))
+      : fallback;
+    let endDate = arrivals.length
+      ? new Date(Math.max(...arrivals.map((d) => d.getTime())))
+      : startDate;
+    if (endDate < startDate) {
+      endDate = startDate;
+    }
+
+    return {
+      id: `trip-${trip.id}`,
+      title: trip.route ? `${trip.tripNumber} - ${trip.route}` : trip.tripNumber,
+      startDate,
+      endDate,
+      eventTypeColor: '#0d6efd',
+      tripId: trip.id,
+      linkedEntityType: 'Trip',
+      linkedEntityLabel: trip.tripNumber,
+      readOnly: true,
+    } as AgendaEvent;
   }
 
   add(trip: Trip): Observable<WebApiResponse<Trip>> {

@@ -1,7 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslationService, Vehicle, VehicleService } from '@nexus/core';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
+import {
+  AgendaEvent,
+  TranslationService,
+  Trip,
+  TripLegService,
+  TripService,
+  Vehicle,
+  VehicleService,
+} from '@nexus/core';
+import { combineLatest, forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { VehicleFormComponent } from '../vehicle-form/vehicle-form.component';
 import { VehicleMaintenanceListComponent } from '../vehicle-maintenance-list/vehicle-maintenance-list.component';
@@ -35,6 +43,7 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
   data?: Vehicle | null = null;
   loading = false;
   isAgendaEnabled = true;
+  tripAgendaEvents: AgendaEvent[] = [];
   activeTab:
     | 'details'
     | 'maintenances'
@@ -59,6 +68,8 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
     private activatedRoute: ActivatedRoute,
     private translationService: TranslationService,
     private vehicleService: VehicleService,
+    private tripService: TripService,
+    private tripLegService: TripLegService,
     private routerService: Router,
     private featureFlagService: FeatureFlagService,
   ) {}
@@ -112,11 +123,45 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
             return;
           }
           this.data = response.data;
+          this.loadTripAgendaEvents(id);
         },
         error: () => {
           this.loading = false;
           this.routerService.navigateByUrl('/not-found');
         },
+      });
+  }
+
+  // Builds the Agenda tab's read-only trip cards (see TripService.buildAgendaEvent) - each
+  // Trip's own legs have to be fetched separately (TripLegs are never eager-loaded onto a Trip,
+  // same as everywhere else legs are used - see trip-leg-list.component.ts) so this is one
+  // request per trip; a vehicle's own trip history is small enough that this bounded fan-out is
+  // simpler than adding a bulk endpoint for a single tab.
+  private loadTripAgendaEvents(vehicleId: string): void {
+    this.tripService
+      .getByVehicleId(vehicleId)
+      .pipe(
+        switchMap((response) => {
+          const trips = response.data ?? [];
+          if (trips.length === 0) {
+            return of([] as AgendaEvent[]);
+          }
+          return forkJoin(
+            trips
+              .filter((trip: Trip) => !!trip.id)
+              .map((trip: Trip) =>
+                this.tripLegService.getByTrip(trip.id!).pipe(
+                  switchMap((legsResponse) =>
+                    of(this.tripService.buildAgendaEvent(trip, legsResponse.data ?? [])),
+                  ),
+                ),
+              ),
+          );
+        }),
+        takeUntil(this._destroy$),
+      )
+      .subscribe((events) => {
+        this.tripAgendaEvents = events;
       });
   }
 }

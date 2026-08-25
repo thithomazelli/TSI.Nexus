@@ -31,4 +31,11 @@ export interface AgendaEvent extends BaseModel {
   linkedEntityLabel?: string | null;
 
   participants?: EventParticipant[];
+
+  // Client-only, never round-tripped through the API: marks an entry that isn't a real Event
+  // row (see EventListComponent's extraEvents input) - a linked entity's own dates (e.g. a
+  // Trip's departure/arrival span) rendered as a calendar card without a duplicate Event
+  // record. Clicking it navigates to the linked entity instead of opening the Event form, and
+  // it has no delete action.
+  readOnly?: boolean;
 }

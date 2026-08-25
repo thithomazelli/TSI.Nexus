@@ -139,6 +139,7 @@
                   [entity]="'vehicle'"
                   [entityId]="data!.id"
                   [entityLabel]="data!.plate"
+                  [extraEvents]="tripAgendaEvents"
                 ></app-event-list>
               }
               @if (activeTab === 'audit') {
