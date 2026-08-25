@@ -1,4 +1,11 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import {
   Commission,
   CommissionService,
@@ -6,43 +13,65 @@ import {
   NotificationService,
   ServiceOrder,
   ServiceOrderService,
+  TranslationService,
   WebApiResponse,
 } from '@nexus/core';
+import { ColDef, ICellRendererParams, ValueFormatterParams } from 'ag-grid-community';
 import { Subject, takeUntil } from 'rxjs';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+
+import { GridComponent } from '../../../shared/grid/grid.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
     selector: 'app-service-order-list',
     templateUrl: './service-order-list.component.html',
     styleUrl: './service-order-list.component.scss',
-    imports: [
-        CurrencyPipe,
-        DatePipe,
-        TranslatePipe,
-    ],
+    imports: [GridComponent, TranslatePipe],
 })
-export class ServiceOrderListComponent implements OnInit, OnChanges, OnDestroy {
+export class ServiceOrderListComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input()
   driverId!: string;
 
-  serviceOrders: ServiceOrder[] = [];
+  @Input()
+  compact = false;
 
-  statusMap: { [key: string]: { label: string; color: string } } = {
-    Pending: { label: 'Pendente', color: 'warning' },
-    Paid: { label: 'Paga', color: 'success' },
-    Cancelled: { label: 'Cancelada', color: 'secondary' },
-  };
+  baseEndPoint = 'service-orders';
+  rowData: ServiceOrder[] = [];
+  columnDefs: ColDef[] = [];
 
   private _destroy$ = new Subject<void>();
+
+  get statusMap(): { [key: string]: { label: string; color: string } } {
+    return {
+      Pending: {
+        label: this.translationService.instant('DRIVERS.COMMISSION_STATUS_PENDING'),
+        color: 'warning',
+      },
+      Paid: {
+        label: this.translationService.instant('DRIVERS.COMMISSION_STATUS_PAID'),
+        color: 'success',
+      },
+      Cancelled: {
+        label: this.translationService.instant('DRIVERS.COMMISSION_STATUS_CANCELLED'),
+        color: 'secondary',
+      },
+    };
+  }
 
   constructor(
     private commissionService: CommissionService,
     private notificationService: NotificationService,
     private serviceOrderService: ServiceOrderService,
+    private translationService: TranslationService,
   ) {}
 
   ngOnInit(): void {
+    this.initializeGrid();
+    this.translationService.language$
+      .pipe(takeUntil(this._destroy$))
+      .subscribe(() => this.initializeGrid());
     this.load();
   }
 
@@ -57,12 +86,22 @@ export class ServiceOrderListComponent implements OnInit, OnChanges, OnDestroy {
     this._destroy$.complete();
   }
 
-  getStatusInfo(status?: string): { label: string; color: string } {
-    return this.statusMap[status ?? ''] ?? { label: status ?? '', color: 'secondary' };
+  refresh(): void {
+    this.load(true);
   }
 
-  markAsPaid(commission: Commission): void {
-    const updated: Commission = { ...commission, status: CommissionStatus.Paid };
+  // app-grid's [delete] input is required (no delete action is rendered here, so it's never
+  // actually invoked - see initializeGrid()).
+  noop(): void {}
+
+  // Repurposes app-grid's generic [update] hook (data-action="update") for the one action a
+  // Service Order actually supports - these rows are auto-generated (see
+  // DRIVERS.SERVICE_ORDERS_HINT) and never manually added/edited/deleted.
+  markAsPaid(serviceOrder: ServiceOrder): void {
+    if (!serviceOrder.commission) {
+      return;
+    }
+    const updated: Commission = { ...serviceOrder.commission, status: CommissionStatus.Paid };
 
     this.commissionService
       .update(updated)
@@ -73,7 +112,90 @@ export class ServiceOrderListComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
-  private load(): void {
+  private initializeGrid(): void {
+    this.columnDefs = [
+      {
+        field: 'id',
+        headerName: 'ID',
+        hide: true,
+      },
+      {
+        field: 'number',
+        headerName: this.translationService.instant('DRIVERS.OS_COLUMN'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+      },
+      {
+        field: 'issueDate',
+        headerName: this.translationService.instant('DRIVERS.ISSUE_DATE'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams) => this.formatDateBR(params.value),
+      },
+      {
+        field: 'commission.baseAmount',
+        headerName: this.translationService.instant('DRIVERS.BASE'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams) => this.formatCurrencyBRL(params.value),
+      },
+      {
+        field: 'commission.percentage',
+        headerName: '%',
+        sortable: true,
+        filter: true,
+        width: 90,
+        valueFormatter: (params: ValueFormatterParams) =>
+          params.value != null ? `${params.value}%` : '',
+      },
+      {
+        field: 'commission.amount',
+        headerName: this.translationService.instant('DRIVERS.COMMISSION_COLUMN'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        valueFormatter: (params: ValueFormatterParams) => this.formatCurrencyBRL(params.value),
+      },
+      {
+        field: 'commission.status',
+        headerName: this.translationService.instant('COMMON.STATUS'),
+        sortable: true,
+        filter: true,
+        flex: 1,
+        cellRenderer: (params: ICellRendererParams) => {
+          if (!params.value) {
+            return '';
+          }
+          const info = this.statusMap[params.value] ?? { label: params.value, color: 'secondary' };
+          return `<span class="badge bg-${info.color}">${info.label}</span>`;
+        },
+      },
+      {
+        headerName: this.translationService.instant('COMMON.ACTIONS'),
+        flex: 1,
+        minWidth: 120,
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellRenderer: (params: ICellRendererParams) => {
+          if (params.data?.commission?.status !== CommissionStatus.Pending) {
+            return '';
+          }
+          return `
+            <button class="btn btn-link btn-sm p-0" data-action="update" title="${this.translationService.instant('DRIVERS.MARK_AS_PAID_TITLE')}">
+              <i class="bi bi-check-circle text-success" data-action="update"></i>
+              ${this.translationService.instant('DRIVERS.PAY_BUTTON')}
+            </button>
+          `;
+        },
+      },
+    ];
+  }
+
+  private load(isRefresh = false): void {
     if (!this.driverId) {
       return;
     }
@@ -81,7 +203,35 @@ export class ServiceOrderListComponent implements OnInit, OnChanges, OnDestroy {
       .getByDriver(this.driverId)
       .pipe(takeUntil(this._destroy$))
       .subscribe((response) => {
-        this.serviceOrders = response.data ?? [];
+        this.rowData = response.data ?? [];
+        if (isRefresh) {
+          this.notificationService.showMessage(response.status, response.message);
+        }
       });
+  }
+
+  private formatDateBR(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private formatCurrencyBRL(value: unknown): string {
+    if (value == null || value === '') {
+      return '';
+    }
+    const n = Number(value);
+    if (Number.isNaN(n)) {
+      return String(value);
+    }
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 }

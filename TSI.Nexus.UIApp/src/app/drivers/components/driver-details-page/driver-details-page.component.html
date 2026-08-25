@@ -120,7 +120,10 @@
                 <app-driver-form [isEdit]="isEdit" [data]="data"></app-driver-form>
               }
               @if (activeTab === 'serviceOrders' && data?.id) {
-                <app-service-order-list [driverId]="data!.id"></app-service-order-list>
+                <app-service-order-list
+                  [driverId]="data!.id"
+                  [compact]="true"
+                ></app-service-order-list>
               }
               @if (activeTab === 'trips' && data?.id) {
                 <app-trips

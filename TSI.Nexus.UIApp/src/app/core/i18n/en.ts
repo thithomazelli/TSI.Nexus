@@ -601,6 +601,9 @@ export const EN = {
     MARK_AS_PAID_TITLE: 'Mark as paid',
     PAY_BUTTON: 'Pay',
     NO_SERVICE_ORDERS: 'No service orders generated yet',
+    COMMISSION_STATUS_PENDING: 'Pending',
+    COMMISSION_STATUS_PAID: 'Paid',
+    COMMISSION_STATUS_CANCELLED: 'Cancelled',
   },
   DOCUMENT_TEMPLATES: {
     TITLE: 'Document Templates',

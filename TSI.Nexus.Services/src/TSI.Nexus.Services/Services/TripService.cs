@@ -417,6 +417,9 @@ namespace TSI.Nexus.Services
 
                 var trips = await _repository.QueryAsync(
                     t => t.BusinessPartnerId == businessPartnerId,
+                    t => t.BusinessPartner,
+                    t => t.Vehicle,
+                    t => t.Driver,
                     p => p.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<TripDto>>(trips);
@@ -457,6 +460,9 @@ namespace TSI.Nexus.Services
                 // junction instead of the legacy single Trip.DriverId column.
                 var trips = await _repository.QueryAsync(
                     t => t.TripDrivers.Any(td => td.DriverId == driverId),
+                    t => t.BusinessPartner,
+                    t => t.Vehicle,
+                    t => t.Driver,
                     p => p.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<TripDto>>(trips);
@@ -491,6 +497,9 @@ namespace TSI.Nexus.Services
 
                 var trips = await _repository.QueryAsync(
                     t => t.VehicleId == vehicleId,
+                    t => t.BusinessPartner,
+                    t => t.Vehicle,
+                    t => t.Driver,
                     p => p.Transaction
                 );
                 result.Data = _mapper.Map<IEnumerable<TripDto>>(trips);

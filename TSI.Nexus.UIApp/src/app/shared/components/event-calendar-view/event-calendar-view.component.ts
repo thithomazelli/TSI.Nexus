@@ -45,10 +45,14 @@ export class EventCalendarViewComponent implements OnInit, OnChanges, OnDestroy 
   calendarOptions: CalendarOptions = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
+    // Comma-separated items render as one connected Bootstrap-style button-group (no gap, no
+    // radius between them) - a space between items instead keeps every button visually distinct
+    // with FullCalendar's own margin between them, matching the rest of the app's button spacing
+    // (e.g. the "Atualizar"/"Adicionar" pair above the grid) instead of reading as glued together.
     headerToolbar: {
-      left: 'prev,next today',
+      left: 'prev next today',
       center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
+      right: 'dayGridMonth timeGridWeek timeGridDay listWeek',
     },
     selectable: true,
     selectMirror: true,

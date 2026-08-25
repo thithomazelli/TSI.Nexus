@@ -98,7 +98,10 @@ export class TripsComponent implements OnInit, OnDestroy {
   }
 
   openModal(initialState: any) {
-    if (this.parentData != null && this.entity === 'Vehicle') {
+    // Only a brand-new Trip should be prefilled from the tab's parent entity (Vehicle/Driver/
+    // BusinessPartner) - editing/viewing an existing one already carries its own real data in
+    // initialState.data (from the grid row or calendar event), which this must never overwrite.
+    if (!initialState?.isEdit && this.parentData != null && this.entity === 'Vehicle') {
       initialState = {
         ...initialState,
         data: <Trip>{
@@ -106,7 +109,7 @@ export class TripsComponent implements OnInit, OnDestroy {
           vehiclePlate: (this.parentData as Vehicle)?.plate,
         },
       };
-    } else if (this.parentData != null) {
+    } else if (!initialState?.isEdit && this.parentData != null) {
       const parentData = this.parentData as Individual | Company | Driver;
       initialState = {
         ...initialState,

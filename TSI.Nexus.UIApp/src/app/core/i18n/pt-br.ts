@@ -601,6 +601,9 @@ export const PT_BR = {
     MARK_AS_PAID_TITLE: 'Marcar como paga',
     PAY_BUTTON: 'Pagar',
     NO_SERVICE_ORDERS: 'Nenhuma Ordem de Serviço gerada ainda',
+    COMMISSION_STATUS_PENDING: 'Pendente',
+    COMMISSION_STATUS_PAID: 'Paga',
+    COMMISSION_STATUS_CANCELLED: 'Cancelada',
   },
   DOCUMENT_TEMPLATES: {
     TITLE: 'Templates de Documentos',

@@ -4,53 +4,15 @@
     {{ 'DRIVERS.SERVICE_ORDERS_HINT' | translate }}
   </p>
 
-  <table class="table table-sm">
-    <thead>
-      <tr>
-        <th>{{ 'DRIVERS.OS_COLUMN' | translate }}</th>
-        <th>{{ 'DRIVERS.ISSUE_DATE' | translate }}</th>
-        <th>{{ 'DRIVERS.BASE' | translate }}</th>
-        <th>%</th>
-        <th>{{ 'DRIVERS.COMMISSION_COLUMN' | translate }}</th>
-        <th>{{ 'COMMON.STATUS' | translate }}</th>
-        <th style="width: 120px"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (so of serviceOrders; track so.id) {
-        <tr>
-          <td>{{ so.number }}</td>
-          <td>{{ so.issueDate | date: 'dd/MM/yyyy' }}</td>
-          <td>{{ so.commission?.baseAmount | currency: 'BRL' }}</td>
-          <td>{{ so.commission?.percentage }}%</td>
-          <td>{{ so.commission?.amount | currency: 'BRL' }}</td>
-          <td>
-            @if (so.commission) {
-              <span class="badge bg-{{ getStatusInfo(so.commission.status).color }}">
-                {{ getStatusInfo(so.commission.status).label }}
-              </span>
-            }
-          </td>
-          <td>
-            @if (so.commission && so.commission.status === 'Pending') {
-              <button
-                type="button"
-                class="btn btn-link btn-sm p-0"
-                [title]="'DRIVERS.MARK_AS_PAID_TITLE' | translate"
-                (click)="markAsPaid(so.commission)"
-              >
-                <i class="bi bi-check-circle text-success"></i> {{ 'DRIVERS.PAY_BUTTON' | translate }}
-              </button>
-            }
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="7" class="text-center text-muted small py-3">
-            {{ 'DRIVERS.NO_SERVICE_ORDERS' | translate }}
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+  <app-grid
+    [compactView]="compact"
+    [className]="'DRIVERS.SERVICE_ORDERS_TITLE' | translate"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [baseEndPoint]="baseEndPoint"
+    [canAdd]="false"
+    [refresh]="refresh.bind(this)"
+    [update]="markAsPaid.bind(this)"
+    [delete]="noop.bind(this)"
+  ></app-grid>
 </div>
