@@ -11,6 +11,7 @@ import {
 } from '@nexus/core';
 import { combineLatest, forkJoin, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
+import { PhotoComponent } from '../../../shared/photo/photo.component';
 import { VehicleFormComponent } from '../vehicle-form/vehicle-form.component';
 import { VehicleMaintenanceListComponent } from '../vehicle-maintenance-list/vehicle-maintenance-list.component';
 import { FuelLogListComponent } from '../fuel-log-list/fuel-log-list.component';
@@ -28,6 +29,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     styleUrl: './vehicle-details-page.component.scss',
     imports: [
         HeaderComponent,
+        PhotoComponent,
         VehicleFormComponent,
         VehicleMaintenanceListComponent,
         FuelLogListComponent,

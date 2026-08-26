@@ -1,0 +1,23 @@
+.camera-capture-body {
+  display: flex;
+  justify-content: center;
+}
+
+.camera-preview {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}

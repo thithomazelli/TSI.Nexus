@@ -1,0 +1,43 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ 'PHOTO.CROP_TITLE' | translate }}</h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body image-crop-body">
+  <div class="cropper-wrapper" (wheel)="onWheelZoom($event)">
+    <image-cropper
+      [imageFile]="source"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="1"
+      [roundCropper]="true"
+      [transform]="transform"
+      [output]="'blob'"
+      [format]="'png'"
+      (imageCropped)="onImageCropped($event)"
+    ></image-cropper>
+  </div>
+
+  <div class="zoom-control d-flex align-items-center gap-2 mt-3">
+    <i class="bi bi-zoom-out"></i>
+    <input
+      type="range"
+      min="1"
+      max="3"
+      step="0.05"
+      [value]="zoom"
+      (input)="onZoomChange($event)"
+      class="form-range flex-fill"
+      [attr.aria-label]="'PHOTO.ZOOM' | translate"
+    />
+    <i class="bi bi-zoom-in"></i>
+  </div>
+</div>
+
+<div class="modal-footer d-flex justify-content-end gap-2">
+  <button type="button" class="btn btn-secondary btn-sm" (click)="close()">
+    {{ 'COMMON.CANCEL' | translate }}
+  </button>
+  <button type="button" class="btn btn-success btn-sm" (click)="confirm()">
+    {{ 'PHOTO.SET_NEW_PHOTO' | translate }}
+  </button>
+</div>

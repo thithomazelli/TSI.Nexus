@@ -1,14 +1,12 @@
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  Inject,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
-  Optional,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -17,10 +15,12 @@ import {
   AttachmentService,
   ModalService,
   PhotoService,
+  TranslationService,
 } from '@nexus/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { NgIf } from '@angular/common';
 import { TranslatePipe } from '../../core/pipes/translate.pipe';
+import { CameraCaptureModalComponent } from './camera-capture-modal/camera-capture-modal.component';
+import { ImageCropModalComponent } from './image-crop-modal/image-crop-modal.component';
 
 @Component({
     selector: 'app-photo',
@@ -36,12 +36,6 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   imageUrl?: string | null = null;
 
   @Input()
-  isModal = false;
-
-  @Input()
-  isEdit = false;
-
-  @Input()
   entityClass: string = '';
 
   @Input()
@@ -50,36 +44,15 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   @ViewChild('fileInput')
   fileInput!: ElementRef<HTMLInputElement>;
 
-  @ViewChild('videoEl')
-  videoEl!: ElementRef<HTMLVideoElement>;
-
-  @ViewChild('canvasEl')
-  canvasEl!: ElementRef<HTMLCanvasElement>;
-
-  cameraActive = false;
-  pendingFile: File | null = null;
-  pendingRemoval = false;
-
-  private mediaStream?: MediaStream;
   private lastObjectUrl?: string;
-
-  private navbarPhotoSub?: Subscription;
 
   constructor(
     private cd: ChangeDetectorRef,
     private modalService: ModalService,
     private attachmentService: AttachmentService,
     private photoService: PhotoService,
-    @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any,
-  ) {
-    if (dialogData) {
-      this.isEdit = dialogData.isEdit ?? false;
-      this.isModal = dialogData.isModal ?? false;
-      this.imageUrl = dialogData.imageUrl;
-      this.entityClass = dialogData.entityClass ?? '';
-      this.data = dialogData.data ?? null;
-    }
-  }
+    private translationService: TranslationService,
+  ) {}
 
   ngOnInit(): void {
     this.loadPhoto();
@@ -92,10 +65,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
-    this.stopCamera();
     this.revokeLastObjectUrl();
-    this.navbarPhotoSub?.unsubscribe();
-    this.imageUrl = this.getNoImage();
   }
 
   loadPhoto(): void {
@@ -129,148 +99,60 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
     this.fileInput?.nativeElement.click();
   }
 
-  async startCamera(): Promise<void> {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      return;
-    }
-    try {
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user' },
-        audio: false,
-      });
-
-      // enable video placeholder in template so ViewChild is created
-      this.cameraActive = true;
-      this.cd.detectChanges(); // make Angular render the video element
-      await Promise.resolve(); // allow microtask tick so ViewChild binds
-
-      const videoElRef = this.videoEl?.nativeElement;
-      if (!videoElRef) {
-        console.warn('Video element not available after enabling camera');
-        return;
-      }
-
-      videoElRef.srcObject = this.mediaStream;
-      await videoElRef.play();
-    } catch (err) {
-      console.error('Camera start failed', err);
-      this.stopCamera();
-    }
-  }
-
-  stopCamera(): void {
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach((t) => t.stop());
-      this.mediaStream = undefined;
-    }
-    try {
-      if (this.videoEl && this.videoEl.nativeElement) {
-        this.videoEl.nativeElement.pause();
-        // detach stream to release camera
-        try {
-          (this.videoEl.nativeElement.srcObject as any) = null;
-        } catch {}
-      }
-    } catch {}
-    this.cameraActive = false;
-  }
-
   onFileSelected(ev: Event): void {
     const input = ev.target as HTMLInputElement;
     const file = input.files && input.files[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    this.revokeLastObjectUrl();
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imageUrl = String(reader.result);
-      this.pendingFile = file;
-    };
-    reader.readAsDataURL(file);
     input.value = '';
+    if (!file || !file.type.startsWith('image/')) return;
+    this.openCropModal(file);
   }
 
-  capturePhoto(): void {
-    const video = this.videoEl?.nativeElement;
-    const canvas = this.canvasEl?.nativeElement;
-    if (!canvas || !video) {
-      console.warn('Cannot capture: video or canvas not available');
-      return;
-    }
-    const w = video.videoWidth || 1280;
-    const h = video.videoHeight || 720;
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.drawImage(video, 0, 0, w, h);
-    try {
-      const dataUrl = canvas.toDataURL('image/png');
-      this.revokeLastObjectUrl();
-      this.imageUrl = dataUrl;
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const ext = blob.type.split('/').pop() ?? 'png';
-        const fileName = `${this.data?.id}.${ext}`;
-        const file = new File([blob], fileName, {
-          type: blob.type,
-        });
-        this.pendingFile = file;
-      }, 'image/png');
-      this.cd.detectChanges();
-      this.stopCamera();
-    } catch (err) {
-      console.error('capturePhoto failed', err);
-      this.stopCamera();
-    }
+  openCamera(): void {
+    const dialogRef = this.modalService.showTemplateModal(
+      CameraCaptureModalComponent,
+      { width: '560px' },
+    );
+    dialogRef.afterClosed().subscribe((file?: File) => {
+      if (file) {
+        this.openCropModal(file);
+      }
+    });
   }
 
-  savePhoto(event?: Event): void {
-    if (event) {
-      event.preventDefault();
-    }
+  removePhotoConfirm(): void {
+    if (!this.data?.id || !this.entityClass) return;
 
-    if (!this.data?.id || !this.entityClass) {
-      return;
-    }
-
-    // Remoção da foto
-    if (this.pendingRemoval) {
-      // Remove o anexo correspondente
-      this.deletePhotoAttachment();
-
-      // Limpa o campo photo na entidade
-      this.photoService.removePhoto(this.entityClass, this.data.id).subscribe({
-        next: () => {
-          this.data.photo = '';
-          this.pendingRemoval = false;
-          this.imageUrl = this.getNoImage();
-
-          this.modalService.showSweetNotification(
-            'Foto removida',
-            'Foto removida com sucesso!',
-            'success',
-          );
-
-          if (this.entityClass === 'Users') {
-            this.photoService.updateUserPhoto('', this.data.id);
-          }
-
-          this.close({ photoPath: '' });
-        },
-        error: () => {
-          this.modalService.showSweetNotification(
-            '',
-            'Erro ao remover foto.',
-            'error',
-          );
-        },
+    this.modalService
+      .showSweetConfirmation(
+        this.translationService.instant('PHOTO.REMOVE_CONFIRM_TITLE'),
+        this.translationService.instant('PHOTO.REMOVE_CONFIRM_TEXT'),
+        'warning',
+      )
+      .then((result: any) => {
+        if (result.isConfirmed) {
+          this.performRemove();
+        }
       });
-      return;
-    }
+  }
 
-    if (!this.pendingFile) return;
+  private openCropModal(source: File): void {
+    const dialogRef = this.modalService.showTemplateModal(
+      ImageCropModalComponent,
+      { source, width: '560px' },
+    );
+    dialogRef.afterClosed().subscribe((croppedBlob?: Blob) => {
+      if (croppedBlob) {
+        this.uploadCroppedPhoto(croppedBlob);
+      }
+    });
+  }
 
-    const file = this.pendingFile;
+  private uploadCroppedPhoto(blob: Blob): void {
+    if (!this.data?.id || !this.entityClass) return;
+
+    const file = new File([blob], `${this.data.id}.png`, {
+      type: blob.type || 'image/png',
+    });
 
     // 1) Anexa o arquivo primeiro
     this.addPhotoAsAttachment(file, () => {
@@ -282,7 +164,6 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
             const photoPath = uploadRes?.fileName ?? uploadRes?.path ?? '';
             this.data.photo = photoPath;
             this.loadPhoto();
-            this.pendingFile = null;
 
             this.modalService.showSweetNotification(
               'Foto atualizada',
@@ -293,8 +174,6 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
             if (this.entityClass === 'Users') {
               this.photoService.updateUserPhoto(photoPath, this.data.id);
             }
-
-            this.close({ photoPath });
           },
           error: () => {
             this.modalService.showSweetNotification(
@@ -304,6 +183,36 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
             );
           },
         });
+    });
+  }
+
+  private performRemove(): void {
+    // Remove o anexo correspondente
+    this.deletePhotoAttachment();
+
+    // Limpa o campo photo na entidade
+    this.photoService.removePhoto(this.entityClass, this.data.id).subscribe({
+      next: () => {
+        this.data.photo = '';
+        this.imageUrl = this.getNoImage();
+
+        this.modalService.showSweetNotification(
+          'Foto removida',
+          'Foto removida com sucesso!',
+          'success',
+        );
+
+        if (this.entityClass === 'Users') {
+          this.photoService.updateUserPhoto('', this.data.id);
+        }
+      },
+      error: () => {
+        this.modalService.showSweetNotification(
+          '',
+          'Erro ao remover foto.',
+          'error',
+        );
+      },
     });
   }
 
@@ -335,6 +244,8 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
       orderId: (id) => this.attachmentService.getByOrderId(id),
       transactionId: (id) => this.attachmentService.getByTransactionId(id),
       paymentId: (id) => this.attachmentService.getByPaymentId(id),
+      vehicleId: (id) => this.attachmentService.getByVehicleId(id),
+      driverId: (id) => this.attachmentService.getByDriverId(id),
     };
 
     const fetchFn = entityMap[entityIdField];
@@ -359,45 +270,10 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
       Orders: 'orderId',
       Transactions: 'transactionId',
       Payments: 'paymentId',
+      Vehicles: 'vehicleId',
+      Drivers: 'driverId',
     };
     return map[this.entityClass] ?? 'userId';
-  }
-
-  removePhoto(): void {
-    this.imageUrl = this.getNoImage();
-    this.pendingFile = null;
-    this.pendingRemoval = true;
-    this.revokeLastObjectUrl();
-    this.stopCamera();
-  }
-
-  onPhotoClick(): void {
-    // If this component is already in a modal, do not open another modal
-    if (this.isModal) {
-      return;
-    }
-    this.openPhotoModal();
-  }
-
-  close(result?: any): void {
-    if (
-      this.dialogData?.dialogRef &&
-      typeof this.dialogData.dialogRef.close === 'function'
-    ) {
-      this.dialogData.dialogRef.close(result);
-    } else {
-      this.modalService.hideModal(this.dialogData?.dialogRef);
-    }
-  }
-
-  private openPhotoModal(): void {
-    this.modalService.showTemplateModal(PhotoComponent, {
-      data: this.data,
-      isEdit: true,
-      isModal: true,
-      imageUrl: this.data?.photo,
-      entityClass: this.entityClass,
-    });
   }
 
   private revokeLastObjectUrl(): void {

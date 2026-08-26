@@ -112,11 +112,21 @@
     opacity: 0.9;
   }
 
-  .photo-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    justify-content: center;
+}
+
+.photo-dropdown {
+  width: 140px;
+  margin: 0 auto;
+
+  .dropdown-menu {
+    min-width: 10rem;
+  }
+
+  .dropdown-item i {
+    width: 1.1rem;
+    display: inline-block;
+    text-align: center;
+    margin-right: 0.35rem;
   }
 }
 
@@ -128,9 +138,8 @@
       height: 112px;
     }
   }
-}
 
-.modal-body {
-  padding: 15px;
-  max-width: 100%;
+  .photo-dropdown {
+    width: 112px;
+  }
 }

@@ -1,0 +1,42 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ 'PHOTO.TAKE_PHOTO' | translate }}</h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body camera-capture-body">
+  <div class="camera-preview">
+    <video
+      *ngIf="!capturedDataUrl"
+      #videoEl
+      autoplay
+      muted
+      playsinline
+      class="camera-media"
+    ></video>
+    <img
+      *ngIf="capturedDataUrl"
+      [src]="capturedDataUrl"
+      class="camera-media"
+    />
+  </div>
+  <canvas #canvasEl class="d-none"></canvas>
+</div>
+
+<div class="modal-footer d-flex justify-content-center gap-2">
+  @if (!capturedDataUrl) {
+    <button type="button" class="btn btn-success btn-sm" (click)="capture()">
+      {{ 'PHOTO.CAPTURE' | translate }}
+    </button>
+  } @else {
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm"
+      (click)="retake()"
+    >
+      {{ 'PHOTO.RETAKE' | translate }}
+    </button>
+    <button type="button" class="btn btn-success btn-sm" (click)="confirm()">
+      {{ 'PHOTO.USE_PHOTO' | translate }}
+    </button>
+  }
+</div>

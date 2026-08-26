@@ -1,53 +1,54 @@
-@if (isModal) {
-  <div class="modal-header">
-    <h5 class="modal-title">
-      {{ (isEdit ? "COMMON.EDIT_ENTITY" : "COMMON.ADD_ENTITY") | translate: { entity: ("PHOTO.IMAGE" | translate) } }}
-    </h5>
-    <button type="button" class="btn-close" (click)="close()"></button>
-  </div>
-}
-
-<div class="photo-component mb-3" [class.modal-body]="isModal">
-  <div
-    class="photo-preview d-flex align-items-center justify-content-center photo-clickable"
-    role="button"
-    tabindex="0"
-    (click)="onPhotoClick()"
-    (keydown.enter)="onPhotoClick()"
-    (keydown.space)="onPhotoClick()"
-    [attr.aria-label]="'PHOTO.CLICK_TO_CHANGE_PHOTO' | translate"
-  >
-    <!-- live camera when active -->
-    @if (cameraActive) {
-      <div class="photo-wrapper position-relative">
-        <video
-          #videoEl
-          autoplay
-          muted
-          playsinline
-          class="photo-video rounded-circle profile-user-img img-fluid img-circle"
-        ></video>
-        @if (!isModal) {
-          <div class="photo-hover-overlay">
-            <span>{{ 'PHOTO.CLICK_TO_CHANGE' | translate }}</span>
-          </div>
-        }
-      </div>
-    } @else {
+<div class="photo-component mb-3">
+  <div class="dropdown photo-dropdown">
+    <button
+      type="button"
+      class="photo-preview d-flex align-items-center justify-content-center photo-clickable btn p-0 border-0 bg-transparent"
+      data-bs-toggle="dropdown"
+      data-bs-auto-close="outside"
+      [attr.aria-label]="'PHOTO.CLICK_TO_CHANGE_PHOTO' | translate"
+    >
       <div class="photo-wrapper position-relative">
         <img
           class="profile-user-img img-fluid img-circle"
           [src]="imageUrl"
           (error)="onImgError($event)"
         />
-        @if (!isModal) {
-          <div class="photo-hover-overlay">
-            <span>{{ 'PHOTO.CLICK_TO_CHANGE' | translate }}</span>
-          </div>
-        }
+        <div class="photo-hover-overlay">
+          <span>{{ 'PHOTO.CLICK_TO_CHANGE' | translate }}</span>
+        </div>
       </div>
-    }
+    </button>
+
+    <ul class="dropdown-menu">
+      <li>
+        <button type="button" class="dropdown-item" (click)="triggerFile()">
+          <i class="bi bi-upload"></i> {{ 'PHOTO.UPLOAD_OPTION' | translate }}
+        </button>
+      </li>
+      <li>
+        <button type="button" class="dropdown-item" (click)="openCamera()">
+          <i class="bi bi-camera"></i> {{ 'PHOTO.TAKE_PHOTO' | translate }}
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          class="dropdown-item text-danger"
+          (click)="removePhotoConfirm()"
+        >
+          <i class="bi bi-trash"></i> {{ 'COMMON.REMOVE' | translate }}
+        </button>
+      </li>
+    </ul>
   </div>
+
+  <input
+    #fileInput
+    type="file"
+    accept="image/*"
+    class="d-none"
+    (change)="onFileSelected($event)"
+  />
 
   <div class="box-profile">
     <div class="text-center">
@@ -58,69 +59,5 @@
         {{ data?.sku || data?.email }}
       </p>
     </div>
-
-    @if (isModal) {
-      <div class="photo-actions mt-2 d-flex gap-2 justify-content-center">
-        <input
-          #fileInput
-          type="file"
-          accept="image/*"
-          capture="environment"
-          class="d-none"
-          (change)="onFileSelected($event)"
-        />
-        @if (!cameraActive) {
-          <button
-            type="button"
-            class="btn btn-outline-primary btn-sm"
-            (click)="triggerFile()"
-          >
-            {{ 'COMMON.UPLOAD' | translate }}
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm"
-            (click)="startCamera()"
-          >
-            {{ 'PHOTO.OPEN_CAMERA' | translate }}
-          </button>
-        }
-
-        @if (cameraActive) {
-          <button
-            type="button"
-            class="btn btn-outline-success btn-sm"
-            (click)="capturePhoto()"
-          >
-            {{ 'PHOTO.TAKE_PHOTO' | translate }}
-          </button>
-        }
-        @if (cameraActive) {
-          <button
-            type="button"
-            class="btn btn-outline-danger btn-sm"
-            (click)="stopCamera()"
-          >
-            {{ 'PHOTO.CLOSE_CAMERA' | translate }}
-          </button>
-        }
-
-        @if (!cameraActive) {
-          <button
-            type="button"
-            class="btn btn-outline-danger btn-sm"
-            (click)="removePhoto()"
-          >{{ 'COMMON.REMOVE' | translate }}</button>
-          <button
-            type="button"
-            class="btn btn-success btn-sm"
-            (click)="savePhoto()"
-          >{{ 'COMMON.SAVE' | translate }}</button>
-        }
-      </div>
-    }
-
-    <canvas #canvasEl class="d-none"></canvas>
   </div>
 </div>

@@ -14,7 +14,11 @@
         <div class="card card-secondary card-outline mb-2">
           <div class="card-body box-profile">
             <div class="text-center">
-              <i class="bi bi-bus-front" style="font-size: 4rem"></i>
+              <app-photo
+                [data]="data"
+                [imageUrl]="data?.photo"
+                [entityClass]="'Vehicles'"
+              ></app-photo>
               <div class="box-profile">
                 <div class="text-center">
                   <ul class="list-group list-group-unbordered mb-3">

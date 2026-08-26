@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Driver, DriverService, TranslationService } from '@nexus/core';
 import { combineLatest, Subject, takeUntil } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
+import { PhotoComponent } from '../../../shared/photo/photo.component';
 import { DriverFormComponent } from '../driver-form/driver-form.component';
 import { ServiceOrderListComponent } from '../service-order-list/service-order-list.component';
 import { TripsComponent } from '../../../trips/trips.component';
@@ -20,6 +21,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     styleUrl: './driver-details-page.component.scss',
     imports: [
         HeaderComponent,
+        PhotoComponent,
         DriverFormComponent,
         ServiceOrderListComponent,
         TripsComponent,

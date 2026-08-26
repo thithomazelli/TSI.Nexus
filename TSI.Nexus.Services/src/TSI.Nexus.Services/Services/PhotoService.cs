@@ -22,6 +22,8 @@ namespace TSI.Nexus.Services.Services
         private readonly IRepository<BusinessPartner> _businessPartnerRepository;
         private readonly IRepository<Product> _productRepository;
         private readonly IRepository<User> _userRepository;
+        private readonly IRepository<Vehicle> _vehicleRepository;
+        private readonly IRepository<Driver> _driverRepository;
         private readonly IConfiguration _configuration;
 
         private static readonly string[] AllowedExts = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
@@ -35,6 +37,8 @@ namespace TSI.Nexus.Services.Services
             IRepository<BusinessPartner> businessPartnerRepository,
             IRepository<Product> productRepository,
             IRepository<User> userRepository,
+            IRepository<Vehicle> vehicleRepository,
+            IRepository<Driver> driverRepository,
             IConfiguration configuration
         )
         {
@@ -46,6 +50,10 @@ namespace TSI.Nexus.Services.Services
                 productRepository ?? throw new ArgumentNullException(nameof(productRepository));
             _userRepository =
                 userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _vehicleRepository =
+                vehicleRepository ?? throw new ArgumentNullException(nameof(vehicleRepository));
+            _driverRepository =
+                driverRepository ?? throw new ArgumentNullException(nameof(driverRepository));
             _configuration =
                 configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
@@ -241,6 +249,18 @@ namespace TSI.Nexus.Services.Services
                     var product = await _productRepository.GetByIdAsync(entityId);
                     return product.Photo;
                 }
+                case "Vehicle":
+                case "Vehicles":
+                {
+                    var vehicle = await _vehicleRepository.GetByIdAsync(entityId);
+                    return vehicle.Photo;
+                }
+                case "Driver":
+                case "Drivers":
+                {
+                    var driver = await _driverRepository.GetByIdAsync(entityId);
+                    return driver.Photo;
+                }
                 default:
                     return string.Empty;
             }
@@ -284,6 +304,28 @@ namespace TSI.Nexus.Services.Services
                     {
                         product.Photo = fileName;
                         await _productRepository.UpdateAsync(product);
+                    }
+                    break;
+                }
+                case "Vehicle":
+                case "Vehicles":
+                {
+                    var vehicle = await _vehicleRepository.GetByIdAsync(entityId);
+                    if (vehicle != null)
+                    {
+                        vehicle.Photo = fileName;
+                        await _vehicleRepository.UpdateAsync(vehicle);
+                    }
+                    break;
+                }
+                case "Driver":
+                case "Drivers":
+                {
+                    var driver = await _driverRepository.GetByIdAsync(entityId);
+                    if (driver != null)
+                    {
+                        driver.Photo = fileName;
+                        await _driverRepository.UpdateAsync(driver);
                     }
                     break;
                 }
