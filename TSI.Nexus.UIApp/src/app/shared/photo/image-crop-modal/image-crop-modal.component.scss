@@ -7,13 +7,12 @@
 .cropper-wrapper {
   width: 100%;
   max-width: 480px;
-  // No fixed height: forcing image-cropper to stretch to a fixed height taller
-  // than the source photo's own rendered aspect just leaves blank space below
-  // it (the library top-aligns its content, it doesn't letterbox/center it).
-  // Auto height lets the wrapper hug the image; min/max keep it from ever
-  // being too cramped for the crop frame or too tall for odd aspect ratios.
-  min-height: 340px;
-  max-height: 420px;
+  // A circular crop frame can only touch all four edges of a SQUARE canvas -
+  // in a wide rectangle it can only ever fill the shorter axis. A non-square
+  // source photo may then show blank canvas on two sides at low zoom (same
+  // tradeoff every square avatar-cropper makes); centering keeps that gap
+  // symmetric, and zooming in brings the image up to cover it.
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
