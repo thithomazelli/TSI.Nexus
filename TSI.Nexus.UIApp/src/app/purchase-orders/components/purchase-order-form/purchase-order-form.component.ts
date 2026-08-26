@@ -39,7 +39,13 @@ import { Observable, startWith, map, combineLatestWith } from 'rxjs';
 
 import { BusinessPartnerDetailsModalComponent } from '../../../business-partner/components/business-partner-details-modal/business-partner-details-modal.component';
 import { PurchaseOrderProductsDetailsModalComponent } from '../../../purchase-order-products/components/purchase-order-product-details-modal/purchase-order-products-details-modal.component';
-import { PurchaseOrderDetailsModalComponent } from '../purchase-order-details-modal/purchase-order-details-modal.component';
+// Type-only: PurchaseOrderDetailsModalComponent imports this form back (it renders
+// <app-purchase-order-form> in its template), so a normal import here would form a
+// module-load-order circular dependency between the two files - `import type` is erased at
+// compile time and can't contribute to that cycle. The one place this component needs the
+// class itself at runtime (reopening the modal after a cancelled delete, in remove() below)
+// loads it dynamically instead, for the same reason.
+import type { PurchaseOrderDetailsModalComponent } from '../purchase-order-details-modal/purchase-order-details-modal.component';
 import { Router } from '@angular/router';
 import { AlertBannerComponentComponent } from '../../../shared/alert-banner-component/alert-banner-component.component';
 import { NgIf, NgClass, NgFor, AsyncPipe } from '@angular/common';
@@ -298,10 +304,14 @@ export class PurchaseOrderFormComponent
               data: this.data,
               id: this.data?.id,
             };
-            this.modalService.showTemplateModal(
-              PurchaseOrderDetailsModalComponent,
-              initialState,
-            );
+            import(
+              '../purchase-order-details-modal/purchase-order-details-modal.component'
+            ).then(({ PurchaseOrderDetailsModalComponent }) => {
+              this.modalService.showTemplateModal(
+                PurchaseOrderDetailsModalComponent,
+                initialState,
+              );
+            });
           }
         }
       });

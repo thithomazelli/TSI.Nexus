@@ -8,6 +8,8 @@ export interface QuoteTrip extends BaseModel {
   transportLicenseNumber?: string | null;
   transportLicenseExpiryDate?: Date | null;
   vehicleId?: string | null;
+  vehiclePlate?: string | null;
   driverId?: string | null;
+  driverName?: string | null;
   quoteId?: string;
 }

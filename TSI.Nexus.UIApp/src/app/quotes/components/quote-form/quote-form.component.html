@@ -162,30 +162,48 @@
         <div class="row g-1 mb-1">
           <div class="col-12 col-md-6">
             <div class="input-group">
-              <div class="form-floating flex-fill select-floating">
-                <select formControlName="vehicleId" class="form-select">
-                  <option [ngValue]="null">{{ 'TRIPS.NO_VEHICLE' | translate }}</option>
-                  <option *ngFor="let v of vehicles" [ngValue]="v.id">
-                    {{ v.plate }} - {{ v.brand }} {{ v.model }} ({{
-                      v.status
-                    }})
-                  </option>
-                </select>
+              <div class="form-floating flex-fill">
+                <input
+                  type="text"
+                  formControlName="vehiclePlate"
+                  class="form-control"
+                  [matAutocomplete]="quoteTripVehicleAuto"
+                  [placeholder]="'VEHICLES.SINGULAR' | translate"
+                  (blur)="onQuoteTripVehiclePlateBlur()"
+                />
                 <label>{{ 'VEHICLES.SINGULAR' | translate }}</label>
+                <mat-autocomplete
+                  #quoteTripVehicleAuto="matAutocomplete"
+                  (optionSelected)="selectQuoteTripVehicle($event.option.value)"
+                >
+                  <mat-option *ngFor="let v of filteredQuoteTripVehicles$ | async" [value]="v">
+                    {{ v.plate }} - {{ v.brand }} {{ v.model }} ({{ v.status }})
+                  </mat-option>
+                </mat-autocomplete>
               </div>
               <div class="input-group-text"><i class="bi bi-bus-front"></i></div>
             </div>
           </div>
           <div class="col-12 col-md-6">
             <div class="input-group">
-              <div class="form-floating flex-fill select-floating">
-                <select formControlName="driverId" class="form-select">
-                  <option [ngValue]="null">{{ 'TRIPS.NO_DRIVER' | translate }}</option>
-                  <option *ngFor="let d of drivers" [ngValue]="d.id">
-                    {{ d.name }} ({{ d.status }})
-                  </option>
-                </select>
+              <div class="form-floating flex-fill">
+                <input
+                  type="text"
+                  formControlName="driverName"
+                  class="form-control"
+                  [matAutocomplete]="quoteTripDriverAuto"
+                  [placeholder]="'SIDEBAR.DRIVER' | translate"
+                  (blur)="onQuoteTripDriverNameBlur()"
+                />
                 <label>{{ 'SIDEBAR.DRIVER' | translate }}</label>
+                <mat-autocomplete
+                  #quoteTripDriverAuto="matAutocomplete"
+                  (optionSelected)="selectQuoteTripDriver($event.option.value)"
+                >
+                  <mat-option *ngFor="let d of filteredQuoteTripDrivers$ | async" [value]="d">
+                    {{ d.name }} ({{ d.status }})
+                  </mat-option>
+                </mat-autocomplete>
               </div>
               <div class="input-group-text"><i class="bi bi-person-vcard"></i></div>
             </div>

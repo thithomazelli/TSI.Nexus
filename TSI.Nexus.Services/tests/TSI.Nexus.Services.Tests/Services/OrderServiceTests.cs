@@ -394,6 +394,54 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task OrderService_Update_ShouldUpdateTheSameTrackedInstance_WhenMethodIsCalledWithAValidObject()
+        {
+            // Arrange - this is the regression test for the EF Core "cannot be tracked because
+            // another instance with the same key value is already being tracked" bug: Update must
+            // load the entity once via GetByIdAsync and map the DTO onto that same instance,
+            // rather than mapping a separate Order instance with the same Id.
+            var orderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var existingOrder = new Order
+            {
+                Id = orderId,
+                OrderNumber = "ORD-00001",
+                CreateUserId = "owner-user-id",
+            };
+
+            var orderDto = new OrderDto
+            {
+                Id = orderId,
+                OrderNumber = "ORD-00001",
+                Description = "Pedido atualizado",
+                Transaction = new TransactionDto
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000010"),
+                },
+                QuoteNumber = string.Empty,
+            };
+
+            _repository.Setup(r => r.GetByIdAsync(orderId)).ReturnsAsync(existingOrder);
+            _repository.Setup(r => r.UpdateAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            _transactionService
+                .Setup(_ => _.Update(It.IsAny<TransactionDto>()))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto> { Data = orderDto.Transaction, Status = ResponseStatus.Success }
+                );
+
+            // Act
+            var result = await _orderService.Update(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal("Pedido atualizado", existingOrder.Description);
+            _repository.Verify(r => r.UpdateAsync(existingOrder), Times.Once);
+            _transactionService.Verify(
+                _ => _.Update(It.Is<TransactionDto>(t => t.OrderId == orderId)),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task OrderService_Update_ShouldReturnWarningAndNotUpdate_WhenOrderBelongsToAnotherUserAndCurrentUserIsNotAdmin()
         {
             // Arrange
@@ -407,9 +455,7 @@ namespace TSI.Nexus.Services.Tests.Services
 
             var existingOrder = new Order { Id = orderId, CreateUserId = "owner-user-id" };
 
-            _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
-                .ReturnsAsync(new List<Order> { existingOrder });
+            _repository.Setup(r => r.GetByIdAsync(orderId)).ReturnsAsync(existingOrder);
 
             _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(false);
             _currentUserService.Setup(_ => _.GetUserId()).Returns("another-user-id");

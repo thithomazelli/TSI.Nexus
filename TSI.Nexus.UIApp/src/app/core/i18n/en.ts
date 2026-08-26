@@ -400,11 +400,9 @@ export const EN = {
   },
   TRIPS: {
     TRIP_DATA: 'Trip Data',
-    NO_VEHICLE: 'No vehicle',
     VEHICLE_NOT_FOUND_TITLE: 'Vehicle not found',
     VEHICLE_NOT_FOUND_MESSAGE: 'No vehicle with plate "{plate}" was found. Please select a valid vehicle.',
     VEHICLE_PICKER_TITLE: 'Select Vehicle',
-    NO_DRIVER: 'No driver',
     ROUTE: 'Route',
     DISTANCE_KM: 'Distance (km)',
     DAILY_COUNT: 'Daily count',

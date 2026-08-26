@@ -356,9 +356,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 CreateUserId = "owner-user-id",
             };
 
-            _repository
-                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<PurchaseOrder, bool>>>()))
-                .ReturnsAsync(new List<PurchaseOrder> { existingPurchaseOrder });
+            _repository.Setup(r => r.GetByIdAsync(purchaseOrderId)).ReturnsAsync(existingPurchaseOrder);
 
             _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(false);
             _currentUserService.Setup(_ => _.GetUserId()).Returns("another-user-id");
@@ -369,6 +367,59 @@ namespace TSI.Nexus.Services.Tests.Services
             // Assert
             Assert.Equal(ResponseStatus.Warning, result.Status);
             _repository.Verify(r => r.UpdateAsync(It.IsAny<PurchaseOrder>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Update_ShouldUpdateTheSameTrackedInstance_WhenMethodIsCalledWithAValidObject()
+        {
+            // Arrange - regression test for the EF Core "cannot be tracked because another
+            // instance with the same key value is already being tracked" bug: Update must load
+            // the entity once via GetByIdAsync and map the DTO onto that same instance, rather
+            // than mapping a separate PurchaseOrder instance with the same Id.
+            var purchaseOrderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var existingPurchaseOrder = new PurchaseOrder
+            {
+                Id = purchaseOrderId,
+                PurchaseOrderNumber = "PC-00001",
+                CreateUserId = "owner-user-id",
+            };
+
+            var purchaseOrderDto = new PurchaseOrderDto
+            {
+                Id = purchaseOrderId,
+                PurchaseOrderNumber = "PC-00001",
+                Description = "Pedido de compra atualizado",
+                Transaction = new TransactionDto
+                {
+                    Id = Guid.Parse("00000000-0000-0000-0000-000000000010"),
+                },
+            };
+
+            _repository.Setup(r => r.GetByIdAsync(purchaseOrderId)).ReturnsAsync(existingPurchaseOrder);
+            _repository
+                .Setup(r => r.UpdateAsync(It.IsAny<PurchaseOrder>()))
+                .Returns(Task.CompletedTask);
+            _transactionService
+                .Setup(_ => _.Update(It.IsAny<TransactionDto>()))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto>
+                    {
+                        Data = purchaseOrderDto.Transaction,
+                        Status = ResponseStatus.Success,
+                    }
+                );
+
+            // Act
+            var result = await _purchaseOrderService.Update(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal("Pedido de compra atualizado", existingPurchaseOrder.Description);
+            _repository.Verify(r => r.UpdateAsync(existingPurchaseOrder), Times.Once);
+            _transactionService.Verify(
+                _ => _.Update(It.Is<TransactionDto>(t => t.PurchaseOrderId == purchaseOrderId)),
+                Times.Once
+            );
         }
     }
 }

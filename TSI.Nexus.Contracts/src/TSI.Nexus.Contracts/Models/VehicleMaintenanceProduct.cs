@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TSI.Nexus.Contracts.Models
@@ -20,13 +19,15 @@ namespace TSI.Nexus.Contracts.Models
         [ForeignKey("VehicleMaintenance")]
         public Guid VehicleMaintenanceId { get; set; }
 
-        [Required]
+        // Not [Required]: VehicleMaintenancesController.Update binds the raw VehicleMaintenance
+        // entity (no DTO layer), and the client only ever sends VehicleMaintenanceId/ProductId for
+        // each line - never the nested navigation objects - same reasoning as VehicleMaintenance.Vehicle
+        // above. The relationship is still enforced at the DB level since both FKs are non-nullable Guids.
         public virtual VehicleMaintenance VehicleMaintenance { get; set; } = null!;
 
         [ForeignKey("Product")]
         public Guid ProductId { get; set; }
 
-        [Required]
         public virtual Product Product { get; set; } = null!;
 
         public VehicleMaintenanceProduct() { }

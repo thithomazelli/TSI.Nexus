@@ -31,7 +31,13 @@ import {
 import { MatDialogRef } from '@angular/material/dialog';
 
 import { ProductDetailsModalComponent } from '../../../products/components/product-details-modal/product-details-modal.component';
-import { PurchaseOrderProductsDetailsModalComponent } from '../purchase-order-product-details-modal/purchase-order-products-details-modal.component';
+// Type-only: PurchaseOrderProductsDetailsModalComponent imports this form back (it renders
+// <app-purchase-order-products-form> in its template), so a normal import here would form a
+// module-load-order circular dependency between the two files - `import type` is erased at
+// compile time and can't contribute to that cycle. The one place this component needs the
+// class itself at runtime (reopening the modal after a cancelled delete, in remove() below)
+// loads it dynamically instead, for the same reason.
+import type { PurchaseOrderProductsDetailsModalComponent } from '../purchase-order-product-details-modal/purchase-order-products-details-modal.component';
 import { NgClass, NgFor, NgIf, AsyncPipe } from '@angular/common';
 import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
 import { LinkFieldComponent } from '../../../shared/components/link-field/link-field.component';
@@ -220,10 +226,14 @@ export class PurchaseOrderProductsFormComponent
               data: this.data,
               id: this.data?.id,
             };
-            this.modalService.showTemplateModal(
-              PurchaseOrderProductsDetailsModalComponent,
-              initialState,
-            );
+            import(
+              '../purchase-order-product-details-modal/purchase-order-products-details-modal.component'
+            ).then(({ PurchaseOrderProductsDetailsModalComponent }) => {
+              this.modalService.showTemplateModal(
+                PurchaseOrderProductsDetailsModalComponent,
+                initialState,
+              );
+            });
           }
         }
       });

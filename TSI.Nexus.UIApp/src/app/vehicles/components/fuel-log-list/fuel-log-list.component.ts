@@ -84,9 +84,13 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   openModal(initialState: any): void {
+    // vehicleId only reflects whether this list is embedded inside one Vehicle's own tab
+    // (this.vehicleId, a component @Input) - it must never come from the edited record's own
+    // vehicleId, or editing an existing FuelLog from the standalone /fuel-logs list would always
+    // look "embedded" (every FuelLog already has a vehicleId) and hide the Veículo picker.
     this.modalService.showTemplateModal(FuelLogDetailsModalComponent, {
       ...initialState,
-      vehicleId: initialState?.data?.vehicleId ?? this.vehicleId,
+      vehicleId: this.vehicleId,
     });
   }
 

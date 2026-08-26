@@ -99,6 +99,8 @@ export class QuoteFormComponent
 
   vehicles: Vehicle[] = [];
   drivers: Driver[] = [];
+  filteredQuoteTripVehicles$!: Observable<Vehicle[]>;
+  filteredQuoteTripDrivers$!: Observable<Driver[]>;
 
   get quoteStatusOptions() {
     return [
@@ -467,10 +469,13 @@ export class QuoteFormComponent
           transportLicenseNumber: [''],
           transportLicenseExpiryDate: [null as Date | null],
           vehicleId: [null],
+          vehiclePlate: [''],
           driverId: [null],
+          driverName: [''],
           quoteId: [null],
         }),
       );
+      this.setupQuoteTripAutoComplete();
     }
   }
 
@@ -482,6 +487,105 @@ export class QuoteFormComponent
       .getAll()
       .subscribe((response) => (this.drivers = response.data ?? []));
     this._subscriptions.push(vehicleSub, driverSub);
+  }
+
+  private setupQuoteTripAutoComplete(): void {
+    const quoteTrip = this.form.get('quoteTrip')!;
+
+    this.filteredQuoteTripVehicles$ = quoteTrip
+      .get('vehiclePlate')!
+      .valueChanges.pipe(
+        startWith(''),
+        map((value) => {
+          const filterValue = (typeof value === 'string' ? value : '').toLowerCase();
+          if (!filterValue) {
+            return [];
+          }
+          return this.vehicles.filter(
+            (vehicle) =>
+              (vehicle.plate || '').toLowerCase().includes(filterValue) ||
+              (vehicle.brand || '').toLowerCase().includes(filterValue) ||
+              (vehicle.model || '').toLowerCase().includes(filterValue),
+          );
+        }),
+      );
+
+    this.filteredQuoteTripDrivers$ = quoteTrip
+      .get('driverName')!
+      .valueChanges.pipe(
+        startWith(''),
+        map((value) => {
+          const filterValue = (typeof value === 'string' ? value : '').toLowerCase();
+          if (!filterValue) {
+            return [];
+          }
+          return this.drivers.filter((driver) =>
+            (driver.name || '').toLowerCase().includes(filterValue),
+          );
+        }),
+      );
+  }
+
+  selectQuoteTripVehicle(vehicle: Vehicle): void {
+    if (!vehicle) {
+      return;
+    }
+    this.form.get('quoteTrip')!.patchValue({
+      vehicleId: vehicle.id,
+      vehiclePlate: vehicle.plate,
+    });
+  }
+
+  async onQuoteTripVehiclePlateBlur(): Promise<void> {
+    setTimeout(() => {
+      const quoteTrip = this.form.get('quoteTrip')!;
+      const plate = quoteTrip.get('vehiclePlate')!.value?.trim();
+      if (!plate) {
+        this.cleanQuoteTripVehicle();
+        return;
+      }
+      const found = this.vehicles.find((v) => v.plate === plate);
+      if (found) {
+        this.selectQuoteTripVehicle(found);
+      } else {
+        this.cleanQuoteTripVehicle();
+      }
+    }, 200);
+  }
+
+  selectQuoteTripDriver(driver: Driver): void {
+    if (!driver) {
+      return;
+    }
+    this.form.get('quoteTrip')!.patchValue({
+      driverId: driver.id,
+      driverName: driver.name,
+    });
+  }
+
+  async onQuoteTripDriverNameBlur(): Promise<void> {
+    setTimeout(() => {
+      const quoteTrip = this.form.get('quoteTrip')!;
+      const name = quoteTrip.get('driverName')!.value?.trim();
+      if (!name) {
+        this.cleanQuoteTripDriver();
+        return;
+      }
+      const found = this.drivers.find((d) => d.name === name);
+      if (found) {
+        this.selectQuoteTripDriver(found);
+      } else {
+        this.cleanQuoteTripDriver();
+      }
+    }, 200);
+  }
+
+  private cleanQuoteTripVehicle(): void {
+    this.form.get('quoteTrip')!.patchValue({ vehicleId: null, vehiclePlate: '' });
+  }
+
+  private cleanQuoteTripDriver(): void {
+    this.form.get('quoteTrip')!.patchValue({ driverId: null, driverName: '' });
   }
 
   private patchFormWithData(): void {

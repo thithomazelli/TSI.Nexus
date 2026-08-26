@@ -123,11 +123,14 @@ namespace TSI.Nexus.Services
 
             try
             {
-                var purchaseOrderEntity = _mapper.Map<PurchaseOrder>(purchaseOrderDto);
+                // Load the tracked entity and map the DTO onto it in place, instead of mapping a
+                // separate PurchaseOrder instance with the same Id - EF Core cannot track two
+                // different instances sharing the same key, which is what the previous
+                // ownership-check query (tracking one instance) plus UpdateAsync (tracking a
+                // second, mapped instance) ran into. Same fix as OrderService.Update.
+                var purchaseOrderEntity = await _repository.GetByIdAsync(purchaseOrderDto.Id);
 
-                var ownershipMessage = await GetOwnershipErrorMessageByPurchaseOrderId(
-                    purchaseOrderEntity.Id
-                );
+                var ownershipMessage = GetOwnershipErrorMessage(purchaseOrderEntity.CreateUserId);
                 if (!string.IsNullOrEmpty(ownershipMessage))
                 {
                     result.Status = ResponseStatus.Warning;
@@ -135,11 +138,19 @@ namespace TSI.Nexus.Services
                     return result;
                 }
 
+                // Map Transaction separately via ITransactionService (below), same as Add() does -
+                // mapping it through AutoMapper here would attach a second, untracked Transaction
+                // instance onto purchaseOrderEntity.Transaction with the same Id as the one
+                // already persisted, hitting the same kind of tracking conflict fixed above.
+                var transactionDto = purchaseOrderDto.Transaction;
+                purchaseOrderDto.Transaction = null;
+
+                _mapper.Map(purchaseOrderDto, purchaseOrderEntity);
+
                 await _repository.UpdateAsync(purchaseOrderEntity);
 
-                if (purchaseOrderDto.Transaction != null)
+                if (transactionDto != null)
                 {
-                    var transactionDto = purchaseOrderDto.Transaction;
                     transactionDto.PurchaseOrderId = purchaseOrderEntity.Id;
 
                     var updRes = await _transactionService.Update(transactionDto);
@@ -383,26 +394,6 @@ namespace TSI.Nexus.Services
             return createUserId == currentUserId
                 ? string.Empty
                 : "Você não tem permissão para acessar este Pedido de Compra, pois foi criado por outro usuário.";
-        }
-
-        /// <summary>
-        /// Looks up the PurchaseOrder's original creator on the database and validates ownership.
-        /// Used before Update, where the entity mapped from the incoming DTO has no CreateUserId
-        /// yet.
-        /// </summary>
-        private async Task<string> GetOwnershipErrorMessageByPurchaseOrderId(Guid purchaseOrderId)
-        {
-            if (_currentUserService == null || _currentUserService.IsInRole("Admin"))
-            {
-                return string.Empty;
-            }
-
-            var existingPurchaseOrders = await _repository.QueryAsync(o =>
-                o.Id == purchaseOrderId
-            );
-            var existing = existingPurchaseOrders.FirstOrDefault();
-
-            return existing == null ? string.Empty : GetOwnershipErrorMessage(existing.CreateUserId);
         }
 
         private static string BuildPrefixFromBusinessPartnerName(string businessPartnerName)
