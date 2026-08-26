@@ -17,7 +17,6 @@ using TSI.Nexus.Data;
 using TSI.Nexus.Data.Interceptors;
 using TSI.Nexus.Data.Seed;
 using TSI.Nexus.IoC;
-using TSI.Nexus.Services.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,10 +50,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register Services from Native Injector
+// (this includes the hosted background services - OverdueStatusBackgroundService and
+// VehicleMaintenanceOverdueBackgroundService - no need to register them again here)
 NativeInjector.RegisterServices(builder.Services);
-
-// Register background service from Services project
-builder.Services.AddHostedService<OverdueStatusBackgroundService>();
 
 // Add DbContext with interceptor
 builder.Services.AddDbContextPool<MyDBContextEF>(

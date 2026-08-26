@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!--
+            Excludes code that isn't meaningfully unit-testable or isn't ours to test:
+            - EF Core migrations + the model snapshot are generated, one file per schema
+              change - nobody hand-writes tests against generated Up()/Down() SQL-building code.
+            - Program is the WebAPI host bootstrap (top-level statements) - startup wiring,
+              exercised by actually running the app, not by unit tests.
+          -->
+          <Exclude>[TSI.Nexus.Data]TSI.Nexus.Data.Migrations.*,[TSI.Nexus.WebAPI]Program</Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

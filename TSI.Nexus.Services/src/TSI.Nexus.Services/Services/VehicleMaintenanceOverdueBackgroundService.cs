@@ -53,13 +53,16 @@ namespace TSI.Nexus.Services.Services
                 try
                 {
                     await ProcessOnceAsync(stoppingToken);
+                    await Task.Delay(_interval, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // shutdown requested
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while running vehicle maintenance overdue update");
                 }
-
-                await Task.Delay(_interval, stoppingToken);
             }
 
             _logger.LogInformation("VehicleMaintenanceOverdueBackgroundService stopping");

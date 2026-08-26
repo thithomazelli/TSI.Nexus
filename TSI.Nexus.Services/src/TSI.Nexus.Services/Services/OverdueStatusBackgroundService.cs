@@ -40,12 +40,7 @@ namespace TSI.Nexus.Services.Services
             {
                 try
                 {
-                    // Calculate next midnight UTC
-                    var now = DateTime.UtcNow;
-                    var nextMidnight = now.Date.AddDays(1); // midnight of next day UTC
-                    var delay = nextMidnight - now;
-                    if (delay < TimeSpan.Zero)
-                        delay = TimeSpan.Zero;
+                    var delay = GetDelayUntilNextMidnightUtc(DateTime.UtcNow);
 
                     _logger.LogInformation("Next overdue run scheduled in {Delay}", delay);
                     await Task.Delay(delay, stoppingToken);
@@ -72,6 +67,18 @@ namespace TSI.Nexus.Services.Services
             }
 
             _logger.LogInformation("OverdueStatusBackgroundService stopping");
+        }
+
+        /// <summary>
+        /// Calculates how long to wait from <paramref name="now"/> until the next UTC midnight.
+        /// Extracted from ExecuteAsync so the scheduling math can be unit-tested without waiting
+        /// for a real day boundary.
+        /// </summary>
+        public static TimeSpan GetDelayUntilNextMidnightUtc(DateTime now)
+        {
+            var nextMidnight = now.Date.AddDays(1);
+            var delay = nextMidnight - now;
+            return delay < TimeSpan.Zero ? TimeSpan.Zero : delay;
         }
 
         #endregion Protected methods
