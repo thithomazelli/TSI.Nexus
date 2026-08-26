@@ -165,5 +165,59 @@ namespace TSI.Nexus.Services.Tests.Services
                 Times.Exactly(3)
             );
         }
+
+        [Fact]
+        public async Task DashboardService_GetInfoCardsAsync_ShouldReturnZeroPercentages_WhenThereAreNoIncomingPayments()
+        {
+            // Arrange
+            _orderRepoMock
+                .Setup(r =>
+                    r.SumAsync(
+                        It.IsAny<Expression<Func<Order, bool>>>(),
+                        It.IsAny<Expression<Func<Order, decimal>>>()
+                    )
+                )
+                .ReturnsAsync(0m);
+            _paymentRepoMock
+                .Setup(r =>
+                    r.SumAsync(
+                        It.IsAny<Expression<Func<Payment, bool>>>(),
+                        It.IsAny<Expression<Func<Payment, decimal>>>()
+                    )
+                )
+                .ReturnsAsync(0m);
+
+            // Act
+            var response = await _service.GetInfoCardsAsync(30);
+
+            // Assert
+            response.Status.Should().Be(ResponseStatus.Success);
+            var cards = response.Data!.ToList();
+            var receivedCard = cards.First(c => c.Title.Contains("Recebidos"));
+            var waitingCard = cards.First(c => c.Title.Contains("Aguardando"));
+            receivedCard.Value.Should().Be("0%");
+            waitingCard.Value.Should().Be("0%");
+        }
+
+        [Fact]
+        public async Task DashboardService_GetInfoCardsAsync_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _orderRepoMock
+                .Setup(r =>
+                    r.SumAsync(
+                        It.IsAny<Expression<Func<Order, bool>>>(),
+                        It.IsAny<Expression<Func<Order, decimal>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var response = await _service.GetInfoCardsAsync(30);
+
+            // Assert
+            response.Status.Should().Be(ResponseStatus.Error);
+            response.Message.Should().Be("Não foi possível gerar os info cards.");
+        }
     }
 }

@@ -268,6 +268,41 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task CompanyService_Update_ShouldNotUpdateCompanyAndReturnAnErrorMessage_WhenCompanyIsNotFound()
+        {
+            // Arrange
+            var companyDto = new BusinessPartnerDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000099"),
+                Name = "TSI Soluções em Informática",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
+            {
+                Status = ResponseStatus.Error,
+                Message = $"Cliente com Id {companyDto.Id} não encontrado.",
+            };
+
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Company, bool>>>()))
+                .ReturnsAsync(false);
+            _repository
+                .Setup(_ => _.GetByIdAsync(companyDto.Id, c => c.Addresses))
+                .ReturnsAsync((Company)null!);
+
+            // Act
+            var result = await _companyService.Update(companyDto);
+
+            // Assert
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+            _repository.Verify(_ => _.UpdateAsync(It.IsAny<Company>()), Times.Never);
+            _logService.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "CompanyService.Update", companyDto),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task CompanyService_Update_ShouldNotUpdateCompanyAndReturnAnErrorMessage_WhenNameIsDuplicated()
         {
             // Arrange

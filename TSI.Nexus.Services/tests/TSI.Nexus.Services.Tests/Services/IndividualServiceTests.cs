@@ -321,6 +321,41 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task IndividualService_Update_ShouldNotUpdateIndividualAndReturnAnErrorMessage_WhenIndividualIsNotFound()
+        {
+            // Arrange
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000099"),
+                Name = "Thiago Thomazelli Ferreira",
+            };
+            var expectedResult = new WebApiResponse<BusinessPartnerDto>
+            {
+                Status = ResponseStatus.Error,
+                Message = $"Cliente com Id {businessPartnerMock.Id} não encontrado.",
+            };
+
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Individual, bool>>>()))
+                .ReturnsAsync(false);
+            _repository
+                .Setup(_ => _.GetByIdAsync(businessPartnerMock.Id, c => c.Addresses))
+                .ReturnsAsync((Individual)null!);
+
+            // Act
+            var result = await _individualService.Update(businessPartnerMock);
+
+            // Assert
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+            _repository.Verify(_ => _.UpdateAsync(It.IsAny<Individual>()), Times.Never);
+            _logService.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "IndividualService.Update", businessPartnerMock),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task IndividualService_Update_ShouldNotUpdateIndividualAndReturnAnErrorMessage_WhenEmailIsDuplicated()
         {
             // Arrange

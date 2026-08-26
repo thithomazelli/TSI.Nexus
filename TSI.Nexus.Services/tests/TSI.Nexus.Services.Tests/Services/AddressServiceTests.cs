@@ -122,6 +122,58 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task AddressService_Add_ShouldSetIsDefaultAndCleanPrevious_WhenOtherAddressesExistAndDtoIsDefault()
+        {
+            // Arrange
+            var addressMock = _addressListMock.First();
+            addressMock.IsDefault = true;
+            var previousDefault = _mapper.Map<Address>(_addressListMock.Last());
+            previousDefault.IsDefault = true;
+
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+                .ReturnsAsync(true);
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+                .ReturnsAsync(new List<Address> { previousDefault });
+
+            // Act
+            var result = await _addressService.Add(addressMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.True(result.Data!.IsDefault);
+            Assert.False(previousDefault.IsDefault);
+            _repository.Verify(
+                _ => _.UpdateRangeAsync(It.Is<IEnumerable<Address>>(l => l.Contains(previousDefault))),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task AddressService_Add_ShouldNotSetIsDefault_WhenOtherAddressesExistAndDtoIsNotDefault()
+        {
+            // Arrange
+            var addressMock = _addressListMock.Last();
+            addressMock.IsDefault = false;
+
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _addressService.Add(addressMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.False(result.Data!.IsDefault);
+            _repository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
         public async Task AddressService_Update_ShouldUpdateAddressSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
@@ -173,6 +225,50 @@ namespace TSI.Nexus.Services.Tests.Services
 
             expectedResult.Should().BeEquivalentTo(result);
             _repository.Verify(_ => _.UpdateAsync(It.IsAny<Address>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddressService_Update_ShouldNotQueryPreviousDefaults_WhenDtoIsNotDefault()
+        {
+            // Arrange
+            var addressMock = _addressListMock.Last();
+            addressMock.IsDefault = false;
+
+            // Act
+            var result = await _addressService.Update(addressMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _repository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()),
+                Times.Never
+            );
+            _repository.Verify(_ => _.UpdateRangeAsync(It.IsAny<IEnumerable<Address>>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AddressService_Update_ShouldClearPreviousDefaults_WhenDtoIsDefaultAndOtherDefaultsExist()
+        {
+            // Arrange
+            var addressMock = _addressListMock.First();
+            addressMock.IsDefault = true;
+            var previousDefault = _mapper.Map<Address>(_addressListMock.Last());
+            previousDefault.IsDefault = true;
+
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Address, bool>>>()))
+                .ReturnsAsync(new List<Address> { previousDefault });
+
+            // Act
+            var result = await _addressService.Update(addressMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.False(previousDefault.IsDefault);
+            _repository.Verify(
+                _ => _.UpdateRangeAsync(It.Is<IEnumerable<Address>>(l => l.Contains(previousDefault))),
+                Times.Once
+            );
         }
 
         [Fact]

@@ -172,6 +172,42 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task ProductService_Add_ShouldNotAddProductAndReturnAnErrorMessage_WhenRepositoryGetsAnError()
+        {
+            // Arrange
+            var exception = new Exception();
+            var productMock = new Product
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000010"),
+                Sku = "SKU010",
+                Name = "Novo Produto",
+            };
+            var expectedResult = new WebApiResponse<Product>
+            {
+                Status = ResponseStatus.Error,
+                Message =
+                    $"Não foi possível cadastrar o Produto {productMock.Name} na base de dados. Erro: {exception.Message}",
+            };
+
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Product, bool>>>()))
+                .ReturnsAsync(false);
+            _repository.Setup(_ => _.AddAsync(It.IsAny<Product>())).ThrowsAsync(exception);
+
+            // Act
+            var result = await _productService.Add(productMock);
+
+            // Assert
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+            expectedResult.Should().BeEquivalentTo(result);
+            _logServiceMock.Verify(
+                _ => _.LogException(exception, "ProductService.Add", productMock),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task ProductService_Update_ShouldUpdateProductSuccessfully_WhenMethodIsCalledWithAValidObjectAndProductIsNotDuplicated()
         {
             // Arrange
@@ -383,6 +419,42 @@ namespace TSI.Nexus.Services.Tests.Services
 
             expectedResult.Should().BeEquivalentTo(result);
             _repository.Verify(_ => _.RemoveAsync(It.IsAny<Product>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ProductService_Remove_ShouldReturnWarning_WhenProductIsLinkedToOrders()
+        {
+            // Arrange
+            var productMock = new Product
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                Sku = "SKU001",
+                Name = "Caçamba",
+            };
+            var expectedResult = new WebApiResponse<Product>
+            {
+                Data = productMock,
+                Status = ResponseStatus.Warning,
+                Message =
+                    $"Produto {productMock.Name} não pode ser removido pois está vinculado à um ou mais pedidos.",
+            };
+
+            _orderProductRepositoryMock
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<OrderProduct, bool>>>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _productService.Remove(productMock);
+
+            // Assert
+            Assert.Equal(expectedResult.Status, result.Status);
+            Assert.Equal(expectedResult.Message, result.Message);
+            expectedResult.Should().BeEquivalentTo(result);
+            _repository.Verify(_ => _.RemoveAsync(It.IsAny<Product>()), Times.Never);
+            _logServiceMock.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "ProductService.Remove", productMock),
+                Times.Once
+            );
         }
 
         [Fact]

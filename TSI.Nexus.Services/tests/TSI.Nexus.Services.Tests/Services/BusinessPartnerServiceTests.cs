@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TSI.Nexus.Contracts.Enums;
@@ -127,6 +128,66 @@ namespace TSI.Nexus.Services.Tests.Services
 
             _repository.Verify(_ => _.GetByIdAsync(It.IsAny<Guid>()), Times.Once);
             _repository.Verify(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task BusinessPartnerService_Remove_ShouldReturnWarningWithForeignKeyMessage_WhenRemoveFailsDueToForeignKeyConstraint()
+        {
+            // Arrange
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                Name = "TSI Soluções em Informática",
+            };
+            var innerException = new Exception("Cannot delete: foreign key constraint fails on table orders");
+            var dbUpdateException = new DbUpdateException("update failed", innerException);
+
+            _repository.Setup(_ => _.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Company());
+            _repository
+                .Setup(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()))
+                .ThrowsAsync(dbUpdateException);
+
+            // Act
+            var result = await _businessPartnerService.Remove(businessPartnerMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            Assert.Equal(
+                $"Não foi possível remover o Cliente {businessPartnerMock.Name} pois ele está vinculado à um ou mais pedidos e/ou transações.",
+                result.Message
+            );
+            _logService.Verify(
+                _ => _.LogException(dbUpdateException, "BusinessPartnerService.Remove", businessPartnerMock),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task BusinessPartnerService_Remove_ShouldReturnWarningWithGenericMessage_WhenRemoveFailsWithOtherDbUpdateException()
+        {
+            // Arrange
+            var businessPartnerMock = new BusinessPartnerDto
+            {
+                Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                Name = "TSI Soluções em Informática",
+            };
+            var innerException = new Exception("some other db error");
+            var dbUpdateException = new DbUpdateException("update failed", innerException);
+
+            _repository.Setup(_ => _.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(new Company());
+            _repository
+                .Setup(_ => _.RemoveAsync(It.IsAny<BusinessPartner>()))
+                .ThrowsAsync(dbUpdateException);
+
+            // Act
+            var result = await _businessPartnerService.Remove(businessPartnerMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            Assert.Equal(
+                $"Não foi possível remover o Cliente {businessPartnerMock.Name} da base de dados. Erro: {dbUpdateException.Message}",
+                result.Message
+            );
         }
 
         [Fact]
