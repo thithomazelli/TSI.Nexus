@@ -72,6 +72,14 @@
                   >{{ 'SIDEBAR.PRODUCTS' | translate }}</a
                 >
               </li>
+              <li class="nav-item" *ngIf="isEdit && isTripQuote()">
+                <a
+                  class="nav-link"
+                  [class.active]="activeTab === 'itinerary'"
+                  (click)="activeTab = 'itinerary'"
+                  >{{ 'TRIPS.ITINERARY' | translate }}</a
+                >
+              </li>
               <li class="nav-item" *ngIf="isEdit">
                 <a
                   class="nav-link"
@@ -111,6 +119,11 @@
                 [isFullList]="false"
                 [parentId]="data?.id"
               ></app-quote-products>
+            </div>
+            <div *ngIf="activeTab === 'itinerary'">
+              <app-quote-trip-leg-list
+                [quoteTripId]="data!.quoteTrip!.id!"
+              ></app-quote-trip-leg-list>
             </div>
             <div *ngIf="activeTab === 'attachments'">
               <app-attachments

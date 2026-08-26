@@ -266,6 +266,7 @@ namespace TSI.Nexus.Data
                     // Fleet/Viagens entities
                     (Key: FeatureToggleKeys.Trip, Name: "Viagens", Description: "Controla a exibição de Viagens.", GroupKey: FeatureToggleKeys.FleetModule),
                     (Key: FeatureToggleKeys.TripLeg, Name: "Trechos de Viagem", Description: "Controla a exibição de Trechos de Viagem.", GroupKey: FeatureToggleKeys.FleetModule),
+                    (Key: FeatureToggleKeys.QuoteTripLeg, Name: "Itinerário do Orçamento de Viagem", Description: "Controla a exibição do Itinerário em Orçamentos de Viagem.", GroupKey: FeatureToggleKeys.FleetModule),
                     (Key: FeatureToggleKeys.Passenger, Name: "Passageiros", Description: "Controla a exibição de Passageiros.", GroupKey: FeatureToggleKeys.FleetModule),
                     (Key: FeatureToggleKeys.Driver, Name: "Motoristas", Description: "Controla a exibição de Motoristas.", GroupKey: FeatureToggleKeys.FleetModule),
                     (Key: FeatureToggleKeys.Vehicle, Name: "Veículos", Description: "Controla a exibição de Veículos.", GroupKey: FeatureToggleKeys.FleetModule),

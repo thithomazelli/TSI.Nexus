@@ -26,6 +26,7 @@ export * from './event/event.service';
 export * from './event-participant/event-participant.service';
 export * from './driver/driver.service';
 export * from './trip-leg/trip-leg.service';
+export * from './quote-trip-leg/quote-trip-leg.service';
 export * from './passenger/passenger.service';
 export * from './fuel-log/fuel-log.service';
 export * from './service-order/service-order.service';

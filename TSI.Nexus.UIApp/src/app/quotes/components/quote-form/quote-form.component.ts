@@ -185,6 +185,14 @@ export class QuoteFormComponent
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] && this.data && this.form) {
+      // On the details page, data arrives asynchronously (a route resolver fetch) after
+      // ngOnInit already ran initForm() with the still-empty default @Input data - so
+      // isTripQuote() was false back then and the quoteTrip FormGroup was never added. Add it
+      // now, the first time data turns out to be a Trip quote, before patching values into it.
+      if (this.isTripQuote() && !this.form.contains('quoteTrip')) {
+        this.addQuoteTripForm();
+        this.loadVehiclesAndDrivers();
+      }
       this.patchFormWithData();
     }
     if (this.isQuoteConverted && this.isQuoteConverted() && this.form) {

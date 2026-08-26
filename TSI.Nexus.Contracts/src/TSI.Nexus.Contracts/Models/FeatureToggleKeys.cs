@@ -12,7 +12,7 @@ namespace TSI.Nexus.Contracts.Models
 
         /// <summary>
         /// Gates the whole fleet/trip module: Trip, TripLeg, Passenger, Driver, Vehicle, FuelLog,
-        /// VehicleMaintenance, ServiceOrder, Commission, and Quotes of type Trip.
+        /// VehicleMaintenance, ServiceOrder, Commission, Quotes of type Trip, and QuoteTripLeg.
         /// </summary>
         public const string FleetModule = "FleetModule";
 
@@ -39,6 +39,7 @@ namespace TSI.Nexus.Contracts.Models
 
         public const string Trip = "Trip";
         public const string TripLeg = "TripLeg";
+        public const string QuoteTripLeg = "QuoteTripLeg";
         public const string Passenger = "Passenger";
         public const string Driver = "Driver";
         public const string Vehicle = "Vehicle";

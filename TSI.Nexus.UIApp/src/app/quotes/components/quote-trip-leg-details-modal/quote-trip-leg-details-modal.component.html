@@ -1,0 +1,274 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ (isEdit ? 'TRIPS.EDIT_LEG_ITEM' : 'TRIPS.NEW_LEG') | translate }}</h5>
+  <button type="button" class="btn-close" (click)="close()"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="modal-scrollable-area">
+      @if (isEdit) {
+        <div class="row g-2 mb-2">
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="origin"
+                  type="text"
+                  [placeholder]="'TRIPS.ORIGIN' | translate"
+                  class="form-control"
+                  id="quoteLegOrigin"
+                />
+                <label for="quoteLegOrigin">{{ 'TRIPS.ORIGIN' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="destination"
+                  type="text"
+                  [placeholder]="'TRIPS.DESTINATION' | translate"
+                  class="form-control"
+                  id="quoteLegDestination"
+                />
+                <label for="quoteLegDestination">{{ 'TRIPS.DESTINATION' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-geo-alt-fill"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <app-date-field
+              formControlName="dateOnly"
+              [label]="'TRIPS.DEPARTURE_DATE' | translate"
+            ></app-date-field>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="time"
+                  type="time"
+                  [placeholder]="'TRIPS.DEPARTURE_TIME' | translate"
+                  class="form-control"
+                  id="quoteLegTime"
+                />
+                <label for="quoteLegTime">{{ 'TRIPS.DEPARTURE_TIME' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-clock"></i></div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input
+                formControlName="sameDayArrival"
+                class="form-check-input"
+                type="checkbox"
+                id="quoteLegSameDayArrival"
+              />
+              <label class="form-check-label" for="quoteLegSameDayArrival">{{ 'TRIPS.SAME_DAY_ARRIVAL' | translate }}</label>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <app-date-field
+              formControlName="arrivalDateOnly"
+              [label]="'TRIPS.ARRIVAL_DATE' | translate"
+            ></app-date-field>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="arrivalTime"
+                  type="time"
+                  [placeholder]="'TRIPS.ARRIVAL_TIME' | translate"
+                  class="form-control"
+                  id="quoteLegArrivalTime"
+                />
+                <label for="quoteLegArrivalTime">{{ 'TRIPS.ARRIVAL_TIME' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-clock-history"></i></div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="distanceKm"
+                  type="number"
+                  min="0"
+                  [placeholder]="'TRIPS.LEG_DISTANCE_KM' | translate"
+                  class="form-control"
+                  id="quoteLegDistanceKm"
+                />
+                <label for="quoteLegDistanceKm">{{ 'TRIPS.LEG_DISTANCE_KM' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="notes"
+                  type="text"
+                  [placeholder]="'COMMON.OBSERVATIONS' | translate"
+                  class="form-control"
+                  id="quoteLegNotes"
+                />
+                <label for="quoteLegNotes">{{ 'COMMON.OBSERVATIONS' | translate }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="row g-2 mb-2">
+          <div class="col-12">
+            <div class="input-group">
+              <div class="form-floating flex-fill">
+                <input
+                  formControlName="origin"
+                  type="text"
+                  [placeholder]="'TRIPS.ORIGIN' | translate"
+                  class="form-control"
+                  id="quoteOrigin"
+                />
+                <label for="quoteOrigin">{{ 'TRIPS.ORIGIN' | translate }}</label>
+              </div>
+              <div class="input-group-text"><i class="bi bi-geo-alt"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div formArrayName="stops">
+          @for (stop of stops.controls; track stop; let i = $index) {
+            <div [formGroupName]="i" class="border rounded p-2 mb-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <b class="small">{{ 'TRIPS.DESTINATION_NUM' | translate: { num: (i + 1) + '' } }}</b>
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0 text-danger"
+                  [title]="'TRIPS.REMOVE_DESTINATION' | translate"
+                  [disabled]="stops.length === 1"
+                  (click)="removeStop(i)"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="destination"
+                        type="text"
+                        [placeholder]="'TRIPS.DESTINATION' | translate"
+                        class="form-control"
+                        [id]="'quote-destination-' + i"
+                      />
+                      <label [for]="'quote-destination-' + i">{{ 'TRIPS.DESTINATION' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-geo-alt-fill"></i></div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <app-date-field
+                    formControlName="dateOnly"
+                    [label]="'TRIPS.DEPARTURE_DATE' | translate"
+                  ></app-date-field>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="time"
+                        type="time"
+                        [placeholder]="'TRIPS.DEPARTURE_TIME' | translate"
+                        class="form-control"
+                        [id]="'quote-time-' + i"
+                      />
+                      <label [for]="'quote-time-' + i">{{ 'TRIPS.DEPARTURE_TIME' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-clock"></i></div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="form-check">
+                    <input
+                      formControlName="sameDayArrival"
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'quote-sameDayArrival-' + i"
+                    />
+                    <label class="form-check-label" [for]="'quote-sameDayArrival-' + i">{{ 'TRIPS.SAME_DAY_ARRIVAL' | translate }}</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <app-date-field
+                    formControlName="arrivalDateOnly"
+                    [label]="'TRIPS.ARRIVAL_DATE' | translate"
+                  ></app-date-field>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="arrivalTime"
+                        type="time"
+                        [placeholder]="'TRIPS.ARRIVAL_TIME' | translate"
+                        class="form-control"
+                        [id]="'quote-arrivalTime-' + i"
+                      />
+                      <label [for]="'quote-arrivalTime-' + i">{{ 'TRIPS.ARRIVAL_TIME' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-clock-history"></i></div>
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="distanceKm"
+                        type="number"
+                        min="0"
+                        [placeholder]="'TRIPS.LEG_DISTANCE_KM' | translate"
+                        class="form-control"
+                        [id]="'quote-distanceKm-' + i"
+                      />
+                      <label [for]="'quote-distanceKm-' + i">{{ 'TRIPS.LEG_DISTANCE_KM' | translate }}</label>
+                    </div>
+                    <div class="input-group-text"><i class="bi bi-signpost-split"></i></div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="input-group">
+                    <div class="form-floating flex-fill">
+                      <input
+                        formControlName="notes"
+                        type="text"
+                        [placeholder]="'COMMON.OBSERVATIONS' | translate"
+                        class="form-control"
+                        [id]="'quote-notes-' + i"
+                      />
+                      <label [for]="'quote-notes-' + i">{{ 'COMMON.OBSERVATIONS' | translate }}</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button type="button" class="btn btn-outline-primary btn-sm mb-3" (click)="addStop()">
+          <i class="bi bi-plus-lg"></i> {{ 'TRIPS.ADD_DESTINATION' | translate }}
+        </button>
+      }
+    </div>
+
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary btn-sm me-2" (click)="close()">{{ 'COMMON.CANCEL' | translate }}</button>
+      <button type="submit" class="btn btn-success btn-sm" [disabled]="saving">{{ 'COMMON.SAVE' | translate }}</button>
+    </div>
+  </form>
+</div>

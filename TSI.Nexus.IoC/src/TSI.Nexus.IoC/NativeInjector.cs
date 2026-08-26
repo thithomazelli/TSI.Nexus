@@ -99,6 +99,7 @@ namespace TSI.Nexus.IoC
             services.AddScoped<IVehicleMaintenanceService, VehicleMaintenanceService>();
             services.AddScoped<IVehicleMaintenanceProductService, VehicleMaintenanceProductService>();
             services.AddScoped<ITripLegService, TripLegService>();
+            services.AddScoped<IQuoteTripLegService, QuoteTripLegService>();
             services.AddScoped<IPassengerService, PassengerService>();
             services.AddScoped<IFuelLogService, FuelLogService>();
             services.AddScoped<IServiceOrderService, ServiceOrderService>();
@@ -148,6 +149,7 @@ namespace TSI.Nexus.IoC
                 Repository<VehicleMaintenanceProduct>
             >();
             services.AddScoped<IRepository<TripLeg>, Repository<TripLeg>>();
+            services.AddScoped<IRepository<QuoteTripLeg>, Repository<QuoteTripLeg>>();
             services.AddScoped<IRepository<Passenger>, Repository<Passenger>>();
             services.AddScoped<IRepository<FuelLog>, Repository<FuelLog>>();
             services.AddScoped<IRepository<ServiceOrder>, Repository<ServiceOrder>>();

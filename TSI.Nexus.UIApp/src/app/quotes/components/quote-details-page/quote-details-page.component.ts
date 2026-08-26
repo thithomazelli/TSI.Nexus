@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Quote,
+  QuoteType,
   WebApiResponse,
   QuoteStatus,
   QuoteService,
@@ -18,6 +19,7 @@ import { HeaderComponent } from '../../../shared/header/header.component';
 import { NgIf } from '@angular/common';
 import { QuoteFormComponent } from '../quote-form/quote-form.component';
 import { QuoteProductsComponent } from '../../../quote-products/quote-products.component';
+import { QuoteTripLegListComponent } from '../quote-trip-leg-list/quote-trip-leg-list.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
 import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
@@ -34,6 +36,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         NgIf,
         QuoteFormComponent,
         QuoteProductsComponent,
+        QuoteTripLegListComponent,
         AttachmentsComponent,
         AuditTabComponent,
         EventListComponent,
@@ -47,7 +50,7 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
   loading = false;
   isAgendaEnabled = true;
 
-  activeTab: 'details' | 'products' | 'attachments' | 'agenda' | 'audit' = 'details';
+  activeTab: 'details' | 'products' | 'itinerary' | 'attachments' | 'agenda' | 'audit' = 'details';
 
   quoteStatusOptions: Record<QuoteStatus, string> = {
     [QuoteStatus.Open]: 'Em aberto',
@@ -102,6 +105,10 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     if (this._quoteChangedSub) {
       this._quoteChangedSub.unsubscribe();
     }
+  }
+
+  isTripQuote(): boolean {
+    return this.data?.type === QuoteType.Trip;
   }
 
   getStatusLabel(): string {

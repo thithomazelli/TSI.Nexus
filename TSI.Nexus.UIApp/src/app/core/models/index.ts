@@ -37,6 +37,7 @@ export * from './fuel-log.model';
 export * from './service-order.model';
 export * from './trip.model';
 export * from './quote-trip.model';
+export * from './quote-trip-leg.model';
 export * from './document-template.model';
 export * from './feature-toggle.model';
 export * from './alert-config.model';

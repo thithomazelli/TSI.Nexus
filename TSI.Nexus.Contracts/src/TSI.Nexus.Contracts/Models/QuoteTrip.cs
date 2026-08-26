@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TSI.Nexus.Contracts.Models
@@ -32,6 +33,8 @@ namespace TSI.Nexus.Contracts.Models
         // Quote object, and DataAnnotations validation would otherwise reject every request.
         // The relationship is still enforced at the DB level since QuoteId is a non-nullable Guid.
         public virtual Quote Quote { get; set; } = null!;
+
+        public virtual ICollection<QuoteTripLeg> QuoteTripLegs { get; set; } = new List<QuoteTripLeg>();
 
         public QuoteTrip() { }
 

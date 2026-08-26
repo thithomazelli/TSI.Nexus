@@ -76,6 +76,8 @@ namespace TSI.Nexus.Data
 
         public DbSet<QuoteTrip> QuoteTrip { get; set; }
 
+        public DbSet<QuoteTripLeg> QuoteTripLeg { get; set; }
+
         public DbSet<DocumentTemplate> DocumentTemplate { get; set; }
 
         public DbSet<FeatureToggle> FeatureToggle { get; set; }
@@ -389,6 +391,13 @@ namespace TSI.Nexus.Data
                 .HasOne(t => t.Trip)
                 .WithMany(tr => tr.TripLegs)
                 .HasForeignKey(t => t.TripId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder
+                .Entity<QuoteTripLeg>()
+                .HasOne(t => t.QuoteTrip)
+                .WithMany(qt => qt.QuoteTripLegs)
+                .HasForeignKey(t => t.QuoteTripId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder

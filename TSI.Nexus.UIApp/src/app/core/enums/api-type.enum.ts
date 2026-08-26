@@ -23,6 +23,7 @@ export enum ApiType {
   VehicleMaintenanceProducts = 'vehiclemaintenanceproducts',
   Drivers = 'drivers',
   TripLegs = 'triplegs',
+  QuoteTripLegs = 'quotetriplegs',
   Passengers = 'passengers',
   FuelLogs = 'fuellogs',
   ServiceOrders = 'serviceorders',

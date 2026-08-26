@@ -1,0 +1,13 @@
+<div class="quote-trip-leg-list">
+  <app-grid
+    [className]="'TRIPS.ITINERARY' | translate"
+    [compactView]="true"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [canAdd]="true"
+    [refresh]="refresh.bind(this)"
+    [update]="noop.bind(this)"
+    [delete]="deleteQuoteTripLeg.bind(this)"
+    (openModal)="openModal($event)"
+  ></app-grid>
+</div>
