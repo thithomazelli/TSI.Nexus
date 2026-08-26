@@ -467,5 +467,389 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Warning, result.Status);
             _repository.Verify(r => r.UpdateAsync(It.IsAny<Order>()), Times.Never);
         }
+
+        [Fact]
+        public async Task OrderService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var orderDto = new OrderDto
+            {
+                Id = Guid.NewGuid(),
+                OrderNumber = "ORD-00001",
+                Transaction = new TransactionDto(),
+            };
+
+            _repository.Setup(r => r.GetByIdAsync(orderDto.Id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.Update(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var orderDto = new OrderDto { BusinessPartnerName = "ORD" };
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _repository.Setup(r => r.AddAsync(It.IsAny<Order>())).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.Add(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_Add_ShouldFetchExistingTransaction_WhenOnlyTransactionIdIsProvided()
+        {
+            // Arrange
+            var transactionId = Guid.NewGuid();
+            var orderDto = new OrderDto { BusinessPartnerName = "ORD", TransactionId = transactionId };
+            var existingTransactionDto = new TransactionDto { Id = transactionId };
+
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _transactionService
+                .Setup(_ => _.FindById(transactionId))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto>
+                    {
+                        Data = existingTransactionDto,
+                        Status = ResponseStatus.Success,
+                    }
+                );
+            _repository.Setup(r => r.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _orderService.Add(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _transactionService.Verify(_ => _.FindById(transactionId), Times.Once);
+            _transactionService.Verify(_ => _.UpdateOrderId(It.IsAny<TransactionDto>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task OrderService_Add_ShouldNotAssignTransactionId_WhenFindByIdDoesNotSucceed()
+        {
+            // Arrange
+            var transactionId = Guid.NewGuid();
+            var orderDto = new OrderDto { BusinessPartnerName = "ORD", TransactionId = transactionId };
+
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _transactionService
+                .Setup(_ => _.FindById(transactionId))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto> { Data = null, Status = ResponseStatus.Success }
+                );
+            _repository.Setup(r => r.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _orderService.Add(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _transactionService.Verify(_ => _.UpdateOrderId(It.IsAny<TransactionDto>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("  ")]
+        [InlineData("Ab")]
+        public async Task OrderService_Add_ShouldBuildPrefixFromRandomLetters_WhenBusinessPartnerNameHasFewerThanThreeLetters(
+            string businessPartnerName
+        )
+        {
+            // Arrange
+            var orderDto = new OrderDto { BusinessPartnerName = businessPartnerName };
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _repository.Setup(r => r.AddAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _orderService.Add(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Matches("^[A-Z]{3}-00001$", result.Data!.OrderNumber);
+        }
+
+        [Fact]
+        public async Task OrderService_Remove_ShouldReturnError_WhenOrderIsNotFound()
+        {
+            // Arrange
+            var orderDto = new OrderDto { Id = Guid.NewGuid(), OrderNumber = "ORD-00001" };
+            _repository
+                .Setup(r => r.GetByIdAsync(orderDto.Id, o => o.OrderProducts, p => p.Transaction))
+                .ReturnsAsync((Order)null);
+
+            // Act
+            var result = await _orderService.Remove(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("não encontrado", result.Message);
+            _repository.Verify(r => r.RemoveAsync(It.IsAny<Order>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var orderDto = new OrderDto { Id = Guid.NewGuid(), OrderNumber = "ORD-00001" };
+            _repository
+                .Setup(r => r.GetByIdAsync(orderDto.Id, o => o.OrderProducts, p => p.Transaction))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.Remove(orderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindAll_ShouldReturnEmpty_WhenModuleToggleIsDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Order, FeatureToggleKeys.SalesOrdersModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _orderService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data!);
+            _repository.Verify(
+                r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<Order, object>>>(),
+                        It.IsAny<Expression<Func<Order, object>>>(),
+                        It.IsAny<Expression<Func<Order, object>>>(),
+                        It.IsAny<Expression<Func<Order, object>>>()
+                    ),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task OrderService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<Order, object>>>(),
+                        It.IsAny<Expression<Func<Order, object>>>(),
+                        It.IsAny<Expression<Func<Order, object>>>(),
+                        It.IsAny<Expression<Func<Order, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindById_ShouldReturnEmpty_WhenModuleToggleIsDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Order, FeatureToggleKeys.SalesOrdersModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _orderService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Contains(id.ToString(), result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        id,
+                        o => o.BusinessPartner,
+                        op => op.OrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindByOrderNumber_ShouldReturnOrder_WhenOrderNumberIsValid()
+        {
+            // Arrange
+            var orderNumber = "ORD-00001";
+            var orderEntity = new Order { Id = Guid.NewGuid(), OrderNumber = orderNumber };
+            _repository
+                .Setup(r =>
+                    r.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Order, bool>>>(),
+                        o => o.BusinessPartner,
+                        p => p.Transaction
+                    )
+                )
+                .ReturnsAsync(orderEntity);
+
+            // Act
+            var result = await _orderService.FindByOrderNumber(orderNumber);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(result.Data);
+            Assert.Contains("encontrado com sucesso", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindByOrderNumber_ShouldReturnNoData_WhenOrderNumberIsNotFound()
+        {
+            // Arrange
+            var orderNumber = "ORD-99999";
+            _repository
+                .Setup(r =>
+                    r.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Order, bool>>>(),
+                        o => o.BusinessPartner,
+                        p => p.Transaction
+                    )
+                )
+                .ReturnsAsync((Order)null);
+
+            // Act
+            var result = await _orderService.FindByOrderNumber(orderNumber);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Contains(orderNumber, result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindByOrderNumber_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var orderNumber = "ORD-00001";
+            _repository
+                .Setup(r =>
+                    r.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Order, bool>>>(),
+                        o => o.BusinessPartner,
+                        p => p.Transaction
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.FindByOrderNumber(orderNumber);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindByBusinessPartnerId_ShouldReturnOrders_WhenDataExists()
+        {
+            // Arrange
+            var businessPartnerId = Guid.NewGuid();
+            var orders = new List<Order> { new() { Id = Guid.NewGuid(), BusinessPartnerId = businessPartnerId } };
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>(), p => p.Transaction)
+                )
+                .ReturnsAsync(orders);
+
+            // Act
+            var result = await _orderService.FindByBusinessPartnerId(businessPartnerId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data!);
+        }
+
+        [Fact]
+        public async Task OrderService_FindByBusinessPartnerId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var businessPartnerId = Guid.NewGuid();
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>(), p => p.Transaction)
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.FindByBusinessPartnerId(businessPartnerId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderService_FindByProductId_ShouldReturnOrders_WhenDataExists()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            var orders = new List<Order> { new() { Id = Guid.NewGuid() } };
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+                .ReturnsAsync(orders);
+
+            // Act
+            var result = await _orderService.FindByProductId(productId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data!);
+        }
+
+        [Fact]
+        public async Task OrderService_FindByProductId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Order, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderService.FindByProductId(productId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
     }
 }

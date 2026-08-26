@@ -160,5 +160,152 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Equal(passengers, result.Data);
         }
+
+        [Fact]
+        public async Task PassengerService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var passenger = new Passenger { Id = Guid.NewGuid(), TripId = _tripId, Name = "Maria" };
+            _repository.Setup(_ => _.AddAsync(passenger)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Add(passenger);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task PassengerService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var passenger = new Passenger { Id = Guid.NewGuid(), TripId = _tripId, Name = "Maria" };
+            _repository.Setup(_ => _.UpdateAsync(passenger)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(passenger);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task PassengerService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var passenger = new Passenger { Id = Guid.NewGuid(), TripId = _tripId, Name = "Maria" };
+            _repository.Setup(_ => _.RemoveAsync(passenger)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Remove(passenger);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task PassengerService_FindById_ShouldReturnPassenger_WhenIdIsValid()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var passenger = new Passenger { Id = id, TripId = _tripId, Name = "Maria" };
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync(passenger);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(passenger, result.Data);
+            Assert.Contains("encontrado com sucesso", result.Message);
+        }
+
+        [Fact]
+        public async Task PassengerService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync((Passenger)null);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Contains(id.ToString(), result.Message);
+        }
+
+        [Fact]
+        public async Task PassengerService_FindById_ShouldReturnEmpty_WhenModuleToggleIsDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Passenger, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            _repository.Verify(_ => _.GetByIdAsync(It.IsAny<Guid?>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PassengerService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
+
+        [Fact]
+        public async Task PassengerService_FindByTrip_ShouldReturnEmpty_WhenModuleToggleIsDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Passenger, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindByTrip(_tripId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data!);
+            _repository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Passenger, bool>>>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task PassengerService_FindByTrip_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Passenger, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByTrip(_tripId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("boom", result.Message);
+        }
     }
 }
