@@ -146,5 +146,111 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(1, result.Data!.First().SequenceNumber);
             Assert.Equal(2, result.Data!.Last().SequenceNumber);
         }
+
+        [Fact]
+        public async Task TripLegService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var tripLeg = new TripLeg { Id = Guid.NewGuid(), TripId = _tripId };
+            _repository.Setup(_ => _.UpdateAsync(tripLeg)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(tripLeg);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripLegService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var tripLeg = new TripLeg { Id = Guid.NewGuid(), TripId = _tripId };
+            _repository.Setup(_ => _.RemoveAsync(tripLeg)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Remove(tripLeg);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripLegService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync((TripLeg)null);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Equal($"Nenhum trecho da viagem com o ID {id} foi encontrado", result.Message);
+        }
+
+        [Fact]
+        public async Task TripLegService_FindById_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.TripLeg, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task TripLegService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripLegService_FindByTrip_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.TripLeg, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindByTrip(_tripId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task TripLegService_FindByTrip_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<TripLeg, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByTrip(_tripId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

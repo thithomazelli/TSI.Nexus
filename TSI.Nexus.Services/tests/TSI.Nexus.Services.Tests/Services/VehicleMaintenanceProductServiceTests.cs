@@ -254,5 +254,171 @@ namespace TSI.Nexus.Services.Tests.Services
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(r => r.GetByIdAsync(id), Times.Once);
         }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
+        {
+            // Arrange
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000099");
+            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((VehicleMaintenanceProduct)null);
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Equal($"Nenhuma Peça com o ID {id} foi encontrada", result.Message);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            _repository.Setup(r => r.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var itemDto = new VehicleMaintenanceProductDto { Description = "Item" };
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<VehicleMaintenanceProduct>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.Add(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var itemDto = new VehicleMaintenanceProductDto { Description = "Item" };
+            _repository
+                .Setup(r => r.UpdateAsync(It.IsAny<VehicleMaintenanceProduct>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.Update(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var itemDto = new VehicleMaintenanceProductDto { Description = "Item" };
+            _repository
+                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.Remove(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_FindAll_ShouldReturnItems_WhenDataExists()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>()
+                    )
+                )
+                .ReturnsAsync(_itemsMock);
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(_itemsMock.Count, result.Data.Count());
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_FindByVehicleMaintenanceId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, bool>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.FindByVehicleMaintenanceId(
+                Guid.NewGuid()
+            );
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceProductService_FindByProductId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, bool>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenanceProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleMaintenanceProductService.FindByProductId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

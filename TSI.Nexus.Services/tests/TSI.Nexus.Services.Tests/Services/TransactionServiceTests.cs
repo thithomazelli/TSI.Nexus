@@ -298,5 +298,555 @@ namespace TSI.Nexus.Services.Tests.Services
                 Times.Once
             );
         }
+
+        [Fact]
+        public async Task TransactionService_Add_ShouldCreatePaymentsAndMarkDelayed_WhenPastDueDateAndTotalOfPaymentsAndExpensesAreInformed()
+        {
+            // Arrange - covers both CreatePayments loops (incoming and outgoing), the pro-rated
+            // Price split, and the auto-Delayed transition for a past due date.
+            var transactionDto = new TransactionDto
+            {
+                Id = Guid.NewGuid(),
+                Description = "Tx com parcelas",
+                Date = DateTime.UtcNow.AddMonths(-3),
+                Status = PaymentStatus.Pending,
+                TotalOfPayments = 2,
+                PaymentTotalPrice = 200m,
+                TotalOfExpenses = 1,
+                ExpenseTotalPrice = 50m,
+            };
+
+            Transaction capturedEntity = null;
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<Transaction>()))
+                .Callback<Transaction>(e => capturedEntity = e)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _transactionService.Add(transactionDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(capturedEntity);
+            Assert.Equal(3, capturedEntity.Payments.Count);
+            Assert.Equal(2, capturedEntity.Payments.Count(p => p.Type == PaymentType.Incoming));
+            Assert.Equal(1, capturedEntity.Payments.Count(p => p.Type == PaymentType.Outgoing));
+            Assert.All(capturedEntity.Payments, p => Assert.Equal(PaymentStatus.Delayed, p.Status));
+            Assert.Equal(100m, capturedEntity.Payments.First(p => p.Type == PaymentType.Incoming).Price);
+        }
+
+        [Fact]
+        public async Task TransactionService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var transactionDto = new TransactionDto { Description = "Tx" };
+            _repository.Setup(r => r.AddAsync(It.IsAny<Transaction>())).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.Add(transactionDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_Update_ShouldReturnError_WhenTransactionIsNotFound()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ReturnsAsync((Transaction)null);
+
+            // Act
+            var result = await _transactionService.Update(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            _repository.Verify(r => r.UpdateAsync(It.IsAny<Transaction>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TransactionService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.Update(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdateOrderId_ShouldUpdatePaymentsOrderId_WhenTransactionExists()
+        {
+            // Arrange
+            var txId = Guid.NewGuid();
+            var orderId = Guid.NewGuid();
+            var transactionEntity = new Transaction
+            {
+                Id = txId,
+                Payments = new List<Payment> { new() { Id = Guid.NewGuid(), TransactionId = txId } },
+            };
+            _repository
+                .Setup(r => r.GetByIdAsync(txId, p => p.Payments))
+                .ReturnsAsync(transactionEntity);
+
+            var dto = new TransactionDto { Id = txId, OrderId = orderId, Description = "Tx" };
+
+            // Act
+            var result = await _transactionService.UpdateOrderId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.All(transactionEntity.Payments, p => Assert.Equal(orderId, p.OrderId));
+            _repository.Verify(r => r.UpdateAsync(transactionEntity), Times.Once);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdateOrderId_ShouldReturnError_WhenTransactionIsNotFound()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ReturnsAsync((Transaction)null);
+
+            // Act
+            var result = await _transactionService.UpdateOrderId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdateOrderId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.UpdateOrderId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdatePurchaseOrderId_ShouldUpdatePaymentsPurchaseOrderId_WhenTransactionExists()
+        {
+            // Arrange
+            var txId = Guid.NewGuid();
+            var purchaseOrderId = Guid.NewGuid();
+            var transactionEntity = new Transaction
+            {
+                Id = txId,
+                Payments = new List<Payment> { new() { Id = Guid.NewGuid(), TransactionId = txId } },
+            };
+            _repository
+                .Setup(r => r.GetByIdAsync(txId, p => p.Payments))
+                .ReturnsAsync(transactionEntity);
+
+            var dto = new TransactionDto
+            {
+                Id = txId,
+                PurchaseOrderId = purchaseOrderId,
+                Description = "Tx",
+            };
+
+            // Act
+            var result = await _transactionService.UpdatePurchaseOrderId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.All(transactionEntity.Payments, p => Assert.Equal(purchaseOrderId, p.PurchaseOrderId));
+            _repository.Verify(r => r.UpdateAsync(transactionEntity), Times.Once);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdatePurchaseOrderId_ShouldReturnError_WhenTransactionIsNotFound()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ReturnsAsync((Transaction)null);
+
+            // Act
+            var result = await _transactionService.UpdatePurchaseOrderId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdatePurchaseOrderId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.UpdatePurchaseOrderId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdateTripId_ShouldUpdatePaymentsTripId_WhenTransactionExists()
+        {
+            // Arrange
+            var txId = Guid.NewGuid();
+            var tripId = Guid.NewGuid();
+            var transactionEntity = new Transaction
+            {
+                Id = txId,
+                Payments = new List<Payment> { new() { Id = Guid.NewGuid(), TransactionId = txId } },
+            };
+            _repository
+                .Setup(r => r.GetByIdAsync(txId, p => p.Payments))
+                .ReturnsAsync(transactionEntity);
+
+            var dto = new TransactionDto { Id = txId, TripId = tripId, Description = "Tx" };
+
+            // Act
+            var result = await _transactionService.UpdateTripId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.All(transactionEntity.Payments, p => Assert.Equal(tripId, p.TripId));
+            _repository.Verify(r => r.UpdateAsync(transactionEntity), Times.Once);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdateTripId_ShouldReturnError_WhenTransactionIsNotFound()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ReturnsAsync((Transaction)null);
+
+            // Act
+            var result = await _transactionService.UpdateTripId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_UpdateTripId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository
+                .Setup(r => r.GetByIdAsync(dto.Id, p => p.Payments))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.UpdateTripId(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_Remove_ShouldReturnError_WhenTransactionIsNotFound()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository.Setup(r => r.GetByIdAsync(dto.Id)).ReturnsAsync((Transaction)null);
+
+            // Act
+            var result = await _transactionService.Remove(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            _repository.Verify(r => r.RemoveAsync(It.IsAny<Transaction>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TransactionService_Remove_ShouldReturnLinkedOrderError_WhenRepositoryThrowsDbUpdateException()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            var entity = new Transaction { Id = dto.Id };
+            _repository.Setup(r => r.GetByIdAsync(dto.Id)).ReturnsAsync(entity);
+            _repository
+                .Setup(r => r.RemoveAsync(entity))
+                .ThrowsAsync(
+                    new Microsoft.EntityFrameworkCore.DbUpdateException("fk violation")
+                );
+
+            // Act
+            var result = await _transactionService.Remove(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Contains("pedido de vendas vinculado", result.Message);
+        }
+
+        [Fact]
+        public async Task TransactionService_Remove_ShouldReturnError_WhenRepositoryThrowsGenericException()
+        {
+            // Arrange
+            var dto = new TransactionDto { Id = Guid.NewGuid(), Description = "Tx" };
+            _repository.Setup(r => r.GetByIdAsync(dto.Id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.Remove(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindAll_ShouldReturnEmpty_WhenFinanceModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.Transaction, FeatureToggleKeys.FinanceModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _transactionService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindAll_ShouldComputeStatusAndPaymentTotalPrice_WhenDataExists()
+        {
+            // Arrange - covers ComputeStatusFromPayments: all-approved short-circuit.
+            var transactions = new List<Transaction>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Tx",
+                    Payments = new List<Payment>
+                    {
+                        new()
+                        {
+                            Type = PaymentType.Incoming,
+                            Status = PaymentStatus.Approved,
+                            Price = 100m,
+                            Date = DateTime.UtcNow,
+                        },
+                    },
+                },
+            };
+            _repository
+                .Setup(r => r.GetAllAsync(c => c.BusinessPartner, o => o.Order, p => p.Payments))
+                .ReturnsAsync(transactions);
+
+            // Act
+            var result = await _transactionService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            var dto = Assert.Single(result.Data);
+            Assert.Equal(100m, dto.PaymentTotalPrice);
+            Assert.Equal(PaymentStatus.Approved, dto.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r => r.GetAllAsync(c => c.BusinessPartner, o => o.Order, p => p.Payments))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindById_ShouldReturnEmptyMessage_WhenFinanceModuleDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.Transaction, FeatureToggleKeys.FinanceModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _transactionService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal($"Nenhuma Transação com o ID {id} foi encontrada", result.Message);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindById_ShouldReturnError_WhenTransactionIsNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(r => r.GetByIdAsync(id, c => c.BusinessPartner, o => o.Order, p => p.Payments))
+                .ReturnsAsync((Transaction)null);
+
+            // Act
+            var result = await _transactionService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindById_ShouldComputeDelayedStatus_WhenAnyPendingPaymentIsOverdue()
+        {
+            // Arrange - covers ComputeStatusFromPayments: pending payments present, one overdue.
+            var id = Guid.NewGuid();
+            var transactionEntity = new Transaction
+            {
+                Id = id,
+                Description = "Tx",
+                Payments = new List<Payment>
+                {
+                    new()
+                    {
+                        Type = PaymentType.Incoming,
+                        Status = PaymentStatus.Pending,
+                        Price = 100m,
+                        Date = DateTime.UtcNow.AddDays(-5),
+                    },
+                    new()
+                    {
+                        Type = PaymentType.Outgoing,
+                        Status = PaymentStatus.Pending,
+                        Price = 30m,
+                        Date = DateTime.UtcNow.AddDays(5),
+                    },
+                },
+            };
+            _repository
+                .Setup(r => r.GetByIdAsync(id, c => c.BusinessPartner, o => o.Order, p => p.Payments))
+                .ReturnsAsync(transactionEntity);
+
+            // Act
+            var result = await _transactionService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(PaymentStatus.Delayed, result.Data.Status);
+            Assert.Equal(100m, result.Data.PaymentTotalPrice);
+            Assert.Equal(30m, result.Data.ExpenseTotalPrice);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindById_ShouldComputePendingStatus_WhenPendingPaymentsAreNotOverdue()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var transactionEntity = new Transaction
+            {
+                Id = id,
+                Description = "Tx",
+                Payments = new List<Payment>
+                {
+                    new()
+                    {
+                        Type = PaymentType.Incoming,
+                        Status = PaymentStatus.Pending,
+                        Price = 100m,
+                        Date = DateTime.UtcNow.AddDays(5),
+                    },
+                },
+            };
+            _repository
+                .Setup(r => r.GetByIdAsync(id, c => c.BusinessPartner, o => o.Order, p => p.Payments))
+                .ReturnsAsync(transactionEntity);
+
+            // Act
+            var result = await _transactionService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(PaymentStatus.Pending, result.Data.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindById_ShouldComputePendingStatus_WhenThereAreNoPayments()
+        {
+            // Arrange - covers ComputeStatusFromPayments: empty list branch.
+            var id = Guid.NewGuid();
+            var transactionEntity = new Transaction
+            {
+                Id = id,
+                Description = "Tx",
+                Payments = new List<Payment>(),
+            };
+            _repository
+                .Setup(r => r.GetByIdAsync(id, c => c.BusinessPartner, o => o.Order, p => p.Payments))
+                .ReturnsAsync(transactionEntity);
+
+            // Act
+            var result = await _transactionService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(PaymentStatus.Pending, result.Data.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(r => r.GetByIdAsync(id, c => c.BusinessPartner, o => o.Order, p => p.Payments))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TransactionService_FindByBusinessPartnerId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<Transaction, bool>>>(),
+                        c => c.BusinessPartner,
+                        o => o.Order,
+                        p => p.Payments
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _transactionService.FindByBusinessPartnerId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

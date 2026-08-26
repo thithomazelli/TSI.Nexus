@@ -253,5 +253,249 @@ namespace TSI.Nexus.Services.Tests.Services
             expected.Should().BeEquivalentTo(result);
             _repository.Verify(r => r.GetByIdAsync(id), Times.Once);
         }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
+        {
+            // Arrange
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000099");
+            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((PurchaseOrderProduct)null);
+
+            // Act
+            var result = await _purchaseOrderProductService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Equal($"Nenhum Item do Pedido de Compra com o ID {id} foi encontrado", result.Message);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            _repository.Setup(r => r.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderProductService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var itemDto = new PurchaseOrderProductDto { Description = "Item" };
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<PurchaseOrderProduct>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderProductService.Add(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var itemDto = new PurchaseOrderProductDto { Description = "Item" };
+            _repository
+                .Setup(r => r.UpdateAsync(It.IsAny<PurchaseOrderProduct>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderProductService.Update(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var itemDto = new PurchaseOrderProductDto { Description = "Item" };
+            _repository
+                .Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderProductService.Remove(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_FindAll_ShouldReturnItems_WhenDataExists()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>()
+                    )
+                )
+                .ReturnsAsync(_itemsMock);
+
+            // Act
+            var result = await _purchaseOrderProductService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(_itemsMock.Count, result.Data.Count());
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderProductService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_FindByPurchaseOrderId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, bool>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderProductService.FindByPurchaseOrderId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_FindByProductId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, bool>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrderProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderProductService.FindByProductId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_Add_ShouldRecalculatePurchaseOrderPrice_WhenPurchaseOrderExists()
+        {
+            // Arrange - RecalculateAndUpdatePurchaseOrderAsync computes the sum of (Price*Quantity)
+            // minus discount across all items sharing the PurchaseOrderId, then persists it onto
+            // the parent PurchaseOrder.
+            var purchaseOrderId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var itemDto = new PurchaseOrderProductDto
+            {
+                Description = "Item novo",
+                PurchaseOrderId = purchaseOrderId,
+                Price = 100m,
+                Quantity = 2,
+                Discount = 10m, // 10%
+            };
+
+            var existingPurchaseOrder = new PurchaseOrder { Id = purchaseOrderId };
+
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(It.IsAny<Expression<Func<PurchaseOrderProduct, bool>>>())
+                )
+                .ReturnsAsync(
+                    new List<PurchaseOrderProduct>
+                    {
+                        new()
+                        {
+                            PurchaseOrderId = purchaseOrderId,
+                            Price = 100m,
+                            Quantity = 2,
+                            Discount = 10m,
+                        },
+                    }
+                );
+            _purchaseOrderRepository
+                .Setup(r => r.GetByIdAsync(purchaseOrderId))
+                .ReturnsAsync(existingPurchaseOrder);
+
+            // Act
+            var result = await _purchaseOrderProductService.Add(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            // (100*2) - (100*2*10/100) = 200 - 20 = 180
+            Assert.Equal(180m, existingPurchaseOrder.Price);
+            _purchaseOrderRepository.Verify(r => r.UpdateAsync(existingPurchaseOrder), Times.Once);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderProductService_Update_ShouldNotUpdatePurchaseOrder_WhenPurchaseOrderIsNotFound()
+        {
+            // Arrange - purchaseOrder == null branch of RecalculateAndUpdatePurchaseOrderAsync
+            // returns early without calling UpdateAsync on the purchase order repository.
+            var purchaseOrderId = Guid.Parse("00000000-0000-0000-0000-000000000005");
+            var itemDto = new PurchaseOrderProductDto
+            {
+                Description = "Item",
+                PurchaseOrderId = purchaseOrderId,
+            };
+
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(It.IsAny<Expression<Func<PurchaseOrderProduct, bool>>>())
+                )
+                .ReturnsAsync(new List<PurchaseOrderProduct>());
+            _purchaseOrderRepository
+                .Setup(r => r.GetByIdAsync(purchaseOrderId))
+                .ReturnsAsync((PurchaseOrder)null);
+
+            // Act
+            var result = await _purchaseOrderProductService.Update(itemDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _purchaseOrderRepository.Verify(
+                r => r.UpdateAsync(It.IsAny<PurchaseOrder>()),
+                Times.Never
+            );
+        }
     }
 }

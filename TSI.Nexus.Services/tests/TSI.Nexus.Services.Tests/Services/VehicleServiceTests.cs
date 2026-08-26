@@ -295,5 +295,137 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Empty(result.Data);
         }
+
+        [Fact]
+        public async Task VehicleService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var vehicleMock = new Vehicle { Id = Guid.NewGuid(), Plate = "ABC1D23" };
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(false);
+            _repository.Setup(_ => _.AddAsync(vehicleMock)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleService.Add(vehicleMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleService_Update_ShouldNotUpdateAndReturnAnErrorMessage_WhenPlateIsDuplicated()
+        {
+            // Arrange
+            var vehicleMock = new Vehicle { Id = Guid.NewGuid(), Plate = "ABC1D23" };
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _vehicleService.Update(vehicleMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Equal(
+                $"Já existe um Veículo cadastrado com a placa {vehicleMock.Plate}.",
+                result.Message
+            );
+            _repository.Verify(_ => _.UpdateAsync(It.IsAny<Vehicle>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task VehicleService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var vehicleMock = new Vehicle { Id = Guid.NewGuid(), Plate = "ABC1D23" };
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(false);
+            _repository.Setup(_ => _.UpdateAsync(vehicleMock)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleService.Update(vehicleMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var vehicleMock = new Vehicle { Id = Guid.NewGuid(), Plate = "ABC1D23" };
+            _tripRepositoryMock
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Trip, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleService.Remove(vehicleMock);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleService_FindById_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Vehicle, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _vehicleService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task VehicleService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleService_FindByPlate_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleService.FindByPlate("ABC1D23");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleService_FindAvailable_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _vehicleService.FindAvailable();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

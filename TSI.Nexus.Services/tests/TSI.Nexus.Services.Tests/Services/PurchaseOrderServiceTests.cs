@@ -421,5 +421,405 @@ namespace TSI.Nexus.Services.Tests.Services
                 Times.Once
             );
         }
+
+        [Fact]
+        public async Task PurchaseOrderService_Add_ShouldReturnError_WhenSequenceServiceThrows()
+        {
+            // Arrange
+            var purchaseOrderDto = new PurchaseOrderDto { BusinessPartnerName = "FOR" };
+            _sequenceService
+                .Setup(_ => _.GetNextValue(It.IsAny<string>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderService.Add(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Add_ShouldUseExistingTransactionId_WhenTransactionIdIsProvidedWithoutTransactionDto()
+        {
+            // Arrange
+            var existingTransactionId = Guid.Parse("00000000-0000-0000-0000-000000000020");
+            var purchaseOrderDto = new PurchaseOrderDto
+            {
+                BusinessPartnerName = "FOR",
+                TransactionId = existingTransactionId,
+            };
+
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _transactionService
+                .Setup(_ => _.FindById(existingTransactionId))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto>
+                    {
+                        Status = ResponseStatus.Success,
+                        Data = new TransactionDto { Id = existingTransactionId },
+                    }
+                );
+
+            PurchaseOrder capturedEntity = null;
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<PurchaseOrder>()))
+                .Callback<PurchaseOrder>(e => capturedEntity = e)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _purchaseOrderService.Add(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(capturedEntity);
+            Assert.Equal(existingTransactionId, capturedEntity.TransactionId);
+            _transactionService.Verify(
+                _ => _.UpdatePurchaseOrderId(It.IsAny<TransactionDto>()),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Add_ShouldNotChangeTransactionId_WhenTransactionFindByIdFails()
+        {
+            // Arrange
+            var existingTransactionId = Guid.Parse("00000000-0000-0000-0000-000000000021");
+            var purchaseOrderDto = new PurchaseOrderDto
+            {
+                BusinessPartnerName = "FOR",
+                TransactionId = existingTransactionId,
+            };
+
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _transactionService
+                .Setup(_ => _.FindById(existingTransactionId))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto> { Status = ResponseStatus.Error }
+                );
+
+            PurchaseOrder capturedEntity = null;
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<PurchaseOrder>()))
+                .Callback<PurchaseOrder>(e => capturedEntity = e)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _purchaseOrderService.Add(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(existingTransactionId, capturedEntity.TransactionId);
+        }
+
+        [Theory]
+        [InlineData("ABC", "ABC")] // >=3 letters: first, middle, last
+        [InlineData("AB", null)] // <3 letters: random-padded, only format is checked
+        [InlineData("", null)] // empty: random-padded, only format is checked
+        public async Task PurchaseOrderService_Add_ShouldBuildPurchaseOrderNumberWithExpectedPrefixFormat(
+            string businessPartnerName,
+            string expectedPrefix
+        )
+        {
+            // Arrange
+            var purchaseOrderDto = new PurchaseOrderDto { BusinessPartnerName = businessPartnerName };
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(7);
+
+            // Act
+            var result = await _purchaseOrderService.Add(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Matches("^[A-Z]{3}-00007$", result.Data.PurchaseOrderNumber);
+            if (expectedPrefix != null)
+            {
+                Assert.StartsWith(expectedPrefix, result.Data.PurchaseOrderNumber);
+            }
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Add_ShouldUseDefaultDescription_WhenDescriptionIsEmpty()
+        {
+            // Arrange
+            var purchaseOrderDto = new PurchaseOrderDto
+            {
+                BusinessPartnerName = "FOR",
+                Description = string.Empty,
+            };
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+
+            // Act
+            var result = await _purchaseOrderService.Add(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.StartsWith("Pedido de Compra -", result.Data.Description);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var purchaseOrderDto = new PurchaseOrderDto
+            {
+                Id = Guid.NewGuid(),
+                Transaction = new TransactionDto(),
+            };
+            _repository
+                .Setup(r => r.GetByIdAsync(purchaseOrderDto.Id))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderService.Update(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Update_ShouldNotCallTransactionUpdate_WhenTransactionDtoIsNull()
+        {
+            // Arrange
+            var purchaseOrderId = Guid.Parse("00000000-0000-0000-0000-000000000030");
+            var existingPurchaseOrder = new PurchaseOrder { Id = purchaseOrderId };
+            var purchaseOrderDto = new PurchaseOrderDto { Id = purchaseOrderId, Transaction = null };
+
+            _repository.Setup(r => r.GetByIdAsync(purchaseOrderId)).ReturnsAsync(existingPurchaseOrder);
+
+            // Act
+            var result = await _purchaseOrderService.Update(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data.Transaction);
+            _transactionService.Verify(_ => _.Update(It.IsAny<TransactionDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Update_ShouldNotOverwriteTransactionData_WhenTransactionUpdateFails()
+        {
+            // Arrange
+            var purchaseOrderId = Guid.Parse("00000000-0000-0000-0000-000000000031");
+            var existingPurchaseOrder = new PurchaseOrder { Id = purchaseOrderId };
+            var purchaseOrderDto = new PurchaseOrderDto
+            {
+                Id = purchaseOrderId,
+                Transaction = new TransactionDto { Id = Guid.NewGuid() },
+            };
+
+            _repository.Setup(r => r.GetByIdAsync(purchaseOrderId)).ReturnsAsync(existingPurchaseOrder);
+            _transactionService
+                .Setup(_ => _.Update(It.IsAny<TransactionDto>()))
+                .ReturnsAsync(new WebApiResponse<TransactionDto> { Status = ResponseStatus.Error });
+
+            // Act
+            var result = await _purchaseOrderService.Update(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data.Transaction);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Remove_ShouldReturnError_WhenPurchaseOrderIsNotFound()
+        {
+            // Arrange
+            var purchaseOrderDto = new PurchaseOrderDto
+            {
+                Id = Guid.NewGuid(),
+                PurchaseOrderNumber = "PC-00001",
+            };
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        purchaseOrderDto.Id,
+                        o => o.PurchaseOrderProducts,
+                        p => p.Transaction
+                    )
+                )
+                .ReturnsAsync((PurchaseOrder)null);
+
+            // Act
+            var result = await _purchaseOrderService.Remove(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Null(result.Data);
+            _repository.Verify(r => r.RemoveAsync(It.IsAny<PurchaseOrder>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var purchaseOrderDto = new PurchaseOrderDto { Id = Guid.NewGuid() };
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        purchaseOrderDto.Id,
+                        o => o.PurchaseOrderProducts,
+                        p => p.Transaction
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderService.Remove(purchaseOrderDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_FindById_ShouldReturnNoData_WhenModuleToggleIsDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(
+                        FeatureToggleKeys.PurchaseOrder,
+                        FeatureToggleKeys.PurchaseOrdersModule
+                    )
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _purchaseOrderService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal($"Nenhum Pedido de Compra com o ID {id} foi encontrado", result.Message);
+            _repository.Verify(
+                r =>
+                    r.GetByIdAsync(
+                        It.IsAny<Guid?>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>()
+                    ),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_FindById_ShouldReturnWarning_WhenPurchaseOrderBelongsToAnotherUser()
+        {
+            // Arrange
+            var id = Guid.Parse("00000000-0000-0000-0000-000000000040");
+            var purchaseOrderEntity = new PurchaseOrder { Id = id, CreateUserId = "owner-user-id" };
+
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        id,
+                        o => o.BusinessPartner,
+                        op => op.PurchaseOrderProducts,
+                        t => t.Transaction,
+                        p => p.Transaction.Payments
+                    )
+                )
+                .ReturnsAsync(purchaseOrderEntity);
+            _currentUserService.Setup(_ => _.IsInRole("Admin")).Returns(false);
+            _currentUserService.Setup(_ => _.GetUserId()).Returns("another-user-id");
+
+            // Act
+            var result = await _purchaseOrderService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        id,
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_FindByBusinessPartnerId_ShouldReturnPurchaseOrders_WhenDataExists()
+        {
+            // Arrange
+            var businessPartnerId = Guid.NewGuid();
+            var purchaseOrders = new List<PurchaseOrder>
+            {
+                new() { Id = Guid.NewGuid(), BusinessPartnerId = businessPartnerId },
+            };
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PurchaseOrder, bool>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>()
+                    )
+                )
+                .ReturnsAsync(purchaseOrders);
+
+            // Act
+            var result = await _purchaseOrderService.FindByBusinessPartnerId(businessPartnerId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data);
+        }
+
+        [Fact]
+        public async Task PurchaseOrderService_FindByBusinessPartnerId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<PurchaseOrder, bool>>>(),
+                        It.IsAny<Expression<Func<PurchaseOrder, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _purchaseOrderService.FindByBusinessPartnerId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

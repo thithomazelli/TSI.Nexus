@@ -320,5 +320,266 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Empty(result.Data);
         }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindByVehicle_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<VehicleMaintenance, bool>>>(),
+                        It.IsAny<Expression<Func<VehicleMaintenance, object>>[]>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByVehicle(_vehicleId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_Add_ShouldNotSyncVehicleStatus_WhenVehicleIsNotFound()
+        {
+            // Arrange - SyncVehicleStatusAsync's vehicle == null branch returns early.
+            var maintenance = new VehicleMaintenance
+            {
+                Id = Guid.NewGuid(),
+                VehicleId = _vehicleId,
+                Status = MaintenanceStatus.Scheduled,
+                ScheduledDate = DateTime.UtcNow.Date.AddDays(5),
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle>());
+
+            // Act
+            var result = await _service.Add(maintenance);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _vehicleRepository.Verify(_ => _.UpdateAsync(It.IsAny<Vehicle>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_Add_ShouldNotChangeVehicleStatus_WhenVehicleIsInactive()
+        {
+            // Arrange - SyncVehicleStatusAsync's vehicle.Status == Inactive branch returns early.
+            var vehicle = new Vehicle
+            {
+                Id = _vehicleId,
+                Plate = "ABC1D23",
+                Status = VehicleStatus.Inactive,
+            };
+            var maintenance = new VehicleMaintenance
+            {
+                Id = Guid.NewGuid(),
+                VehicleId = _vehicleId,
+                Status = MaintenanceStatus.Scheduled,
+                ScheduledDate = DateTime.UtcNow.Date.AddDays(-1),
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle> { vehicle });
+
+            // Act
+            var result = await _service.Add(maintenance);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(VehicleStatus.Inactive, vehicle.Status);
+            _vehicleRepository.Verify(_ => _.UpdateAsync(It.IsAny<Vehicle>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var maintenance = new VehicleMaintenance { Id = Guid.NewGuid(), VehicleId = _vehicleId };
+            _repository.Setup(_ => _.AddAsync(maintenance)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Add(maintenance);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var maintenance = new VehicleMaintenance { Id = Guid.NewGuid(), VehicleId = _vehicleId };
+            _repository
+                .Setup(_ => _.GetByIdAsync(maintenance.Id, m => m.VehicleMaintenanceProducts))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(maintenance);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_Remove_ShouldRemoveSuccessfullyAndSyncVehicleStatus()
+        {
+            // Arrange
+            var vehicle = new Vehicle { Id = _vehicleId, Status = VehicleStatus.Blocked };
+            var maintenance = new VehicleMaintenance { Id = Guid.NewGuid(), VehicleId = _vehicleId };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle> { vehicle });
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<VehicleMaintenance, bool>>>()))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.Remove(maintenance);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(VehicleStatus.Available, vehicle.Status);
+            _repository.Verify(_ => _.RemoveAsync(maintenance), Times.Once);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var maintenance = new VehicleMaintenance { Id = Guid.NewGuid(), VehicleId = _vehicleId };
+            _repository.Setup(_ => _.RemoveAsync(maintenance)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Remove(maintenance);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindAll_ShouldReturnMaintenances_WhenDataExists()
+        {
+            // Arrange
+            var maintenances = new List<VehicleMaintenance> { new() { Id = Guid.NewGuid() } };
+            _repository
+                .Setup(_ => _.GetAllAsync(m => m.Vehicle, m => m.VehicleMaintenanceProducts))
+                .ReturnsAsync(maintenances);
+
+            // Act
+            var result = await _service.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(maintenances, result.Data);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindAll_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.VehicleMaintenance, FeatureToggleKeys.FleetModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.GetAllAsync(m => m.Vehicle, m => m.VehicleMaintenanceProducts))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindById_ShouldReturnMaintenance_WhenIdIsValid()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var maintenance = new VehicleMaintenance { Id = id };
+            _repository
+                .Setup(_ => _.GetByIdAsync(id, m => m.Vehicle, m => m.VehicleMaintenanceProducts))
+                .ReturnsAsync(maintenance);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(maintenance, result.Data);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(_ => _.GetByIdAsync(id, m => m.Vehicle, m => m.VehicleMaintenanceProducts))
+                .ReturnsAsync((VehicleMaintenance)null);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindById_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.VehicleMaintenance, FeatureToggleKeys.FleetModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindById(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task VehicleMaintenanceService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(_ => _.GetByIdAsync(id, m => m.Vehicle, m => m.VehicleMaintenanceProducts))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

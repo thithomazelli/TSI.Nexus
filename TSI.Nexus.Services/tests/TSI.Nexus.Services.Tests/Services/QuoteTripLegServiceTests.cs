@@ -146,5 +146,115 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(1, result.Data!.First().SequenceNumber);
             Assert.Equal(2, result.Data!.Last().SequenceNumber);
         }
+
+        [Fact]
+        public async Task QuoteTripLegService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var quoteTripLeg = new QuoteTripLeg { Id = Guid.NewGuid(), QuoteTripId = _quoteTripId };
+            _repository.Setup(_ => _.UpdateAsync(quoteTripLeg)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(quoteTripLeg);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task QuoteTripLegService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var quoteTripLeg = new QuoteTripLeg { Id = Guid.NewGuid(), QuoteTripId = _quoteTripId };
+            _repository.Setup(_ => _.RemoveAsync(quoteTripLeg)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Remove(quoteTripLeg);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task QuoteTripLegService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync((QuoteTripLeg)null);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Equal($"Nenhum trecho do itinerário com o ID {id} foi encontrado", result.Message);
+        }
+
+        [Fact]
+        public async Task QuoteTripLegService_FindById_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.QuoteTripLeg, FeatureToggleKeys.FleetModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task QuoteTripLegService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task QuoteTripLegService_FindByQuoteTrip_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.QuoteTripLeg, FeatureToggleKeys.FleetModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindByQuoteTrip(_quoteTripId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task QuoteTripLegService_FindByQuoteTrip_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<QuoteTripLeg, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByQuoteTrip(_quoteTripId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

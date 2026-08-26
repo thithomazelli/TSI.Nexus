@@ -670,5 +670,593 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Empty(result.Data);
         }
+
+        [Fact]
+        public async Task TripService_Add_ShouldReturnError_WhenSequenceServiceThrows()
+        {
+            // Arrange
+            var tripDto = new TripDto { BusinessPartnerName = "SER", QuoteNumber = string.Empty };
+            _sequenceService
+                .Setup(_ => _.GetNextValue(It.IsAny<string>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.Add(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_Add_ShouldReturnWarning_WhenVehicleIsNotFound()
+        {
+            // Arrange
+            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000097");
+            var tripDto = new TripDto
+            {
+                BusinessPartnerName = "SER",
+                VehicleId = vehicleId,
+                QuoteNumber = string.Empty,
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle>());
+
+            // Act
+            var result = await _tripService.Add(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            Assert.Equal("Veículo selecionado não foi encontrado.", result.Message);
+        }
+
+        [Fact]
+        public async Task TripService_Add_ShouldReturnWarning_WhenVehicleIsInactive()
+        {
+            // Arrange
+            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000096");
+            var tripDto = new TripDto
+            {
+                BusinessPartnerName = "SER",
+                VehicleId = vehicleId,
+                QuoteNumber = string.Empty,
+            };
+            var inactiveVehicle = new Vehicle
+            {
+                Id = vehicleId,
+                Plate = "XYZ1D23",
+                Status = VehicleStatus.Inactive,
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle> { inactiveVehicle });
+
+            // Act
+            var result = await _tripService.Add(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            Assert.Equal(
+                $"O veículo {inactiveVehicle.Plate} está inativo e não pode ser vinculado a uma viagem.",
+                result.Message
+            );
+        }
+
+        [Fact]
+        public async Task TripService_Add_ShouldUseExistingTransactionId_WhenTransactionIdIsProvidedWithoutTransactionDto()
+        {
+            // Arrange
+            var existingTransactionId = Guid.Parse("00000000-0000-0000-0000-000000000050");
+            var tripDto = new TripDto
+            {
+                BusinessPartnerName = "SER",
+                TransactionId = existingTransactionId,
+                QuoteNumber = string.Empty,
+            };
+
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _transactionService
+                .Setup(_ => _.FindById(existingTransactionId))
+                .ReturnsAsync(
+                    new WebApiResponse<TransactionDto>
+                    {
+                        Status = ResponseStatus.Success,
+                        Data = new TransactionDto { Id = existingTransactionId },
+                    }
+                );
+
+            Trip capturedEntity = null;
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<Trip>()))
+                .Callback<Trip>(e => capturedEntity = e)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _tripService.Add(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(existingTransactionId, capturedEntity.TransactionId);
+        }
+
+        [Fact]
+        public async Task TripService_Add_ShouldNotChangeTransactionId_WhenTransactionFindByIdFails()
+        {
+            // Arrange
+            var existingTransactionId = Guid.Parse("00000000-0000-0000-0000-000000000051");
+            var tripDto = new TripDto
+            {
+                BusinessPartnerName = "SER",
+                TransactionId = existingTransactionId,
+                QuoteNumber = string.Empty,
+            };
+
+            _sequenceService.Setup(_ => _.GetNextValue(It.IsAny<string>())).ReturnsAsync(1);
+            _transactionService
+                .Setup(_ => _.FindById(existingTransactionId))
+                .ReturnsAsync(new WebApiResponse<TransactionDto> { Status = ResponseStatus.Error });
+
+            Trip capturedEntity = null;
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<Trip>()))
+                .Callback<Trip>(e => capturedEntity = e)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _tripService.Add(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(existingTransactionId, capturedEntity.TransactionId);
+        }
+
+        [Fact]
+        public async Task TripService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var tripDto = new TripDto { Id = Guid.NewGuid(), TripNumber = "SER-V00001" };
+            _repository
+                .Setup(r => r.UpdateAsync(It.IsAny<Trip>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.Update(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_Update_ShouldReturnWarning_WhenVehicleAssignmentFails()
+        {
+            // Arrange
+            var vehicleId = Guid.Parse("00000000-0000-0000-0000-000000000095");
+            var tripDto = new TripDto
+            {
+                Id = Guid.NewGuid(),
+                TripNumber = "SER-V00001",
+                VehicleId = vehicleId,
+            };
+            var blockedVehicle = new Vehicle
+            {
+                Id = vehicleId,
+                Plate = "BLK1D23",
+                Status = VehicleStatus.Blocked,
+            };
+
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle> { blockedVehicle });
+
+            // Act
+            var result = await _tripService.Update(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Warning, result.Status);
+            _repository.Verify(r => r.UpdateAsync(It.IsAny<Trip>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TripService_Update_ShouldNotGenerateServiceOrder_WhenNoPreviousTripStateExists()
+        {
+            // Arrange - previousStatus has no value (new/never-persisted trip id) skips the
+            // Closed-transition auto-ServiceOrder trigger.
+            var tripId = Guid.NewGuid();
+            var tripDto = new TripDto
+            {
+                Id = tripId,
+                TripNumber = "SER-V00001",
+                Status = OrderStatus.Closed,
+                DriverId = Guid.NewGuid(),
+            };
+
+            // Default repository QueryAsync setup already returns an empty list.
+
+            // Act
+            var result = await _tripService.Update(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _serviceOrderService.Verify(_ => _.GenerateForTrip(It.IsAny<Trip>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TripService_Update_ShouldNotGenerateServiceOrder_WhenNoDriverIsAssigned()
+        {
+            // Arrange
+            var tripId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var tripDto = new TripDto
+            {
+                Id = tripId,
+                TripNumber = "SER-V00001",
+                Status = OrderStatus.Closed,
+                DriverId = null,
+                Transaction = new TransactionDto(),
+            };
+
+            var previousTrip = new Trip { Id = tripId, Status = OrderStatus.Open, DriverId = null };
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<Trip, bool>>>()))
+                .ReturnsAsync(new List<Trip> { previousTrip });
+
+            // Act
+            await _tripService.Update(tripDto);
+
+            // Assert
+            _serviceOrderService.Verify(_ => _.GenerateForTrip(It.IsAny<Trip>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TripService_Update_ShouldNotCallTransactionUpdate_WhenTransactionIsNull()
+        {
+            // Arrange
+            var tripDto = new TripDto
+            {
+                Id = Guid.NewGuid(),
+                TripNumber = "SER-V00001",
+                Transaction = null,
+            };
+
+            // Act
+            var result = await _tripService.Update(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data.Transaction);
+            _transactionService.Verify(_ => _.Update(It.IsAny<TransactionDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TripService_Update_ShouldKeepOriginalTransactionDto_WhenTransactionUpdateFails()
+        {
+            // Arrange - unlike PurchaseOrderService/QuoteService, TripService.Update keeps the
+            // original tripDto.Transaction instance when the ITransactionService.Update call does
+            // not report Success, instead of nulling it out beforehand.
+            var originalTransactionDto = new TransactionDto { Id = Guid.NewGuid() };
+            var tripDto = new TripDto
+            {
+                Id = Guid.NewGuid(),
+                TripNumber = "SER-V00001",
+                Transaction = originalTransactionDto,
+            };
+            _transactionService
+                .Setup(_ => _.Update(It.IsAny<TransactionDto>()))
+                .ReturnsAsync(new WebApiResponse<TransactionDto> { Status = ResponseStatus.Error });
+
+            // Act
+            var result = await _tripService.Update(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Same(originalTransactionDto, result.Data.Transaction);
+        }
+
+        [Fact]
+        public async Task TripService_Remove_ShouldReturnError_WhenTripIsNotFound()
+        {
+            // Arrange
+            var tripDto = new TripDto { Id = Guid.NewGuid(), TripNumber = "SER-V00001" };
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        tripDto.Id,
+                        t => t.TripLegs,
+                        t => t.Passengers,
+                        p => p.Transaction
+                    )
+                )
+                .ReturnsAsync((Trip)null);
+
+            // Act
+            var result = await _tripService.Remove(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Null(result.Data);
+            _repository.Verify(r => r.RemoveAsync(It.IsAny<Trip>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task TripService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var tripDto = new TripDto { Id = Guid.NewGuid() };
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        tripDto.Id,
+                        t => t.TripLegs,
+                        t => t.Passengers,
+                        p => p.Transaction
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.Remove(tripDto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(r =>
+                    r.GetByIdAsync(
+                        id,
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_FindByTripNumber_ShouldReturnTrip_WhenTripNumberIsValid()
+        {
+            // Arrange
+            var trip = new Trip { Id = Guid.NewGuid(), TripNumber = "SER-V00001" };
+            _repository
+                .Setup(r =>
+                    r.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>[]>()
+                    )
+                )
+                .ReturnsAsync(trip);
+
+            // Act
+            var result = await _tripService.FindByTripNumber("SER-V00001");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(result.Data);
+        }
+
+        [Fact]
+        public async Task TripService_FindByTripNumber_ShouldReturnNoData_WhenNotFound()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>[]>()
+                    )
+                )
+                .ReturnsAsync((Trip)null);
+
+            // Act
+            var result = await _tripService.FindByTripNumber("SER-V00099");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task TripService_FindByTripNumber_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.FirstOrDefaultAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>[]>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.FindByTripNumber("SER-V00001");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_FindByBusinessPartnerId_ShouldReturnTrips_WhenDataExists()
+        {
+            // Arrange
+            var businessPartnerId = Guid.NewGuid();
+            var trips = new List<Trip> { new() { Id = Guid.NewGuid(), BusinessPartnerId = businessPartnerId } };
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ReturnsAsync(trips);
+
+            // Act
+            var result = await _tripService.FindByBusinessPartnerId(businessPartnerId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data);
+        }
+
+        [Fact]
+        public async Task TripService_FindByBusinessPartnerId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.FindByBusinessPartnerId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_FindByDriverId_ShouldReturnTrips_WhenDataExists()
+        {
+            // Arrange
+            var driverId = Guid.NewGuid();
+            var trips = new List<Trip> { new() { Id = Guid.NewGuid() } };
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ReturnsAsync(trips);
+
+            // Act
+            var result = await _tripService.FindByDriverId(driverId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data);
+        }
+
+        [Fact]
+        public async Task TripService_FindByDriverId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.FindByDriverId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task TripService_FindByVehicleId_ShouldReturnTrips_WhenDataExists()
+        {
+            // Arrange
+            var vehicleId = Guid.NewGuid();
+            var trips = new List<Trip> { new() { Id = Guid.NewGuid(), VehicleId = vehicleId } };
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ReturnsAsync(trips);
+
+            // Act
+            var result = await _tripService.FindByVehicleId(vehicleId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Single(result.Data);
+        }
+
+        [Fact]
+        public async Task TripService_FindByVehicleId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<Trip, bool>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>(),
+                        It.IsAny<Expression<Func<Trip, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _tripService.FindByVehicleId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

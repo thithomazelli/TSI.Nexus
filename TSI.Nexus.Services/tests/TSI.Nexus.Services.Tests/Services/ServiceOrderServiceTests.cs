@@ -198,5 +198,250 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Equal(serviceOrders, result.Data);
         }
+
+        [Fact]
+        public async Task ServiceOrderService_FindByDriver_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.ServiceOrder, FeatureToggleKeys.FleetModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindByDriver(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_FindByDriver_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ =>
+                    _.QueryAsync(
+                        It.IsAny<Expression<Func<ServiceOrder, bool>>>(),
+                        It.IsAny<Expression<Func<ServiceOrder, object>>[]>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByDriver(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Add_ShouldBuildNumber_WhenNumberIsNotProvided()
+        {
+            // Arrange
+            var serviceOrder = new ServiceOrder { Id = Guid.NewGuid() };
+
+            // Act
+            var result = await _service.Add(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal("OS-00001", serviceOrder.Number);
+            _repository.Verify(_ => _.AddAsync(serviceOrder), Times.Once);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Add_ShouldKeepProvidedNumber_WhenNumberIsAlreadySet()
+        {
+            // Arrange
+            var serviceOrder = new ServiceOrder { Id = Guid.NewGuid(), Number = "OS-CUSTOM" };
+
+            // Act
+            var result = await _service.Add(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal("OS-CUSTOM", serviceOrder.Number);
+            _sequenceService.Verify(_ => _.GetNextValue(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var serviceOrder = new ServiceOrder { Id = Guid.NewGuid() };
+            _repository.Setup(_ => _.AddAsync(serviceOrder)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Add(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Update_ShouldSetCompletionDate_WhenStatusIsCompletedAndDateIsNull()
+        {
+            // Arrange
+            var serviceOrder = new ServiceOrder
+            {
+                Id = Guid.NewGuid(),
+                Status = ServiceOrderStatus.Completed,
+                CompletionDate = null,
+            };
+
+            // Act
+            var result = await _service.Update(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.NotNull(serviceOrder.CompletionDate);
+            _repository.Verify(_ => _.UpdateAsync(serviceOrder), Times.Once);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Update_ShouldNotOverwriteCompletionDate_WhenAlreadySet()
+        {
+            // Arrange
+            var completionDate = DateTime.UtcNow.AddDays(-1);
+            var serviceOrder = new ServiceOrder
+            {
+                Id = Guid.NewGuid(),
+                Status = ServiceOrderStatus.Completed,
+                CompletionDate = completionDate,
+            };
+
+            // Act
+            var result = await _service.Update(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(completionDate, serviceOrder.CompletionDate);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var serviceOrder = new ServiceOrder { Id = Guid.NewGuid() };
+            _repository.Setup(_ => _.UpdateAsync(serviceOrder)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Remove_ShouldRemoveSuccessfully()
+        {
+            // Arrange
+            var serviceOrder = new ServiceOrder { Id = Guid.NewGuid(), Number = "OS-00001" };
+
+            // Act
+            var result = await _service.Remove(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _repository.Verify(_ => _.RemoveAsync(serviceOrder), Times.Once);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var serviceOrder = new ServiceOrder { Id = Guid.NewGuid() };
+            _repository.Setup(_ => _.RemoveAsync(serviceOrder)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Remove(serviceOrder);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_FindById_ShouldReturnServiceOrder_WhenIdIsValid()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var serviceOrder = new ServiceOrder { Id = id, Number = "OS-00001" };
+            _repository.Setup(_ => _.GetByIdAsync(id, s => s.Commission)).ReturnsAsync(serviceOrder);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(serviceOrder, result.Data);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_FindById_ShouldReturnNoData_WhenIdIsNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id, s => s.Commission)).ReturnsAsync((ServiceOrder)null);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_FindById_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ =>
+                    _.IsEnabledAsync(FeatureToggleKeys.ServiceOrder, FeatureToggleKeys.FleetModule)
+                )
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindById(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository
+                .Setup(_ => _.GetByIdAsync(id, s => s.Commission))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task ServiceOrderService_GenerateForTrip_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var trip = new Trip { Id = Guid.NewGuid(), DriverId = Guid.NewGuid() };
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<ServiceOrder, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.GenerateForTrip(trip);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }
