@@ -104,6 +104,25 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
+        public async Task VehiclesController_Update_ShouldNotUpdateVehicleSuccessfully_WhenMethodIsCalledWithAnInvalidObject()
+        {
+            // Arrange
+            var vehicleMock = new Vehicle();
+
+            _vehiclesController.ModelState.AddModelError("Plate", "Plate is required");
+
+            // Act
+            var result = await _vehiclesController.Update(vehicleMock);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("Plate"));
+
+            _vehicleServiceMock.Verify(_ => _.Update(It.IsAny<Vehicle>()), Times.Never);
+        }
+
+        [Fact]
         public async Task VehiclesController_Remove_ShouldRemoveVehicleSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange

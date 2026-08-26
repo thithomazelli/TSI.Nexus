@@ -100,6 +100,50 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
+        public async Task ServiceOrdersController_Update_ShouldNotUpdateServiceOrder_WhenMethodIsCalledWithAnInvalidObject()
+        {
+            // Arrange
+            var serviceOrderMock = new ServiceOrder();
+            _controller.ModelState.AddModelError("DriverId", "DriverId is required");
+
+            // Act
+            var result = await _controller.Update(serviceOrderMock);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("DriverId"));
+
+            _serviceMock.Verify(_ => _.Update(It.IsAny<ServiceOrder>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ServiceOrdersController_GetById_ShouldGetServiceOrderById_WhenMethodIsCalled()
+        {
+            // Arrange
+            var idMock = Guid.NewGuid();
+            var serviceOrderMock = new ServiceOrder { Id = idMock, Number = "OS-00001" };
+            var expectedResult = new WebApiResponse<ServiceOrder>
+            {
+                Data = serviceOrderMock,
+                Status = ResponseStatus.Success,
+                Message = "Ordem de Serviço encontrada com sucesso",
+            };
+
+            _serviceMock.Setup(_ => _.FindById(idMock)).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _controller.GetById(idMock);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<ServiceOrder>>(okResult.Value);
+            Assert.Equal(serviceOrderMock, response.Data);
+
+            _serviceMock.Verify(_ => _.FindById(idMock), Times.Once);
+        }
+
+        [Fact]
         public async Task ServiceOrdersController_Remove_ShouldRemoveServiceOrderSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange

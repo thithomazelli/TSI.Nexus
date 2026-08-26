@@ -116,5 +116,168 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
             response.Should().BeEquivalentTo(expected);
             _orderServiceMock.Verify(s => s.Add(order), Times.Once);
         }
+
+        [Fact]
+        public async Task Add_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var order = new OrderDto();
+            _controller.ModelState.AddModelError("BusinessPartnerId", "BusinessPartnerId is required");
+
+            // Act
+            var result = await _controller.Add(order);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("BusinessPartnerId"));
+
+            _orderServiceMock.Verify(s => s.Add(It.IsAny<OrderDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnOkWithUpdatedOrder_WhenModelIsValid()
+        {
+            // Arrange
+            var order = _ordersMock.First();
+            var expected = new WebApiResponse<OrderDto>
+            {
+                Data = order,
+                Status = ResponseStatus.Success,
+                Message = $"Pedido {order.OrderNumber} atualizado com sucesso.",
+            };
+
+            _orderServiceMock.Setup(s => s.Update(order)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Update(order);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<OrderDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _orderServiceMock.Verify(s => s.Update(order), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var order = new OrderDto();
+            _controller.ModelState.AddModelError("BusinessPartnerId", "BusinessPartnerId is required");
+
+            // Act
+            var result = await _controller.Update(order);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("BusinessPartnerId"));
+
+            _orderServiceMock.Verify(s => s.Update(It.IsAny<OrderDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Remove_ShouldReturnOkWithRemovedOrder_WhenMethodIsCalled()
+        {
+            // Arrange
+            var order = _ordersMock.First();
+            var expected = new WebApiResponse<OrderDto>
+            {
+                Data = order,
+                Status = ResponseStatus.Success,
+                Message = $"Pedido {order.OrderNumber} removido com sucesso.",
+            };
+
+            _orderServiceMock.Setup(s => s.Remove(order)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Remove(order);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<OrderDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _orderServiceMock.Verify(s => s.Remove(order), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetByOrderNumber_ShouldReturnOkWithOrder_WhenServiceReturnsOrder()
+        {
+            // Arrange
+            var order = _ordersMock.First();
+            var expected = new WebApiResponse<OrderDto>
+            {
+                Data = order,
+                Status = ResponseStatus.Success,
+                Message = $"Pedido {order.OrderNumber} encontrado com sucesso",
+            };
+
+            _orderServiceMock
+                .Setup(s => s.FindByOrderNumber(order.OrderNumber))
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByOrderNumber(order.OrderNumber);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<OrderDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _orderServiceMock.Verify(s => s.FindByOrderNumber(order.OrderNumber), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetByBusinessPartnerId_ShouldReturnOkWithOrders_WhenServiceReturnsOrders()
+        {
+            // Arrange
+            var businessPartnerId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var expected = new WebApiResponse<IEnumerable<OrderDto>>
+            {
+                Data = _ordersMock,
+                Status = ResponseStatus.Success,
+                Message = $"{_ordersMock.Count} registro(s) encontrado(s).",
+            };
+
+            _orderServiceMock
+                .Setup(s => s.FindByBusinessPartnerId(businessPartnerId))
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByBusinessPartnerId(businessPartnerId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<OrderDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _orderServiceMock.Verify(
+                s => s.FindByBusinessPartnerId(businessPartnerId),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task GetByProductId_ShouldReturnOkWithOrders_WhenServiceReturnsOrders()
+        {
+            // Arrange
+            var productId = Guid.NewGuid();
+            var expected = new WebApiResponse<IEnumerable<OrderDto>>
+            {
+                Data = _ordersMock,
+                Status = ResponseStatus.Success,
+                Message = $"{_ordersMock.Count} registro(s) encontrado(s).",
+            };
+
+            _orderServiceMock.Setup(s => s.FindByProductId(productId)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByProductId(productId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<OrderDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _orderServiceMock.Verify(s => s.FindByProductId(productId), Times.Once);
+        }
     }
 }

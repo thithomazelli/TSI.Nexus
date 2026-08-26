@@ -122,5 +122,118 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
             response.Should().BeEquivalentTo(expected);
             _serviceMock.Verify(s => s.Add(transaction), Times.Once);
         }
+
+        [Fact]
+        public async Task Add_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var transaction = new TransactionDto();
+            _controller.ModelState.AddModelError(
+                "BusinessPartnerId",
+                "BusinessPartnerId is required"
+            );
+
+            // Act
+            var result = await _controller.Add(transaction);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("BusinessPartnerId"));
+
+            _serviceMock.Verify(s => s.Add(It.IsAny<TransactionDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnOkWithUpdatedTransaction_WhenModelIsValid()
+        {
+            // Arrange
+            var transaction = _transactionsMock.First();
+            var expected = new WebApiResponse<TransactionDto>
+            {
+                Data = transaction,
+                Status = ResponseStatus.Success,
+                Message = $"Transação {transaction.Description} atualizado com sucesso.",
+            };
+
+            _serviceMock.Setup(s => s.Update(transaction)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Update(transaction);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<TransactionDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.Update(transaction), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var transaction = new TransactionDto();
+            _controller.ModelState.AddModelError(
+                "BusinessPartnerId",
+                "BusinessPartnerId is required"
+            );
+
+            // Act
+            var result = await _controller.Update(transaction);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("BusinessPartnerId"));
+
+            _serviceMock.Verify(s => s.Update(It.IsAny<TransactionDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Remove_ShouldReturnOkWithRemovedTransaction_WhenMethodIsCalled()
+        {
+            // Arrange
+            var transaction = _transactionsMock.First();
+            var expected = new WebApiResponse<TransactionDto>
+            {
+                Data = transaction,
+                Status = ResponseStatus.Success,
+                Message = $"Transação {transaction.Description} removido com sucesso.",
+            };
+
+            _serviceMock.Setup(s => s.Remove(transaction)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Remove(transaction);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<TransactionDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.Remove(transaction), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetAll_ShouldReturnOkWithData_WhenServiceReturnsTransactions()
+        {
+            // Arrange
+            var expected = new WebApiResponse<IEnumerable<TransactionDto>>
+            {
+                Data = _transactionsMock,
+                Status = ResponseStatus.Success,
+                Message = $"{_transactionsMock.Count} registro(s) encontrado(s).",
+            };
+
+            _serviceMock.Setup(s => s.FindAll()).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetAll();
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<TransactionDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.FindAll(), Times.Once);
+        }
     }
 }

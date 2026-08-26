@@ -273,6 +273,118 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
+        public async Task GetByPurchaseOrderId_ShouldReturnOkWithItems_WhenServiceReturnsItems()
+        {
+            // Arrange
+            var purchaseOrderId = Guid.NewGuid();
+            var list = new List<PaymentDto> { _paymentsMock.First() };
+            var expected = new WebApiResponse<IEnumerable<PaymentDto>>
+            {
+                Data = list,
+                Status = ResponseStatus.Success,
+                Message = $"{list.Count} registro(s) encontrado(s).",
+            };
+
+            _serviceMock
+                .Setup(s => s.FindByPurchaseOrderId(purchaseOrderId))
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByPurchaseOrderId(purchaseOrderId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<PaymentDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.FindByPurchaseOrderId(purchaseOrderId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetByTripId_ShouldReturnOkWithItems_WhenServiceReturnsItems()
+        {
+            // Arrange
+            var tripId = Guid.NewGuid();
+            var list = new List<PaymentDto> { _paymentsMock.First() };
+            var expected = new WebApiResponse<IEnumerable<PaymentDto>>
+            {
+                Data = list,
+                Status = ResponseStatus.Success,
+                Message = $"{list.Count} registro(s) encontrado(s).",
+            };
+
+            _serviceMock.Setup(s => s.FindByTripId(tripId)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByTripId(tripId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<PaymentDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.FindByTripId(tripId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetByDriverId_ShouldReturnOkWithItems_WhenServiceReturnsItems()
+        {
+            // Arrange
+            var driverId = Guid.NewGuid();
+            var list = new List<PaymentDto> { _paymentsMock.First() };
+            var expected = new WebApiResponse<IEnumerable<PaymentDto>>
+            {
+                Data = list,
+                Status = ResponseStatus.Success,
+                Message = $"{list.Count} registro(s) encontrado(s).",
+            };
+
+            _serviceMock.Setup(s => s.FindByDriverId(driverId)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByDriverId(driverId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<PaymentDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(s => s.FindByDriverId(driverId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetPaymentsGroupByCategory_ShouldReturnOkWithJsonObject_WhenServiceReturnsData()
+        {
+            // Arrange
+            var json = new JsonObject { ["categories"] = new JsonArray() };
+            var expected = new WebApiResponse<JsonObject>
+            {
+                Data = json,
+                Status = ResponseStatus.Success,
+                Message = "Resumo por categoria gerado com sucesso.",
+            };
+
+            _serviceMock
+                .Setup(s =>
+                    s.GetPaymentsGroupByCategory(
+                        It.IsAny<PaymentType?>(),
+                        It.IsAny<DateTime?>(),
+                        It.IsAny<DateTime?>()
+                    )
+                )
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetPaymentsGroupByCategory();
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<JsonObject>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _serviceMock.Verify(
+                s => s.GetPaymentsGroupByCategory(null, null, null),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task GetPaymentsHistory_ShouldReturnOkWithJsonObject_WhenServiceReturnsData()
         {
             // Arrange

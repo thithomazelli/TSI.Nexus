@@ -113,6 +113,75 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
+        public async Task FuelLogsController_GetAll_ShouldGetAllFuelLogs_WhenMethodIsCalled()
+        {
+            // Arrange
+            var fuelLogsMock = new List<FuelLog> { new() { Id = Guid.NewGuid() } };
+            var expectedResult = new WebApiResponse<IEnumerable<FuelLog>>
+            {
+                Data = fuelLogsMock,
+                Status = ResponseStatus.Success,
+                Message = $"{fuelLogsMock.Count} registro(s) encontrado(s).",
+            };
+
+            _serviceMock.Setup(_ => _.FindAll()).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _controller.GetAll();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<FuelLog>>>(okResult.Value);
+            Assert.Equal(fuelLogsMock, response.Data);
+
+            _serviceMock.Verify(_ => _.FindAll(), Times.Once);
+        }
+
+        [Fact]
+        public async Task FuelLogsController_GetById_ShouldGetFuelLogById_WhenMethodIsCalled()
+        {
+            // Arrange
+            var idMock = Guid.NewGuid();
+            var fuelLogMock = new FuelLog { Id = idMock };
+            var expectedResult = new WebApiResponse<FuelLog>
+            {
+                Data = fuelLogMock,
+                Status = ResponseStatus.Success,
+                Message = "Abastecimento encontrado com sucesso",
+            };
+
+            _serviceMock.Setup(_ => _.FindById(idMock)).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _controller.GetById(idMock);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<FuelLog>>(okResult.Value);
+            Assert.Equal(fuelLogMock, response.Data);
+
+            _serviceMock.Verify(_ => _.FindById(idMock), Times.Once);
+        }
+
+        [Fact]
+        public async Task FuelLogsController_Update_ShouldNotUpdateFuelLog_WhenMethodIsCalledWithAnInvalidObject()
+        {
+            // Arrange
+            var fuelLogMock = new FuelLog();
+            _controller.ModelState.AddModelError("VehicleId", "VehicleId is required");
+
+            // Act
+            var result = await _controller.Update(fuelLogMock);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("VehicleId"));
+
+            _serviceMock.Verify(_ => _.Update(It.IsAny<FuelLog>()), Times.Never);
+        }
+
+        [Fact]
         public async Task FuelLogsController_GetByVehicle_ShouldGetFuelLogsForVehicle_WhenMethodIsCalled()
         {
             // Arrange

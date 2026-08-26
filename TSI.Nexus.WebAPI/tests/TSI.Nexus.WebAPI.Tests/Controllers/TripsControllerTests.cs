@@ -139,5 +139,169 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
             response.Should().BeEquivalentTo(expected);
             _tripServiceMock.Verify(s => s.FindByBusinessPartnerId(businessPartnerId), Times.Once);
         }
+
+        [Fact]
+        public async Task Add_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var trip = new TripDto();
+            _controller.ModelState.AddModelError(
+                "BusinessPartnerId",
+                "BusinessPartnerId is required"
+            );
+
+            // Act
+            var result = await _controller.Add(trip);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("BusinessPartnerId"));
+
+            _tripServiceMock.Verify(s => s.Add(It.IsAny<TripDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnOkWithUpdatedTrip_WhenModelIsValid()
+        {
+            // Arrange
+            var trip = _tripsMock.First();
+            var expected = new WebApiResponse<TripDto>
+            {
+                Data = trip,
+                Status = ResponseStatus.Success,
+                Message = $"Viagem {trip.TripNumber} atualizada com sucesso.",
+            };
+
+            _tripServiceMock.Setup(s => s.Update(trip)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Update(trip);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<TripDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _tripServiceMock.Verify(s => s.Update(trip), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var trip = new TripDto();
+            _controller.ModelState.AddModelError(
+                "BusinessPartnerId",
+                "BusinessPartnerId is required"
+            );
+
+            // Act
+            var result = await _controller.Update(trip);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("BusinessPartnerId"));
+
+            _tripServiceMock.Verify(s => s.Update(It.IsAny<TripDto>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Remove_ShouldReturnOkWithRemovedTrip_WhenMethodIsCalled()
+        {
+            // Arrange
+            var trip = _tripsMock.First();
+            var expected = new WebApiResponse<TripDto>
+            {
+                Data = trip,
+                Status = ResponseStatus.Success,
+                Message = $"Viagem {trip.TripNumber} removida com sucesso.",
+            };
+
+            _tripServiceMock.Setup(s => s.Remove(trip)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Remove(trip);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<TripDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _tripServiceMock.Verify(s => s.Remove(trip), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetByTripNumber_ShouldReturnOkWithTrip_WhenServiceReturnsTrip()
+        {
+            // Arrange
+            var trip = _tripsMock.First();
+            var expected = new WebApiResponse<TripDto>
+            {
+                Data = trip,
+                Status = ResponseStatus.Success,
+                Message = $"Viagem {trip.TripNumber} encontrada com sucesso",
+            };
+
+            _tripServiceMock
+                .Setup(s => s.FindByTripNumber(trip.TripNumber))
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByTripNumber(trip.TripNumber);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<TripDto>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _tripServiceMock.Verify(s => s.FindByTripNumber(trip.TripNumber), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetByDriverId_ShouldReturnOkWithData_WhenServiceReturnsTrips()
+        {
+            // Arrange
+            var driverId = Guid.NewGuid();
+            var expected = new WebApiResponse<IEnumerable<TripDto>>
+            {
+                Data = _tripsMock,
+                Status = ResponseStatus.Success,
+                Message = $"{_tripsMock.Count} registro(s) encontrado(s).",
+            };
+
+            _tripServiceMock.Setup(s => s.FindByDriverId(driverId)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByDriverId(driverId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<TripDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _tripServiceMock.Verify(s => s.FindByDriverId(driverId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetByVehicleId_ShouldReturnOkWithData_WhenServiceReturnsTrips()
+        {
+            // Arrange
+            var vehicleId = Guid.NewGuid();
+            var expected = new WebApiResponse<IEnumerable<TripDto>>
+            {
+                Data = _tripsMock,
+                Status = ResponseStatus.Success,
+                Message = $"{_tripsMock.Count} registro(s) encontrado(s).",
+            };
+
+            _tripServiceMock.Setup(s => s.FindByVehicleId(vehicleId)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetByVehicleId(vehicleId);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<IEnumerable<TripDto>>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _tripServiceMock.Verify(s => s.FindByVehicleId(vehicleId), Times.Once);
+        }
     }
 }

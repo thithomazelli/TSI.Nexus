@@ -105,6 +105,25 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
+        public async Task VehicleMaintenancesController_Update_ShouldNotUpdateMaintenance_WhenMethodIsCalledWithAnInvalidObject()
+        {
+            // Arrange
+            var maintenanceMock = new VehicleMaintenance();
+
+            _controller.ModelState.AddModelError("VehicleId", "VehicleId is required");
+
+            // Act
+            var result = await _controller.Update(maintenanceMock);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("VehicleId"));
+
+            _serviceMock.Verify(_ => _.Update(It.IsAny<VehicleMaintenance>()), Times.Never);
+        }
+
+        [Fact]
         public async Task VehicleMaintenancesController_Remove_ShouldRemoveMaintenanceSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange

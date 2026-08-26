@@ -100,6 +100,71 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
+        public async Task PassengersController_AddRange_ShouldNotImportPassengers_WhenMethodIsCalledWithAnInvalidObject()
+        {
+            // Arrange
+            var passengersMock = new List<Passenger>();
+            _controller.ModelState.AddModelError("TripId", "TripId is required");
+
+            // Act
+            var result = await _controller.AddRange(passengersMock);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("TripId"));
+
+            _serviceMock.Verify(
+                _ => _.AddRange(It.IsAny<IEnumerable<Passenger>>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task PassengersController_GetById_ShouldGetPassengerById_WhenMethodIsCalled()
+        {
+            // Arrange
+            var idMock = Guid.NewGuid();
+            var passengerMock = new Passenger { Id = idMock, Name = "Maria Silva" };
+            var expectedResult = new WebApiResponse<Passenger>
+            {
+                Data = passengerMock,
+                Status = ResponseStatus.Success,
+                Message = "Passageiro encontrado com sucesso",
+            };
+
+            _serviceMock.Setup(_ => _.FindById(idMock)).ReturnsAsync(expectedResult);
+
+            // Act
+            var result = await _controller.GetById(idMock);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<Passenger>>(okResult.Value);
+            Assert.Equal(passengerMock, response.Data);
+
+            _serviceMock.Verify(_ => _.FindById(idMock), Times.Once);
+        }
+
+        [Fact]
+        public async Task PassengersController_Update_ShouldNotUpdatePassenger_WhenMethodIsCalledWithAnInvalidObject()
+        {
+            // Arrange
+            var passengerMock = new Passenger();
+            _controller.ModelState.AddModelError("TripId", "TripId is required");
+
+            // Act
+            var result = await _controller.Update(passengerMock);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("TripId"));
+
+            _serviceMock.Verify(_ => _.Update(It.IsAny<Passenger>()), Times.Never);
+        }
+
+        [Fact]
         public async Task PassengersController_Update_ShouldUpdatePassengerSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange

@@ -1,4 +1,7 @@
+using System.IO;
+using System.Text;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using TSI.Nexus.Contracts.Enums;
@@ -122,6 +125,249 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
             var response = Assert.IsType<WebApiResponse<DocumentTemplate>>(ok.Value);
             response.Should().BeEquivalentTo(expected);
             _documentTemplateServiceMock.Verify(s => s.Add(template), Times.Once);
+        }
+
+        [Fact]
+        public async Task Add_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var template = new DocumentTemplate();
+            _controller.ModelState.AddModelError("Name", "Name is required");
+
+            // Act
+            var result = await _controller.Add(template);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("Name"));
+
+            _documentTemplateServiceMock.Verify(
+                s => s.Add(It.IsAny<DocumentTemplate>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnOkWithUpdatedTemplate_WhenModelIsValid()
+        {
+            // Arrange
+            var template = _templatesMock.First();
+            var expected = new WebApiResponse<DocumentTemplate>
+            {
+                Data = template,
+                Status = ResponseStatus.Success,
+                Message = $"Template {template.Name} atualizado com sucesso.",
+            };
+
+            _documentTemplateServiceMock.Setup(s => s.Update(template)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Update(template);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<DocumentTemplate>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _documentTemplateServiceMock.Verify(s => s.Update(template), Times.Once);
+        }
+
+        [Fact]
+        public async Task Update_ShouldReturnBadRequest_WhenModelIsInvalid()
+        {
+            // Arrange
+            var template = new DocumentTemplate();
+            _controller.ModelState.AddModelError("Name", "Name is required");
+
+            // Act
+            var result = await _controller.Update(template);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            var modelState = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(modelState.ContainsKey("Name"));
+
+            _documentTemplateServiceMock.Verify(
+                s => s.Update(It.IsAny<DocumentTemplate>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task Remove_ShouldReturnOkWithRemovedTemplate_WhenMethodIsCalled()
+        {
+            // Arrange
+            var template = _templatesMock.First();
+            var expected = new WebApiResponse<DocumentTemplate>
+            {
+                Data = template,
+                Status = ResponseStatus.Success,
+                Message = $"Template {template.Name} removido com sucesso.",
+            };
+
+            _documentTemplateServiceMock.Setup(s => s.Remove(template)).ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Remove(template);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<DocumentTemplate>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _documentTemplateServiceMock.Verify(s => s.Remove(template), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetById_ShouldReturnOkWithTemplate_WhenServiceReturnsTemplate()
+        {
+            // Arrange
+            var template = _templatesMock.First();
+            var expected = new WebApiResponse<DocumentTemplate>
+            {
+                Data = template,
+                Status = ResponseStatus.Success,
+                Message = $"Template {template.Name} encontrado com sucesso",
+            };
+
+            _documentTemplateServiceMock
+                .Setup(s => s.FindById(template.Id))
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.GetById(template.Id);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<DocumentTemplate>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+            _documentTemplateServiceMock.Verify(s => s.FindById(template.Id), Times.Once);
+        }
+
+        [Fact]
+        public async Task Download_ShouldReturnFile_WhenTemplateIsFound()
+        {
+            // Arrange
+            var template = _templatesMock.First(t => t.Type == DocumentTemplateType.Quote);
+            var expected = new WebApiResponse<DocumentTemplate>
+            {
+                Data = template,
+                Status = ResponseStatus.Success,
+                Message = $"Template {template.Name} encontrado com sucesso",
+            };
+
+            _documentTemplateServiceMock
+                .Setup(s => s.FindByType(DocumentTemplateType.Quote))
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Download(DocumentTemplateType.Quote);
+
+            // Assert
+            var fileResult = Assert.IsType<FileContentResult>(result);
+            Assert.Equal("text/html", fileResult.ContentType);
+            Assert.Equal(template.FileName, fileResult.FileDownloadName);
+            Assert.Equal(Encoding.UTF8.GetBytes(template.Content), fileResult.FileContents);
+        }
+
+        [Fact]
+        public async Task Download_ShouldReturnNotFound_WhenTemplateIsNotFound()
+        {
+            // Arrange
+            var expected = new WebApiResponse<DocumentTemplate>
+            {
+                Data = null,
+                Status = ResponseStatus.Error,
+                Message = "Template não encontrado",
+            };
+
+            _documentTemplateServiceMock
+                .Setup(s => s.FindByType(DocumentTemplateType.Quote))
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Download(DocumentTemplateType.Quote);
+
+            // Assert
+            var notFound = Assert.IsType<NotFoundObjectResult>(result);
+            Assert.Equal("Template não encontrado", notFound.Value);
+        }
+
+        [Fact]
+        public async Task Upload_ShouldReturnBadRequest_WhenFileIsNull()
+        {
+            // Act
+            var result = await _controller.Upload(DocumentTemplateType.Quote, null);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Nenhum arquivo foi enviado.", badRequest.Value);
+
+            _documentTemplateServiceMock.Verify(
+                s => s.UploadContent(It.IsAny<DocumentTemplateType>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task Upload_ShouldReturnBadRequest_WhenFileIsEmpty()
+        {
+            // Arrange
+            var fileMock = new Mock<IFormFile>();
+            fileMock.Setup(f => f.Length).Returns(0);
+
+            // Act
+            var result = await _controller.Upload(DocumentTemplateType.Quote, fileMock.Object);
+
+            // Assert
+            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Nenhum arquivo foi enviado.", badRequest.Value);
+
+            _documentTemplateServiceMock.Verify(
+                s => s.UploadContent(It.IsAny<DocumentTemplateType>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task Upload_ShouldReturnOkWithUpdatedTemplate_WhenFileIsValid()
+        {
+            // Arrange
+            const string content = "<h1>Novo Orçamento</h1>";
+            var bytes = Encoding.UTF8.GetBytes(content);
+            var stream = new MemoryStream(bytes);
+
+            var fileMock = new Mock<IFormFile>();
+            fileMock.Setup(f => f.Length).Returns(bytes.Length);
+            fileMock.Setup(f => f.FileName).Returns("novo-orcamento.html");
+            fileMock.Setup(f => f.OpenReadStream()).Returns(stream);
+
+            var template = _templatesMock.First(t => t.Type == DocumentTemplateType.Quote);
+            template.Content = content;
+            var expected = new WebApiResponse<DocumentTemplate>
+            {
+                Data = template,
+                Status = ResponseStatus.Success,
+                Message = $"Template {template.Name} atualizado com sucesso.",
+            };
+
+            _documentTemplateServiceMock
+                .Setup(s =>
+                    s.UploadContent(DocumentTemplateType.Quote, "novo-orcamento.html", content)
+                )
+                .ReturnsAsync(expected);
+
+            // Act
+            var result = await _controller.Upload(DocumentTemplateType.Quote, fileMock.Object);
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<WebApiResponse<DocumentTemplate>>(ok.Value);
+            response.Should().BeEquivalentTo(expected);
+
+            _documentTemplateServiceMock.Verify(
+                s => s.UploadContent(DocumentTemplateType.Quote, "novo-orcamento.html", content),
+                Times.Once
+            );
         }
     }
 }
