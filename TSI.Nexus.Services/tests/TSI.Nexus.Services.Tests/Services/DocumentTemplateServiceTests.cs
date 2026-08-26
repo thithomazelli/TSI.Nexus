@@ -74,6 +74,156 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task DocumentTemplateService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var documentTemplate = new DocumentTemplate { Type = DocumentTemplateType.Quote, Name = "Orçamento" };
+            _repository
+                .Setup(r => r.AnyAsync(It.IsAny<Expression<Func<DocumentTemplate, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Add(documentTemplate);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            _logServiceMock.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "DocumentTemplateService.Add", documentTemplate),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_Update_ShouldUpdateTemplateSuccessfully()
+        {
+            // Arrange
+            var documentTemplate = new DocumentTemplate { Type = DocumentTemplateType.Quote, Name = "Orçamento" };
+
+            // Act
+            var result = await _service.Update(documentTemplate);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _repository.Verify(r => r.UpdateAsync(documentTemplate), Times.Once);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var documentTemplate = new DocumentTemplate { Type = DocumentTemplateType.Quote, Name = "Orçamento" };
+            _repository.Setup(r => r.UpdateAsync(documentTemplate)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(documentTemplate);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var documentTemplate = new DocumentTemplate { Type = DocumentTemplateType.Quote, Name = "Orçamento" };
+            _repository.Setup(r => r.RemoveAsync(documentTemplate)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Remove(documentTemplate);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_FindById_ShouldReturnTemplate_WhenFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var documentTemplate = new DocumentTemplate { Id = id, Name = "Orçamento" };
+            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(documentTemplate);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal("Template Orçamento encontrado com sucesso", result.Message);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_FindById_ShouldReturnNoData_WhenNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((DocumentTemplate)null!);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(r => r.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository.Setup(r => r.GetAllAsync()).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_FindByType_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<DocumentTemplate, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByType(DocumentTemplateType.Quote);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DocumentTemplateService_UploadContent_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<DocumentTemplate, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.UploadContent(DocumentTemplateType.Quote, "f.html", "content");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
         public async Task DocumentTemplateService_FindByType_ShouldReturnTemplate_WhenTypeIsRegistered()
         {
             // Arrange

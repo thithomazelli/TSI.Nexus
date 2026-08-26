@@ -73,6 +73,24 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task CommissionService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var commission = new Commission { Id = Guid.NewGuid(), Status = CommissionStatus.Pending };
+            _repository.Setup(_ => _.UpdateAsync(commission)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(commission);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            _logServiceMock.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "CommissionService.Update", commission),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task CommissionService_FindByDriver_ShouldReturnCommissionsForDriver()
         {
             // Arrange
@@ -100,6 +118,42 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task CommissionService_FindByDriver_ShouldReturnEmpty_WhenFeatureToggleIsDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Commission, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindByDriver(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data!);
+            Assert.Equal("0 registro(s) encontrado(s).", result.Message);
+            _repository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Commission, bool>>>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task CommissionService_FindByDriver_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Commission, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByDriver(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
         public async Task CommissionService_FindById_ShouldReturnCommission_WhenIdIsValid()
         {
             // Arrange
@@ -118,6 +172,54 @@ namespace TSI.Nexus.Services.Tests.Services
             // Assert
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Equal(commission, result.Data);
+        }
+
+        [Fact]
+        public async Task CommissionService_FindById_ShouldReturnNoData_WhenNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync((Commission)null!);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Equal($"Nenhuma comissão com o ID {id} foi encontrada", result.Message);
+        }
+
+        [Fact]
+        public async Task CommissionService_FindById_ShouldReturnNoData_WhenFeatureToggleIsDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Commission, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            _repository.Verify(_ => _.GetByIdAsync(id), Times.Never);
+        }
+
+        [Fact]
+        public async Task CommissionService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
         }
     }
 }

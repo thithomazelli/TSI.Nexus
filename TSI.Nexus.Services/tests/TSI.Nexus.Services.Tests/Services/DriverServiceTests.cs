@@ -342,5 +342,203 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Empty(result.Data);
         }
+
+        [Fact]
+        public async Task DriverService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var driver = new Driver { Id = Guid.NewGuid(), Name = "Novo Motorista" };
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Driver, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.Add(driver);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            _logServiceMock.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "DriverService.Add", driver),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task DriverService_Update_ShouldNotUpdateAndReturnAnErrorMessage_WhenSocialSecurityCardIsDuplicated()
+        {
+            // Arrange
+            var driver = new Driver
+            {
+                Id = Guid.NewGuid(),
+                Name = "Motorista",
+                SocialSecurityCard = "11111111111",
+            };
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Driver, bool>>>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _driverService.Update(driver);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            Assert.Equal($"Já existe um Motorista cadastrado com o CPF {driver.SocialSecurityCard}.", result.Message);
+            _repository.Verify(_ => _.UpdateAsync(It.IsAny<Driver>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task DriverService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var driver = new Driver { Id = Guid.NewGuid(), Name = "Motorista" };
+            _repository
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Driver, bool>>>()))
+                .ReturnsAsync(false);
+            _repository.Setup(_ => _.UpdateAsync(driver)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.Update(driver);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DriverService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var driver = new Driver { Id = Guid.NewGuid(), Name = "Motorista" };
+            _tripRepositoryMock
+                .Setup(_ => _.AnyAsync(It.IsAny<Expression<Func<Trip, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.Remove(driver);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DriverService_FindAll_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _driverService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data!);
+            _repository.Verify(_ => _.GetAllAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task DriverService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository.Setup(_ => _.GetAllAsync()).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DriverService_FindById_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.Driver, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _driverService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            _repository.Verify(_ => _.GetByIdAsync(id), Times.Never);
+        }
+
+        [Fact]
+        public async Task DriverService_FindById_ShouldReturnNoData_WhenNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync((Driver)null!);
+
+            // Act
+            var result = await _driverService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task DriverService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DriverService_FindBySocialSecurityCard_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<Driver, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.FindBySocialSecurityCard("11111111111");
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DriverService_FindActive_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Driver, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.FindActive();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task DriverService_FindWithExpiringLicense_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Driver, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _driverService.FindWithExpiringLicense(30);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

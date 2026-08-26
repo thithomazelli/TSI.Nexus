@@ -190,5 +190,192 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Equal(logs, result.Data);
         }
+
+        [Fact]
+        public async Task FuelLogService_Add_ShouldSkipOdometerSync_WhenOdometerIsZeroOrLess()
+        {
+            // Arrange
+            var fuelLog = new FuelLog { Id = Guid.NewGuid(), VehicleId = _vehicleId, Odometer = 0 };
+
+            // Act
+            var result = await _service.Add(fuelLog);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _vehicleRepository.Verify(
+                _ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()),
+                Times.Never
+            );
+        }
+
+        [Fact]
+        public async Task FuelLogService_Add_ShouldSkipOdometerSync_WhenVehicleIsNotFound()
+        {
+            // Arrange
+            var fuelLog = new FuelLog { Id = Guid.NewGuid(), VehicleId = _vehicleId, Odometer = 500 };
+            _vehicleRepository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<Vehicle, bool>>>()))
+                .ReturnsAsync(new List<Vehicle>());
+
+            // Act
+            var result = await _service.Add(fuelLog);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            _vehicleRepository.Verify(_ => _.UpdateAsync(It.IsAny<Vehicle>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task FuelLogService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var fuelLog = new FuelLog { Id = Guid.NewGuid(), VehicleId = _vehicleId };
+            _repository.Setup(_ => _.AddAsync(fuelLog)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Add(fuelLog);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            _logServiceMock.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "FuelLogService.Add", fuelLog),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task FuelLogService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var fuelLog = new FuelLog { Id = Guid.NewGuid() };
+            _repository.Setup(_ => _.UpdateAsync(fuelLog)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Update(fuelLog);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task FuelLogService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var fuelLog = new FuelLog { Id = Guid.NewGuid() };
+            _repository.Setup(_ => _.RemoveAsync(fuelLog)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.Remove(fuelLog);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository.Setup(_ => _.GetAllAsync(It.IsAny<Expression<Func<FuelLog, object>>>())).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindById_ShouldReturnFuelLog_WhenFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var fuelLog = new FuelLog { Id = id };
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync(fuelLog);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal("Abastecimento encontrado com sucesso", result.Message);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindById_ShouldReturnNoData_WhenNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ReturnsAsync((FuelLog)null!);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindById_ShouldReturnNoData_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FuelLog, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            _repository.Verify(_ => _.GetByIdAsync(id), Times.Never);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(_ => _.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindByVehicle_ShouldReturnEmpty_WhenFleetModuleDisabled()
+        {
+            // Arrange
+            _featureToggleServiceMock
+                .Setup(_ => _.IsEnabledAsync(FeatureToggleKeys.FuelLog, FeatureToggleKeys.FleetModule))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _service.FindByVehicle(_vehicleId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Empty(result.Data!);
+        }
+
+        [Fact]
+        public async Task FuelLogService_FindByVehicle_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(_ => _.QueryAsync(It.IsAny<Expression<Func<FuelLog, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _service.FindByVehicle(_vehicleId);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }

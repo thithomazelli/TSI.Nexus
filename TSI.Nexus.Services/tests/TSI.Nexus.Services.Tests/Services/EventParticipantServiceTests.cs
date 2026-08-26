@@ -107,6 +107,26 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
+        public async Task EventParticipantService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new EventParticipantDto { EventId = Guid.NewGuid(), Name = "Convidado" };
+            _repository
+                .Setup(r => r.AddAsync(It.IsAny<EventParticipant>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _eventParticipantService.Add(dto);
+
+            // Assert
+            result.Status.Should().Be(ResponseStatus.Error);
+            _logService.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "EventParticipantService.Add", dto),
+                Times.Once
+            );
+        }
+
+        [Fact]
         public async Task EventParticipantService_Remove_ShouldRemoveItemSuccessfully_WhenMethodIsCalledWithAValidObject()
         {
             // Arrange
@@ -124,6 +144,24 @@ namespace TSI.Nexus.Services.Tests.Services
             // Assert
             result.Status.Should().Be(ResponseStatus.Success);
             _repository.Verify(r => r.RemoveAsync(It.IsAny<EventParticipant>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task EventParticipantService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new EventParticipantDto { Id = Guid.NewGuid() };
+            _repository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _eventParticipantService.Remove(dto);
+
+            // Assert
+            result.Status.Should().Be(ResponseStatus.Error);
+            _logService.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "EventParticipantService.Remove", dto),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -153,6 +191,50 @@ namespace TSI.Nexus.Services.Tests.Services
             // Assert
             result.Status.Should().Be(ResponseStatus.Success);
             result.Data.Should().ContainSingle(p => p.DisplayName == "Convidado Externo");
+        }
+
+        [Fact]
+        public async Task EventParticipantService_FindByEventId_ShouldResolveDisplayName_ForRegisteredUsers()
+        {
+            // Arrange
+            var eventId = Guid.NewGuid();
+            var items = new List<EventParticipant>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = eventId,
+                    UserId = "user-1",
+                },
+            };
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<EventParticipant, bool>>>()))
+                .ReturnsAsync(items);
+            _userRepository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<User, bool>>>()))
+                .ReturnsAsync(new List<User> { new() { Id = "user-1", FirstName = "Ana", LastName = "Silva" } });
+
+            // Act
+            var result = await _eventParticipantService.FindByEventId(eventId);
+
+            // Assert
+            result.Status.Should().Be(ResponseStatus.Success);
+            result.Data.Should().ContainSingle(p => p.DisplayName == "Ana Silva");
+        }
+
+        [Fact]
+        public async Task EventParticipantService_FindByEventId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r => r.QueryAsync(It.IsAny<Expression<Func<EventParticipant, bool>>>()))
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _eventParticipantService.FindByEventId(Guid.NewGuid());
+
+            // Assert
+            result.Status.Should().Be(ResponseStatus.Error);
         }
     }
 }

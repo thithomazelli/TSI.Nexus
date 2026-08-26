@@ -255,5 +255,166 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository.Verify(r => r.GetByIdAsync(id), Times.Once);
         }
 
+        [Fact]
+        public async Task OrderProductService_FindById_ShouldReturnNoData_WhenNotFound()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(r => r.GetByIdAsync(id)).ReturnsAsync((OrderProduct)null!);
+
+            // Act
+            var result = await _orderProductService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Null(result.Data);
+            Assert.Equal($"Nenhum Item do Pedido com o ID {id} foi encontrado", result.Message);
+        }
+
+        [Fact]
+        public async Task OrderProductService_FindById_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            _repository.Setup(r => r.GetByIdAsync(id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderProductService.FindById(id);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task OrderProductService_Add_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new OrderProductDto { OrderId = Guid.NewGuid(), Description = "Item" };
+            _repository.Setup(r => r.AddAsync(It.IsAny<OrderProduct>())).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderProductService.Add(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+            _logService.Verify(
+                _ => _.LogException(It.IsAny<Exception>(), "OrderProductService.Add", dto),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task OrderProductService_Update_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new OrderProductDto { OrderId = Guid.NewGuid(), Description = "Item" };
+            _repository.Setup(r => r.UpdateAsync(It.IsAny<OrderProduct>())).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderProductService.Update(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task OrderProductService_Remove_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            var dto = new OrderProductDto { Id = Guid.NewGuid(), Description = "Item" };
+            _repository.Setup(r => r.GetByIdAsync(dto.Id)).ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderProductService.Remove(dto);
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task OrderProductService_FindAll_ShouldReturnMappedItems()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                    )
+                )
+                .ReturnsAsync(_itemsMock);
+
+            // Act
+            var result = await _orderProductService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Success, result.Status);
+            Assert.Equal(_itemsMock.Count, result.Data!.Count());
+        }
+
+        [Fact]
+        public async Task OrderProductService_FindAll_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.GetAllAsync(
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderProductService.FindAll();
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task OrderProductService_FindByOrderId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderProductService.FindByOrderId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
+
+        [Fact]
+        public async Task OrderProductService_FindByProductId_ShouldReturnError_WhenRepositoryThrows()
+        {
+            // Arrange
+            _repository
+                .Setup(r =>
+                    r.QueryAsync(
+                        It.IsAny<Expression<Func<OrderProduct, bool>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>(),
+                        It.IsAny<Expression<Func<OrderProduct, object>>>()
+                    )
+                )
+                .ThrowsAsync(new Exception("boom"));
+
+            // Act
+            var result = await _orderProductService.FindByProductId(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(ResponseStatus.Error, result.Status);
+        }
     }
 }
