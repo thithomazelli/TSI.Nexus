@@ -10,15 +10,26 @@
       [maintainAspectRatio]="true"
       [aspectRatio]="1"
       [roundCropper]="true"
+      [allowMoveImage]="true"
+      [cropperStaticWidth]="frameSize"
+      [cropperStaticHeight]="frameSize"
       [transform]="transform"
       [output]="'blob'"
       [format]="'png'"
       (imageCropped)="onImageCropped($event)"
+      (transformChange)="onTransformChange($event)"
     ></image-cropper>
   </div>
 
   <div class="zoom-control d-flex align-items-center gap-2 mt-3">
-    <i class="bi bi-zoom-out"></i>
+    <button
+      type="button"
+      class="btn-zoom"
+      (click)="onZoomStep(-1)"
+      [attr.aria-label]="'PHOTO.ZOOM_OUT' | translate"
+    >
+      <i class="bi bi-zoom-out"></i>
+    </button>
     <input
       type="range"
       min="1"
@@ -29,7 +40,14 @@
       class="form-range flex-fill"
       [attr.aria-label]="'PHOTO.ZOOM' | translate"
     />
-    <i class="bi bi-zoom-in"></i>
+    <button
+      type="button"
+      class="btn-zoom"
+      (click)="onZoomStep(1)"
+      [attr.aria-label]="'PHOTO.ZOOM_IN' | translate"
+    >
+      <i class="bi bi-zoom-in"></i>
+    </button>
   </div>
 </div>
 

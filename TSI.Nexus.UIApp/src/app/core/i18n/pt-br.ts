@@ -550,6 +550,8 @@ export const PT_BR = {
     CROP_TITLE: 'Ajustar Foto',
     SET_NEW_PHOTO: 'Definir Nova Foto',
     ZOOM: 'Zoom',
+    ZOOM_OUT: 'Diminuir zoom',
+    ZOOM_IN: 'Aumentar zoom',
     REMOVE_CONFIRM_TITLE: 'Remover Foto',
     REMOVE_CONFIRM_TEXT: 'Deseja realmente remover esta foto?',
   },

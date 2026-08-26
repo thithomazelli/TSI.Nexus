@@ -550,6 +550,8 @@ export const EN = {
     CROP_TITLE: 'Adjust Photo',
     SET_NEW_PHOTO: 'Set New Photo',
     ZOOM: 'Zoom',
+    ZOOM_OUT: 'Zoom out',
+    ZOOM_IN: 'Zoom in',
     REMOVE_CONFIRM_TITLE: 'Remove Photo',
     REMOVE_CONFIRM_TEXT: 'Are you sure you want to remove this photo?',
   },

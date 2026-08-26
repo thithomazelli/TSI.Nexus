@@ -21,3 +21,12 @@
   object-fit: cover;
   display: block;
 }
+
+// Bootstrap's .modal-footer padding/border rely on CSS custom properties that
+// only get defined inside a real .modal ancestor - this modal borrows the
+// class name directly on a plain div, so without this override the rule
+// resolves to 0 padding/no border and the buttons sit glued to the camera area.
+.modal-footer {
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}

@@ -7,15 +7,48 @@
 .cropper-wrapper {
   width: 100%;
   max-width: 480px;
-  height: 360px;
+  // No fixed height: forcing image-cropper to stretch to a fixed height taller
+  // than the source photo's own rendered aspect just leaves blank space below
+  // it (the library top-aligns its content, it doesn't letterbox/center it).
+  // Auto height lets the wrapper hug the image; min/max keep it from ever
+  // being too cramped for the crop frame or too tall for odd aspect ratios.
+  min-height: 260px;
+  max-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 image-cropper {
   width: 100%;
-  height: 100%;
 }
 
 .zoom-control {
   width: 100%;
   max-width: 480px;
+}
+
+// Bootstrap's .modal-footer padding/border rely on CSS custom properties that
+// only get defined inside a real .modal ancestor - this modal borrows the
+// class name directly on a plain div, so without this override the rule
+// resolves to 0 padding/no border and the buttons sit glued to the slider.
+.modal-footer {
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-zoom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--bs-secondary-color, #6c757d);
+  padding: 4px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--bs-body-color);
+  }
 }
