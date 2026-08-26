@@ -17,6 +17,7 @@
       [output]="'blob'"
       [format]="'png'"
       (imageCropped)="onImageCropped($event)"
+      (imageLoaded)="onImageLoaded()"
       (transformChange)="onTransformChange($event)"
     ></image-cropper>
   </div>
