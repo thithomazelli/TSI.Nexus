@@ -1,0 +1,8 @@
+// No mobile a tela já é limitada - o footer é só texto institucional (copyright), sem valor
+// funcional, e sua faixa fixa (~80px do AdminLTE) custa proporcionalmente mais espaço de tela
+// aqui do que no desktop/tablet, onde ele continua exibido normalmente.
+@media (max-width: 599.98px) {
+  :host {
+    display: none;
+  }
+}
