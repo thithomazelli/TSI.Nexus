@@ -48,3 +48,29 @@
     margin-right: 0.5rem;
   }
 }
+
+// The right-side icon row (notification bells + fullscreen toggle + user avatar) doesn't wrap
+// (Bootstrap's default flex-wrap: nowrap) and each .nav-link keeps its full 1rem side padding,
+// so on narrow phones the row's total width outgrows the viewport and the user avatar - the
+// only way into the user-menu dropdown - gets pushed off-screen with no way to reach it short of
+// scrolling the whole page sideways. Tighter padding reclaims enough width to fit in the common
+// case; overflow-x auto is a safety net so nothing goes unreachable if more bells get enabled or
+// the screen is narrower still.
+@media (max-width: 599.98px) {
+  .navbar .navbar-nav.ms-auto {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    > .nav-item > .nav-link {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+  }
+}
