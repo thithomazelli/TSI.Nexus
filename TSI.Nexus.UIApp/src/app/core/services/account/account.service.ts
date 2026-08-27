@@ -25,6 +25,11 @@ export class AccountService {
   // in-flight refresh observable to prevent duplicate requests
   private _refresh$?: Observable<void>;
 
+  // Safety margin against client clock drift relative to the server, roughly matching the
+  // ASP.NET JWT bearer's own default 5-minute ClockSkew - keeps the two tolerances in the same
+  // ballpark so the client doesn't give up on a token the server would still accept.
+  private readonly clockSkewToleranceMs = 60_000;
+
   user$ = this._userSource.asObservable();
 
   constructor(
@@ -53,7 +58,7 @@ export class AccountService {
       }
       // exp is in seconds since epoch
       const exp = Number(payload.exp) * 1000;
-      return Date.now() >= exp;
+      return Date.now() >= exp + this.clockSkewToleranceMs;
     } catch {
       return true;
     }
@@ -199,14 +204,29 @@ export class AccountService {
       const timeout = expiresAt - now;
       if (timeout > 0) {
         this.logoutTimer = setTimeout(() => {
-          this.logout();
+          this.attemptRenewalOrLogout(token);
         }, timeout);
       } else {
-        this.logout();
+        this.attemptRenewalOrLogout(token);
       }
     } catch {
       this.logout();
     }
+  }
+
+  /**
+   * Called when the access token's nominal lifetime is up. Rather than assuming the session is
+   * dead, tries one real renewal first - the backend's JWT validation tolerates a few minutes of
+   * clock skew (see clockSkewToleranceMs above), so a token that just hit its nominal expiry
+   * still has a real chance of being accepted. Only logs out if that renewal genuinely fails.
+   * On success, refreshUser()'s setUser() call reschedules this same timer against the new
+   * token's expiry.
+   */
+  private attemptRenewalOrLogout(token: string): void {
+    this.refreshUser(token).subscribe({
+      next: () => {},
+      error: () => this.logout(),
+    });
   }
 
   private setUser(user: User): void {
