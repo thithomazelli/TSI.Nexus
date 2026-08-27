@@ -97,8 +97,10 @@ namespace TSI.Nexus.Services
 
             try
             {
+                // asNoTracking: true - this is a pure list/grid read, never saved back.
                 var businessPartners = await _repository.QueryAsync(
                     _ => businessPartnerType.Equals(_.Type),
+                    true,
                     c => c.Addresses,
                     t => t.Transactions
                 );

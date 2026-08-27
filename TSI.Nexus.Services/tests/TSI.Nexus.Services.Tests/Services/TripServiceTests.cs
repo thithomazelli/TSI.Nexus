@@ -453,6 +453,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository
                 .Setup(r =>
                     r.GetAllAsync(
+                        true,
                         t => t.BusinessPartner,
                         t => t.Vehicle,
                         t => t.Driver,
@@ -471,6 +472,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository.Verify(
                 r =>
                     r.GetAllAsync(
+                        true,
                         t => t.BusinessPartner,
                         t => t.Vehicle,
                         t => t.Driver,
@@ -1008,6 +1010,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository
                 .Setup(r =>
                     r.GetAllAsync(
+                        true,
                         It.IsAny<Expression<Func<Trip, object>>>(),
                         It.IsAny<Expression<Func<Trip, object>>>(),
                         It.IsAny<Expression<Func<Trip, object>>>(),

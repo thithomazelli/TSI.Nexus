@@ -242,6 +242,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     )
@@ -260,6 +261,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     ),
@@ -286,6 +288,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     )
@@ -304,6 +307,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     ),
@@ -326,6 +330,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     )
@@ -345,6 +350,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     ),
@@ -368,6 +374,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 .Setup(_ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     )
@@ -386,6 +393,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 _ =>
                     _.QueryAsync(
                         It.IsAny<Expression<Func<BusinessPartner, bool>>>(),
+                        true,
                         c => c.Addresses,
                         t => t.Transactions
                     ),

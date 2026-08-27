@@ -256,7 +256,9 @@ namespace TSI.Nexus.Services
                     return result;
                 }
 
+                // asNoTracking: true - this is a pure list/grid read, never saved back.
                 var orders = await _repository.GetAllAsync(
+                    true,
                     o => o.BusinessPartner,
                     o => o.OrderProducts,
                     t => t.Transaction,

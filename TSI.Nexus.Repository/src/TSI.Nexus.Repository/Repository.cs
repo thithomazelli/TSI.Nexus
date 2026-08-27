@@ -73,6 +73,24 @@ namespace TSI.Nexus.Repository
         }
 
         /// <inheritdoc />
+        public async Task<T> GetByIdAsync(object id, bool asNoTracking)
+        {
+            if (!asNoTracking)
+            {
+                return await GetByIdAsync(id);
+            }
+
+            // FindAsync() always resolves through the change tracker (and attaches the result), so
+            // it can't honor AsNoTracking() - a plain query keyed on Id is used instead here.
+            var entity = await _myDbContext
+                .Set<T>()
+                .AsNoTracking()
+                .SingleOrDefaultAsync(e => EF.Property<object>(e, "Id").Equals(id));
+
+            return entity ?? throw new KeyNotFoundException($"Entity '{id}' not found.");
+        }
+
+        /// <inheritdoc />
         public async Task<T> GetByIdAsync(object id, params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _myDbContext.Set<T>().AsQueryable();
@@ -115,6 +133,18 @@ namespace TSI.Nexus.Repository
         }
 
         /// <inheritdoc />
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter, bool asNoTracking)
+        {
+            if (!asNoTracking)
+            {
+                return await FirstOrDefaultAsync(filter);
+            }
+
+            return await _myDbContext.Set<T>().AsNoTracking().FirstOrDefaultAsync(filter)
+                ?? throw new InvalidOperationException("No entity found matching the filter.");
+        }
+
+        /// <inheritdoc />
         public async Task<T> FirstOrDefaultAsync(
             Expression<Func<T, bool>> filter,
             params Expression<Func<T, object>>[] includes
@@ -147,6 +177,51 @@ namespace TSI.Nexus.Repository
         }
 
         /// <inheritdoc />
+        public async Task<IList<T>> QueryAsync(Expression<Func<T, bool>> filter, bool asNoTracking)
+        {
+            if (!asNoTracking)
+            {
+                return await QueryAsync(filter);
+            }
+
+            return await _myDbContext
+                .Set<T>()
+                .AsNoTracking()
+                .Where(filter)
+                .OrderBy(e => EF.Property<DateTime>(e, "CreateDate"))
+                .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IList<T>> QueryAsync(
+            Expression<Func<T, bool>> filter,
+            bool asNoTracking,
+            params Expression<Func<T, object>>[] includes
+        )
+        {
+            if (!asNoTracking)
+            {
+                return await QueryAsync(filter, includes);
+            }
+
+            IQueryable<T> query = _myDbContext.Set<T>().AsNoTracking().Where(filter);
+
+            if (includes != null && includes.Length > 0)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            var list = await query
+                .OrderBy(e => EF.Property<DateTime>(e, "CreateDate"))
+                .ToListAsync();
+
+            return list ?? new List<T>();
+        }
+
+        /// <inheritdoc />
         public async Task<IList<T>> QueryAsync(
             Expression<Func<T, bool>> filter,
             params Expression<Func<T, object>>[] includes
@@ -176,6 +251,45 @@ namespace TSI.Nexus.Repository
                 .Set<T>()
                 .OrderBy(e => EF.Property<DateTime>(e, "CreateDate"))
                 .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IList<T>> GetAllAsync(bool asNoTracking)
+        {
+            if (!asNoTracking)
+            {
+                return await GetAllAsync();
+            }
+
+            return await _myDbContext
+                .Set<T>()
+                .AsNoTracking()
+                .OrderBy(e => EF.Property<DateTime>(e, "CreateDate"))
+                .ToListAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<IList<T>> GetAllAsync(
+            bool asNoTracking,
+            params Expression<Func<T, object>>[] includes
+        )
+        {
+            if (!asNoTracking)
+            {
+                return await GetAllAsync(includes);
+            }
+
+            IQueryable<T> query = _myDbContext.Set<T>().AsNoTracking();
+
+            if (includes != null && includes.Length > 0)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            return await query.OrderBy(e => EF.Property<DateTime>(e, "CreateDate")).ToListAsync();
         }
 
         /// <inheritdoc />

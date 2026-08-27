@@ -285,6 +285,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository
                 .Setup(r =>
                     r.GetAllAsync(
+                        true,
                         o => o.BusinessPartner,
                         o => o.PurchaseOrderProducts,
                         t => t.Transaction,
@@ -329,6 +330,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository.Verify(
                 r =>
                     r.GetAllAsync(
+                        true,
                         It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
                         It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
                         It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
@@ -676,6 +678,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository
                 .Setup(r =>
                     r.GetAllAsync(
+                        true,
                         It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
                         It.IsAny<Expression<Func<PurchaseOrder, object>>>(),
                         It.IsAny<Expression<Func<PurchaseOrder, object>>>(),

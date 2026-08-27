@@ -185,7 +185,9 @@ namespace TSI.Nexus.Services
 
             try
             {
+                // asNoTracking: true - this is a pure list/grid read, never saved back.
                 var quotes = await _repository.GetAllAsync(
+                    true,
                     q => q.BusinessPartner,
                     q => q.QuoteProducts,
                     q => q.QuoteTrip.Vehicle,

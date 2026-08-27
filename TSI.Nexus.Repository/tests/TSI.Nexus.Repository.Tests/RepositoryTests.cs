@@ -363,6 +363,118 @@ namespace TSI.Nexus.Repository.Tests
             Assert.Equal(0, updatedCount);
         }
 
+        [Fact]
+        public async Task GetByIdAsync_AsNoTracking_ShouldReturnDetachedEntity()
+        {
+            var driver = NewDriver();
+            await _repository.AddAsync(driver);
+            _context.ChangeTracker.Clear();
+
+            var result = await _repository.GetByIdAsync(driver.Id, asNoTracking: true);
+
+            Assert.Equal(driver.Id, result.Id);
+            Assert.Equal(EntityState.Detached, _context.Entry(result).State);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_AsNoTrackingFalse_ShouldBehaveLikeDefaultOverload()
+        {
+            var driver = NewDriver();
+            await _repository.AddAsync(driver);
+            _context.ChangeTracker.Clear();
+
+            var result = await _repository.GetByIdAsync(driver.Id, asNoTracking: false);
+
+            Assert.Equal(driver.Id, result.Id);
+            Assert.Equal(EntityState.Unchanged, _context.Entry(result).State);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_AsNoTracking_ShouldThrowKeyNotFoundException_WhenNotFound()
+        {
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _repository.GetByIdAsync(Guid.NewGuid(), asNoTracking: true)
+            );
+        }
+
+        [Fact]
+        public async Task FirstOrDefaultAsync_AsNoTracking_ShouldReturnDetachedEntity()
+        {
+            var driver = NewDriver("Tracked Search");
+            await _repository.AddAsync(driver);
+            _context.ChangeTracker.Clear();
+
+            var result = await _repository.FirstOrDefaultAsync(
+                d => d.Name == "Tracked Search",
+                asNoTracking: true
+            );
+
+            Assert.Equal(driver.Id, result.Id);
+            Assert.Equal(EntityState.Detached, _context.Entry(result).State);
+        }
+
+        [Fact]
+        public async Task QueryAsync_AsNoTracking_ShouldReturnDetachedEntities()
+        {
+            var driver1 = NewDriver("Query1", DateTime.UtcNow.AddMinutes(-2));
+            var driver2 = NewDriver("Query2", DateTime.UtcNow.AddMinutes(-1));
+            await _repository.AddAsync(driver1);
+            await _repository.AddAsync(driver2);
+            _context.ChangeTracker.Clear();
+
+            var result = await _repository.QueryAsync(
+                d => d.Name.StartsWith("Query"),
+                asNoTracking: true
+            );
+
+            Assert.Equal(2, result.Count);
+            Assert.All(result, d => Assert.Equal(EntityState.Detached, _context.Entry(d).State));
+        }
+
+        [Fact]
+        public async Task QueryAsync_AsNoTracking_WithIncludes_ShouldReturnDetachedEntities()
+        {
+            var driver = NewDriver("QueryIncludes");
+            await _repository.AddAsync(driver);
+            _context.ChangeTracker.Clear();
+
+            var result = await _repository.QueryAsync(
+                d => d.Name == "QueryIncludes",
+                true,
+                d => d.Trips
+            );
+
+            var found = Assert.Single(result);
+            Assert.Equal(driver.Id, found.Id);
+            Assert.Equal(EntityState.Detached, _context.Entry(found).State);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_AsNoTracking_ShouldReturnDetachedEntities()
+        {
+            var driver = NewDriver("GetAllNoTracking");
+            await _repository.AddAsync(driver);
+            _context.ChangeTracker.Clear();
+
+            var result = await _repository.GetAllAsync(asNoTracking: true);
+
+            Assert.Contains(result, d => d.Id == driver.Id);
+            Assert.All(result, d => Assert.Equal(EntityState.Detached, _context.Entry(d).State));
+        }
+
+        [Fact]
+        public async Task GetAllAsync_AsNoTracking_WithIncludes_ShouldReturnDetachedEntities()
+        {
+            var driver = NewDriver("GetAllIncludesNoTracking");
+            await _repository.AddAsync(driver);
+            _context.ChangeTracker.Clear();
+
+            var result = await _repository.GetAllAsync(true, d => d.Trips);
+
+            Assert.Contains(result, d => d.Id == driver.Id);
+            Assert.All(result, d => Assert.Equal(EntityState.Detached, _context.Entry(d).State));
+        }
+
         private static Payment NewPayment(Guid transactionId, PaymentStatus status, decimal price) =>
             new()
             {

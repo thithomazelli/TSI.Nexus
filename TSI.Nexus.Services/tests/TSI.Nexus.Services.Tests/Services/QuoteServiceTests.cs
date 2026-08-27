@@ -520,6 +520,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository
                 .Setup(r =>
                     r.GetAllAsync(
+                        true,
                         It.IsAny<Expression<Func<Quote, object>>>(),
                         It.IsAny<Expression<Func<Quote, object>>>(),
                         It.IsAny<Expression<Func<Quote, object>>>(),
@@ -543,6 +544,7 @@ namespace TSI.Nexus.Services.Tests.Services
             _repository
                 .Setup(r =>
                     r.GetAllAsync(
+                        true,
                         It.IsAny<Expression<Func<Quote, object>>>(),
                         It.IsAny<Expression<Func<Quote, object>>>(),
                         It.IsAny<Expression<Func<Quote, object>>>(),

@@ -281,7 +281,9 @@ namespace TSI.Nexus.Services
                     return result;
                 }
 
+                // asNoTracking: true - this is a pure list/grid read, never saved back.
                 var trips = await _repository.GetAllAsync(
+                    true,
                     t => t.BusinessPartner,
                     t => t.Vehicle,
                     t => t.Driver,
