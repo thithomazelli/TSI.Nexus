@@ -17,7 +17,7 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community';
 import { UserDetailsModalComponent } from './components/user-details-modal/user-details-modal.component';
-import { Subject, Subscription, takeUntil, tap } from 'rxjs';
+import { Subject, Subscription, takeUntil, tap, skip, take } from 'rxjs';
 import { HeaderComponent } from '../shared/header/header.component';
 import { GridComponent } from '../shared/grid/grid.component';
 import { TranslatePipe } from '../core/pipes/translate.pipe';
@@ -230,9 +230,15 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   refreshUsers(): void {
+    // getAll() is now the shared cached stream (see UserService), so subscribing to it no
+    // longer triggers its own fetch - skip(1) drops the value it replays immediately on
+    // subscribe (whatever is currently cached) and waits for the one fresh emission that
+    // refresh() below is about to cause.
     this.userService
-      .refresh()
+      .getAll()
       .pipe(
+        skip(1),
+        take(1),
         tap({
           next: () =>
             this.notificationService.showMessage(
@@ -250,6 +256,7 @@ export class UsersComponent implements OnInit, OnDestroy {
       .subscribe((response: WebApiResponse<User[]>) => {
         this.rowData = response.data ?? [];
       });
+    this.userService.refresh();
   }
 
   onImgError(event: Event): void {

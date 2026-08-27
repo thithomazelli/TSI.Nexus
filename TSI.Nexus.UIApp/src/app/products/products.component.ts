@@ -9,7 +9,7 @@ import {
   WebApiResponse,
 } from '@nexus/core';
 import { ProductService } from '../core/services/product/product.service';
-import { Subscription, tap, Subject, takeUntil } from 'rxjs';
+import { Subscription, tap, Subject, takeUntil, skip, take } from 'rxjs';
 import {
   ColDef,
   ValueFormatterParams,
@@ -256,9 +256,15 @@ export class ProductsComponent implements OnInit, OnDestroy {
   }
 
   refreshProducts(): void {
+    // getAll() is now the shared cached stream (see ProductService), so subscribing to it no
+    // longer triggers its own fetch - skip(1) drops the value it replays immediately on
+    // subscribe (whatever is currently cached) and waits for the one fresh emission that
+    // refresh() below is about to cause.
     this.productService
-      .refresh()
+      .getAll()
       .pipe(
+        skip(1),
+        take(1),
         tap({
           next: () =>
             this.notificationService.showMessage(
@@ -277,9 +283,13 @@ export class ProductsComponent implements OnInit, OnDestroy {
         this.rowData = response.data ?? [];
         this.applyStockStatusFilter();
       });
+    this.productService.refresh();
   }
 
   private getProducts(): void {
+    // This screen is the authoritative product list, so it can't settle for whatever the shared
+    // cache happens to hold (e.g. left over from a picker opened on a previous visit) - subscribe
+    // first, then force a fresh fetch so every other getAll() consumer picks up the same result.
     this.productService
       .getAll()
       .pipe(takeUntil(this._destroy$))
@@ -287,6 +297,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
         this.rowData = response.data ?? [];
         this.applyStockStatusFilter();
       });
+    this.productService.refresh();
   }
 
   private applyStockStatusFilter(): void {
