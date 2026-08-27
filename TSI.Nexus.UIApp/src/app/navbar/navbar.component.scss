@@ -35,3 +35,16 @@
   object-fit: cover;
   border-radius: 50%;
 }
+
+// AdminLTE's .dropdown-menu-lg forces a fixed 280px min-width, positioned flush (0px margin)
+// against a toggle that itself sits flush against the navbar's right edge. On phones narrower
+// than ~390px (iPhone SE/mini and others) that leaves the panel's right edge past the viewport
+// with no safety margin, cutting off its content - affects both the user-menu dropdown and the
+// navbar notification bells (payment/vehicle/driver/stock/event), which share the same classes.
+@media (max-width: 480px) {
+  .navbar .dropdown-menu-lg.dropdown-menu-end {
+    min-width: 0;
+    max-width: calc(100vw - 1.5rem);
+    margin-right: 0.5rem;
+  }
+}
