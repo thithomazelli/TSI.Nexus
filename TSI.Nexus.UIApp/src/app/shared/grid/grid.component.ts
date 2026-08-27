@@ -9,10 +9,12 @@ import { cardCollapseAnimation } from '../../core/animations/card-collapse.anima
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService, TranslationService } from '@nexus/core';
 import {
+  AllCommunityModule,
   CellClickedEvent,
   ColDef,
   GridApi,
   GridReadyEvent,
+  ModuleRegistry,
   RowDoubleClickedEvent,
 } from 'ag-grid-community';
 import { map } from 'rxjs';
@@ -25,6 +27,13 @@ const AG_GRID_LOCALES: Record<string, Record<string, string>> = {
   en: AG_GRID_LOCALE_EN,
   es: AG_GRID_LOCALE_ES,
 };
+
+// Registered here instead of main.ts: every consumer of <app-grid> sits behind a lazy feature
+// route, so keeping this import and call out of the app's eager entry point keeps ag-grid's
+// ~1MB library out of the initial bundle for screens that never render a grid. Module-scope, not
+// per-instance - ES modules only evaluate once no matter how many <app-grid> instances mount
+// (e.g. several tabs on one details page), so this runs exactly once regardless.
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
     selector: 'app-grid',

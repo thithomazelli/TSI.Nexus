@@ -13,7 +13,6 @@ import {
   PassengerService,
   ServiceOrderService,
   DocumentTemplateService,
-  downloadLetterheadPdf,
 } from '@nexus/core';
 import {
   combineLatest,
@@ -180,7 +179,12 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
           vehicle.data ?? null,
           tripLegs.data ?? [],
         ).subscribe((pages) => {
-          downloadLetterheadPdf(pages, `contrato-${trip.tripNumber}.pdf`);
+          // Dynamic import: downloadLetterheadPdf pulls in jsPDF/html2canvas (~1MB) that only
+          // this button actually needs, so it's loaded on click rather than in the app's initial
+          // bundle - see core/utilities/index.ts for why it isn't re-exported via @nexus/core.
+          import('../../../core/utilities/letterhead-pdf').then(({ downloadLetterheadPdf }) => {
+            downloadLetterheadPdf(pages, `contrato-${trip.tripNumber}.pdf`);
+          });
         });
       },
       error: () => {
@@ -230,7 +234,12 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
           (passengers.data ?? []).length,
           commissionAmount,
         ).subscribe((pages) => {
-          downloadLetterheadPdf(pages, `os-${trip.tripNumber}.pdf`);
+          // Dynamic import: downloadLetterheadPdf pulls in jsPDF/html2canvas (~1MB) that only
+          // this button actually needs, so it's loaded on click rather than in the app's initial
+          // bundle - see core/utilities/index.ts for why it isn't re-exported via @nexus/core.
+          import('../../../core/utilities/letterhead-pdf').then(({ downloadLetterheadPdf }) => {
+            downloadLetterheadPdf(pages, `os-${trip.tripNumber}.pdf`);
+          });
         });
       },
       error: () => {

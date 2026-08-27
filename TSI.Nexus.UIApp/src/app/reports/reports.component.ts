@@ -11,8 +11,6 @@ import {
   WebApiResponse,
 } from '@nexus/core';
 
-import html2pdf from 'html2pdf.js';
-
 import { PaymentDetailsModalComponent } from '../payments/components/payment-details-modal/payment-details-modal.component';
 import { HeaderComponent } from '../shared/header/header.component';
 import { DateFieldComponent } from '../shared/components/date-field/date-field.component';
@@ -215,7 +213,7 @@ export class ReportsComponent implements OnInit {
     document.body.innerHTML = originalContents;
   }
 
-  generatePDF() {
+  async generatePDF() {
     const element = document.getElementById('print-section');
     if (!element) {
       return;
@@ -257,6 +255,10 @@ export class ReportsComponent implements OnInit {
     tempDiv.style.left = '-9999px';
     tempDiv.appendChild(clone);
     document.body.appendChild(tempDiv);
+
+    // Dynamic import: html2pdf.js drags in jsPDF/html2canvas (~1MB) that only this button
+    // actually needs, so it's loaded on click rather than in the app's initial bundle.
+    const { default: html2pdf } = await import('html2pdf.js');
 
     html2pdf()
       .from(clone)

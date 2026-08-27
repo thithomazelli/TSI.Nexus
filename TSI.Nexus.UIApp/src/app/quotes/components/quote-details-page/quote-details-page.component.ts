@@ -9,7 +9,6 @@ import {
   QuoteProductService,
   BusinessPartnerService,
   DocumentTemplateService,
-  downloadLetterheadPdf,
 } from '@nexus/core';
 import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge, map, of, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -142,7 +141,12 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
           quote,
           response.data ?? null,
         ).subscribe((pages) => {
-          downloadLetterheadPdf(pages, `orcamento-${quote.quoteNumber}.pdf`);
+          // Dynamic import: downloadLetterheadPdf pulls in jsPDF/html2canvas (~1MB) that only
+          // this button actually needs, so it's loaded on click rather than in the app's initial
+          // bundle - see core/utilities/index.ts for why it isn't re-exported via @nexus/core.
+          import('../../../core/utilities/letterhead-pdf').then(({ downloadLetterheadPdf }) => {
+            downloadLetterheadPdf(pages, `orcamento-${quote.quoteNumber}.pdf`);
+          });
         });
       },
       error: () => {
