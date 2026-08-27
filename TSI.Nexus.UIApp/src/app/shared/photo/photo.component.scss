@@ -25,6 +25,16 @@
     height: 140px;
     margin: 0 auto;
     position: relative;
+    // .btn-0/.bg-transparent strip the border/background but Bootstrap's
+    // .btn still sets its own box-shadow (a subtle resting shadow, plus a
+    // focus ring on click since this button opens a dropdown) - without
+    // this it shows through as a faint border-like line around the circle.
+    box-shadow: none;
+
+    &:focus,
+    &:active {
+      box-shadow: none;
+    }
   }
 
   /* Override global .profile-user-img when inside this component so
