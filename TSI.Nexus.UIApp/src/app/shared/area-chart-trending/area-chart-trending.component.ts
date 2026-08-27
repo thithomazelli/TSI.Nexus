@@ -1,5 +1,5 @@
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
-import { Component, Input, OnChanges, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit, ViewChild } from '@angular/core';
 import { ApiService, ApiType, TranslationService, WebApiResponse } from '@nexus/core';
 import { NgIf } from '@angular/common';
 import { ChartComponent } from 'ng-apexcharts';
@@ -9,6 +9,7 @@ import { ChartComponent } from 'ng-apexcharts';
     templateUrl: './area-chart-trending.component.html',
     styleUrl: './area-chart-trending.component.scss',
     animations: [cardCollapseAnimation],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [NgIf, ChartComponent],
 })
 export class AreaChartTrendingComponent implements OnInit, OnChanges {
@@ -24,6 +25,7 @@ export class AreaChartTrendingComponent implements OnInit, OnChanges {
   constructor(
     private apiService: ApiService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -252,6 +254,7 @@ export class AreaChartTrendingComponent implements OnInit, OnChanges {
       //     },
       //   },
       // };
+      this.cdr.markForCheck();
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ApiService, DashboardCard, WebApiResponse } from '@nexus/core';
@@ -10,6 +10,7 @@ import { TranslatePipe } from '../../core/pipes/translate.pipe';
     selector: 'app-info-cards',
     templateUrl: './info-cards.component.html',
     styleUrl: './info-cards.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         NgIf,
         NgFor,
@@ -123,9 +124,11 @@ export class InfoCardsComponent implements OnInit {
         },
         error: () => {
           this.cards = [];
+          this.cdr.markForCheck();
         },
         complete: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       });
   }

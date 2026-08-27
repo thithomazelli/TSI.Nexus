@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnInit } from '@angular/core';
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { ApiService, ApiType, PaymentType, WebApiResponse } from '@nexus/core';
 import { NgClass, NgIf } from '@angular/common';
@@ -9,6 +9,7 @@ import { ChartComponent } from 'ng-apexcharts';
     templateUrl: './pie-chart.component.html',
     styleUrl: './pie-chart.component.scss',
     animations: [cardCollapseAnimation],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         NgClass,
         NgIf,
@@ -38,7 +39,10 @@ export class PieChartComponent implements OnInit, OnChanges {
 
   chartOptions: any;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadChart();
@@ -137,6 +141,7 @@ export class PieChartComponent implements OnInit, OnChanges {
           },
         ],
       };
+      this.cdr.markForCheck();
     });
   }
 

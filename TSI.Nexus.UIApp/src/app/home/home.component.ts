@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { cardCollapseAnimation } from '../core/animations/card-collapse.animation';
 import { PaymentType } from '../core/enums/payment-type.enum';
 import { InfoCardsComponent } from '../shared/info-cards/info-cards.component';
@@ -15,6 +15,7 @@ import { TranslatePipe } from '../core/pipes/translate.pipe';
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
     animations: [cardCollapseAnimation],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         InfoCardsComponent,
         NgClass,
