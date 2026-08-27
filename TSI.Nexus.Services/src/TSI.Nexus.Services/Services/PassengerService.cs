@@ -63,10 +63,7 @@ namespace TSI.Nexus.Services
 
             try
             {
-                foreach (var passenger in passengerList)
-                {
-                    await _repository.AddAsync(passenger);
-                }
+                await _repository.AddRangeAsync(passengerList);
 
                 result.Data = passengerList;
                 result.Status = ResponseStatus.Success;

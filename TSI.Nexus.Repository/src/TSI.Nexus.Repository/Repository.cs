@@ -42,6 +42,23 @@ namespace TSI.Nexus.Repository
         }
 
         /// <inheritdoc />
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            var list = entities?.ToList() ?? new List<T>();
+
+            foreach (var entity in list)
+            {
+                if (entity is BaseModel bm && bm.Id == Guid.Empty)
+                {
+                    bm.Id = Guid.NewGuid();
+                }
+            }
+
+            await _myDbContext.Set<T>().AddRangeAsync(list);
+            await SaveChangesAsync();
+        }
+
+        /// <inheritdoc />
         public async Task UpdateAsync(T entity)
         {
             _myDbContext.Entry(entity).State = EntityState.Modified;

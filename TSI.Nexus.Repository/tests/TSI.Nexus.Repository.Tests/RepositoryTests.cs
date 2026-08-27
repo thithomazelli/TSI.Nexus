@@ -54,6 +54,32 @@ namespace TSI.Nexus.Repository.Tests
         }
 
         [Fact]
+        public async Task AddRangeAsync_ShouldPersistAllEntitiesInOneSave()
+        {
+            var driver1 = NewDriver("Range1");
+            var driver2 = NewDriver("Range2");
+            driver1.Id = Guid.Empty;
+
+            await _repository.AddRangeAsync(new[] { driver1, driver2 });
+
+            Assert.NotEqual(Guid.Empty, driver1.Id);
+            Assert.NotNull(await _context.Driver.FindAsync(driver1.Id));
+            Assert.NotNull(await _context.Driver.FindAsync(driver2.Id));
+        }
+
+        [Fact]
+        public async Task AddRangeAsync_ShouldKeepExplicitIds_WhenAlreadySet()
+        {
+            var driver = NewDriver();
+            var explicitId = Guid.NewGuid();
+            driver.Id = explicitId;
+
+            await _repository.AddRangeAsync(new[] { driver });
+
+            Assert.Equal(explicitId, driver.Id);
+        }
+
+        [Fact]
         public async Task UpdateAsync_ShouldPersistChanges()
         {
             var driver = NewDriver();

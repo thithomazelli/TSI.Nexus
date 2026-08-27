@@ -15,6 +15,13 @@ namespace TSI.Nexus.Contracts.Interfaces
         Task AddAsync(T entity);
 
         /// <summary>
+        /// This function will be receive a range of objects as parameter and should add them all to the
+        /// database in a single SaveChangesAsync() call, instead of one save per entity.
+        /// </summary>
+        /// <param name="entities">The entity objects to be added.</param>
+        Task AddRangeAsync(IEnumerable<T> entities);
+
+        /// <summary>
         /// This function will be receive an object as parameter and should be update it to the database.
         /// </summary>
         /// <param name="entity">The entity object to be updated.</param>

@@ -80,7 +80,10 @@ namespace TSI.Nexus.Services.Tests.Services
             Assert.Equal(ResponseStatus.Success, result.Status);
             Assert.Equal(2, result.Data!.Count());
             Assert.Equal("2 passageiro(s) importado(s) com sucesso.", result.Message);
-            _repository.Verify(_ => _.AddAsync(It.IsAny<Passenger>()), Times.Exactly(2));
+            _repository.Verify(
+                _ => _.AddRangeAsync(It.Is<IEnumerable<Passenger>>(p => p.Count() == 2)),
+                Times.Once
+            );
         }
 
         [Fact]
@@ -92,7 +95,7 @@ namespace TSI.Nexus.Services.Tests.Services
                 new() { Id = Guid.NewGuid(), TripId = _tripId, Name = "Passageiro 1" },
             };
             _repository
-                .Setup(_ => _.AddAsync(It.IsAny<Passenger>()))
+                .Setup(_ => _.AddRangeAsync(It.IsAny<IEnumerable<Passenger>>()))
                 .ThrowsAsync(new Exception("boom"));
 
             // Act
