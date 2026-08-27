@@ -48,12 +48,16 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   // Shown only when both the alert's own toggle and its module's group toggle are enabled -
   // same "group AND entity" rule documented on FeatureToggleKeys, so each alert can be silenced
   // individually or hidden along with its whole module.
-  isDriverLicenseAlertEnabled = true;
-  isVehicleBlockedAlertEnabled = true;
-  isPaymentAlertEnabled = true;
-  isStockAlertEnabled = true;
-  isUpcomingEventAlertEnabled = true;
-  isAgendaModuleEnabled = true;
+  // Default to hidden, not enabled: these flip to their real value once the
+  // combineLatest subscription below resolves. Defaulting true showed every
+  // alert/shortcut immediately, then hid the disabled ones a moment later
+  // once the real state arrived - a visible flash on every page load.
+  isDriverLicenseAlertEnabled = false;
+  isVehicleBlockedAlertEnabled = false;
+  isPaymentAlertEnabled = false;
+  isStockAlertEnabled = false;
+  isUpcomingEventAlertEnabled = false;
+  isAgendaModuleEnabled = false;
 
   private lastBlobUrl?: string;
   private mobileBreakpoint = 992;

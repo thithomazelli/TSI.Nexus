@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, shareReplay, tap } from 'rxjs/operators';
 import {
   ApiService,
   ApiType,
@@ -16,10 +16,21 @@ export class FeatureFlagService {
   private _baseEndPoint = ApiType.FeatureToggles;
   private _toggles$ = new BehaviorSubject<FeatureToggle[]>([]);
   private _loaded = false;
+  // Every isEnabled() call made before the first load completes used to kick off its own
+  // refresh() - sidebar (7 calls) and navbar (9 calls) alone fired ~16 near-simultaneous
+  // GET /FeatureToggles/getAll requests on every page load, all queued behind the browser's
+  // per-host connection limit. shareReplay(1) makes every caller share the single in-flight
+  // request instead, which is most of why that load window stretched into seconds.
+  private _loading$?: Observable<FeatureToggle[]>;
 
   constructor(private apiService: ApiService) {}
 
   refresh(): Observable<FeatureToggle[]> {
+    this._loading$ = this.fetch();
+    return this._loading$;
+  }
+
+  private fetch(): Observable<FeatureToggle[]> {
     return this.apiService
       .get<WebApiResponse<FeatureToggle[]>>(`${this._baseEndPoint}/getAll`)
       .pipe(
@@ -28,6 +39,7 @@ export class FeatureFlagService {
           this._toggles$.next(toggles);
           this._loaded = true;
         }),
+        shareReplay(1),
       );
   }
 
@@ -37,7 +49,9 @@ export class FeatureFlagService {
    * hides an unrelated module by accident - the same fail-open policy used server-side.
    */
   isEnabled(key: string): Observable<boolean> {
-    const source$ = this._loaded ? of(this._toggles$.value) : this.refresh();
+    const source$ = this._loaded
+      ? of(this._toggles$.value)
+      : (this._loading$ ??= this.fetch());
     return source$.pipe(
       map((toggles) => {
         const toggle = toggles.find((t) => t.key === key);

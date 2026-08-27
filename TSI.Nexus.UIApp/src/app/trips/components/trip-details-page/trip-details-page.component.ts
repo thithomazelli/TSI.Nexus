@@ -65,7 +65,10 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
   data?: Trip | null = null;
   id: string | null = null;
   loading = false;
-  isAgendaEnabled = true;
+  // Defaults hidden, not enabled: flips to the real value once the
+  // combineLatest subscription below resolves - defaulting true showed the
+  // Agenda tab immediately, then hid it a moment later if disabled.
+  isAgendaEnabled = false;
 
   activeTab:
     | 'details'

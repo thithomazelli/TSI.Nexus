@@ -40,13 +40,18 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
 
   isAdmin = false;
   isMaster = false;
-  isFleetModuleEnabled = true;
-  isQuotesModuleEnabled = true;
-  isSalesOrdersModuleEnabled = true;
-  isPurchaseOrdersModuleEnabled = true;
-  isVehicleMaintenanceEnabled = true;
-  isFuelLogEnabled = true;
-  isAgendaModuleEnabled = true;
+  // Default to hidden, not enabled: these flip to their real value once
+  // FeatureFlagService's isEnabled() subscriptions resolve (ngOnInit below).
+  // Defaulting true showed every module immediately, then hid the disabled
+  // ones a moment later once the real state arrived - a visible flash that
+  // makes hidden-by-design modules briefly visible on every page load.
+  isFleetModuleEnabled = false;
+  isQuotesModuleEnabled = false;
+  isSalesOrdersModuleEnabled = false;
+  isPurchaseOrdersModuleEnabled = false;
+  isVehicleMaintenanceEnabled = false;
+  isFuelLogEnabled = false;
+  isAgendaModuleEnabled = false;
 
   constructor(
     private el: ElementRef,

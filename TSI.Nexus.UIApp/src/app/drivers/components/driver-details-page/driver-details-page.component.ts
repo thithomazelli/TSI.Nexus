@@ -36,7 +36,10 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data?: Driver | null = null;
   loading = false;
-  isAgendaEnabled = true;
+  // Defaults hidden, not enabled: flips to the real value once the
+  // combineLatest subscription below resolves - defaulting true showed the
+  // Agenda tab immediately, then hid it a moment later if disabled.
+  isAgendaEnabled = false;
   activeTab:
     | 'details'
     | 'serviceOrders'

@@ -37,7 +37,10 @@ export class UserDetailsPageComponent {
   loading = false;
   activeTab: 'details' | 'attachments' | 'agenda' | 'preferences' | 'audit' = 'details';
   isOwnProfile = false;
-  isAgendaEnabled = true;
+  // Defaults hidden, not enabled: flips to the real value once the
+  // combineLatest subscription below resolves - defaulting true showed the
+  // Agenda tab immediately, then hid it a moment later if disabled.
+  isAgendaEnabled = false;
 
   private _destroy$ = new Subject<void>();
 
