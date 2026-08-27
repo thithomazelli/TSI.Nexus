@@ -113,6 +113,19 @@ namespace TSI.Nexus.Data
 
             modelBuilder.Entity<Order>().HasIndex(o => o.OrderNumber).IsUnique();
 
+            // Non-unique indexes on columns filtered frequently by dashboard/report queries and
+            // by the duplicate-check performed on every business-partner create/edit - without
+            // these, each of those queries is a full table scan that gets slower as the
+            // (fast-growing, transactional) tables grow.
+            modelBuilder.Entity<BusinessPartner>().HasIndex(b => b.Email);
+            modelBuilder.Entity<Individual>().HasIndex(i => i.SocialSecurityCard);
+            modelBuilder.Entity<Order>().HasIndex(o => o.Date);
+            modelBuilder.Entity<Payment>().HasIndex(p => p.Date);
+            modelBuilder.Entity<Payment>().HasIndex(p => p.Status);
+            modelBuilder.Entity<Driver>().HasIndex(d => d.Status);
+            modelBuilder.Entity<Vehicle>().HasIndex(v => v.Status);
+            modelBuilder.Entity<VehicleMaintenance>().HasIndex(vm => vm.Status);
+
             // Configure Sequence entity explicitly to keep model consistent with migrations
             modelBuilder.Entity<Sequence>(b =>
             {
