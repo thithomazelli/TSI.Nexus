@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AccountService, PhotoService, User, UserService } from '@nexus/core';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
+import { combineLatest, map, Subject, takeUntil, Observable } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { PhotoComponent } from '../../../shared/photo/photo.component';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { UserFormComponent } from '../user-form/user-form.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { UserPreferencesComponent } from '../../../shared/components/user-preferences/user-preferences.component';
@@ -22,6 +22,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         HeaderComponent,
         PhotoComponent,
         NgIf,
+        AsyncPipe,
         UserFormComponent,
         AttachmentsComponent,
         UserPreferencesComponent,
@@ -37,10 +38,11 @@ export class UserDetailsPageComponent {
   loading = false;
   activeTab: 'details' | 'attachments' | 'agenda' | 'preferences' | 'audit' = 'details';
   isOwnProfile = false;
-  // Defaults hidden, not enabled: flips to the real value once the
-  // combineLatest subscription below resolves - defaulting true showed the
-  // Agenda tab immediately, then hid it a moment later if disabled.
-  isAgendaEnabled = false;
+  // Read via the async pipe in the template rather than subscribed into a plain field: no
+  // manual Subscription/ngOnDestroy bookkeeping, and the async pipe treats "no emission yet" as
+  // falsy, so the tab stays out of the DOM until the real state is known instead of a guessed
+  // default flashing on screen first.
+  isAgendaEnabled$!: Observable<boolean>;
 
   private _destroy$ = new Subject<void>();
 
@@ -51,17 +53,14 @@ export class UserDetailsPageComponent {
     private userService: UserService,
     private accountService: AccountService,
     private featureFlagService: FeatureFlagService,
-  ) {}
-
-  ngOnInit(): void {
-    combineLatest([
+  ) {
+    this.isAgendaEnabled$ = combineLatest([
       this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ])
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(([groupEnabled, entityEnabled]) => {
-        this.isAgendaEnabled = groupEnabled && entityEnabled;
-      });
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
+
+  ngOnInit(): void {
     this.activatedRoute.paramMap.subscribe((params) => {
       const idParam = params.get('id');
 

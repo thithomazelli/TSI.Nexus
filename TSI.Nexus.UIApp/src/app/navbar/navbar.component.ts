@@ -6,7 +6,7 @@ import {
   OnInit,
   Renderer2,
 } from '@angular/core';
-import { combineLatest, Observable, Subscription } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { AccountService, PhotoService, User } from '@nexus/core';
 import { NgIf, AsyncPipe, TitleCasePipe } from '@angular/common';
 import { PaymentNotificationComponent } from './components/payment-notification/payment-notification.component';
@@ -48,21 +48,24 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
   // Shown only when both the alert's own toggle and its module's group toggle are enabled -
   // same "group AND entity" rule documented on FeatureToggleKeys, so each alert can be silenced
   // individually or hidden along with its whole module.
-  // Default to hidden, not enabled: these flip to their real value once the
-  // combineLatest subscription below resolves. Defaulting true showed every
-  // alert/shortcut immediately, then hid the disabled ones a moment later
-  // once the real state arrived - a visible flash on every page load.
-  isDriverLicenseAlertEnabled = false;
-  isVehicleBlockedAlertEnabled = false;
-  isPaymentAlertEnabled = false;
-  isStockAlertEnabled = false;
-  isUpcomingEventAlertEnabled = false;
-  isAgendaModuleEnabled = false;
+  // Exposed as observables and read via the async pipe in the template rather than subscribed
+  // into plain fields: the async pipe treats "no emission yet" as falsy, so an alert stays out
+  // of the DOM until FeatureFlagService's toggles$ genuinely resolves instead of a guessed
+  // default flashing on screen first, and there's no Subscription/ngOnDestroy bookkeeping to get
+  // out of sync. toggles$ is a single shareReplay(1) stream shared by every isEnabled() call
+  // below, so this is one HTTP request total regardless of how many alerts read from it.
+  // Assigned in the constructor, not here: a class field initializer runs before constructor
+  // parameter properties are assigned, so featureFlagService wouldn't exist yet at this point.
+  isAgendaModuleEnabled$!: Observable<boolean>;
+  isDriverLicenseAlertEnabled$!: Observable<boolean>;
+  isVehicleBlockedAlertEnabled$!: Observable<boolean>;
+  isPaymentAlertEnabled$!: Observable<boolean>;
+  isStockAlertEnabled$!: Observable<boolean>;
+  isUpcomingEventAlertEnabled$!: Observable<boolean>;
 
   private lastBlobUrl?: string;
   private mobileBreakpoint = 992;
   private resizeUnlisten: (() => void) | null = null;
-  private alertTogglesSub: Subscription | null = null;
 
   // simple overlay refs
   private overlayEl: HTMLElement | null = null;
@@ -73,7 +76,36 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
     private accountService: AccountService,
     private photoService: PhotoService,
     private featureFlagService: FeatureFlagService,
-  ) {}
+  ) {
+    const fleetEnabled$ = this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule);
+    const financeEnabled$ = this.featureFlagService.isEnabled(FeatureToggleKeys.FinanceModule);
+    const purchaseOrdersEnabled$ = this.featureFlagService.isEnabled(
+      FeatureToggleKeys.PurchaseOrdersModule,
+    );
+    this.isAgendaModuleEnabled$ = this.featureFlagService.isEnabled(
+      FeatureToggleKeys.AgendaModule,
+    );
+    this.isDriverLicenseAlertEnabled$ = combineLatest([
+      fleetEnabled$,
+      this.featureFlagService.isEnabled(FeatureToggleKeys.DriverLicenseAlert),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+    this.isVehicleBlockedAlertEnabled$ = combineLatest([
+      fleetEnabled$,
+      this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleBlockedAlert),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+    this.isPaymentAlertEnabled$ = combineLatest([
+      financeEnabled$,
+      this.featureFlagService.isEnabled(FeatureToggleKeys.PaymentAlert),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+    this.isStockAlertEnabled$ = combineLatest([
+      purchaseOrdersEnabled$,
+      this.featureFlagService.isEnabled(FeatureToggleKeys.StockAlert),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+    this.isUpcomingEventAlertEnabled$ = combineLatest([
+      this.isAgendaModuleEnabled$,
+      this.featureFlagService.isEnabled(FeatureToggleKeys.UpcomingEventAlert),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
 
   get user$(): Observable<User | null> {
     return this.accountService.user$;
@@ -112,37 +144,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.imageUrl = 'assets/img/no_profile.png';
     });
-
-    this.alertTogglesSub = combineLatest([
-      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.DriverLicenseAlert),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleBlockedAlert),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.FinanceModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.PaymentAlert),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.PurchaseOrdersModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.StockAlert),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.UpcomingEventAlert),
-    ]).subscribe(
-      ([
-        fleetEnabled,
-        driverLicenseAlert,
-        vehicleBlockedAlert,
-        financeEnabled,
-        paymentAlert,
-        purchaseOrdersEnabled,
-        stockAlert,
-        agendaModuleEnabled,
-        upcomingEventAlert,
-      ]) => {
-        this.isDriverLicenseAlertEnabled = fleetEnabled && driverLicenseAlert;
-        this.isVehicleBlockedAlertEnabled = fleetEnabled && vehicleBlockedAlert;
-        this.isPaymentAlertEnabled = financeEnabled && paymentAlert;
-        this.isStockAlertEnabled = purchaseOrdersEnabled && stockAlert;
-        this.isAgendaModuleEnabled = agendaModuleEnabled;
-        this.isUpcomingEventAlertEnabled = agendaModuleEnabled && upcomingEventAlert;
-      },
-    );
   }
 
   ngAfterViewInit(): void {
@@ -164,10 +165,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, OnDestroy {
         this.resizeUnlisten();
       } catch {}
       this.resizeUnlisten = null;
-    }
-    if (this.alertTogglesSub) {
-      this.alertTogglesSub.unsubscribe();
-      this.alertTogglesSub = null;
     }
     this.removeOverlay(true);
   }

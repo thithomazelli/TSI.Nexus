@@ -6,12 +6,12 @@ import {
   Renderer2,
   OnInit,
 } from '@angular/core';
-import { Subscription, combineLatest } from 'rxjs';
+import { Observable, Subscription, combineLatest, map } from 'rxjs';
 import { AccountService } from '../../core/services/account/account.service';
 import { FeatureFlagService } from '../../core/services/feature-flag/feature-flag.service';
 import { FeatureToggleKeys } from '../../core/models/feature-toggle.model';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { TranslatePipe } from '../../core/pipes/translate.pipe';
 
 @Component({
@@ -22,6 +22,7 @@ import { TranslatePipe } from '../../core/pipes/translate.pipe';
         RouterLink,
         RouterLinkActive,
         NgIf,
+        AsyncPipe,
         TranslatePipe,
     ],
 })
@@ -30,78 +31,62 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
   private transitionCleanups: (() => void)[] = [];
   private osInstance: any = null;
   private userSub: Subscription | null = null;
-  private featureFlagSub: Subscription | null = null;
-  private quotesModuleSub: Subscription | null = null;
-  private salesOrdersModuleSub: Subscription | null = null;
-  private purchaseOrdersModuleSub: Subscription | null = null;
-  private vehicleMaintenanceSub: Subscription | null = null;
-  private fuelLogSub: Subscription | null = null;
-  private agendaModuleSub: Subscription | null = null;
 
   isAdmin = false;
   isMaster = false;
-  // Default to hidden, not enabled: these flip to their real value once
-  // FeatureFlagService's isEnabled() subscriptions resolve (ngOnInit below).
-  // Defaulting true showed every module immediately, then hid the disabled
-  // ones a moment later once the real state arrived - a visible flash that
-  // makes hidden-by-design modules briefly visible on every page load.
-  isFleetModuleEnabled = false;
-  isQuotesModuleEnabled = false;
-  isSalesOrdersModuleEnabled = false;
-  isPurchaseOrdersModuleEnabled = false;
-  isVehicleMaintenanceEnabled = false;
-  isFuelLogEnabled = false;
-  isAgendaModuleEnabled = false;
+
+  // Exposed as observables and read via the async pipe in the template rather than subscribed
+  // into plain fields: no manual Subscription/ngOnDestroy bookkeeping, and - the point that
+  // actually matters here - the async pipe treats "no emission yet" as falsy, so a module stays
+  // out of the DOM until FeatureFlagService's toggles$ genuinely resolves instead of a guessed
+  // default flashing on screen first. toggles$ itself is a single shareReplay(1) stream shared by
+  // every one of these, so this fires one HTTP request total, not one per module.
+  // Assigned in the constructor, not here: a class field initializer runs before constructor
+  // parameter properties are assigned, so featureFlagService wouldn't exist yet at this point.
+  isFleetModuleEnabled$!: Observable<boolean>;
+  isQuotesModuleEnabled$!: Observable<boolean>;
+  isSalesOrdersModuleEnabled$!: Observable<boolean>;
+  isPurchaseOrdersModuleEnabled$!: Observable<boolean>;
+  isVehicleMaintenanceEnabled$!: Observable<boolean>;
+  isFuelLogEnabled$!: Observable<boolean>;
+  isAgendaModuleEnabled$!: Observable<boolean>;
 
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
     private accountService: AccountService,
     private featureFlagService: FeatureFlagService,
-  ) {}
+  ) {
+    this.isFleetModuleEnabled$ = this.featureFlagService.isEnabled(
+      FeatureToggleKeys.FleetModule,
+    );
+    this.isQuotesModuleEnabled$ = this.featureFlagService.isEnabled(
+      FeatureToggleKeys.QuotesModule,
+    );
+    this.isSalesOrdersModuleEnabled$ = this.featureFlagService.isEnabled(
+      FeatureToggleKeys.SalesOrdersModule,
+    );
+    this.isPurchaseOrdersModuleEnabled$ = this.featureFlagService.isEnabled(
+      FeatureToggleKeys.PurchaseOrdersModule,
+    );
+    this.isVehicleMaintenanceEnabled$ = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleMaintenance),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+    this.isFuelLogEnabled$ = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.FuelLog),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+    this.isAgendaModuleEnabled$ = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
 
   ngOnInit(): void {
     this.userSub = this.accountService.user$.subscribe((user) => {
       this.isAdmin = !!user?.roles?.includes('Admin');
       this.isMaster = !!user?.roles?.includes('Master');
-    });
-    this.featureFlagSub = this.featureFlagService
-      .isEnabled(FeatureToggleKeys.FleetModule)
-      .subscribe((enabled) => {
-        this.isFleetModuleEnabled = enabled;
-      });
-    this.quotesModuleSub = this.featureFlagService
-      .isEnabled(FeatureToggleKeys.QuotesModule)
-      .subscribe((enabled) => {
-        this.isQuotesModuleEnabled = enabled;
-      });
-    this.salesOrdersModuleSub = this.featureFlagService
-      .isEnabled(FeatureToggleKeys.SalesOrdersModule)
-      .subscribe((enabled) => {
-        this.isSalesOrdersModuleEnabled = enabled;
-      });
-    this.purchaseOrdersModuleSub = this.featureFlagService
-      .isEnabled(FeatureToggleKeys.PurchaseOrdersModule)
-      .subscribe((enabled) => {
-        this.isPurchaseOrdersModuleEnabled = enabled;
-      });
-    this.vehicleMaintenanceSub = combineLatest([
-      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.VehicleMaintenance),
-    ]).subscribe(([groupEnabled, entityEnabled]) => {
-      this.isVehicleMaintenanceEnabled = groupEnabled && entityEnabled;
-    });
-    this.fuelLogSub = combineLatest([
-      this.featureFlagService.isEnabled(FeatureToggleKeys.FleetModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.FuelLog),
-    ]).subscribe(([groupEnabled, entityEnabled]) => {
-      this.isFuelLogEnabled = groupEnabled && entityEnabled;
-    });
-    this.agendaModuleSub = combineLatest([
-      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ]).subscribe(([groupEnabled, entityEnabled]) => {
-      this.isAgendaModuleEnabled = groupEnabled && entityEnabled;
     });
   }
 
@@ -310,34 +295,6 @@ export class SidebarComponent implements AfterViewInit, OnInit, OnDestroy {
     if (this.userSub) {
       this.userSub.unsubscribe();
       this.userSub = null;
-    }
-    if (this.featureFlagSub) {
-      this.featureFlagSub.unsubscribe();
-      this.featureFlagSub = null;
-    }
-    if (this.quotesModuleSub) {
-      this.quotesModuleSub.unsubscribe();
-      this.quotesModuleSub = null;
-    }
-    if (this.salesOrdersModuleSub) {
-      this.salesOrdersModuleSub.unsubscribe();
-      this.salesOrdersModuleSub = null;
-    }
-    if (this.purchaseOrdersModuleSub) {
-      this.purchaseOrdersModuleSub.unsubscribe();
-      this.purchaseOrdersModuleSub = null;
-    }
-    if (this.vehicleMaintenanceSub) {
-      this.vehicleMaintenanceSub.unsubscribe();
-      this.vehicleMaintenanceSub = null;
-    }
-    if (this.fuelLogSub) {
-      this.fuelLogSub.unsubscribe();
-      this.fuelLogSub = null;
-    }
-    if (this.agendaModuleSub) {
-      this.agendaModuleSub.unsubscribe();
-      this.agendaModuleSub = null;
     }
   }
 

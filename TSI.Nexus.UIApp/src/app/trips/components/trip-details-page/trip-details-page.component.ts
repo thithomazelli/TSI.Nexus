@@ -17,6 +17,7 @@ import {
 } from '@nexus/core';
 import {
   combineLatest,
+  map,
   Subject,
   Subscription,
   switchMap,
@@ -24,12 +25,13 @@ import {
   merge,
   forkJoin,
   of,
+  Observable,
 } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { buildContractPages, buildServiceOrderPages } from '../../utilities/trip-documents';
 import { HeaderComponent } from '../../../shared/header/header.component';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { TripFormComponent } from '../trip-form/trip-form.component';
 import { TripDriverListComponent } from '../trip-driver-list/trip-driver-list.component';
 import { TripLegListComponent } from '../trip-leg-list/trip-leg-list.component';
@@ -49,6 +51,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     imports: [
         HeaderComponent,
         NgIf,
+        AsyncPipe,
         TripFormComponent,
         TripDriverListComponent,
         TripLegListComponent,
@@ -65,10 +68,11 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
   data?: Trip | null = null;
   id: string | null = null;
   loading = false;
-  // Defaults hidden, not enabled: flips to the real value once the
-  // combineLatest subscription below resolves - defaulting true showed the
-  // Agenda tab immediately, then hid it a moment later if disabled.
-  isAgendaEnabled = false;
+  // Read via the async pipe in the template rather than subscribed into a plain field: no
+  // manual Subscription/ngOnDestroy bookkeeping, and the async pipe treats "no emission yet" as
+  // falsy, so the tab stays out of the DOM until the real state is known instead of a guessed
+  // default flashing on screen first.
+  isAgendaEnabled$!: Observable<boolean>;
 
   activeTab:
     | 'details'
@@ -105,17 +109,14 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
     private serviceOrderService: ServiceOrderService,
     private documentTemplateService: DocumentTemplateService,
     private featureFlagService: FeatureFlagService,
-  ) {}
-
-  ngOnInit(): void {
-    combineLatest([
+  ) {
+    this.isAgendaEnabled$ = combineLatest([
       this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ])
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(([groupEnabled, entityEnabled]) => {
-        this.isAgendaEnabled = groupEnabled && entityEnabled;
-      });
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
+
+  ngOnInit(): void {
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
     if (idParam && idParam !== 'new') {
       this.isEdit = true;

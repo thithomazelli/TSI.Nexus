@@ -8,10 +8,10 @@ import {
   PurchaseOrderProductService,
   PaymentService,
 } from '@nexus/core';
-import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge } from 'rxjs';
+import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge, map, Observable } from 'rxjs';
 
 import { HeaderComponent } from '../../../shared/header/header.component';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { PurchaseOrderFormComponent } from '../purchase-order-form/purchase-order-form.component';
 import { PurchaseOrderProductsComponent } from '../../../purchase-order-products/purchase-order-products.component';
 import { PaymentsComponent } from '../../../payments/payments.component';
@@ -29,6 +29,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     imports: [
         HeaderComponent,
         NgIf,
+        AsyncPipe,
         PurchaseOrderFormComponent,
         PurchaseOrderProductsComponent,
         PaymentsComponent,
@@ -43,10 +44,11 @@ export class PurchaseOrderDetailsPageComponent implements OnInit, OnDestroy {
   data?: PurchaseOrder | null = null;
   id: string | null = null;
   loading = false;
-  // Defaults hidden, not enabled: flips to the real value once the
-  // combineLatest subscription below resolves - defaulting true showed the
-  // Agenda tab immediately, then hid it a moment later if disabled.
-  isAgendaEnabled = false;
+  // Read via the async pipe in the template rather than subscribed into a plain field: no
+  // manual Subscription/ngOnDestroy bookkeeping, and the async pipe treats "no emission yet" as
+  // falsy, so the tab stays out of the DOM until the real state is known instead of a guessed
+  // default flashing on screen first.
+  isAgendaEnabled$!: Observable<boolean>;
 
   activeTab: 'details' | 'products' | 'payments' | 'attachments' | 'agenda' | 'audit' =
     'details';
@@ -67,17 +69,14 @@ export class PurchaseOrderDetailsPageComponent implements OnInit, OnDestroy {
     private paymentService: PaymentService,
     private routerService: Router,
     private featureFlagService: FeatureFlagService,
-  ) {}
-
-  ngOnInit(): void {
-    combineLatest([
+  ) {
+    this.isAgendaEnabled$ = combineLatest([
       this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ])
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(([groupEnabled, entityEnabled]) => {
-        this.isAgendaEnabled = groupEnabled && entityEnabled;
-      });
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
+
+  ngOnInit(): void {
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
     if (idParam && idParam !== 'new') {
       this.isEdit = true;

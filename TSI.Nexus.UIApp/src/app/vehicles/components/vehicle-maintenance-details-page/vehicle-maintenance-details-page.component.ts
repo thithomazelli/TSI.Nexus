@@ -5,7 +5,8 @@ import {
   VehicleMaintenance,
   VehicleMaintenanceService,
 } from '@nexus/core';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
+import { combineLatest, map, Subject, takeUntil, Observable } from 'rxjs';
+import { AsyncPipe } from '@angular/common';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { VehicleMaintenanceFormComponent } from '../vehicle-maintenance-form/vehicle-maintenance-form.component';
 import { VehicleMaintenanceProductsComponent } from '../../../vehicle-maintenance-products/vehicle-maintenance-products.component';
@@ -22,6 +23,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     styleUrl: './vehicle-maintenance-details-page.component.scss',
     imports: [
         HeaderComponent,
+        AsyncPipe,
         VehicleMaintenanceFormComponent,
         VehicleMaintenanceProductsComponent,
         AttachmentsComponent,
@@ -33,10 +35,11 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy {
   data: VehicleMaintenance | null = null;
   loading = false;
-  // Defaults hidden, not enabled: flips to the real value once the
-  // combineLatest subscription below resolves - defaulting true showed the
-  // Agenda tab immediately, then hid it a moment later if disabled.
-  isAgendaEnabled = false;
+  // Read via the async pipe in the template rather than subscribed into a plain field: no
+  // manual Subscription/ngOnDestroy bookkeeping, and the async pipe treats "no emission yet" as
+  // falsy, so the tab stays out of the DOM until the real state is known instead of a guessed
+  // default flashing on screen first.
+  isAgendaEnabled$!: Observable<boolean>;
   activeTab: 'details' | 'products' | 'attachments' | 'agenda' | 'audit' = 'details';
 
   get statusMap(): { [key: string]: { label: string; color: string } } {
@@ -57,7 +60,12 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private routerService: Router,
     private featureFlagService: FeatureFlagService,
-  ) {}
+  ) {
+    this.isAgendaEnabled$ = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
 
   getStatusInfo(): { label: string; color: string } {
     const status = this.data?.status;
@@ -68,14 +76,6 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
   }
 
   ngOnInit(): void {
-    combineLatest([
-      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ])
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(([groupEnabled, entityEnabled]) => {
-        this.isAgendaEnabled = groupEnabled && entityEnabled;
-      });
     this.activatedRoute.paramMap
       .pipe(takeUntil(this._destroy$))
       .subscribe((paramMap) => {

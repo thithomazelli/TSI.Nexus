@@ -87,7 +87,7 @@
                     >{{ 'COMMON.ATTACHMENTS' | translate }}</a
                   >
                 </li>
-                @if (isAgendaEnabled) {
+                @if (isAgendaEnabled$ | async) {
                   <li class="nav-item">
                     <a
                       class="nav-link"

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, shareReplay, tap } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 import {
   ApiService,
   ApiType,
@@ -14,45 +14,44 @@ import {
 })
 export class FeatureFlagService {
   private _baseEndPoint = ApiType.FeatureToggles;
-  private _toggles$ = new BehaviorSubject<FeatureToggle[]>([]);
-  private _loaded = false;
-  // Every isEnabled() call made before the first load completes used to kick off its own
-  // refresh() - sidebar (7 calls) and navbar (9 calls) alone fired ~16 near-simultaneous
-  // GET /FeatureToggles/getAll requests on every page load, all queued behind the browser's
-  // per-host connection limit. shareReplay(1) makes every caller share the single in-flight
-  // request instead, which is most of why that load window stretched into seconds.
-  private _loading$?: Observable<FeatureToggle[]>;
+  private _refresh$ = new Subject<void>();
+
+  /**
+   * Single source of truth for every consumer (sidebar, navbar, every module tab across the
+   * app). shareReplay(1) is the whole mechanism: the first subscriber triggers the fetch, every
+   * other subscriber - however many isEnabled() calls happen to land in the same tick - shares
+   * that one in-flight request instead of firing its own (sidebar + navbar alone used to fire
+   * ~16 near-simultaneous GET requests on every page load), and once it resolves every later
+   * subscriber (a route change, a newly-mounted component) just replays the cached array with
+   * no new request and no re-render, since nothing about the toggle set actually changed.
+   * _refresh$ is the only way this ever re-fetches - pushed after an admin edit via setEnabled().
+   */
+  readonly toggles$: Observable<FeatureToggle[]> = this._refresh$.pipe(
+    startWith(undefined),
+    switchMap(() =>
+      this.apiService
+        .get<WebApiResponse<FeatureToggle[]>>(`${this._baseEndPoint}/getAll`)
+        .pipe(map((response) => response.data ?? [])),
+    ),
+    shareReplay(1),
+  );
 
   constructor(private apiService: ApiService) {}
 
-  refresh(): Observable<FeatureToggle[]> {
-    this._loading$ = this.fetch();
-    return this._loading$;
-  }
-
-  private fetch(): Observable<FeatureToggle[]> {
-    return this.apiService
-      .get<WebApiResponse<FeatureToggle[]>>(`${this._baseEndPoint}/getAll`)
-      .pipe(
-        map((response) => response.data ?? []),
-        tap((toggles) => {
-          this._toggles$.next(toggles);
-          this._loaded = true;
-        }),
-        shareReplay(1),
-      );
+  refresh(): void {
+    this._refresh$.next();
   }
 
   /**
-   * Returns whether the module identified by key is enabled. Fails open (true) both when the
-   * toggle isn't registered yet and while it's still loading, so a slow/failed request never
-   * hides an unrelated module by accident - the same fail-open policy used server-side.
+   * Returns whether the module identified by key is enabled. Fails open (true) when the toggle
+   * isn't registered, so a slow/failed request never hides an unrelated module by accident - the
+   * same fail-open policy used server-side. While toggles$ hasn't emitted yet this simply hasn't
+   * emitted either - callers gate visibility on that (e.g. *ngIf="... | async", which treats "no
+   * emission yet" as falsy) rather than on a guessed default, which is what used to let disabled
+   * modules flash visible before the real state arrived.
    */
   isEnabled(key: string): Observable<boolean> {
-    const source$ = this._loaded
-      ? of(this._toggles$.value)
-      : (this._loading$ ??= this.fetch());
-    return source$.pipe(
+    return this.toggles$.pipe(
       map((toggles) => {
         const toggle = toggles.find((t) => t.key === key);
         return toggle ? toggle.enabled !== false : true;
@@ -70,7 +69,7 @@ export class FeatureFlagService {
         `${this._baseEndPoint}/setEnabled/${key}/${enabled}`,
         null,
       )
-      .pipe(tap(() => this.refresh().subscribe()));
+      .pipe(tap(() => this.refresh()));
   }
 
   getAll(): Observable<WebApiResponse<FeatureToggle[]>> {

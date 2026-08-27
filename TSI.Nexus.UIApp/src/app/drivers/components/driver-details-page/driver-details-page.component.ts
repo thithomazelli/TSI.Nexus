@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Driver, DriverService, TranslationService } from '@nexus/core';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
+import { combineLatest, map, Subject, takeUntil, Observable } from 'rxjs';
+import { AsyncPipe } from '@angular/common';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { PhotoComponent } from '../../../shared/photo/photo.component';
 import { DriverFormComponent } from '../driver-form/driver-form.component';
@@ -22,6 +23,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     imports: [
         HeaderComponent,
         PhotoComponent,
+        AsyncPipe,
         DriverFormComponent,
         ServiceOrderListComponent,
         TripsComponent,
@@ -36,10 +38,11 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
   isEdit = false;
   data?: Driver | null = null;
   loading = false;
-  // Defaults hidden, not enabled: flips to the real value once the
-  // combineLatest subscription below resolves - defaulting true showed the
-  // Agenda tab immediately, then hid it a moment later if disabled.
-  isAgendaEnabled = false;
+  // Read via the async pipe in the template rather than subscribed into a plain field: no
+  // manual Subscription/ngOnDestroy bookkeeping, and the async pipe treats "no emission yet" as
+  // falsy, so the tab stays out of the DOM until the real state is known instead of a guessed
+  // default flashing on screen first.
+  isAgendaEnabled$!: Observable<boolean>;
   activeTab:
     | 'details'
     | 'serviceOrders'
@@ -65,7 +68,12 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
     private driverService: DriverService,
     private routerService: Router,
     private featureFlagService: FeatureFlagService,
-  ) {}
+  ) {
+    this.isAgendaEnabled$ = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
 
   getStatusLabel(): string {
     if (!this.data?.status) {
@@ -75,14 +83,6 @@ export class DriverDetailsPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    combineLatest([
-      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ])
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(([groupEnabled, entityEnabled]) => {
-        this.isAgendaEnabled = groupEnabled && entityEnabled;
-      });
     this.activatedRoute.paramMap
       .pipe(takeUntil(this._destroy$))
       .subscribe((paramMap) => {

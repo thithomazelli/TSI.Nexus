@@ -11,12 +11,12 @@ import {
   DocumentTemplateService,
   downloadLetterheadPdf,
 } from '@nexus/core';
-import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge, of } from 'rxjs';
+import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge, map, of, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { buildQuotePages } from '../../utilities/quote-documents';
 import { HeaderComponent } from '../../../shared/header/header.component';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { QuoteFormComponent } from '../quote-form/quote-form.component';
 import { QuoteProductsComponent } from '../../../quote-products/quote-products.component';
 import { QuoteTripLegListComponent } from '../quote-trip-leg-list/quote-trip-leg-list.component';
@@ -34,6 +34,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
     imports: [
         HeaderComponent,
         NgIf,
+        AsyncPipe,
         QuoteFormComponent,
         QuoteProductsComponent,
         QuoteTripLegListComponent,
@@ -48,10 +49,11 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
   data?: Quote | null = null;
   id: string | null = null;
   loading = false;
-  // Defaults hidden, not enabled: flips to the real value once the
-  // combineLatest subscription below resolves - defaulting true showed the
-  // Agenda tab immediately, then hid it a moment later if disabled.
-  isAgendaEnabled = false;
+  // Read via the async pipe in the template rather than subscribed into a plain field: no
+  // manual Subscription/ngOnDestroy bookkeeping, and the async pipe treats "no emission yet" as
+  // falsy, so the tab stays out of the DOM until the real state is known instead of a guessed
+  // default flashing on screen first.
+  isAgendaEnabled$!: Observable<boolean>;
 
   activeTab: 'details' | 'products' | 'itinerary' | 'attachments' | 'agenda' | 'audit' = 'details';
 
@@ -75,17 +77,14 @@ export class QuoteDetailsPageComponent implements OnInit, OnDestroy {
     private businessPartnerService: BusinessPartnerService,
     private documentTemplateService: DocumentTemplateService,
     private featureFlagService: FeatureFlagService,
-  ) {}
-
-  ngOnInit(): void {
-    combineLatest([
+  ) {
+    this.isAgendaEnabled$ = combineLatest([
       this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
       this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ])
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(([groupEnabled, entityEnabled]) => {
-        this.isAgendaEnabled = groupEnabled && entityEnabled;
-      });
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
+
+  ngOnInit(): void {
     const idOrNumber = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idOrNumber && idOrNumber !== 'new') {

@@ -7,10 +7,10 @@ import {
   Individual,
   TranslationService,
 } from '@nexus/core';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
+import { combineLatest, map, Subject, takeUntil, Observable } from 'rxjs';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { PhotoComponent } from '../../../shared/photo/photo.component';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { BusinessPartnerFormComponent } from '../business-partner-form/business-partner-form.component';
 import { AddressComponent } from '../../../address/address.component';
 import { OrdersComponent } from '../../../orders/orders.component';
@@ -31,6 +31,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         HeaderComponent,
         PhotoComponent,
         NgIf,
+        AsyncPipe,
         BusinessPartnerFormComponent,
         AddressComponent,
         OrdersComponent,
@@ -59,10 +60,11 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
   title: string = '';
   baseEndPoint: string = '';
   canDisplayOrdersTab = true;
-  // Defaults hidden, not enabled: flips to the real value once the
-  // combineLatest subscription below resolves - defaulting true showed the
-  // Agenda tab immediately, then hid it a moment later if disabled.
-  isAgendaEnabled = false;
+  // Read via the async pipe in the template rather than subscribed into a plain field: no
+  // manual Subscription/ngOnDestroy bookkeeping, and the async pipe treats "no emission yet" as
+  // falsy, so the tab stays out of the DOM until the real state is known instead of a guessed
+  // default flashing on screen first.
+  isAgendaEnabled$!: Observable<boolean>;
 
   private _destroy$ = new Subject<void>();
 
@@ -72,21 +74,18 @@ export class BusinessPartnerDetailsPageComponent implements OnInit, OnDestroy {
     private routerService: Router,
     private translationService: TranslationService,
     private featureFlagService: FeatureFlagService,
-  ) {}
+  ) {
+    this.isAgendaEnabled$ = combineLatest([
+      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
+      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
+    ]).pipe(map(([groupEnabled, entityEnabled]) => groupEnabled && entityEnabled));
+  }
 
   ngOnInit(): void {
     this.initialize();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => this.initialize());
-    combineLatest([
-      this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
-      this.featureFlagService.isEnabled(FeatureToggleKeys.Event),
-    ])
-      .pipe(takeUntil(this._destroy$))
-      .subscribe(([groupEnabled, entityEnabled]) => {
-        this.isAgendaEnabled = groupEnabled && entityEnabled;
-      });
     const idParam = this.activatedRoute.snapshot.paramMap.get('id');
 
     if (idParam && idParam !== 'new') {

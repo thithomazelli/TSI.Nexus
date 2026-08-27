@@ -21,20 +21,20 @@
     <ng-container *ngIf="user$ | async as user">
       <ul class="navbar-nav ms-auto">
         <!--begin::Notifications Dropdown Menu-->
-        <li class="nav-item dropdown" *ngIf="isPaymentAlertEnabled">
+        <li class="nav-item dropdown" *ngIf="isPaymentAlertEnabled$ | async">
           <app-payment-notification class=""></app-payment-notification>
         </li>
         <!--end::Notifications Dropdown Menu-->
-        <li class="nav-item dropdown" *ngIf="isVehicleBlockedAlertEnabled">
+        <li class="nav-item dropdown" *ngIf="isVehicleBlockedAlertEnabled$ | async">
           <app-vehicle-blocked-notification></app-vehicle-blocked-notification>
         </li>
-        <li class="nav-item dropdown" *ngIf="isDriverLicenseAlertEnabled">
+        <li class="nav-item dropdown" *ngIf="isDriverLicenseAlertEnabled$ | async">
           <app-driver-license-notification></app-driver-license-notification>
         </li>
-        <li class="nav-item dropdown" *ngIf="isStockAlertEnabled">
+        <li class="nav-item dropdown" *ngIf="isStockAlertEnabled$ | async">
           <app-stock-alert-notification></app-stock-alert-notification>
         </li>
-        <li class="nav-item dropdown" *ngIf="isUpcomingEventAlertEnabled">
+        <li class="nav-item dropdown" *ngIf="isUpcomingEventAlertEnabled$ | async">
           <app-upcoming-event-notification></app-upcoming-event-notification>
         </li>
         <!--begin::Fullscreen Toggle-->
@@ -90,7 +90,7 @@
             </li>
             <!--end::Preferences-->
             <!--begin::Agenda shortcut-->
-            <li class="px-3 pb-2" *ngIf="isAgendaModuleEnabled">
+            <li class="px-3 pb-2" *ngIf="isAgendaModuleEnabled$ | async">
               <a
                 class="btn btn-outline-primary btn-sm w-100"
                 [routerLink]="['/agenda']"

@@ -80,7 +80,7 @@
           </a>
         </li>
 
-        <li class="nav-item" *ngIf="isAgendaModuleEnabled">
+        <li class="nav-item" *ngIf="isAgendaModuleEnabled$ | async">
           <a
             routerLink="/agenda"
             routerLinkActive="active"
@@ -92,7 +92,7 @@
           </a>
         </li>
 
-        <li class="nav-item" *ngIf="isQuotesModuleEnabled">
+        <li class="nav-item" *ngIf="isQuotesModuleEnabled$ | async">
           <a
             routerLink="/quotes"
             routerLinkActive="active"
@@ -104,7 +104,7 @@
           </a>
         </li>
 
-        <li class="nav-item" *ngIf="isSalesOrdersModuleEnabled">
+        <li class="nav-item" *ngIf="isSalesOrdersModuleEnabled$ | async">
           <a
             routerLink="/orders"
             routerLinkActive="active"
@@ -116,7 +116,7 @@
           </a>
         </li>
 
-        <li class="nav-item" *ngIf="isPurchaseOrdersModuleEnabled">
+        <li class="nav-item" *ngIf="isPurchaseOrdersModuleEnabled$ | async">
           <a
             routerLink="/purchase-orders"
             routerLinkActive="active"
@@ -128,7 +128,7 @@
           </a>
         </li>
 
-        <ng-container *ngIf="isFleetModuleEnabled">
+        <ng-container *ngIf="isFleetModuleEnabled$ | async">
           <li class="nav-header">{{ 'SIDEBAR.CHARTERING' | translate }}</li>
 
           <li class="nav-item">
@@ -167,7 +167,7 @@
             </a>
           </li>
 
-          <li class="nav-item" *ngIf="isVehicleMaintenanceEnabled">
+          <li class="nav-item" *ngIf="isVehicleMaintenanceEnabled$ | async">
             <a
               routerLink="/vehicle-maintenances"
               routerLinkActive="active"
@@ -179,7 +179,7 @@
             </a>
           </li>
 
-          <li class="nav-item" *ngIf="isFuelLogEnabled">
+          <li class="nav-item" *ngIf="isFuelLogEnabled$ | async">
             <a
               routerLink="/fuel-logs"
               routerLinkActive="active"
