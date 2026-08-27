@@ -140,6 +140,7 @@
                       [matAutocomplete]="linkAuto"
                       [placeholder]="config.translationKey | translate"
                       [id]="'eventLink-' + config.key"
+                      (focus)="config.activate()"
                       (blur)="onLinkBlur(config)"
                     />
                     <label [for]="'eventLink-' + config.key">{{ config.translationKey | translate }}</label>

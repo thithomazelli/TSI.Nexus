@@ -4,7 +4,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatAutocompleteTrigger, MatAutocomplete, MatOption } from '@angular/material/autocomplete';
 import { AsyncPipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { Observable, Subject, combineLatestWith, forkJoin, map, of, shareReplay, startWith, takeUntil, tap } from 'rxjs';
+import { Observable, Subject, combineLatestWith, forkJoin, map, of, shareReplay, startWith, switchMap, take, takeUntil, tap } from 'rxjs';
 import {
   AgendaEvent,
   BusinessPartnerService,
@@ -55,6 +55,12 @@ interface LinkConfig {
   icon: string;
   items$: Observable<LinkOption[]>;
   filtered$?: Observable<LinkOption[]>;
+  // Each link type's full list is only fetched once the user actually focuses that field (see
+  // (focus)="config.activate()" in the template) - with 11 link types on this form, eagerly
+  // fetching all of them on every open meant opening the "novo evento" modal fired ~11 full,
+  // unpaginated GETs even though a real event links to at most one or two of them. activate() is
+  // idempotent: only the first call per field instance actually triggers the fetch.
+  activate: () => void;
 }
 
 // Event form shared by the Add/Edit modal (main Agenda screen) and every entity's own Agenda tab.
@@ -361,51 +367,44 @@ export class EventFormComponent extends FormBaseComponent implements OnInit, OnC
   }
 
   private setupLinkConfigs(): void {
-    const businessPartners$ = this.mergeResponses(
-      this.businessPartnerService.getClients(),
-      this.businessPartnerService.getSuppliers(),
-    ).pipe(map((items) => items.map((i) => ({ id: i.id!, label: i.name! }))));
-
     this.linkConfigs = [
-      this.buildConfig('businessPartner', 'businessPartnerId', 'AGENDA.LINK_BUSINESS_PARTNER', 'bi-person', businessPartners$),
-      this.buildConfig(
-        'quote', 'quoteId', 'AGENDA.LINK_QUOTE', 'bi-file-earmark-text',
+      this.buildConfig('businessPartner', 'businessPartnerId', 'AGENDA.LINK_BUSINESS_PARTNER', 'bi-person', () =>
+        this.mergeResponses(
+          this.businessPartnerService.getClients(),
+          this.businessPartnerService.getSuppliers(),
+        ).pipe(map((items) => items.map((i) => ({ id: i.id!, label: i.name! })))),
+      ),
+      this.buildConfig('quote', 'quoteId', 'AGENDA.LINK_QUOTE', 'bi-file-earmark-text', () =>
         this.mapList(this.quoteService.getAll(), (q: any) => ({ id: q.id, label: q.quoteNumber })),
       ),
-      this.buildConfig(
-        'order', 'orderId', 'AGENDA.LINK_ORDER', 'bi-cart-check',
+      this.buildConfig('order', 'orderId', 'AGENDA.LINK_ORDER', 'bi-cart-check', () =>
         this.mapList(this.orderService.getAll(), (o: any) => ({ id: o.id, label: o.orderNumber })),
       ),
       this.buildConfig(
-        'purchaseOrder', 'purchaseOrderId', 'AGENDA.LINK_PURCHASE_ORDER', 'bi-cart-plus',
-        this.mapList(this.purchaseOrderService.getAll(), (o: any) => ({ id: o.id, label: o.purchaseOrderNumber })),
+        'purchaseOrder', 'purchaseOrderId', 'AGENDA.LINK_PURCHASE_ORDER', 'bi-cart-plus', () =>
+          this.mapList(this.purchaseOrderService.getAll(), (o: any) => ({ id: o.id, label: o.purchaseOrderNumber })),
       ),
-      this.buildConfig(
-        'trip', 'tripId', 'AGENDA.LINK_TRIP', 'bi-signpost-2',
+      this.buildConfig('trip', 'tripId', 'AGENDA.LINK_TRIP', 'bi-signpost-2', () =>
         this.mapList(this.tripService.getAll(), (t: any) => ({ id: t.id, label: t.tripNumber })),
       ),
       this.buildConfig(
-        'transaction', 'transactionId', 'AGENDA.LINK_TRANSACTION', 'bi-arrow-left-right',
-        this.mapList(this.transactionService.getAll(), (t: any) => ({ id: t.id, label: t.description })),
+        'transaction', 'transactionId', 'AGENDA.LINK_TRANSACTION', 'bi-arrow-left-right', () =>
+          this.mapList(this.transactionService.getAll(), (t: any) => ({ id: t.id, label: t.description })),
       ),
-      this.buildConfig(
-        'payment', 'paymentId', 'AGENDA.LINK_PAYMENT', 'bi-credit-card',
+      this.buildConfig('payment', 'paymentId', 'AGENDA.LINK_PAYMENT', 'bi-credit-card', () =>
         this.mapList(this.paymentService.getAll(), (p: any) => ({ id: p.id, label: p.description })),
       ),
-      this.buildConfig(
-        'vehicle', 'vehicleId', 'AGENDA.LINK_VEHICLE', 'bi-truck',
+      this.buildConfig('vehicle', 'vehicleId', 'AGENDA.LINK_VEHICLE', 'bi-truck', () =>
         this.mapList(this.vehicleService.getAll(), (v: any) => ({ id: v.id, label: v.plate })),
       ),
-      this.buildConfig(
-        'driver', 'driverId', 'AGENDA.LINK_DRIVER', 'bi-person-badge',
+      this.buildConfig('driver', 'driverId', 'AGENDA.LINK_DRIVER', 'bi-person-badge', () =>
         this.mapList(this.driverService.getAll(), (d: any) => ({ id: d.id, label: d.name })),
       ),
       this.buildConfig(
-        'vehicleMaintenance', 'vehicleMaintenanceId', 'AGENDA.LINK_VEHICLE_MAINTENANCE', 'bi-tools',
-        this.mapList(this.vehicleMaintenanceService.getAll(), (m: any) => ({ id: m.id, label: m.description })),
+        'vehicleMaintenance', 'vehicleMaintenanceId', 'AGENDA.LINK_VEHICLE_MAINTENANCE', 'bi-tools', () =>
+          this.mapList(this.vehicleMaintenanceService.getAll(), (m: any) => ({ id: m.id, label: m.description })),
       ),
-      this.buildConfig(
-        'fuelLog', 'fuelLogId', 'AGENDA.LINK_FUEL_LOG', 'bi-fuel-pump',
+      this.buildConfig('fuelLog', 'fuelLogId', 'AGENDA.LINK_FUEL_LOG', 'bi-fuel-pump', () =>
         this.mapList(this.fuelLogService.getAll(), (f: any) => ({ id: f.id, label: f.gasStation })),
       ),
     ];
@@ -433,15 +432,24 @@ export class EventFormComponent extends FormBaseComponent implements OnInit, OnC
     idField: string,
     translationKey: string,
     icon: string,
-    items$: Observable<LinkOption[]>,
+    itemsFactory: () => Observable<LinkOption[]>,
   ): LinkConfig {
+    const activate$ = new Subject<void>();
     return {
       key,
       idField,
       labelField: `${key}Label`,
       translationKey,
       icon,
-      items$: items$.pipe(shareReplay(1)),
+      // take(1): only the first activate() call actually fetches - later focus events on the
+      // same field instance are no-ops, and shareReplay(1) keeps the resolved list around for
+      // this form's lifetime so re-focusing (or typing again) doesn't refetch.
+      items$: activate$.pipe(
+        take(1),
+        switchMap(() => itemsFactory()),
+        shareReplay(1),
+      ),
+      activate: () => activate$.next(),
     };
   }
 
