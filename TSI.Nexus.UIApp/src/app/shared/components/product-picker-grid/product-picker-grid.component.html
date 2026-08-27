@@ -28,7 +28,7 @@
             (optionSelected)="selectProduct($event.option.value)"
           >
             <mat-option
-              *ngFor="let product of filteredProductsSku$ | async"
+              *ngFor="let product of filteredProductsSku$ | async; trackBy: trackByProductId"
               [value]="product"
               [disabled]="product.disabled || product.alreadyUsed"
               [ngClass]="{ 'text-muted': product.disabled || product.alreadyUsed }"
@@ -58,7 +58,7 @@
             (optionSelected)="selectProduct($event.option.value)"
           >
             <mat-option
-              *ngFor="let product of filteredProductsName$ | async"
+              *ngFor="let product of filteredProductsName$ | async; trackBy: trackByProductId"
               [value]="product"
               [disabled]="product.disabled || product.alreadyUsed"
               [ngClass]="{ 'text-muted': product.disabled || product.alreadyUsed }"
@@ -98,7 +98,7 @@
           </button>
         </td>
       </tr>
-      <tr *ngFor="let item of items; let i = index">
+      <tr *ngFor="let item of items; let i = index; trackBy: trackByIndex">
         <td class="table-cell-info">{{ item.productSku }}</td>
         <td class="table-cell-info">{{ item.productName }}</td>
         <td class="table-cell-info">

@@ -247,6 +247,14 @@ export class ProductPickerGridComponent implements OnInit, OnDestroy {
     this.openManualModal.emit();
   }
 
+  trackByProductId(_index: number, product: Product): string {
+    return product.id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
   private initForm(): void {
     this.inlineProductForm = this.formBuilder.group({
       productId: [''],

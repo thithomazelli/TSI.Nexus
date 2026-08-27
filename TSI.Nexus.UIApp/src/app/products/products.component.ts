@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   ModalService,
@@ -25,6 +25,7 @@ import { TranslatePipe } from '../core/pipes/translate.pipe';
     selector: 'app-products',
     templateUrl: './products.component.html',
     styleUrl: './products.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         HeaderComponent,
         GridComponent,
@@ -208,9 +209,13 @@ export class ProductsComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private productService: ProductService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.buildColumnDefs();
-    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+    this.translationService.language$.subscribe(() => {
+      this.buildColumnDefs();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit(): void {
@@ -245,6 +250,8 @@ export class ProductsComponent implements OnInit, OnDestroy {
       .subscribe((response: WebApiResponse<Product>) => {
         if (response.status === ResponseStatus.Success) {
           this.rowData = this.rowData.filter((p) => p.id !== product.id);
+          this.applyStockStatusFilter();
+          this.cdr.markForCheck();
         }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
@@ -282,6 +289,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];
         this.applyStockStatusFilter();
+        this.cdr.markForCheck();
       });
     this.productService.refresh();
   }
@@ -296,6 +304,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
       .subscribe((response: WebApiResponse<Product[]>) => {
         this.rowData = response.data ?? [];
         this.applyStockStatusFilter();
+        this.cdr.markForCheck();
       });
     this.productService.refresh();
   }
