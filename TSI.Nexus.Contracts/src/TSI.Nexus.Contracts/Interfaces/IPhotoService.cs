@@ -22,6 +22,6 @@ namespace TSI.Nexus.Contracts.Interfaces
         /// <summary>
         /// Returns a file result (stream + content type) for the given entity photo.
         /// </summary>
-        WebApiResponse<AttachmentFileResult> GetPhotoFile(string entity, Guid entityId, string fileName);
+        Task<WebApiResponse<AttachmentFileResult>> GetPhotoFileAsync(string entity, Guid entityId, string fileName);
     }
 }

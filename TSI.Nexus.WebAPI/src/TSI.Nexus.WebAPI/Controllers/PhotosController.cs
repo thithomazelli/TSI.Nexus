@@ -31,13 +31,13 @@ public class PhotosController : ControllerBase
 
     [HttpGet("GetPhoto")]
     [Authorize]
-    public IActionResult GetPhoto(
+    public async Task<IActionResult> GetPhoto(
         [FromQuery] string entity,
         [FromQuery] Guid entityId,
         [FromQuery] string fileName
     )
     {
-        var response = _photoService.GetPhotoFile(entity, entityId, fileName);
+        var response = await _photoService.GetPhotoFileAsync(entity, entityId, fileName);
 
         if (response.Status != ResponseStatus.Success || response.Data == null)
             return NotFound(response.Message);

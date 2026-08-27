@@ -251,10 +251,10 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
-        public void PhotoService_GetPhotoFile_ShouldReturnError_WhenFileNameIsEmpty()
+        public async Task PhotoService_GetPhotoFileAsync_ShouldReturnError_WhenFileNameIsEmpty()
         {
             // Act
-            var result = _service.GetPhotoFile("Vehicles", Guid.NewGuid(), string.Empty);
+            var result = await _service.GetPhotoFileAsync("Vehicles", Guid.NewGuid(), string.Empty);
 
             // Assert
             Assert.Equal(ResponseStatus.Error, result.Status);
@@ -262,10 +262,10 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
-        public void PhotoService_GetPhotoFile_ShouldReturnError_WhenPhotoDoesNotExist()
+        public async Task PhotoService_GetPhotoFileAsync_ShouldReturnError_WhenPhotoDoesNotExist()
         {
             // Act
-            var result = _service.GetPhotoFile("Vehicles", Guid.NewGuid(), "not-there.jpg");
+            var result = await _service.GetPhotoFileAsync("Vehicles", Guid.NewGuid(), "not-there.jpg");
 
             // Assert
             Assert.Equal(ResponseStatus.Error, result.Status);
@@ -273,7 +273,7 @@ namespace TSI.Nexus.Services.Tests.Services
         }
 
         [Fact]
-        public async Task PhotoService_GetPhotoFile_ShouldReturnPhoto_WhenFileExists()
+        public async Task PhotoService_GetPhotoFileAsync_ShouldReturnPhoto_WhenFileExists()
         {
             // Arrange
             var vehicleId = Guid.NewGuid();
@@ -282,7 +282,7 @@ namespace TSI.Nexus.Services.Tests.Services
             var fileName = await _service.UploadImageAsync("Vehicles", vehicleId, file);
 
             // Act
-            var result = _service.GetPhotoFile("Vehicles", vehicleId, fileName);
+            var result = await _service.GetPhotoFileAsync("Vehicles", vehicleId, fileName);
 
             // Assert
             Assert.Equal(ResponseStatus.Success, result.Status);

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -46,7 +47,7 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public void PhotosController_GetPhoto_ShouldReturnFile_WhenPhotoIsFound()
+        public async Task PhotosController_GetPhoto_ShouldReturnFile_WhenPhotoIsFound()
         {
             // Arrange
             var entityId = Guid.NewGuid();
@@ -64,11 +65,11 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
             };
 
             _photoServiceMock
-                .Setup(_ => _.GetPhotoFile("Products", entityId, "photo.jpg"))
-                .Returns(expectedResult);
+                .Setup(_ => _.GetPhotoFileAsync("Products", entityId, "photo.jpg"))
+                .ReturnsAsync(expectedResult);
 
             // Act
-            var result = _controller.GetPhoto("Products", entityId, "photo.jpg");
+            var result = await _controller.GetPhoto("Products", entityId, "photo.jpg");
 
             // Assert
             var fileStreamResult = Assert.IsType<FileStreamResult>(result);
@@ -77,7 +78,7 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
         }
 
         [Fact]
-        public void PhotosController_GetPhoto_ShouldReturnNotFound_WhenPhotoIsNotFound()
+        public async Task PhotosController_GetPhoto_ShouldReturnNotFound_WhenPhotoIsNotFound()
         {
             // Arrange
             var entityId = Guid.NewGuid();
@@ -89,11 +90,11 @@ namespace TSI.Nexus.WebAPI.Tests.Controllers
             };
 
             _photoServiceMock
-                .Setup(_ => _.GetPhotoFile("Products", entityId, "photo.jpg"))
-                .Returns(expectedResult);
+                .Setup(_ => _.GetPhotoFileAsync("Products", entityId, "photo.jpg"))
+                .ReturnsAsync(expectedResult);
 
             // Act
-            var result = _controller.GetPhoto("Products", entityId, "photo.jpg");
+            var result = await _controller.GetPhoto("Products", entityId, "photo.jpg");
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);

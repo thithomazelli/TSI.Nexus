@@ -103,7 +103,7 @@ namespace TSI.Nexus.Services.Services
         }
 
         /// <inheritdoc />
-        public WebApiResponse<AttachmentFileResult> GetPhotoFile(
+        public async Task<WebApiResponse<AttachmentFileResult>> GetPhotoFileAsync(
             string entity,
             Guid entityId,
             string fileName
@@ -118,7 +118,7 @@ namespace TSI.Nexus.Services.Services
                 return response;
             }
 
-            var dirPath = BuildPhotoPathAsync(entity, entityId).GetAwaiter().GetResult();
+            var dirPath = await BuildPhotoPathAsync(entity, entityId);
             var fullPath = Path.Combine(dirPath, SanitizeFileName(fileName));
 
             if (!File.Exists(fullPath))
