@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   ApiType,
   Company,
@@ -29,6 +29,7 @@ import { TranslatePipe } from '../core/pipes/translate.pipe';
     selector: 'app-orders',
     templateUrl: './orders.component.html',
     styleUrl: './orders.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         NgIf,
         HeaderComponent,
@@ -71,6 +72,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private orderService: OrderService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -78,7 +80,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
 
     this._orderChangedSub = this.orderService.orderChanged$
       .pipe(takeUntil(this._destroy$))
@@ -125,6 +130,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
           this.filteredRowData = this.filteredRowData.filter(
             (p) => p.id !== order.id,
           );
+          this.cdr.markForCheck();
         }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
@@ -329,6 +335,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
             this.translationService.instant('ORDERS.ORDERS_REFRESHED'),
           );
         }
+
+        this.cdr.markForCheck();
       });
   }
 

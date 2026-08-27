@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
 import {
   BusinessPartner,
   BusinessPartnerService,
@@ -25,6 +25,7 @@ import { TranslatePipe } from '../core/pipes/translate.pipe';
     selector: 'app-business-partners',
     templateUrl: './business-partners.component.html',
     styleUrl: './business-partners.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         HeaderComponent,
         GridComponent,
@@ -46,6 +47,7 @@ export class BusinessPartnersComponent {
     private notificationService: NotificationService,
     private routerService: Router,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -56,6 +58,7 @@ export class BusinessPartnersComponent {
       .subscribe(() => {
         this.initialize();
         this.buildColumnDefs();
+        this.cdr.markForCheck();
       });
     this._businessPartnerChangedSub =
       this.businessPartnerService.businessPartnerChanged$
@@ -234,6 +237,7 @@ export class BusinessPartnersComponent {
           this.rowData = this.rowData.filter(
             (p) => p.id !== businessPartner.id,
           );
+          this.cdr.markForCheck();
         }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
@@ -277,6 +281,7 @@ export class BusinessPartnersComponent {
       )
       .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
+        this.cdr.markForCheck();
       });
   }
 
@@ -304,6 +309,7 @@ export class BusinessPartnersComponent {
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
+        this.cdr.markForCheck();
       });
   }
 
@@ -313,6 +319,7 @@ export class BusinessPartnersComponent {
       .pipe(takeUntil(this._destroy$))
       .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
         this.rowData = response.data ?? [];
+        this.cdr.markForCheck();
       });
   }
 }

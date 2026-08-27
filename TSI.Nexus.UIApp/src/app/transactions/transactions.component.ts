@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 
 import {
   ApiType,
@@ -29,6 +29,7 @@ import { TranslatePipe } from '../core/pipes/translate.pipe';
     selector: 'app-transactions',
     templateUrl: './transactions.component.html',
     styleUrl: './transactions.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         NgIf,
         HeaderComponent,
@@ -98,6 +99,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private transactionService: TransactionService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -105,7 +107,10 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
     this._transactionChangedSub = this.transactionService.transactionChanged$
       .pipe(takeUntil(this._destroy$))
       .subscribe(() => {
@@ -137,6 +142,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
           this.filteredRowData = this.filteredRowData.filter(
             (p) => p.id !== transaction.id,
           );
+          this.cdr.markForCheck();
         }
         this.modalService.hideModal();
         this.modalService.showSweetNotification(
@@ -374,6 +380,8 @@ export class TransactionsComponent implements OnInit, OnDestroy {
             this.translationService.instant('TRANSACTIONS.TRANSACTIONS_REFRESHED'),
           );
         }
+
+        this.cdr.markForCheck();
       });
   }
 
