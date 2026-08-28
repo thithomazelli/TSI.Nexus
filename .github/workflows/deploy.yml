@@ -114,6 +114,13 @@ jobs:
         # alone fixes that; content-hashed JS/CSS still transfer correctly whenever they actually
         # change, since a real content change gives them a new hashed filename (a different file
         # as far as mirror is concerned), not just a different mtime on the same name.
+        #
+        # Only the un-hashed root files (index.html, web.config, manifest.webmanifest) don't get
+        # that "new filename on change" safety net - a same-byte-size edit to one of them could in
+        # theory get skipped by a size-only comparison. Kept in a separate pass, size+mtime as
+        # before (i.e. always re-uploaded, since local mtime is always fresh in CI), while
+        # --ignore-time applies only to everything else - scoped to this frontend job, the backend
+        # deploy below is untouched.
         env:
           LFTP_FTP_SERVER: ${{ secrets.SERODIO_FTP_SERVER }}
           LFTP_FTP_USERNAME: ${{ secrets.SERODIO_FTP_USERNAME }}
@@ -126,7 +133,8 @@ jobs:
             set ssl:verify-certificate no;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
-            mirror -R --verbose --parallel=1 --no-perms --delete --ignore-time dist/tsi.nexus.uiapp/browser/ /www/serodio/;
+            mirror -R --verbose --parallel=1 --no-perms --delete --include-glob=index.html --include-glob=web.config --include-glob=manifest.webmanifest --exclude-glob=* dist/tsi.nexus.uiapp/browser/ /www/serodio/;
+            mirror -R --verbose --parallel=1 --no-perms --delete --ignore-time --exclude-glob=index.html --exclude-glob=web.config --exclude-glob=manifest.webmanifest dist/tsi.nexus.uiapp/browser/ /www/serodio/;
             bye
           "
 
