@@ -133,7 +133,7 @@ jobs:
             set ssl:verify-certificate no;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
-            mirror -R --verbose --parallel=1 --no-perms --delete --include-glob=index.html --include-glob=web.config --include-glob=manifest.webmanifest --exclude-glob=* dist/tsi.nexus.uiapp/browser/ /www/serodio/;
+            mirror -R --verbose --parallel=1 --no-perms --delete --include-glob=index.html --include-glob=web.config --include-glob=manifest.webmanifest dist/tsi.nexus.uiapp/browser/ /www/serodio/;
             mirror -R --verbose --parallel=1 --no-perms --delete --ignore-time --exclude-glob=index.html --exclude-glob=web.config --exclude-glob=manifest.webmanifest dist/tsi.nexus.uiapp/browser/ /www/serodio/;
             bye
           "
