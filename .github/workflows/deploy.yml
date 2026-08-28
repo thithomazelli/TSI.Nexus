@@ -3,6 +3,7 @@ name: Build and Deploy
 on:
   push:
     branches: [main, serodioturismo]
+  workflow_dispatch:
 
 jobs:
   # --- main branch: original deploy target -----------------------------------
