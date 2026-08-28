@@ -100,6 +100,11 @@ jobs:
         # on this host's very first data-connection operation of a sync, regardless of whether
         # the target directory already existed -- reproduced 4/4 times. Switched to lftp (mature,
         # battle-tested FTPS client) which handles this host's data channel correctly.
+        #
+        # --delete removes remote-only files so old content-hashed JS/CSS chunks and any leftover
+        # web.config from a previous manual deploy don't linger indefinitely - safe here because
+        # the frontend build output is fully reproducible from source, unlike the backend's
+        # publish/ (see deploy-backend-serodio below), which has attachments/ and logs to protect.
         env:
           LFTP_FTP_SERVER: ${{ secrets.SERODIO_FTP_SERVER }}
           LFTP_FTP_USERNAME: ${{ secrets.SERODIO_FTP_USERNAME }}
@@ -112,7 +117,7 @@ jobs:
             set ssl:verify-certificate no;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
-            mirror -R --verbose --parallel=1 --no-perms dist/tsi.nexus.uiapp/browser/ /www/serodio-app/;
+            mirror -R --verbose --parallel=1 --no-perms --delete dist/tsi.nexus.uiapp/browser/ /www/serodio/;
             bye
           "
 
