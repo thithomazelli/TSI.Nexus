@@ -54,24 +54,20 @@
 // so on narrow phones the row's total width outgrows the viewport and the user avatar - the
 // only way into the user-menu dropdown - gets pushed off-screen with no way to reach it short of
 // scrolling the whole page sideways. Tighter padding reclaims enough width to fit in the common
-// case; overflow-x auto is a safety net so nothing goes unreachable if more bells get enabled or
-// the screen is narrower still.
+// case.
+//
+// A prior version of this fix also added overflow-x: auto (+ overflow-y: hidden, needed to stop
+// the auto from silently growing to both axes) as a safety net for even narrower screens - but
+// every dropdown in this row (the 5 notification bells and the user-menu) opens as a
+// position: absolute descendant of this same container, and overflow-y: hidden clips them
+// completely: the panel toggled open in the DOM (display: block, .show class present) but never
+// painted a single visible pixel, so on mobile no bell and no avatar could open anything. Not
+// worth it - dropped in favor of just the padding reduction, which was already enough to fit the
+// row in every tenant scenario tested.
 @media (max-width: 599.98px) {
-  .navbar .navbar-nav.ms-auto {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-
-    > .nav-item > .nav-link {
-      padding-left: 0.5rem;
-      padding-right: 0.5rem;
-    }
+  .navbar .navbar-nav.ms-auto > .nav-item > .nav-link {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 
   // The Fullscreen API isn't supported on iOS Safari for arbitrary elements (only <video> gets a
