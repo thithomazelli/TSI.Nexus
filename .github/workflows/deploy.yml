@@ -106,6 +106,14 @@ jobs:
         # web.config from a previous manual deploy don't linger indefinitely - safe here because
         # the frontend build output is fully reproducible from source, unlike the backend's
         # publish/ (see deploy-backend-serodio below), which has attachments/ and logs to protect.
+        #
+        # --ignore-time: mirror's default up-to-date check is size + mtime, but actions/checkout
+        # gives every file a fresh mtime on every run, so the local copy always looks "newer" than
+        # whatever's already on the FTP server even when the bytes are identical - unchanged
+        # assets (images, etc.) were getting re-uploaded on every single deploy. Comparing by size
+        # alone fixes that; content-hashed JS/CSS still transfer correctly whenever they actually
+        # change, since a real content change gives them a new hashed filename (a different file
+        # as far as mirror is concerned), not just a different mtime on the same name.
         env:
           LFTP_FTP_SERVER: ${{ secrets.SERODIO_FTP_SERVER }}
           LFTP_FTP_USERNAME: ${{ secrets.SERODIO_FTP_USERNAME }}
@@ -118,7 +126,7 @@ jobs:
             set ssl:verify-certificate no;
             set net:max-retries 3;
             set net:reconnect-interval-base 5;
-            mirror -R --verbose --parallel=1 --no-perms --delete dist/tsi.nexus.uiapp/browser/ /www/serodio/;
+            mirror -R --verbose --parallel=1 --no-perms --delete --ignore-time dist/tsi.nexus.uiapp/browser/ /www/serodio/;
             bye
           "
 
