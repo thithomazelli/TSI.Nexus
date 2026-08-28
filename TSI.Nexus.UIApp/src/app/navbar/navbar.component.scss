@@ -73,4 +73,11 @@
       padding-right: 0.5rem;
     }
   }
+
+  // The Fullscreen API isn't supported on iOS Safari for arbitrary elements (only <video> gets a
+  // native fullscreen there), so the toggle is dead weight on the phones this fix targets - drop
+  // it below the same breakpoint to reclaim another icon's worth of width from the row above.
+  .fullscreen-toggle {
+    display: none;
+  }
 }
