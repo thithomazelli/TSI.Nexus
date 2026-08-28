@@ -22,8 +22,9 @@ if (env === "homolog") {
   baseHref = "/cacambas/web/";
   faviconPath = "/cacambas/web/favicon.ico";
 } else if (env === "serodio") {
-  // serodio-app.nexusoperations.com.br serves straight from its FTP docroot (/www/serodio-app/),
-  // not from a subpath -- unlike the "production"/"homolog" targets above.
+  // serodio.nexusoperations.com.br serves straight from its FTP docroot (/www/serodio/, see
+  // deploy.yml's deploy-frontend-serodio job), not from a subpath -- unlike the
+  // "production"/"homolog" targets above.
   baseHref = "/";
   faviconPath = "/favicon.ico";
 } else if (env === "development") {
