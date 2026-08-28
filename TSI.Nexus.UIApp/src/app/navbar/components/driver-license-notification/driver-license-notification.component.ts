@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { Driver, DriverService, WebApiResponse } from '@nexus/core';
+import { RouterLink } from '@angular/router';
+import { Driver, DriverService, ModalService, WebApiResponse } from '@nexus/core';
 import { NgIf, NgFor, DatePipe } from '@angular/common';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
+import { DriverDetailsModalComponent } from '../../../drivers/components/driver-details-modal/driver-details-modal.component';
 
 @Component({
     selector: 'app-driver-license-notification',
@@ -22,7 +23,7 @@ export class DriverLicenseNotificationComponent implements OnInit {
 
   constructor(
     private driverService: DriverService,
-    private router: Router,
+    private modalService: ModalService,
   ) {}
 
   ngOnInit(): void {
@@ -43,6 +44,10 @@ export class DriverLicenseNotificationComponent implements OnInit {
   }
 
   openDriver(driver: Driver): void {
-    this.router.navigateByUrl(`/drivers/${driver.id}`);
+    this.modalService.showTemplateModal(DriverDetailsModalComponent, {
+      isEdit: true,
+      id: driver.id,
+      data: driver,
+    });
   }
 }

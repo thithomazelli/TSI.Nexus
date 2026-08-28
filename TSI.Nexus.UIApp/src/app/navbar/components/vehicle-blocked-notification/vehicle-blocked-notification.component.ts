@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { Vehicle, VehicleService, VehicleStatus, WebApiResponse } from '@nexus/core';
+import { RouterLink } from '@angular/router';
+import { ModalService, Vehicle, VehicleService, VehicleStatus, WebApiResponse } from '@nexus/core';
 import { NgIf, NgFor } from '@angular/common';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
+import { VehicleDetailsModalComponent } from '../../../vehicles/components/vehicle-details-modal/vehicle-details-modal.component';
 
 @Component({
     selector: 'app-vehicle-blocked-notification',
@@ -21,7 +22,7 @@ export class VehicleBlockedNotificationComponent implements OnInit {
 
   constructor(
     private vehicleService: VehicleService,
-    private router: Router,
+    private modalService: ModalService,
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +39,10 @@ export class VehicleBlockedNotificationComponent implements OnInit {
   }
 
   openVehicle(vehicle: Vehicle): void {
-    this.router.navigateByUrl(`/vehicles/${vehicle.id}`);
+    this.modalService.showTemplateModal(VehicleDetailsModalComponent, {
+      isEdit: true,
+      id: vehicle.id,
+      data: vehicle,
+    });
   }
 }
