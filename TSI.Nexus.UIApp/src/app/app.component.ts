@@ -2,7 +2,7 @@ import { Component, OnInit, Renderer2, OnDestroy, NgZone } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { AccountService, TranslationService } from './core';
 import { filter, map, Observable, Subscription } from 'rxjs';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { environment } from '../environments/environment';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { AsyncPipe, NgClass } from '@angular/common';
@@ -19,6 +19,7 @@ import { FooterComponent } from './shared/footer/footer.component';
 })
 export class AppComponent implements OnInit, OnDestroy {
   private sub?: Subscription;
+  private chunkErrorSub?: Subscription;
   private applied: string[] = [];
   private lastRefresh = 0;
   private refreshIntervalMs: number;
@@ -101,10 +102,15 @@ export class AppComponent implements OnInit, OnDestroy {
         // attempt to refresh token on every navigation except account pages
         this.checkRefreshOnNavigation(url);
       });
+
+    this.chunkErrorSub = this.router.events
+      .pipe(filter((evt): evt is NavigationError => evt instanceof NavigationError))
+      .subscribe((evt) => this.handleChunkLoadError(evt));
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+    this.chunkErrorSub?.unsubscribe();
     this.applied.forEach((c) => this.renderer.removeClass(document.body, c));
     // Remove listeners de atividade
     this.activityUnlisteners.forEach((unlisten) => {
@@ -113,6 +119,39 @@ export class AppComponent implements OnInit, OnDestroy {
       } catch {}
     });
     this.activityUnlisteners = [];
+  }
+
+  // A new deploy replaces every content-hashed JS chunk on the server (see deploy.yml's
+  // --delete mirror), so a tab that was already open with the previous build's main.js can fail
+  // to lazy-load a route's chunk that no longer exists - surfaces as a NavigationError whose
+  // underlying error is "Failed to fetch dynamically imported module" (Chrome) or a
+  // "ChunkLoadError"/"Loading chunk ... failed" (webpack/older browsers). A hard navigation to
+  // the same URL re-fetches the current index.html/main.js and resolves it. Guarded by
+  // sessionStorage so a genuinely broken route (or an offline connection) doesn't reload forever.
+  private handleChunkLoadError(event: NavigationError): void {
+    const message = String((event.error as { message?: unknown })?.message ?? event.error ?? '');
+    const isChunkLoadFailure =
+      /Failed to fetch dynamically imported module/i.test(message) ||
+      /ChunkLoadError/i.test(message) ||
+      /Loading chunk [\w.-]+ failed/i.test(message);
+
+    if (!isChunkLoadFailure) {
+      return;
+    }
+
+    const storageKey = 'nexusChunkReload';
+    const now = Date.now();
+    const last = JSON.parse(sessionStorage.getItem(storageKey) || 'null') as {
+      url: string;
+      ts: number;
+    } | null;
+
+    if (last && last.url === event.url && now - last.ts < 15000) {
+      return;
+    }
+
+    sessionStorage.setItem(storageKey, JSON.stringify({ url: event.url, ts: now }));
+    window.location.href = event.url;
   }
 
   private updateBodyClass(classes: string[]) {
