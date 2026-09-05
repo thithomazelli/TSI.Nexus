@@ -8,8 +8,22 @@ import {
   TripService,
   Vehicle,
   VehicleService,
+  VehicleMaintenanceService,
+  WebApiResponse,
 } from '@nexus/core';
-import { combineLatest, forkJoin, map, of, Subject, switchMap, takeUntil, Observable } from 'rxjs';
+import {
+  combineLatest,
+  forkJoin,
+  map,
+  merge,
+  of,
+  skip,
+  Subject,
+  Subscription,
+  switchMap,
+  takeUntil,
+  Observable,
+} from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { PhotoComponent } from '../../../shared/photo/photo.component';
@@ -72,12 +86,14 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
     };
   }
 
+  private _vehicleChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private translationService: TranslationService,
     private vehicleService: VehicleService,
+    private vehicleMaintenanceService: VehicleMaintenanceService,
     private tripService: TripService,
     private tripLegService: TripLegService,
     private routerService: Router,
@@ -115,28 +131,48 @@ export class VehicleDetailsPageComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this._destroy$.next();
     this._destroy$.complete();
+    if (this._vehicleChangedSub) {
+      this._vehicleChangedSub.unsubscribe();
+    }
   }
 
   private getVehicleById(id: string): void {
     this.loading = true;
+
+    const handleResponse = (response: WebApiResponse<Vehicle>): void => {
+      this.loading = false;
+      if (response.data == null) {
+        this.routerService.navigateByUrl('/not-found');
+        return;
+      }
+      this.data = response.data;
+      this.loadTripAgendaEvents(id);
+    };
+    const handleError = (): void => {
+      this.loading = false;
+      this.routerService.navigateByUrl('/not-found');
+    };
+
     this.vehicleService
       .getById(id)
       .pipe(takeUntil(this._destroy$))
-      .subscribe({
-        next: (response) => {
-          this.loading = false;
-          if (response.data == null) {
-            this.routerService.navigateByUrl('/not-found');
-            return;
-          }
-          this.data = response.data;
-          this.loadTripAgendaEvents(id);
-        },
-        error: () => {
-          this.loading = false;
-          this.routerService.navigateByUrl('/not-found');
-        },
-      });
+      .subscribe({ next: handleResponse, error: handleError });
+
+    // Completing/reopening a Maintenance can silently flip the Vehicle's own Status server-side
+    // (see VehicleMaintenanceService.SyncVehicleStatusAsync) without the frontend ever calling
+    // VehicleService.update() itself - without this, this.data kept the stale status, and saving
+    // the Detalhes form afterwards would send that stale value back and undo the automatic
+    // unblock. vehicleChanged$/maintenanceChanged$ are BehaviorSubjects, so skip(1) drops the
+    // value each replays on subscribe and reacts only to real subsequent changes.
+    this._vehicleChangedSub = merge(
+      this.vehicleService.vehicleChanged$.pipe(skip(1)),
+      this.vehicleMaintenanceService.maintenanceChanged$.pipe(skip(1)),
+    )
+      .pipe(
+        switchMap(() => this.vehicleService.getById(id)),
+        takeUntil(this._destroy$),
+      )
+      .subscribe({ next: handleResponse, error: handleError });
   }
 
   // Builds the Agenda tab's read-only trip cards (see TripService.buildAgendaEvent) - each
