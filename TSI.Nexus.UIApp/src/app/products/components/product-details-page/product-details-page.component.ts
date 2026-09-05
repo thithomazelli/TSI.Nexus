@@ -9,6 +9,7 @@ import { ProductFormComponent } from '../product-form/product-form.component';
 import { OrderProductsComponent } from '../../../order-products/order-products.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 
 @Component({
@@ -23,6 +24,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         OrderProductsComponent,
         AttachmentsComponent,
         AuditTabComponent,
+        LoadingSpinnerComponent,
         TranslatePipe,
     ],
 })

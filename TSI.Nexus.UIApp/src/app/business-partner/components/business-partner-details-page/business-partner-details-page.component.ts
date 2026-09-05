@@ -19,6 +19,7 @@ import { PaymentsComponent } from '../../../payments/payments.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
 import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
 import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
@@ -40,6 +41,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         AttachmentsComponent,
         AuditTabComponent,
         EventListComponent,
+        LoadingSpinnerComponent,
         TranslatePipe,
     ],
 })

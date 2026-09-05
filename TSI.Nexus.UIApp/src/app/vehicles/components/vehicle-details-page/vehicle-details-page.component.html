@@ -109,7 +109,7 @@
             }
 
             @if (loading) {
-              <div class="text-center py-4">{{ 'COMMON.LOADING' | translate }}</div>
+              <app-loading-spinner />
             }
             @if (!loading) {
               @if (activeTab === 'details') {
