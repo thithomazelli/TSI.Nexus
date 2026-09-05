@@ -4,7 +4,7 @@ import {
   AG_GRID_LOCALE_EN,
   AG_GRID_LOCALE_ES,
 } from '@ag-grid-community/locale';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { cardCollapseAnimation } from '../../core/animations/card-collapse.animation';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalService, TranslationService } from '@nexus/core';
@@ -49,7 +49,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
         LowerCasePipe,
     ],
 })
-export class GridComponent<T> implements OnInit {
+export class GridComponent<T> implements OnInit, OnChanges {
   @Input()
   filtersTemplate?: TemplateRef<any>;
 
@@ -67,6 +67,12 @@ export class GridComponent<T> implements OnInit {
 
   @Input()
   rowData: T[] = [];
+
+  // Optional: callers that track a loading flag around their fetch can bind it here so the grid
+  // shows a spinner overlay instead of briefly flashing the "no rows" message while rowData is
+  // still empty. Left unbound (false), the grid behaves exactly as before.
+  @Input()
+  loading: boolean = false;
 
   @Input()
   columnDefs: ColDef[] = [];
@@ -99,6 +105,7 @@ export class GridComponent<T> implements OnInit {
   quickFilter = '';
   localeText: Record<string, string> = AG_GRID_LOCALE_BR;
   noRowsOverlayTemplate = '';
+  overlayLoadingTemplate = '';
 
   defaultColDef: ColDef = {
     sortable: true,
@@ -127,6 +134,7 @@ export class GridComponent<T> implements OnInit {
     this.noRowsOverlayTemplate = `<span class="text-muted p-3">${this.translationService.instant(
       'GRID.NO_ROWS',
     )}</span>`;
+    this.overlayLoadingTemplate = this.buildLoadingOverlayTemplate();
   }
 
   ngOnInit(): void {
@@ -149,11 +157,25 @@ export class GridComponent<T> implements OnInit {
         'overlayNoRowsTemplate',
         this.noRowsOverlayTemplate,
       );
+      this.overlayLoadingTemplate = this.buildLoadingOverlayTemplate();
+      this.gridApi?.setGridOption?.(
+        'overlayLoadingTemplate',
+        this.overlayLoadingTemplate,
+      );
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['loading'] && !changes['loading'].firstChange) {
+      this.applyLoadingOverlay();
+    }
   }
 
   onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
+    // Covers the case where the caller already had loading=true before the grid finished
+    // initializing (ngOnChanges' first change is skipped above since gridApi doesn't exist yet).
+    this.applyLoadingOverlay();
   }
 
   onFirstDataRendered(params: any): void {
@@ -260,5 +282,31 @@ export class GridComponent<T> implements OnInit {
     }
 
     this.delete(data);
+  }
+
+  private applyLoadingOverlay(): void {
+    if (!this.gridApi) {
+      return;
+    }
+    if (this.loading) {
+      this.gridApi.showLoadingOverlay();
+    } else {
+      // Reverts to ag-Grid's own default state, which shows the "no rows" overlay on its own if
+      // rowData is still empty at this point - no need to handle that case here too.
+      this.gridApi.hideOverlay();
+    }
+  }
+
+  private buildLoadingOverlayTemplate(): string {
+    return `
+      <div class="text-center p-3">
+        <svg width="32" height="32" viewBox="0 0 50 50" aria-hidden="true" style="color: var(--bs-primary);">
+          <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-dasharray="31.415, 31.415">
+            <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+        <div class="mt-2 text-muted small">${this.translationService.instant('COMMON.LOADING')}</div>
+      </div>
+    `;
   }
 }
