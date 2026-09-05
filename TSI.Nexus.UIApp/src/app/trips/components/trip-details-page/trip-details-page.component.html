@@ -129,47 +129,52 @@
                 >
               </li>
             </ul>
-            <div *ngIf="activeTab === 'details'">
-              <app-trip-form
-                [isEdit]="isEdit"
-                [data]="data"
-                [compact]="false"
-              ></app-trip-form>
+            <div *ngIf="loading">
+              <app-loading-spinner />
             </div>
+            <div *ngIf="!loading">
+              <div *ngIf="activeTab === 'details'">
+                <app-trip-form
+                  [isEdit]="isEdit"
+                  [data]="data"
+                  [compact]="false"
+                ></app-trip-form>
+              </div>
 
-            <div *ngIf="activeTab === 'drivers'">
-              <app-trip-driver-list [tripId]="data!.id!"></app-trip-driver-list>
-            </div>
-            <div *ngIf="activeTab === 'triplegs'">
-              <app-trip-leg-list [tripId]="data!.id!"></app-trip-leg-list>
-            </div>
-            <div *ngIf="activeTab === 'passengers'">
-              <app-passenger-list [tripId]="data!.id!"></app-passenger-list>
-            </div>
-            <div *ngIf="activeTab === 'payments'">
-              <app-payments
-                [compact]="true"
-                [canAdd]="true"
-                [entity]="'Trip'"
-                [parentData]="data"
-              ></app-payments>
-            </div>
-            <div *ngIf="activeTab === 'attachments'">
-              <app-attachments
-                [entity]="'trip'"
-                [entityId]="data!.id!"
-                [tripNumber]="data!.tripNumber!"
-              ></app-attachments>
-            </div>
-            <div *ngIf="activeTab === 'agenda'">
-              <app-event-list
-                [entity]="'trip'"
-                [entityId]="data!.id!"
-                [entityLabel]="data!.tripNumber"
-              ></app-event-list>
-            </div>
-            <div *ngIf="activeTab === 'audit'">
-              <app-audit-tab [data]="data"></app-audit-tab>
+              <div *ngIf="activeTab === 'drivers'">
+                <app-trip-driver-list [tripId]="data!.id!"></app-trip-driver-list>
+              </div>
+              <div *ngIf="activeTab === 'triplegs'">
+                <app-trip-leg-list [tripId]="data!.id!"></app-trip-leg-list>
+              </div>
+              <div *ngIf="activeTab === 'passengers'">
+                <app-passenger-list [tripId]="data!.id!"></app-passenger-list>
+              </div>
+              <div *ngIf="activeTab === 'payments'">
+                <app-payments
+                  [compact]="true"
+                  [canAdd]="true"
+                  [entity]="'Trip'"
+                  [parentData]="data"
+                ></app-payments>
+              </div>
+              <div *ngIf="activeTab === 'attachments'">
+                <app-attachments
+                  [entity]="'trip'"
+                  [entityId]="data!.id!"
+                  [tripNumber]="data!.tripNumber!"
+                ></app-attachments>
+              </div>
+              <div *ngIf="activeTab === 'agenda'">
+                <app-event-list
+                  [entity]="'trip'"
+                  [entityId]="data!.id!"
+                  [entityLabel]="data!.tripNumber"
+                ></app-event-list>
+              </div>
+              <div *ngIf="activeTab === 'audit'">
+                <app-audit-tab [data]="data"></app-audit-tab>
+              </div>
             </div>
           </div>
         </div>

@@ -8,7 +8,7 @@ import {
   PurchaseOrderProductService,
   PaymentService,
 } from '@nexus/core';
-import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge, map, Observable } from 'rxjs';
+import { combineLatest, Subject, Subscription, switchMap, takeUntil, merge, map, skip, Observable } from 'rxjs';
 
 import { HeaderComponent } from '../../../shared/header/header.component';
 import { AsyncPipe, NgIf } from '@angular/common';
@@ -18,6 +18,7 @@ import { PaymentsComponent } from '../../../payments/payments.component';
 import { AttachmentsComponent } from '../../../shared/attachments/attachments.component';
 import { AuditTabComponent } from '../../../shared/components/audit-tab/audit-tab.component';
 import { EventListComponent } from '../../../shared/components/event-list/event-list.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { FeatureFlagService } from '../../../core/services/feature-flag/feature-flag.service';
 import { FeatureToggleKeys } from '../../../core/models/feature-toggle.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
@@ -36,6 +37,7 @@ import { TranslatePipe } from '../../../core/pipes/translate.pipe';
         AttachmentsComponent,
         AuditTabComponent,
         EventListComponent,
+        LoadingSpinnerComponent,
         TranslatePipe,
     ],
 })
@@ -106,28 +108,38 @@ export class PurchaseOrderDetailsPageComponent implements OnInit, OnDestroy {
 
   private getPurchaseOrderById(id: string): void {
     this.loading = true;
+
+    const handleResponse = (response: WebApiResponse<PurchaseOrder>): void => {
+      this.loading = false;
+      if (response.data == null) {
+        this.routerService.navigateByUrl('/not-found');
+        return;
+      }
+      this.data = response.data;
+    };
+    const handleError = (): void => {
+      this.loading = false;
+      this.routerService.navigateByUrl('/not-found');
+    };
+
+    this.purchaseOrderService
+      .getById(id)
+      .pipe(takeUntil(this._destroy$))
+      .subscribe({ next: handleResponse, error: handleError });
+
+    // purchaseOrderChanged$/purchaseOrderProductChanged$/paymentChanged$ are BehaviorSubjects, so
+    // merging them raw would replay their current value the moment this subscribes - three extra
+    // getById calls firing alongside the one above, just to load the page once. skip(1) drops
+    // that replay and leaves this reacting only to real subsequent changes.
     this._purchaseOrderChangedSub = merge(
-      this.purchaseOrderService.purchaseOrderChanged$,
-      this.purchaseOrderProductService.purchaseOrderProductChanged$,
-      this.paymentService.paymentChanged$,
+      this.purchaseOrderService.purchaseOrderChanged$.pipe(skip(1)),
+      this.purchaseOrderProductService.purchaseOrderProductChanged$.pipe(skip(1)),
+      this.paymentService.paymentChanged$.pipe(skip(1)),
     )
       .pipe(
         switchMap(() => this.purchaseOrderService.getById(id)),
         takeUntil(this._destroy$),
       )
-      .subscribe({
-        next: (response: WebApiResponse<PurchaseOrder>) => {
-          this.loading = false;
-          if (response.data == null) {
-            this.routerService.navigateByUrl('/not-found');
-            return;
-          }
-          this.data = response.data;
-        },
-        error: () => {
-          this.loading = false;
-          this.routerService.navigateByUrl('/not-found');
-        },
-      });
+      .subscribe({ next: handleResponse, error: handleError });
   }
 }

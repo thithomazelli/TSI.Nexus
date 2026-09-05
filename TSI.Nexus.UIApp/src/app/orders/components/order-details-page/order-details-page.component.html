@@ -105,44 +105,49 @@
                 >
               </li>
             </ul>
-            <div *ngIf="activeTab === 'details'">
-              <app-order-form
-                [isEdit]="isEdit"
-                [data]="data"
-                [compact]="false"
-              ></app-order-form>
+            <div *ngIf="loading">
+              <app-loading-spinner />
             </div>
+            <div *ngIf="!loading">
+              <div *ngIf="activeTab === 'details'">
+                <app-order-form
+                  [isEdit]="isEdit"
+                  [data]="data"
+                  [compact]="false"
+                ></app-order-form>
+              </div>
 
-            <div *ngIf="activeTab === 'products'">
-              <app-order-products
-                [compact]="true"
-                [parentId]="data?.id"
-              ></app-order-products>
-            </div>
-            <div *ngIf="activeTab === 'payments'">
-              <app-payments
-                [compact]="true"
-                [canAdd]="true"
-                [entity]="'Order'"
-                [parentData]="data"
-              ></app-payments>
-            </div>
-            <div *ngIf="activeTab === 'attachments'">
-              <app-attachments
-                [entity]="'order'"
-                [entityId]="data!.id!"
-                [orderNumber]="data!.orderNumber!"
-              ></app-attachments>
-            </div>
-            <div *ngIf="activeTab === 'agenda'">
-              <app-event-list
-                [entity]="'order'"
-                [entityId]="data!.id!"
-                [entityLabel]="data!.orderNumber"
-              ></app-event-list>
-            </div>
-            <div *ngIf="activeTab === 'audit'">
-              <app-audit-tab [data]="data"></app-audit-tab>
+              <div *ngIf="activeTab === 'products'">
+                <app-order-products
+                  [compact]="true"
+                  [parentId]="data?.id"
+                ></app-order-products>
+              </div>
+              <div *ngIf="activeTab === 'payments'">
+                <app-payments
+                  [compact]="true"
+                  [canAdd]="true"
+                  [entity]="'Order'"
+                  [parentData]="data"
+                ></app-payments>
+              </div>
+              <div *ngIf="activeTab === 'attachments'">
+                <app-attachments
+                  [entity]="'order'"
+                  [entityId]="data!.id!"
+                  [orderNumber]="data!.orderNumber!"
+                ></app-attachments>
+              </div>
+              <div *ngIf="activeTab === 'agenda'">
+                <app-event-list
+                  [entity]="'order'"
+                  [entityId]="data!.id!"
+                  [entityLabel]="data!.orderNumber"
+                ></app-event-list>
+              </div>
+              <div *ngIf="activeTab === 'audit'">
+                <app-audit-tab [data]="data"></app-audit-tab>
+              </div>
             </div>
           </div>
         </div>
