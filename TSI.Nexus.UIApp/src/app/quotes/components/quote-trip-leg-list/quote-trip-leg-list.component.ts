@@ -34,6 +34,7 @@ export class QuoteTripLegListComponent implements OnInit, OnChanges, OnDestroy {
 
   rowData: QuoteTripLeg[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -173,18 +174,25 @@ export class QuoteTripLegListComponent implements OnInit, OnChanges, OnDestroy {
     if (!this.quoteTripId) {
       return;
     }
+    this.loading = true;
     this.quoteTripLegService
       .getByQuoteTrip(this.quoteTripId)
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
 
-        if (isRefresh) {
-          this.notificationService.showMessage(
-            ResponseStatus.Success,
-            this.translationService.instant('TRIPS.LEGS_REFRESHED'),
-          );
-        }
+          if (isRefresh) {
+            this.notificationService.showMessage(
+              ResponseStatus.Success,
+              this.translationService.instant('TRIPS.LEGS_REFRESHED'),
+            );
+          }
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 

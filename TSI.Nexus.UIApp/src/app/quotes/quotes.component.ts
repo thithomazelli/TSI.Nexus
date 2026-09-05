@@ -57,6 +57,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Quotes;
   rowData: Quote[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   filteredRowData: Quote[] = [];
   filterStartDate: string | null = null;
@@ -356,10 +357,11 @@ export class QuotesComponent implements OnInit, OnDestroy {
         ? this.quoteService.getByBusinessPartnerId(this.parentData.id)
         : this.quoteService.getAll();
 
-    quotes$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Quote[]>) => {
+    this.loading = true;
+    quotes$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<Quote[]>) => {
         this.rowData = response.data ?? [];
+        this.loading = false;
 
         if (callback) {
           callback();
@@ -371,7 +373,11 @@ export class QuotesComponent implements OnInit, OnDestroy {
             this.translationService.instant('QUOTES.QUOTES_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   private formatDateBR(date: string | Date): string {

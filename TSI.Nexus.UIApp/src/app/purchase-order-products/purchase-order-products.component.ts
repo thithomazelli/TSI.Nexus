@@ -33,6 +33,7 @@ export class PurchaseOrderProductsComponent implements OnInit, OnChanges, OnDest
 
   rowData: PurchaseOrderProduct[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -171,10 +172,11 @@ export class PurchaseOrderProductsComponent implements OnInit, OnChanges, OnDest
     const purchaseOrderProducts$: Observable<WebApiResponse<PurchaseOrderProduct[]>> =
       this.purchaseOrderProductService.getByEntityId(this.parentId, 'PurchaseOrder');
 
-    purchaseOrderProducts$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<PurchaseOrderProduct[]>) => {
+    this.loading = true;
+    purchaseOrderProducts$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<PurchaseOrderProduct[]>) => {
         this.rowData = response.data ?? [];
+        this.loading = false;
 
         if (isRefresh) {
           this.notificationService.showMessage(
@@ -182,6 +184,10 @@ export class PurchaseOrderProductsComponent implements OnInit, OnChanges, OnDest
             this.translationService.instant('PURCHASE_ORDER_PRODUCTS.PURCHASE_ORDER_PRODUCTS_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 }

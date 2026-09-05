@@ -36,6 +36,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Users;
 
   rowData: User[] = [];
+  loading: boolean = false;
   columnDefs: ColDef[] = [];
 
   private buildColumnDefs(): void {
@@ -230,6 +231,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   refreshUsers(): void {
+    this.loading = true;
     // getAll() is now the shared cached stream (see UserService), so subscribing to it no
     // longer triggers its own fetch - skip(1) drops the value it replays immediately on
     // subscribe (whatever is currently cached) and waits for the one fresh emission that
@@ -253,8 +255,14 @@ export class UsersComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this._destroy$),
       )
-      .subscribe((response: WebApiResponse<User[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<User[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
     this.userService.refresh();
   }
@@ -265,11 +273,18 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   private getUsers(): void {
+    this.loading = true;
     this.userService
       .getAll()
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<User[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<User[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 

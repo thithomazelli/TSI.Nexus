@@ -48,6 +48,7 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
   events: AgendaEvent[] = [];
   rowData: AgendaEvent[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _currentUserId?: string;
   private _destroy$ = new Subject<void>();
@@ -224,12 +225,19 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
     if (!request$) {
       return;
     }
-    request$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
-      this.events = [...(response.data ?? []), ...this.extraEvents];
-      this.rowData = this.events;
-      if (isRefresh) {
-        this.notificationService.showMessage(response.status, response.message);
-      }
+    this.loading = true;
+    request$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response) => {
+        this.events = [...(response.data ?? []), ...this.extraEvents];
+        this.rowData = this.events;
+        this.loading = false;
+        if (isRefresh) {
+          this.notificationService.showMessage(response.status, response.message);
+        }
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 

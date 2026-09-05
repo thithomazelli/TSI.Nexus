@@ -37,6 +37,7 @@ export class BusinessPartnersComponent {
   baseEndPoint: string = '';
   rowData: BusinessPartner[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _businessPartnerChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -254,6 +255,8 @@ export class BusinessPartnersComponent {
         ? BusinessPartnerType.Client
         : BusinessPartnerType.Supplier;
 
+    this.loading = true;
+    this.cdr.markForCheck();
     this.businessPartnerService
       .refresh(type)
       .pipe(
@@ -279,9 +282,16 @@ export class BusinessPartnersComponent {
         }),
         takeUntil(this._destroy$),
       )
-      .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
-        this.rowData = response.data ?? [];
-        this.cdr.markForCheck();
+      .subscribe({
+        next: (response: WebApiResponse<BusinessPartner[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
       });
   }
 
@@ -304,22 +314,40 @@ export class BusinessPartnersComponent {
   }
 
   private getClients(): void {
+    this.loading = true;
+    this.cdr.markForCheck();
     this.businessPartnerService
       .getClients()
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
-        this.rowData = response.data ?? [];
-        this.cdr.markForCheck();
+      .subscribe({
+        next: (response: WebApiResponse<BusinessPartner[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
       });
   }
 
   private getSuppliers(): void {
+    this.loading = true;
+    this.cdr.markForCheck();
     this.businessPartnerService
       .getSuppliers()
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<BusinessPartner[]>) => {
-        this.rowData = response.data ?? [];
-        this.cdr.markForCheck();
+      .subscribe({
+        next: (response: WebApiResponse<BusinessPartner[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
       });
   }
 }

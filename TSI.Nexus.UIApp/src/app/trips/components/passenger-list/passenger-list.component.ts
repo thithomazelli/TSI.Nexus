@@ -35,6 +35,7 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
 
   rowData: Passenger[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -170,18 +171,25 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
     if (!this.tripId) {
       return;
     }
+    this.loading = true;
     this.passengerService
       .getByTrip(this.tripId)
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
 
-        if (isRefresh) {
-          this.notificationService.showMessage(
-            ResponseStatus.Success,
-            this.translationService.instant('TRIPS.PASSENGERS_REFRESHED'),
-          );
-        }
+          if (isRefresh) {
+            this.notificationService.showMessage(
+              ResponseStatus.Success,
+              this.translationService.instant('TRIPS.PASSENGERS_REFRESHED'),
+            );
+          }
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 }

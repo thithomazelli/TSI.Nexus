@@ -53,6 +53,7 @@ export class VehiclesComponent implements OnInit, OnDestroy {
 
   rowData: Vehicle[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private buildColumnDefs(): void {
     this.columnDefs = [
@@ -187,6 +188,7 @@ export class VehiclesComponent implements OnInit, OnDestroy {
   }
 
   refreshVehicles(): void {
+    this.loading = true;
     this.vehicleService
       .refresh()
       .pipe(
@@ -204,8 +206,14 @@ export class VehiclesComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this._destroy$),
       )
-      .subscribe((response: WebApiResponse<Vehicle[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<Vehicle[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
@@ -221,11 +229,18 @@ export class VehiclesComponent implements OnInit, OnDestroy {
   }
 
   private getVehicles(): void {
+    this.loading = true;
     this.vehicleService
       .getAll()
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Vehicle[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<Vehicle[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 }

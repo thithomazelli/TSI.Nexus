@@ -53,6 +53,7 @@ export class TripsComponent implements OnInit, OnDestroy {
 
   baseEndPoint = ApiType.Trips;
   rowData: Trip[] = [];
+  loading: boolean = false;
   columnDefs: ColDef[] = [];
 
   filteredRowData: Trip[] = [];
@@ -338,10 +339,11 @@ export class TripsComponent implements OnInit, OnDestroy {
       trips$ = this.tripService.getAll();
     }
 
-    trips$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Trip[]>) => {
+    this.loading = true;
+    trips$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<Trip[]>) => {
         this.rowData = response.data ?? [];
+        this.loading = false;
 
         if (callback) {
           callback();
@@ -353,7 +355,11 @@ export class TripsComponent implements OnInit, OnDestroy {
             this.translationService.instant('TRIPS.TRIPS_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   private formatDateBR(date: string | Date): string {

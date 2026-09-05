@@ -40,6 +40,7 @@ export class ServiceOrderListComponent
   baseEndPoint = 'service-orders';
   rowData: ServiceOrder[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -199,14 +200,21 @@ export class ServiceOrderListComponent
     if (!this.driverId) {
       return;
     }
+    this.loading = true;
     this.serviceOrderService
       .getByDriver(this.driverId)
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response) => {
-        this.rowData = response.data ?? [];
-        if (isRefresh) {
-          this.notificationService.showMessage(response.status, response.message);
-        }
+      .subscribe({
+        next: (response) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+          if (isRefresh) {
+            this.notificationService.showMessage(response.status, response.message);
+          }
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 

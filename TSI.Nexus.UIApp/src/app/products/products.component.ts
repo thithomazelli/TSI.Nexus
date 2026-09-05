@@ -56,6 +56,7 @@ export class ProductsComponent implements OnInit, OnDestroy {
 
   rowData: Product[] = [];
   filteredRowData: Product[] = [];
+  loading: boolean = false;
   columnDefs: ColDef[] = [];
 
   // Set from the ?stockStatus=Low query param (navbar stock alert's "ver todos"): same "<=3" rule
@@ -263,6 +264,8 @@ export class ProductsComponent implements OnInit, OnDestroy {
   }
 
   refreshProducts(): void {
+    this.loading = true;
+    this.cdr.markForCheck();
     // getAll() is now the shared cached stream (see ProductService), so subscribing to it no
     // longer triggers its own fetch - skip(1) drops the value it replays immediately on
     // subscribe (whatever is currently cached) and waits for the one fresh emission that
@@ -286,25 +289,41 @@ export class ProductsComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this._destroy$),
       )
-      .subscribe((response: WebApiResponse<Product[]>) => {
-        this.rowData = response.data ?? [];
-        this.applyStockStatusFilter();
-        this.cdr.markForCheck();
+      .subscribe({
+        next: (response: WebApiResponse<Product[]>) => {
+          this.rowData = response.data ?? [];
+          this.applyStockStatusFilter();
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
       });
     this.productService.refresh();
   }
 
   private getProducts(): void {
+    this.loading = true;
+    this.cdr.markForCheck();
     // This screen is the authoritative product list, so it can't settle for whatever the shared
     // cache happens to hold (e.g. left over from a picker opened on a previous visit) - subscribe
     // first, then force a fresh fetch so every other getAll() consumer picks up the same result.
     this.productService
       .getAll()
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Product[]>) => {
-        this.rowData = response.data ?? [];
-        this.applyStockStatusFilter();
-        this.cdr.markForCheck();
+      .subscribe({
+        next: (response: WebApiResponse<Product[]>) => {
+          this.rowData = response.data ?? [];
+          this.applyStockStatusFilter();
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
       });
     this.productService.refresh();
   }

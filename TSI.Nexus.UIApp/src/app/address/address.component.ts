@@ -28,6 +28,7 @@ export class AddressComponent {
 
   rowData: Address[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private buildColumnDefs(): void {
     this.columnDefs = [
@@ -200,6 +201,7 @@ export class AddressComponent {
   }
 
   refreshAddresses(): void {
+    this.loading = true;
     this.addressService
       .refresh(this.parentData?.id ?? '')
       .pipe(
@@ -217,8 +219,14 @@ export class AddressComponent {
         }),
         takeUntil(this._destroy$),
       )
-      .subscribe((response: WebApiResponse<Address[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<Address[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
@@ -246,11 +254,18 @@ export class AddressComponent {
       return;
     }
 
+    this.loading = true;
     this.addressService
       .getAllByBusinessPartnerId(this.parentData.id)
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Address[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<Address[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 }

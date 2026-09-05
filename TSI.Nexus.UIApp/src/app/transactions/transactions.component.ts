@@ -52,6 +52,7 @@ export class TransactionsComponent implements OnInit, OnDestroy {
 
   baseEndPoint = ApiType.Transactions;
   rowData: Transaction[] = [];
+  loading: boolean = false;
 
   get typeMap(): { [key: string]: string } {
     return {
@@ -365,9 +366,10 @@ export class TransactionsComponent implements OnInit, OnDestroy {
         ? this.transactionService.getByBusinessPartnerId(this.parentData.id)
         : this.transactionService.getAll();
 
-    transactions$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Transaction[]>) => {
+    this.loading = true;
+    this.cdr.markForCheck();
+    transactions$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<Transaction[]>) => {
         this.rowData = response.data ?? [];
 
         if (callback) {
@@ -381,8 +383,14 @@ export class TransactionsComponent implements OnInit, OnDestroy {
           );
         }
 
+        this.loading = false;
         this.cdr.markForCheck();
-      });
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   private getConditionLabel(condition: string): string {

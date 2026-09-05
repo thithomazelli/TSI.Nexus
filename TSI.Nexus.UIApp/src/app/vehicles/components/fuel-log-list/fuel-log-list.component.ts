@@ -45,6 +45,7 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
   baseEndPoint = 'fuel-logs';
   rowData: FuelLog[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   statusColorMap: { [key: string]: string } = {
     'Concluído': 'success',
@@ -214,11 +215,18 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
       ? this.fuelLogService.getByVehicle(this.vehicleId)
       : this.fuelLogService.getAll();
 
-    request$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
-      this.rowData = response.data ?? [];
-      if (isRefresh) {
-        this.notificationService.showMessage(response.status, response.message);
-      }
+    this.loading = true;
+    request$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response) => {
+        this.rowData = response.data ?? [];
+        this.loading = false;
+        if (isRefresh) {
+          this.notificationService.showMessage(response.status, response.message);
+        }
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 

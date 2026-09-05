@@ -34,6 +34,7 @@ export class VehicleMaintenanceProductsComponent implements OnInit, OnChanges, O
 
   rowData: VehicleMaintenanceProduct[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -172,10 +173,11 @@ export class VehicleMaintenanceProductsComponent implements OnInit, OnChanges, O
     const vehicleMaintenanceProducts$: Observable<WebApiResponse<VehicleMaintenanceProduct[]>> =
       this.vehicleMaintenanceProductService.getByEntityId(this.parentId, 'VehicleMaintenance');
 
-    vehicleMaintenanceProducts$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<VehicleMaintenanceProduct[]>) => {
+    this.loading = true;
+    vehicleMaintenanceProducts$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<VehicleMaintenanceProduct[]>) => {
         this.rowData = response.data ?? [];
+        this.loading = false;
 
         if (isRefresh) {
           this.notificationService.showMessage(
@@ -183,6 +185,10 @@ export class VehicleMaintenanceProductsComponent implements OnInit, OnChanges, O
             this.translationService.instant('VEHICLE_MAINTENANCE_PRODUCTS.VEHICLE_MAINTENANCE_PRODUCTS_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 }

@@ -53,6 +53,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Orders;
   rowData: Order[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   filteredRowData: Order[] = [];
   filterStartDate: string | null = null;
@@ -320,9 +321,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
         ? this.orderService.getByBusinessPartnerId(this.parentData.id)
         : this.orderService.getAll();
 
-    orders$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Order[]>) => {
+    this.loading = true;
+    this.cdr.markForCheck();
+    orders$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<Order[]>) => {
         this.rowData = response.data ?? [];
 
         if (callback) {
@@ -336,8 +338,14 @@ export class OrdersComponent implements OnInit, OnDestroy {
           );
         }
 
+        this.loading = false;
         this.cdr.markForCheck();
-      });
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   private formatDateBR(date: string | Date): string {

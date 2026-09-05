@@ -50,6 +50,7 @@ export class DriversComponent implements OnInit, OnDestroy {
 
   rowData: Driver[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private buildColumnDefs(): void {
     this.columnDefs = [
@@ -180,6 +181,7 @@ export class DriversComponent implements OnInit, OnDestroy {
   }
 
   refreshDrivers(): void {
+    this.loading = true;
     this.driverService
       .refresh()
       .pipe(
@@ -197,17 +199,30 @@ export class DriversComponent implements OnInit, OnDestroy {
         }),
         takeUntil(this._destroy$),
       )
-      .subscribe((response: WebApiResponse<Driver[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<Driver[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
   private getDrivers(): void {
+    this.loading = true;
     this.driverService
       .getAll()
       .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Driver[]>) => {
-        this.rowData = response.data ?? [];
+      .subscribe({
+        next: (response: WebApiResponse<Driver[]>) => {
+          this.rowData = response.data ?? [];
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 }

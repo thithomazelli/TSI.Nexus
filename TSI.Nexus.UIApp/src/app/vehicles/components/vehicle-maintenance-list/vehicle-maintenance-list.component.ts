@@ -47,6 +47,7 @@ export class VehicleMaintenanceListComponent
   baseEndPoint = 'vehicle-maintenances';
   rowData: VehicleMaintenance[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -220,11 +221,18 @@ export class VehicleMaintenanceListComponent
       ? this.vehicleMaintenanceService.getByVehicle(this.vehicleId)
       : this.vehicleMaintenanceService.getAll();
 
-    request$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
-      this.rowData = response.data ?? [];
-      if (isRefresh) {
-        this.notificationService.showMessage(response.status, response.message);
-      }
+    this.loading = true;
+    request$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response) => {
+        this.rowData = response.data ?? [];
+        this.loading = false;
+        if (isRefresh) {
+          this.notificationService.showMessage(response.status, response.message);
+        }
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 

@@ -12,6 +12,7 @@
     [compactView]="compact"
     [className]="'PURCHASE_ORDERS.TITLE' | translate"
     [rowData]="filteredRowData"
+    [loading]="loading"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
     [refresh]="refreshPurchaseOrders.bind(this)"

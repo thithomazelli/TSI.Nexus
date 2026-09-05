@@ -52,6 +52,7 @@ export class PurchaseOrdersComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.PurchaseOrders;
   rowData: PurchaseOrder[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   filteredRowData: PurchaseOrder[] = [];
   filterStartDate: string | null = null;
@@ -309,10 +310,11 @@ export class PurchaseOrdersComponent implements OnInit, OnDestroy {
         ? this.purchaseOrderService.getByBusinessPartnerId(this.parentData.id)
         : this.purchaseOrderService.getAll();
 
-    purchaseOrders$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<PurchaseOrder[]>) => {
+    this.loading = true;
+    purchaseOrders$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<PurchaseOrder[]>) => {
         this.rowData = response.data ?? [];
+        this.loading = false;
 
         if (callback) {
           callback();
@@ -324,7 +326,11 @@ export class PurchaseOrdersComponent implements OnInit, OnDestroy {
             this.translationService.instant('PURCHASE_ORDERS.PURCHASE_ORDERS_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   private formatDateBR(date: string | Date): string {

@@ -48,6 +48,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
   columnDefs: ColDef[] = [];
   rowData: QuoteProduct[] = [];
   filteredRowData: QuoteProduct[] = [];
+  loading: boolean = false;
 
   private _quoteProductChangedSub?: Subscription;
   private _destroy$ = new Subject<void>();
@@ -130,11 +131,12 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
       );
     }
 
-    quoteProducts$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<QuoteProduct[]>) => {
+    this.loading = true;
+    quoteProducts$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<QuoteProduct[]>) => {
         this.rowData = response.data ?? [];
         this.filteredRowData = [...this.rowData];
+        this.loading = false;
 
         if (isRefresh) {
           this.notificationService.showMessage(
@@ -142,7 +144,11 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
             this.translationService.instant('QUOTES.QUOTE_PRODUCTS_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   private initializeGrid(): void {

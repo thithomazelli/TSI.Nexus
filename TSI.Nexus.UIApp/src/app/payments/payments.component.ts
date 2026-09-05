@@ -73,6 +73,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
   baseEndPoint = ApiType.Payments;
 
   rowData: Payment[] = [];
+  loading: boolean = false;
 
   get typeMap(): { [key: string]: string } {
     return {
@@ -451,10 +452,11 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       );
     }
 
-    payments$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<Payment[]>) => {
+    this.loading = true;
+    payments$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<Payment[]>) => {
         this.rowData = response.data ?? [];
+        this.loading = false;
 
         if (callback) {
           callback();
@@ -466,7 +468,11 @@ export class PaymentsComponent implements OnInit, OnDestroy {
             this.translationService.instant('PAYMENTS.PAYMENTS_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   private markAsApproved(payment: Payment): void {

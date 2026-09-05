@@ -12,6 +12,7 @@
     [compactView]="compact"
     [className]="'SIDEBAR.TRANSACTIONS' | translate"
     [rowData]="filteredRowData"
+    [loading]="loading"
     [columnDefs]="columnDefs"
     [baseEndPoint]="baseEndPoint"
     [refresh]="refreshTransactions.bind(this)"

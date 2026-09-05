@@ -38,6 +38,7 @@ export class OrderProductsComponent implements OnInit, OnChanges, OnDestroy {
 
   rowData: OrderProduct[] = [];
   columnDefs: ColDef[] = [];
+  loading: boolean = false;
 
   private _destroy$ = new Subject<void>();
 
@@ -204,10 +205,11 @@ export class OrderProductsComponent implements OnInit, OnChanges, OnDestroy {
     const orderProducts$: Observable<WebApiResponse<OrderProduct[]>> =
       this.orderProductService.getByEntityId(this.parentId, entity);
 
-    orderProducts$
-      .pipe(takeUntil(this._destroy$))
-      .subscribe((response: WebApiResponse<OrderProduct[]>) => {
+    this.loading = true;
+    orderProducts$.pipe(takeUntil(this._destroy$)).subscribe({
+      next: (response: WebApiResponse<OrderProduct[]>) => {
         this.rowData = response.data ?? [];
+        this.loading = false;
 
         if (isRefresh) {
           this.notificationService.showMessage(
@@ -215,6 +217,10 @@ export class OrderProductsComponent implements OnInit, OnChanges, OnDestroy {
             this.translationService.instant('ORDER_PRODUCTS.ORDER_PRODUCTS_REFRESHED'),
           );
         }
-      });
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 }
