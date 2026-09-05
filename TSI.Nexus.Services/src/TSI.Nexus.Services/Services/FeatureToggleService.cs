@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using TSI.Nexus.Contracts.Enums;
 using TSI.Nexus.Contracts.Interfaces;
 using TSI.Nexus.Contracts.Models;
@@ -14,6 +15,15 @@ namespace TSI.Nexus.Services
         /// </summary>
         private readonly IRepository<FeatureToggle> _repository;
         private readonly ILogService _logService;
+        private readonly IMemoryCache _cache;
+
+        // IsEnabledAsync(key, groupKey) - used to gate nearly every write/read endpoint in the
+        // app - was hitting the database twice per call with no caching at all, on every single
+        // request. Multiplied by a screen that (before being fixed) fetched its own data 2-4x on
+        // load, viewing one record could cost 6+ avoidable round-trips just for toggle checks.
+        // Short TTL keeps an admin's toggle flip from taking too long to take effect app-wide.
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(30);
+        private const string CacheKeyPrefix = "FeatureToggle:";
 
         #endregion Properties
 
@@ -23,10 +33,11 @@ namespace TSI.Nexus.Services
         /// FeatureToggleService constructor created to initialize the "_repository" using Dependency Injection.
         /// </summary>
         /// <param name="repository">IRepository<FeatureToggle> object used to initialize the internal variable using Dependency Injection.</param>
-        public FeatureToggleService(IRepository<FeatureToggle> repository, ILogService logService)
+        public FeatureToggleService(IRepository<FeatureToggle> repository, ILogService logService, IMemoryCache cache)
         {
             _repository = repository;
             _logService = logService;
+            _cache = cache;
         }
 
         /// <inheritdoc />
@@ -98,6 +109,7 @@ namespace TSI.Nexus.Services
 
                 featureToggle.Enabled = enabled;
                 await _repository.UpdateAsync(featureToggle);
+                _cache.Remove(CacheKeyPrefix + key);
 
                 result.Data = featureToggle;
                 result.Status = ResponseStatus.Success;
@@ -153,8 +165,16 @@ namespace TSI.Nexus.Services
 
         private async Task<bool> IsToggleEnabledOrDefaultAsync(string key)
         {
+            var cacheKey = CacheKeyPrefix + key;
+            if (_cache.TryGetValue(cacheKey, out bool cachedEnabled))
+            {
+                return cachedEnabled;
+            }
+
             var featureToggle = await _repository.FirstOrDefaultAsync(f => f.Key == key);
-            return featureToggle?.Enabled ?? true;
+            var enabled = featureToggle?.Enabled ?? true;
+            _cache.Set(cacheKey, enabled, CacheDuration);
+            return enabled;
         }
 
         #endregion Private methods

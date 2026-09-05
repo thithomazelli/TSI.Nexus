@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using TSI.Nexus.Contracts.Enums;
 using TSI.Nexus.Contracts.Interfaces;
@@ -10,13 +11,20 @@ namespace TSI.Nexus.Services.Tests.Services
     {
         private readonly Mock<IRepository<FeatureToggle>> _repository;
         private readonly Mock<ILogService> _logService;
+        private readonly IMemoryCache _cache;
         private readonly FeatureToggleService _service;
 
         public FeatureToggleServiceTests()
         {
             _repository = new Mock<IRepository<FeatureToggle>>();
             _logService = new Mock<ILogService>();
-            _service = new FeatureToggleService(_repository.Object, _logService.Object);
+            // A real MemoryCache instance rather than a mock - IMemoryCache's TryGetValue/Set are
+            // extension methods over a non-trivial object-boxing API that isn't practical to mock
+            // faithfully, and a real cache is exactly what production wires up anyway. Fresh
+            // instance per test (xUnit creates a new test class instance per [Fact]), so no
+            // cross-test cache pollution.
+            _cache = new MemoryCache(new MemoryCacheOptions());
+            _service = new FeatureToggleService(_repository.Object, _logService.Object, _cache);
         }
 
         [Fact]
@@ -307,6 +315,51 @@ namespace TSI.Nexus.Services.Tests.Services
             _logService.Verify(
                 _ => _.LogException(It.IsAny<Exception>(), "FeatureToggleService.IsEnabledAsync", "Entity"),
                 Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task IsEnabledAsync_ShouldHitRepositoryOnlyOnce_WhenCalledTwiceForSameKey()
+        {
+            // Arrange
+            var toggle = new FeatureToggle { Key = "A", Enabled = true };
+            _repository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeatureToggle, bool>>>()))
+                .ReturnsAsync(toggle);
+
+            // Act
+            var first = await _service.IsEnabledAsync("A");
+            var second = await _service.IsEnabledAsync("A");
+
+            // Assert
+            Assert.True(first);
+            Assert.True(second);
+            _repository.Verify(
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeatureToggle, bool>>>()),
+                Times.Once
+            );
+        }
+
+        [Fact]
+        public async Task SetEnabled_ShouldInvalidateCache_SoNextIsEnabledAsyncReflectsTheNewValue()
+        {
+            // Arrange
+            var toggle = new FeatureToggle { Key = "A", Name = "Módulo A", Enabled = false };
+            _repository
+                .Setup(_ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeatureToggle, bool>>>()))
+                .ReturnsAsync(toggle);
+
+            // Act
+            var beforeToggle = await _service.IsEnabledAsync("A"); // caches false
+            await _service.SetEnabled("A", true); // mutates the same toggle instance and invalidates the cache
+            var afterToggle = await _service.IsEnabledAsync("A"); // must re-read, not return the stale cached false
+
+            // Assert
+            Assert.False(beforeToggle);
+            Assert.True(afterToggle);
+            _repository.Verify(
+                _ => _.FirstOrDefaultAsync(It.IsAny<Expression<Func<FeatureToggle, bool>>>()),
+                Times.Exactly(3) // SetEnabled's own lookup + the two IsEnabledAsync calls around it
             );
         }
 

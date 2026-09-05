@@ -45,6 +45,11 @@ namespace TSI.Nexus.IoC
             // IHttpContextAccessor is needed by CurrentUserService
             services.AddHttpContextAccessor();
 
+            // Backs FeatureToggleService's in-memory cache (short TTL, invalidated on toggle
+            // save) - registered as singleton so the cache is actually shared across requests,
+            // regardless of FeatureToggleService's own (scoped) lifetime.
+            services.AddMemoryCache();
+
             // CurrentUserService depends only on IHttpContextAccessor and can be registered as singleton
             // so interceptors (registered as singleton) can consume it when DbContext is being configured.
             services.AddSingleton<ICurrentUserService, CurrentUserService>();
