@@ -112,6 +112,13 @@ export class DateFieldComponent implements ControlValueAccessor {
   // modal opening the calendar clipped it and popped up a scrollbar. Re-pinning the panel to
   // `position: fixed` with coordinates computed from the input's own viewport rect keeps it
   // correctly placed under the field while removing it from the ancestor's scrollable content.
+  //
+  // Fixed positioning alone isn't enough when the field itself sits near the bottom of a tall
+  // modal (e.g. "Data de admissão" as the last field before the footer): pinning the panel below
+  // the field then runs it past the bottom of the viewport with no way to scroll to the clipped
+  // rows, since it's no longer part of any scrollable flow. Flip it above the field whenever
+  // there isn't enough room below (the standard dropdown-collision fix), and clamp both axes to
+  // the viewport as a last resort so the whole panel is always reachable.
   onCalendarShow(overlay: HTMLElement): void {
     const inputEl = this.picker?.inputfieldViewChild?.nativeElement as
       | HTMLElement
@@ -120,9 +127,28 @@ export class DateFieldComponent implements ControlValueAccessor {
       return;
     }
     const rect = inputEl.getBoundingClientRect();
+    const margin = 8;
+    const overlayHeight = overlay.offsetHeight;
+    const overlayWidth = overlay.offsetWidth;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    let top: number;
+    if (spaceBelow >= overlayHeight || spaceBelow >= spaceAbove) {
+      top = Math.min(rect.bottom, window.innerHeight - overlayHeight - margin);
+    } else {
+      top = rect.top - overlayHeight;
+    }
+    top = Math.max(margin, top);
+
+    const left = Math.max(
+      margin,
+      Math.min(rect.left, window.innerWidth - overlayWidth - margin),
+    );
+
     overlay.style.position = 'fixed';
-    overlay.style.top = `${rect.bottom}px`;
-    overlay.style.insetInlineStart = `${rect.left}px`;
+    overlay.style.top = `${top}px`;
+    overlay.style.insetInlineStart = `${left}px`;
   }
 
   // Restricts typing to digits, "/" and the usual editing/navigation keys - nothing else reaches
