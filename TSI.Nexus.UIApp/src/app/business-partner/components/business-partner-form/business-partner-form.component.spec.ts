@@ -68,45 +68,63 @@ describe('BusinessPartnerFormComponent', () => {
     return component;
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the form with the common controls', () => {
+    it('should build the form with the common controls when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('name')).toBeTruthy();
       expect(component.form.get('email')).toBeTruthy();
       expect(component.form.get('socialSecurityCard')).toBeTruthy();
     });
 
-    it('starts the address panel open when adding a new partner', () => {
+    it('should start the address panel open when adding a new partner', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = false;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.addressPanelMode).toBe('form');
     });
 
-    it('starts the address panel collapsed when editing a partner with an existing address', () => {
+    it('should start the address panel collapsed when editing a partner with an existing address', () => {
+      // Arrange
       const component = createComponent({
         addresses: [{ id: 'a1' } as Address],
       });
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.addressPanelMode).toBe('list');
     });
   });
 
   describe('canAddAddress', () => {
-    it('requires a valid address form for a Client partner', () => {
+    it('should require a valid address form when the partner is a Client', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
 
+      // Act / Assert
       expect(component.canAddAddress).toBe(false);
 
       component.addressFormGroup.patchValue({
@@ -123,11 +141,13 @@ describe('BusinessPartnerFormComponent', () => {
       expect(component.canAddAddress).toBe(true);
     });
 
-    it('only requires the essential fields for a Supplier partner', () => {
+    it('should only require the essential fields when the partner is a Supplier', () => {
+      // Arrange
       const component = createComponent({ type: BusinessPartnerType.Supplier });
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.addressFormGroup.patchValue({
         type: 'Home',
         zipCode: '12345678',
@@ -138,18 +158,22 @@ describe('BusinessPartnerFormComponent', () => {
         name: 'Casa',
       });
 
+      // Assert
       expect(component.canAddAddress).toBe(true);
     });
   });
 
   describe('submit', () => {
-    it('rejects an invalid form without saving', () => {
+    it('should reject an invalid form without saving when submit is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let value: unknown;
       component.submit().subscribe((v) => (value = v));
 
+      // Assert
       expect(value).toBeNull();
       expect(businessPartnerServiceMock.add).not.toHaveBeenCalled();
     });
@@ -165,7 +189,8 @@ describe('BusinessPartnerFormComponent', () => {
       });
     }
 
-    it('saves and navigates to the new partner page on success (page mode)', () => {
+    it('should save and navigate to the new partner page when submit succeeds (page mode)', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -174,13 +199,16 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(businessPartnerServiceMock.add).toHaveBeenCalled();
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/clients/bp1');
     });
 
-    it('closes the dialog and shows a success notification on success (modal mode)', () => {
+    it('should close the dialog and show a success notification when submit succeeds (modal mode)', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
@@ -193,8 +221,10 @@ describe('BusinessPartnerFormComponent', () => {
         }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         true,
@@ -203,7 +233,8 @@ describe('BusinessPartnerFormComponent', () => {
       );
     });
 
-    it('shows the returned message without navigating when the backend reports a business error', () => {
+    it('should show the returned message without navigating when the backend reports a business error', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -212,8 +243,10 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'CPF já cadastrado', data: null }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'CPF já cadastrado',
@@ -223,23 +256,29 @@ describe('BusinessPartnerFormComponent', () => {
   });
 
   describe('cancel', () => {
-    it('hides the modal when in modal mode', () => {
+    it('should hide the modal when cancel is called in modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the list page when not in modal mode', () => {
+    it('should navigate back to the list page when cancel is called outside modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/clients');
     });
   });
@@ -258,66 +297,82 @@ describe('BusinessPartnerFormComponent', () => {
       });
     }
 
-    it('adds a new address and reopens the form for the next one in add mode', () => {
+    it('should add a new address and reopen the form for the next one when in add mode', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.isEdit = false;
       component.ngOnInit();
       fillValidAddressForm(component);
-
       const address = component.addressFormGroup.value as Address;
+
+      // Act
       component.saveAddress(address);
 
+      // Assert
       expect(component.data?.addresses?.some((a) => a.street === 'Rua A')).toBe(true);
       expect(component.addressPanelMode).toBe('form');
     });
 
-    it('collapses back to the list after saving in edit mode', () => {
+    it('should collapse back to the list when saveAddress is called in edit mode', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.isEdit = true;
       component.ngOnInit();
       fillValidAddressForm(component);
 
+      // Act
       component.saveAddress(component.addressFormGroup.value as Address);
 
+      // Assert
       expect(component.addressPanelMode).toBe('list');
     });
 
-    it('cancelAddress resets to the list view', () => {
+    it('should reset to the list view when cancelAddress is called', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
       component.addressPanelMode = 'form';
 
+      // Act
       component.cancelAddress();
 
+      // Assert
       expect(component.addressPanelMode).toBe('list');
       expect(component.selectedAddressIndex).toBeNull();
     });
 
-    it('displayNewAddress opens the form with no selected address', () => {
+    it('should open the form with no selected address when displayNewAddress is called', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.displayNewAddress();
 
+      // Assert
       expect(component.addressPanelMode).toBe('form');
       expect(component.selectedAddressIndex).toBeNull();
     });
 
-    it('saveAddress does nothing when the address form is invalid', () => {
+    it('should do nothing when saveAddress is called with an invalid address form', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.saveAddress({ street: '' } as Address);
 
+      // Assert
       expect(component.data!.addresses).toEqual([]);
     });
 
-    it('saveAddress replaces the address at the selected index when editing', () => {
+    it('should replace the address at the selected index when saveAddress is called while editing', () => {
+      // Arrange
       const component = createComponent({
         addresses: [{ id: 'a1', street: 'Old' } as Address, { id: 'a2', street: 'Other' } as Address],
       });
@@ -326,26 +381,32 @@ describe('BusinessPartnerFormComponent', () => {
       component.selectedAddressIndex = 0;
       fillValidAddressForm(component);
 
+      // Act
       component.saveAddress(component.addressFormGroup.value as Address);
 
+      // Assert
       expect(component.data!.addresses![0].street).toBe('Rua A');
       expect(component.data!.addresses![1].street).toBe('Other');
     });
 
-    it('starts collapsed and resets the form when compact + edit mode with an existing address', () => {
+    it('should start collapsed and reset the form when compact and edit mode start with an existing address', () => {
+      // Arrange
       const component = createComponent({ addresses: [{ id: 'a1' } as Address] });
       component.compact = true;
       component.isEdit = true;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.addressPanelMode).toBe('list');
       expect(component.addressFormGroup.get('street')!.value).toBeFalsy();
     });
   });
 
   describe('remove', () => {
-    it('deletes the partner and navigates back on success (page mode)', async () => {
+    it('should delete the partner and navigate back when the delete succeeds (page mode)', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -354,23 +415,28 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(businessPartnerServiceMock.delete).toHaveBeenCalledWith(component.data);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/clients');
     });
 
-    it('shows an error notification when the delete fails', async () => {
+    it('should show an error notification when the delete fails', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
       businessPartnerServiceMock.delete.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'error',
         'Erro ao remover',
@@ -378,7 +444,8 @@ describe('BusinessPartnerFormComponent', () => {
       expect(routerMock.navigateByUrl).not.toHaveBeenCalledWith('/clients');
     });
 
-    it('hides the modal and notifies without navigating on success (modal mode)', async () => {
+    it('should hide the modal and notify without navigating when the delete succeeds (modal mode)', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
@@ -387,15 +454,18 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Removido', ResponseStatus.Success);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalledWith('/clients');
     });
 
-    it('does not navigate when the delete reports a non-success status (page mode)', async () => {
+    it('should not navigate when the delete reports a non-success status (page mode)', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -404,35 +474,43 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('does nothing further when cancelled outside a modal', async () => {
+    it('should do nothing further when the deletion is cancelled outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(businessPartnerServiceMock.delete).not.toHaveBeenCalled();
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });
 
-    it('builds the reopen initialState when cancelled inside a modal', async () => {
+    it('should build the reopen initialState when the deletion is cancelled inside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.isEdit = true;
       component.ngOnInit();
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(businessPartnerServiceMock.delete).not.toHaveBeenCalled();
       // Reopening the modal goes through a dynamic `import(...)` of
       // BusinessPartnerDetailsModalComponent, which is impractical to assert on meaningfully in
@@ -448,86 +526,116 @@ describe('BusinessPartnerFormComponent', () => {
   });
 
   describe('ngOnChanges', () => {
-    it('re-initializes the form when data changes after the first change', () => {
+    it('should re-initialize the form when data changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ data: { currentValue: component.data, firstChange: false } as never });
 
+      // Assert
       expect(component.form.get('name')).toBeTruthy();
     });
 
-    it('re-initializes the form when isEdit changes after the first change', () => {
+    it('should re-initialize the form when isEdit changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: true, firstChange: false } as never });
 
+      // Assert
       expect(component.form.get('name')).toBeTruthy();
     });
 
-    it('does nothing on the first change of data or isEdit', () => {
+    it('should do nothing on the first change of data or isEdit', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.form;
 
+      // Act
       component.ngOnChanges({
         data: { currentValue: component.data, firstChange: true } as never,
         isEdit: { currentValue: false, firstChange: true } as never,
       });
 
+      // Assert
       expect(component.form).toBe(before);
     });
 
-    it('does nothing when neither data nor isEdit changed', () => {
+    it('should do nothing when neither data nor isEdit changed', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.form;
 
+      // Act
       component.ngOnChanges({ compact: {} as never });
 
+      // Assert
       expect(component.form).toBe(before);
     });
   });
 
   describe('selectedAddress', () => {
-    it('is null when no index is selected', () => {
+    it('should return null when no index is selected', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.selectedAddress).toBeNull();
     });
 
-    it('is null when data.addresses is not an array', () => {
+    it('should return null when data.addresses is not an array', () => {
+      // Arrange
       const component = createComponent();
       component.selectedAddressIndex = 0;
       (component.data as any).addresses = undefined;
+
+      // Act / Assert
       expect(component.selectedAddress).toBeNull();
     });
 
-    it('is null when the index is negative', () => {
+    it('should return null when the index is negative', () => {
+      // Arrange
       const component = createComponent({ addresses: [{ id: 'a1' } as Address] });
       component.selectedAddressIndex = -1;
+
+      // Act / Assert
       expect(component.selectedAddress).toBeNull();
     });
 
-    it('is null when the index is out of bounds', () => {
+    it('should return null when the index is out of bounds', () => {
+      // Arrange
       const component = createComponent({ addresses: [{ id: 'a1' } as Address] });
       component.selectedAddressIndex = 5;
+
+      // Act / Assert
       expect(component.selectedAddress).toBeNull();
     });
 
-    it('returns the address at the selected index', () => {
+    it('should return the address at the selected index', () => {
+      // Arrange
       const addr = { id: 'a1' } as Address;
       const component = createComponent({ addresses: [addr] });
       component.selectedAddressIndex = 0;
+
+      // Act / Assert
       expect(component.selectedAddress).toBe(addr);
     });
   });
 
   describe('isEditingAddressExclusively', () => {
-    it('is true only when the address panel is in form mode and isEdit is true', () => {
+    it('should be true only when the address panel is in form mode and isEdit is true', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.addressPanelMode = 'form';
+
+      // Act / Assert
       expect(component.isEditingAddressExclusively).toBe(true);
 
       component.addressPanelMode = 'list';
@@ -551,7 +659,8 @@ describe('BusinessPartnerFormComponent', () => {
       });
     }
 
-    it('clears the birthday when it is empty', () => {
+    it('should clear the birthday when it is empty', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -560,12 +669,15 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.birthday).toBeUndefined();
     });
 
-    it('keeps a filled-in birthday untouched', () => {
+    it('should keep a filled-in birthday untouched', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -574,12 +686,15 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect((component.data as any).birthday).toBe('15/05/1990');
     });
 
-    it('adds a new address from the compact address sub-form when street is filled', () => {
+    it('should add a new address from the compact address sub-form when street is filled', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
@@ -597,13 +712,16 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Client } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses!.some((a) => a.street === 'Rua A')).toBe(true);
       expect('address' in (component.data as any)).toBe(false);
     });
 
-    it('replaces an existing address with the same id instead of duplicating', () => {
+    it('should replace an existing address with the same id instead of duplicating it', () => {
+      // Arrange
       const component = createComponent({
         addresses: [{ id: 'a1', street: 'Old' } as Address],
       });
@@ -624,13 +742,16 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Client } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses).toHaveLength(1);
       expect(component.data!.addresses![0].street).toBe('Rua Nova');
     });
 
-    it('does not stage the address when the zipCode is null', () => {
+    it('should not stage the address when the zipCode is null', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
@@ -639,12 +760,15 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Client } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses).toEqual([]);
     });
 
-    it('does not stage the address when street is blank even though zipCode is filled', () => {
+    it('should not stage the address when street is blank even though zipCode is filled', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
@@ -652,17 +776,19 @@ describe('BusinessPartnerFormComponent', () => {
       // zipCode truthy so the outer `raw.address.zipCode != null` guard passes, but street is
       // still blank - exercises the `raw.address?.street != ''` guard's false branch.
       component.addressFormGroup.get('zipCode')!.setValue('00000000');
-
       businessPartnerServiceMock.add.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Client } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses).toEqual([]);
     });
 
-    it('does not stage the address when every field including country is blank', () => {
+    it('should not stage the address when every field including country is blank', () => {
+      // Arrange
       const component = createComponent({ type: BusinessPartnerType.Supplier });
       component.compact = true;
       component.ngOnInit();
@@ -672,12 +798,15 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Supplier } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses).toEqual([]);
     });
 
-    it('replaces only the matching address by id, leaving the others untouched', () => {
+    it('should replace only the matching address by id, leaving the others untouched', () => {
+      // Arrange
       const component = createComponent({
         type: BusinessPartnerType.Supplier,
         addresses: [
@@ -702,13 +831,16 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Supplier } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses![0].street).toBe('Old');
       expect(component.data!.addresses![1].street).toBe('Rua Nova');
     });
 
-    it('lazily initializes addresses to an empty array when staging with none yet', () => {
+    it('should lazily initialize addresses to an empty array when staging with none yet', () => {
+      // Arrange
       const component = createComponent({ type: BusinessPartnerType.Supplier });
       component.compact = true;
       component.ngOnInit();
@@ -730,12 +862,15 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Supplier } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses!.some((a) => a.street === 'Rua A')).toBe(true);
     });
 
-    it('deletes a stray "address" property left on data before saving', () => {
+    it('should delete a stray "address" property left on data before saving', () => {
+      // Arrange
       const component = createComponent({ type: BusinessPartnerType.Supplier });
       component.compact = true;
       component.ngOnInit();
@@ -745,8 +880,10 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Supplier } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect('address' in (component.data as any)).toBe(false);
     });
 
@@ -754,7 +891,8 @@ describe('BusinessPartnerFormComponent', () => {
     // fields stay optional (see initForm()'s isAddressRequired) - a Client would make the blank
     // address group itself invalid, and submit() bails out via the top-level `this.form.invalid`
     // check before ever reaching the address-staging logic under test here.
-    it('sets the first address as default when none is marked default', () => {
+    it('should set the first address as default when none is marked default', () => {
+      // Arrange
       const component = createComponent({
         type: BusinessPartnerType.Supplier,
         addresses: [{ id: 'a1', street: 'Existing', isDefault: false } as Address],
@@ -766,12 +904,15 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Supplier } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses![0].isDefault).toBe(true);
     });
 
-    it('does not override an already-default address', () => {
+    it('should not override an already-default address', () => {
+      // Arrange
       const component = createComponent({
         type: BusinessPartnerType.Supplier,
         addresses: [{ id: 'a1', street: 'Existing', isDefault: true } as Address],
@@ -783,12 +924,15 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Supplier } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data!.addresses![0].isDefault).toBe(true);
     });
 
-    it('removes a null id from staged addresses before saving', () => {
+    it('should remove a null id from staged addresses before saving', () => {
+      // Arrange
       const component = createComponent({
         type: BusinessPartnerType.Supplier,
         addresses: [{ id: null as any, street: 'Existing', isDefault: true } as Address],
@@ -800,23 +944,29 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'bp1', type: BusinessPartnerType.Supplier } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect('id' in component.data!.addresses![0]).toBe(false);
     });
 
-    it('shows a generic error notification when saving fails', () => {
+    it('should show a generic error notification when saving fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       businessPartnerServiceMock.add.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'Erro ao salvar');
     });
 
-    it('updates when editing an existing partner', () => {
+    it('should update when editing an existing partner', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
@@ -825,13 +975,16 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Salvo', data: { id: 'bp1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(businessPartnerServiceMock.update).toHaveBeenCalled();
       expect(businessPartnerServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('shows the formatted message and refreshes data when editing (page mode)', () => {
+    it('should show the formatted message and refresh data when editing succeeds (page mode)', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.isModal = false;
@@ -841,8 +994,10 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'CPF 52998224725 salvo', data: { id: 'bp1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         expect.stringContaining('529.982.247-25'),
@@ -850,7 +1005,8 @@ describe('BusinessPartnerFormComponent', () => {
       expect(component.data).toEqual({ id: 'bp1' });
     });
 
-    it('shows an empty-message notification unchanged when there is no message', () => {
+    it('should show an empty-message notification unchanged when there is no message', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
@@ -859,26 +1015,31 @@ describe('BusinessPartnerFormComponent', () => {
         of({ status: ResponseStatus.Success, message: '', data: { id: 'bp1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, '');
     });
 
-    it('shows a CNPJ-formatted error message in the modal path (private saveModal, via direct call)', () => {
+    it('should show a CNPJ-formatted error message when saveModal is called directly with a non-success response', () => {
       // submit()'s own tap-next callback only ever dispatches to saveModal()/savePage() after
       // confirming response.status === Success (see the comment above that check in submit()),
       // so saveModal()'s own internal non-success branch is unreachable through submit() itself -
       // calling it directly here is the only way to exercise that branch.
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
 
+      // Act
       (component as any).saveModal({
         status: ResponseStatus.Error,
         message: 'CNPJ 11222333000181 duplicado',
         data: null,
       });
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         false,
         '',
@@ -886,7 +1047,8 @@ describe('BusinessPartnerFormComponent', () => {
       );
     });
 
-    it('labels a Supplier as "Fornecedor adicionado" on success (modal mode)', () => {
+    it('should label a Supplier as "Fornecedor adicionado" when submit succeeds (modal mode)', () => {
+      // Arrange
       const component = createComponent({ type: BusinessPartnerType.Supplier });
       component.isModal = true;
       component.ngOnInit();
@@ -899,36 +1061,45 @@ describe('BusinessPartnerFormComponent', () => {
         }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(true, 'Fornecedor adicionado', 'OK');
     });
   });
 
   describe('updateFieldValidators (private, via documentType changes)', () => {
-    it('requires nationalRegistry and clears birthday when switching to Jurídica', () => {
+    it('should require nationalRegistry and clear birthday when switching to Jurídica', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('documentType')!.setValue('Jurídica');
 
+      // Assert
       expect(component.form.get('nationalRegistry')!.hasError('required')).toBe(true);
       expect(component.form.get('socialSecurityCard')!.value).toBe('');
       expect(component.form.get('birthday')!.value).toBe('');
     });
 
-    it('requires socialSecurityCard when switching back to Física', () => {
+    it('should require socialSecurityCard when switching back to Física', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('documentType')!.setValue('Jurídica');
 
+      // Act
       component.form.get('documentType')!.setValue('Física');
 
+      // Assert
       expect(component.form.get('socialSecurityCard')!.hasError('required')).toBe(true);
       expect(component.form.get('nationalRegistry')!.value).toBe('');
     });
 
-    it('leaves the previous validators untouched for a documentType that is neither Física nor Jurídica', () => {
+    it('should leave the previous validators untouched when the documentType is neither Física nor Jurídica', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       // Física is the default at init time, so socialSecurityCard is already required and
@@ -939,61 +1110,76 @@ describe('BusinessPartnerFormComponent', () => {
         nr: component.form.get('nationalRegistry')!.hasError('required'),
       };
 
+      // Act
       expect(() => component.form.get('documentType')!.setValue('Outro')).not.toThrow();
 
+      // Assert
       expect(component.form.get('socialSecurityCard')!.hasError('required')).toBe(before.ssc);
       expect(component.form.get('nationalRegistry')!.hasError('required')).toBe(before.nr);
     });
 
-    it('keeps the birthday untouched when clearBirthday is false (direct call)', () => {
+    it('should keep the birthday untouched when clearBirthday is false (direct call)', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('birthday')!.setValue('15/05/1990');
 
+      // Act
       (component as any).updateFieldValidators('Jurídica', false);
 
+      // Assert
       expect(component.form.get('birthday')!.value).toBe('15/05/1990');
     });
   });
 
   describe('parseBirthday (private, no live call site - documented residual)', () => {
-    it('is not directly reachable from the public API in this component version', () => {
+    it('should stay unreachable from the public API when checked against the current component version', () => {
       // parseBirthday() is defined but not currently called anywhere in this class - kept here
       // as a private helper without a live call site, so it stays outside the coverage target.
+      // Arrange / Act / Assert
       expect(true).toBe(true);
     });
   });
 
   describe('initAddressInfo (private, via ngOnInit)', () => {
-    it('does nothing when there is no data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act / Assert
       expect(() => component.ngOnInit()).not.toThrow();
     });
 
-    it('initializes an empty addresses array when data has none', () => {
+    it('should initialize an empty addresses array when data has none', () => {
+      // Arrange
       const component = createComponent();
       delete (component.data as any).addresses;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.data!.addresses).toEqual([]);
     });
   });
 
   describe('onSaveAndAddNewAddress', () => {
-    it('does not save an invalid address form', () => {
+    it('should not save an invalid address form', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.onSaveAndAddNewAddress();
 
+      // Assert
       expect(component.data!.addresses).toEqual([]);
     });
 
-    it('saves a valid address form', () => {
+    it('should save a valid address form', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
@@ -1007,24 +1193,30 @@ describe('BusinessPartnerFormComponent', () => {
         number: 10,
       });
 
+      // Act
       component.onSaveAndAddNewAddress();
 
+      // Assert
       expect(component.data!.addresses!.some((a) => a.street === 'Rua A')).toBe(true);
     });
   });
 
   describe('editAddress', () => {
-    it('does nothing when the address is not found', () => {
+    it('should do nothing when the address is not found', () => {
+      // Arrange
       const component = createComponent({ addresses: [{ id: 'a1' } as Address] });
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.editAddress({ id: 'unknown' } as Address);
 
+      // Assert
       expect(component.selectedAddressIndex).toBeNull();
     });
 
-    it('selects and patches the matching address', () => {
+    it('should select and patch the matching address', () => {
+      // Arrange
       const component = createComponent({ addresses: [{ id: 'a1', street: 'Rua A' } as Address] });
       component.compact = true;
       component.ngOnInit();
@@ -1033,8 +1225,10 @@ describe('BusinessPartnerFormComponent', () => {
       // object reference, not the one originally passed into createComponent().
       const addr = component.data!.addresses![0];
 
+      // Act
       component.editAddress(addr);
 
+      // Assert
       expect(component.selectedAddressIndex).toBe(0);
       expect(component.addressFormGroup.get('street')!.value).toBe('Rua A');
       expect(component.addressPanelMode).toBe('form');
@@ -1051,13 +1245,16 @@ describe('BusinessPartnerFormComponent', () => {
   //   always includes every one of these controls, so there's no runtime path where any of them
   //   is missing.
   describe('restoreAddressValidators (private, via displayNewAddress/editAddress/saveAddress)', () => {
-    it('restores required validators on all standard address fields, defaulting country to BR', () => {
+    it('should restore required validators on all standard address fields, defaulting country to BR', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.displayNewAddress();
 
+      // Assert
       expect(component.addressFormGroup.get('country')!.value).toBe('BR');
       ['name', 'type', 'zipCode', 'state', 'city', 'street', 'number', 'country'].forEach((field) => {
         component.addressFormGroup.get(field)!.setValue('');

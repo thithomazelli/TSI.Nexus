@@ -59,27 +59,37 @@ describe('VehicleDetailsPageComponent', () => {
     return { get: (key: string) => (key === 'id' ? id : null) };
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('isAgendaEnabled combines the group and entity flags', () => {
+  it('should combine the group and entity flags when isAgendaEnabled is called', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
+    // Assert
     expect(component.isAgendaEnabled()).toBe(true);
   });
 
   describe('ngOnInit', () => {
-    it('sets isEdit=false for a new vehicle', () => {
+    it('should set isEdit to false when the route param is "new"', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       paramMap$.next(paramMap('new'));
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.data).toBeNull();
     });
 
-    it('loads an existing vehicle by id and its trip agenda events', () => {
+    it('should load an existing vehicle by id and its trip agenda events', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Vehicle>>();
       vehicleServiceMock.getById.mockReturnValue(response$);
@@ -88,9 +98,11 @@ describe('VehicleDetailsPageComponent', () => {
       tripLegServiceMock.getByTrip.mockReturnValue(of({ data: [] }));
       tripServiceMock.buildAgendaEvent.mockReturnValue({ id: 'agenda1' });
 
+      // Act
       component.ngOnInit();
       paramMap$.next(paramMap('v1'));
 
+      // Assert
       expect(component.isEdit).toBe(true);
       expect(component.loading).toBe(true);
       expect(vehicleServiceMock.getById).toHaveBeenCalledWith('v1');
@@ -104,45 +116,55 @@ describe('VehicleDetailsPageComponent', () => {
       expect(component.tripAgendaEvents).toEqual([{ id: 'agenda1' }]);
     });
 
-    it('navigates to not-found when the vehicle does not exist', () => {
+    it('should navigate to not-found when the vehicle does not exist', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Vehicle>>();
       vehicleServiceMock.getById.mockReturnValue(response$);
-
       component.ngOnInit();
       paramMap$.next(paramMap('missing'));
+
+      // Act
       response$.next({ data: null } as unknown as WebApiResponse<Vehicle>);
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('navigates to not-found and stops loading when the request errors', () => {
+    it('should navigate to not-found and stop loading when the request errors', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Vehicle>>();
       vehicleServiceMock.getById.mockReturnValue(response$);
-
       component.ngOnInit();
       paramMap$.next(paramMap('v1'));
+
+      // Act
       response$.error(new Error('fail'));
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('falls back to an empty trip list when the response has no data', () => {
+    it('should fall back to an empty trip list when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Vehicle>>();
       vehicleServiceMock.getById.mockReturnValue(response$);
       tripServiceMock.getByVehicleId.mockReturnValue(of({} as WebApiResponse<Trip[]>));
-
       component.ngOnInit();
+
+      // Act
       paramMap$.next(paramMap('v1'));
       response$.next({ data: { id: 'v1' } } as WebApiResponse<Vehicle>);
 
+      // Assert
       expect(component.tripAgendaEvents).toEqual([]);
     });
 
-    it('falls back to an empty leg list when building a trip agenda event', () => {
+    it('should fall back to an empty leg list when building a trip agenda event', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Vehicle>>();
       vehicleServiceMock.getById.mockReturnValue(response$);
@@ -150,31 +172,36 @@ describe('VehicleDetailsPageComponent', () => {
       tripServiceMock.getByVehicleId.mockReturnValue(of({ data: [trip] } as WebApiResponse<Trip[]>));
       tripLegServiceMock.getByTrip.mockReturnValue(of({} as WebApiResponse<unknown>));
       tripServiceMock.buildAgendaEvent.mockReturnValue({ id: 'agenda1' });
-
       component.ngOnInit();
+
+      // Act
       paramMap$.next(paramMap('v1'));
       response$.next({ data: { id: 'v1' } } as WebApiResponse<Vehicle>);
 
+      // Assert
       expect(tripServiceMock.buildAgendaEvent).toHaveBeenCalledWith(trip, []);
     });
 
-    it('re-fetches on a real vehicleChanged$ event, but not on the skip(1)-dropped first one', () => {
+    it('should re-fetch on a real vehicleChanged$ event but not on the skip(1)-dropped first one', () => {
+      // Arrange
       const component = createComponent();
       const firstResponse$ = new Subject<WebApiResponse<Vehicle>>();
       const secondResponse$ = new Subject<WebApiResponse<Vehicle>>();
       vehicleServiceMock.getById
         .mockReturnValueOnce(firstResponse$)
         .mockReturnValueOnce(secondResponse$);
-
       component.ngOnInit();
       paramMap$.next(paramMap('v1'));
       firstResponse$.next({ data: { id: 'v1' } } as WebApiResponse<Vehicle>);
       expect(vehicleServiceMock.getById).toHaveBeenCalledTimes(1);
 
+      // Act
       vehicleServiceMock.vehicleChanged$.next();
       expect(vehicleServiceMock.getById).toHaveBeenCalledTimes(1);
 
       vehicleServiceMock.vehicleChanged$.next();
+
+      // Assert
       expect(vehicleServiceMock.getById).toHaveBeenCalledTimes(2);
 
       secondResponse$.next({ data: { id: 'v1' } } as WebApiResponse<Vehicle>);
@@ -183,42 +210,59 @@ describe('VehicleDetailsPageComponent', () => {
   });
 
   describe('getStatusLabel', () => {
-    it('returns an empty string when there is no data', () => {
+    it('should return an empty string when there is no data', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
 
-    it('resolves the translated status label', () => {
+    it('should resolve the translated status label when data has a known status', () => {
+      // Arrange
       const component = createComponent();
       component.data = { status: 'Available' } as Vehicle;
 
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('VEHICLES.STATUS_AVAILABLE');
     });
 
-    it('falls back to an empty string for a status with no mapped label', () => {
+    it('should fall back to an empty string when the status has no mapped label', () => {
+      // Arrange
       const component = createComponent();
       component.data = { status: 'Unknown' } as unknown as Vehicle;
 
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
   });
 
-  it('ngOnDestroy does not throw', () => {
+  it('should not throw when ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
+    // Assert
     expect(() => component.ngOnDestroy()).not.toThrow();
   });
 
-  it('ngOnDestroy also unsubscribes from vehicleChanged$/maintenanceChanged$ when editing an existing vehicle', () => {
+  it('should unsubscribe from vehicleChanged$/maintenanceChanged$ when editing an existing vehicle and ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent();
     vehicleServiceMock.getById.mockReturnValue(new Subject());
     component.ngOnInit();
     paramMap$.next(paramMap('v1'));
 
+    // Act
     component.ngOnDestroy();
     vehicleServiceMock.getById.mockClear();
     vehicleServiceMock.vehicleChanged$.next();
     vehicleServiceMock.vehicleChanged$.next();
 
+    // Assert
     expect(vehicleServiceMock.getById).not.toHaveBeenCalled();
   });
 });

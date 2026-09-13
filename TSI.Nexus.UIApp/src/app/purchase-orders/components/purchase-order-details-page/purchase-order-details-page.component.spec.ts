@@ -47,30 +47,44 @@ describe('PurchaseOrderDetailsPageComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent(null)).toBeTruthy();
   });
 
-  it('isAgendaEnabled combines the group and entity flags', () => {
+  it('should combine the group and entity flags when isAgendaEnabled is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
+    // Assert
     expect(component.isAgendaEnabled()).toBe(true);
   });
 
   describe('ngOnInit', () => {
-    it('sets isEdit=false for a new purchase order', () => {
+    it('should set isEdit to false when there is no route id (new purchase order)', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.data).toBeNull();
     });
 
-    it('loads an existing purchase order by id', () => {
+    it('should load an existing purchase order when a real id is provided', () => {
+      // Arrange
       const component = createComponent('po1');
       const response$ = new Subject<WebApiResponse<PurchaseOrder>>();
       purchaseOrderServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.loading).toBe(true);
       expect(purchaseOrderServiceMock.getById).toHaveBeenCalledWith('po1');
 
@@ -81,45 +95,54 @@ describe('PurchaseOrderDetailsPageComponent', () => {
       expect(component.data).toBe(data);
     });
 
-    it('navigates to not-found when the purchase order does not exist', () => {
+    it('should navigate to not-found when the purchase order does not exist', () => {
+      // Arrange
       const component = createComponent('missing');
       const response$ = new Subject<WebApiResponse<PurchaseOrder>>();
       purchaseOrderServiceMock.getById.mockReturnValue(response$);
-
       component.ngOnInit();
+
+      // Act
       response$.next({ data: null } as unknown as WebApiResponse<PurchaseOrder>);
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('navigates to not-found and stops loading when the request errors', () => {
+    it('should navigate to not-found and stop loading when the request errors', () => {
+      // Arrange
       const component = createComponent('po1');
       const response$ = new Subject<WebApiResponse<PurchaseOrder>>();
       purchaseOrderServiceMock.getById.mockReturnValue(response$);
-
       component.ngOnInit();
+
+      // Act
       response$.error(new Error('fail'));
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('re-fetches on a real purchaseOrderProductChanged$ event, but not on the skip(1)-dropped first one', () => {
+    it('should re-fetch on a real purchaseOrderProductChanged$ event but not on the skip(1)-dropped first one', () => {
+      // Arrange
       const component = createComponent('po1');
       const firstResponse$ = new Subject<WebApiResponse<PurchaseOrder>>();
       const secondResponse$ = new Subject<WebApiResponse<PurchaseOrder>>();
       purchaseOrderServiceMock.getById
         .mockReturnValueOnce(firstResponse$)
         .mockReturnValueOnce(secondResponse$);
-
       component.ngOnInit();
       firstResponse$.next({ data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>);
       expect(purchaseOrderServiceMock.getById).toHaveBeenCalledTimes(1);
 
+      // Act
       purchaseOrderProductServiceMock.purchaseOrderProductChanged$.next();
       expect(purchaseOrderServiceMock.getById).toHaveBeenCalledTimes(1);
 
       purchaseOrderProductServiceMock.purchaseOrderProductChanged$.next();
+
+      // Assert
       expect(purchaseOrderServiceMock.getById).toHaveBeenCalledTimes(2);
 
       secondResponse$.next({ data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>);
@@ -128,46 +151,69 @@ describe('PurchaseOrderDetailsPageComponent', () => {
   });
 
   describe('getStatusLabel', () => {
-    it('returns an empty string when there is no data', () => {
+    it('should return an empty string when there is no data', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
 
-    it('returns an empty string when data has no status', () => {
+    it('should return an empty string when data has no status', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'po1', status: null } as unknown as PurchaseOrder;
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
 
-    it('resolves the mapped status label', () => {
+    it('should resolve the mapped status label when the status is known', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'po1', status: 'Open' } as unknown as PurchaseOrder;
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('Em aberto');
     });
 
-    it('falls back to an empty string for a status with no mapped label', () => {
+    it('should fall back to an empty string when the status has no mapped label', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'po1', status: 'Unknown' } as unknown as PurchaseOrder;
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
   });
 
-  it('ngOnDestroy does not throw', () => {
+  it('should not throw when ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent(null);
     component.ngOnInit();
+
+    // Act
+    // Assert
     expect(() => component.ngOnDestroy()).not.toThrow();
   });
 
-  it('ngOnDestroy also unsubscribes from purchaseOrderChanged$/purchaseOrderProductChanged$/paymentChanged$ when editing', () => {
+  it('should unsubscribe from purchaseOrderChanged$/purchaseOrderProductChanged$/paymentChanged$ when editing and ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent('po1');
     purchaseOrderServiceMock.getById.mockReturnValue(new Subject());
     component.ngOnInit();
 
+    // Act
     component.ngOnDestroy();
     purchaseOrderServiceMock.getById.mockClear();
     purchaseOrderServiceMock.purchaseOrderChanged$.next();
     purchaseOrderServiceMock.purchaseOrderChanged$.next();
 
+    // Assert
     expect(purchaseOrderServiceMock.getById).not.toHaveBeenCalled();
   });
 });

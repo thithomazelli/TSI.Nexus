@@ -44,11 +44,14 @@ describe('FleetReportComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('loads the summary from vehicles$/drivers$ streams that never complete', () => {
+  it('should load the summary when vehicles$/drivers$ streams that never complete both emit', () => {
+    // Arrange
     const component = createComponent();
     component.ngOnInit();
 
@@ -57,9 +60,11 @@ describe('FleetReportComponent', () => {
     const vehicle = { id: 'v1', plate: 'ABC1234', brand: 'Ford', model: 'Ka', status: VehicleStatus.Available } as Vehicle;
     const driver = { id: 'd1', name: 'João', status: DriverStatus.Active } as Driver;
 
+    // Act
     vehicles$.next({ data: [vehicle] } as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({ data: [driver] } as unknown as WebApiResponse<Driver[]>);
 
+    // Assert
     expect(component.loading).toBe(false);
     expect(component.totalVehicles).toBe(1);
     expect(component.totalDrivers).toBe(1);
@@ -69,10 +74,12 @@ describe('FleetReportComponent', () => {
     expect(serviceOrderServiceMock.getByDriver).toHaveBeenCalledWith('d1');
   });
 
-  it('does not react to a second emission on vehicles$/drivers$ (take(1) unsubscribes after the first combination)', () => {
+  it('should not react to a second emission on vehicles$/drivers$ when take(1) already unsubscribed after the first combination', () => {
+    // Arrange
     const component = createComponent();
     component.ngOnInit();
 
+    // Act
     vehicles$.next({ data: [{ id: 'v1' } as Vehicle] } as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({ data: [] } as unknown as WebApiResponse<Driver[]>);
     expect(component.totalVehicles).toBe(1);
@@ -81,10 +88,12 @@ describe('FleetReportComponent', () => {
       data: [{ id: 'v1' } as Vehicle, { id: 'v2' } as Vehicle],
     } as unknown as WebApiResponse<Vehicle[]>);
 
+    // Assert
     expect(component.totalVehicles).toBe(1);
   });
 
-  it('aggregates driver commissions by status (pending/paid) from serviceOrderService.getByDriver', () => {
+  it('should aggregate driver commissions by status when serviceOrderService.getByDriver returns pending and paid commissions', () => {
+    // Arrange
     const component = createComponent();
     const driver = { id: 'd1', name: 'João', status: DriverStatus.Active } as Driver;
     const pendingCommission = { amount: 100, status: CommissionStatus.Pending } as Commission;
@@ -99,10 +108,12 @@ describe('FleetReportComponent', () => {
       }),
     );
 
+    // Act
     component.ngOnInit();
     vehicles$.next({ data: [] } as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({ data: [driver] } as unknown as WebApiResponse<Driver[]>);
 
+    // Assert
     expect(component.driverRows).toEqual([
       { name: 'João', status: DriverStatus.Active, tripCount: 2, commissionPending: 100, commissionPaid: 50 },
     ]);
@@ -110,33 +121,40 @@ describe('FleetReportComponent', () => {
     expect(component.totalCommissionPaid).toBe(50);
   });
 
-  it('treats a getByDriver response with no data as no commissions', () => {
+  it('should treat a getByDriver response with no data as no commissions', () => {
+    // Arrange
     const component = createComponent();
     const driver = { id: 'd1', name: 'João', status: DriverStatus.Active } as Driver;
     serviceOrderServiceMock.getByDriver.mockReturnValue(of({}));
 
+    // Act
     component.ngOnInit();
     vehicles$.next({ data: [] } as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({ data: [driver] } as unknown as WebApiResponse<Driver[]>);
 
+    // Assert
     expect(component.driverRows).toEqual([
       { name: 'João', status: DriverStatus.Active, tripCount: 0, commissionPending: 0, commissionPaid: 0 },
     ]);
   });
 
-  it('skips serviceOrderService.getByDriver entirely when there are no drivers', () => {
+  it('should skip serviceOrderService.getByDriver entirely when there are no drivers', () => {
+    // Arrange
     const component = createComponent();
     component.ngOnInit();
 
+    // Act
     vehicles$.next({ data: [] } as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({ data: [] } as unknown as WebApiResponse<Driver[]>);
 
+    // Assert
     expect(serviceOrderServiceMock.getByDriver).not.toHaveBeenCalled();
     expect(component.driverRows).toEqual([]);
   });
 
   describe('date range filtering', () => {
-    it('applyFilters narrows trips/maintenances/commissions to the selected range', () => {
+    it('should narrow trips/maintenances/commissions to the selected range when applyFilters is called', () => {
+      // Arrange
       const component = createComponent();
       tripServiceMock.getAll.mockReturnValue(
         of({
@@ -155,10 +173,12 @@ describe('FleetReportComponent', () => {
 
       expect(component.totalRevenue).toBe(300);
 
+      // Act
       component.filterStartDate = '2024-01-01';
       component.filterEndDate = '2024-01-31';
       component.applyFilters();
 
+      // Assert
       expect(component.totalRevenue).toBe(100);
 
       component.clearFilters();
@@ -169,16 +189,21 @@ describe('FleetReportComponent', () => {
     });
   });
 
-  it('falls back to an empty array of drivers when the response has no data', () => {
+  it('should fall back to an empty array of drivers when the response has no data', () => {
+    // Arrange
     const component = createComponent();
     component.ngOnInit();
+
+    // Act
     vehicles$.next({ data: [] } as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({} as unknown as WebApiResponse<Driver[]>);
 
+    // Assert
     expect(component.totalDrivers).toBe(0);
   });
 
-  it('sorts vehicle rows by revenue descending', () => {
+  it('should sort vehicle rows by revenue descending', () => {
+    // Arrange
     const component = createComponent();
     tripServiceMock.getAll.mockReturnValue(
       of({
@@ -188,6 +213,8 @@ describe('FleetReportComponent', () => {
         ],
       } as unknown as WebApiResponse<Trip[]>),
     );
+
+    // Act
     component.ngOnInit();
     vehicles$.next({
       data: [
@@ -197,15 +224,19 @@ describe('FleetReportComponent', () => {
     } as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({ data: [] } as unknown as WebApiResponse<Driver[]>);
 
+    // Assert
     expect(component.vehicleRows.map((r) => r.plate)).toEqual(['BBB2222', 'AAA1111']);
   });
 
-  it('does not index a trip with no vehicleId in the per-vehicle map (direct call)', () => {
+  it('should not index a trip with no vehicleId in the per-vehicle map when buildSummary is called directly', () => {
     // applyFilters already excludes vehicleId-less trips before buildSummary ever sees them, so
     // this ternary's false branch is otherwise unreachable - exercised directly.
+    // Arrange
     const component = createComponent();
     const vehicle = { id: 'v1', plate: 'ABC1234', status: VehicleStatus.Available } as Vehicle;
 
+    // Act
+    // Assert
     expect(() =>
       (component as any).buildSummary(
         [vehicle],
@@ -219,17 +250,20 @@ describe('FleetReportComponent', () => {
     expect(component.vehicleRows[0].tripCount).toBe(0);
   });
 
-  it('falls back to an empty array for every ?? [] when the responses have no data', () => {
+  it('should fall back to an empty array for every ?? [] when the responses have no data', () => {
+    // Arrange
     const component = createComponent();
     tripServiceMock.getAll.mockReturnValue(of({} as unknown as WebApiResponse<Trip[]>));
     vehicleMaintenanceServiceMock.getAll.mockReturnValue(of({} as unknown as WebApiResponse<VehicleMaintenance[]>));
     const driver = { id: 'd1', name: 'João', status: DriverStatus.Active } as Driver;
     serviceOrderServiceMock.getByDriver.mockReturnValue(of({}));
 
+    // Act
     component.ngOnInit();
     vehicles$.next({} as unknown as WebApiResponse<Vehicle[]>);
     drivers$.next({ data: [driver] } as unknown as WebApiResponse<Driver[]>);
 
+    // Assert
     expect(component.totalVehicles).toBe(0);
     expect(component.totalTrips).toBe(0);
     expect(component.totalMaintenanceCost).toBe(0);
@@ -254,8 +288,11 @@ describe('FleetReportComponent', () => {
       drivers$.next({ data: [] } as unknown as WebApiResponse<Driver[]>);
     }
 
-    it('skips trips with no vehicleId when tallying per-vehicle totals', () => {
+    it('should skip trips with no vehicleId when tallying per-vehicle totals', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       loadWith(
         component,
         [{ id: 'v1', plate: 'ABC1234', status: VehicleStatus.Available }],
@@ -263,6 +300,7 @@ describe('FleetReportComponent', () => {
         [],
       );
 
+      // Assert
       expect(component.vehicleRows[0].tripCount).toBe(0);
       expect(component.vehicleRows[0].revenue).toBe(0);
       // the trip itself is excluded from applyFilters (requires a vehicleId), so it never even
@@ -270,8 +308,11 @@ describe('FleetReportComponent', () => {
       expect(component.totalRevenue).toBe(0);
     });
 
-    it('ignores a trip whose vehicleId matches no known vehicle', () => {
+    it('should ignore a trip whose vehicleId matches no known vehicle', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       loadWith(
         component,
         [{ id: 'v1', plate: 'ABC1234', status: VehicleStatus.Available }],
@@ -279,12 +320,16 @@ describe('FleetReportComponent', () => {
         [],
       );
 
+      // Assert
       expect(component.vehicleRows[0].tripCount).toBe(0);
       expect(component.totalRevenue).toBe(500);
     });
 
-    it('treats a trip with no totalPrice as zero revenue, fleet-wide and per-vehicle', () => {
+    it('should treat a trip with no totalPrice as zero revenue fleet-wide and per-vehicle', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       loadWith(
         component,
         [{ id: 'v1', plate: 'ABC1234', status: VehicleStatus.Available }],
@@ -292,13 +337,17 @@ describe('FleetReportComponent', () => {
         [],
       );
 
+      // Assert
       expect(component.totalRevenue).toBe(0);
       expect(component.vehicleRows[0].revenue).toBe(0);
       expect(component.vehicleRows[0].tripCount).toBe(1);
     });
 
-    it('ignores a maintenance whose vehicleId matches no known vehicle', () => {
+    it('should ignore a maintenance whose vehicleId matches no known vehicle', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       loadWith(
         component,
         [{ id: 'v1', plate: 'ABC1234', status: VehicleStatus.Available }],
@@ -306,12 +355,16 @@ describe('FleetReportComponent', () => {
         [{ vehicleId: 'unknown-vehicle', cost: 100 } as unknown as VehicleMaintenance],
       );
 
+      // Assert
       expect(component.vehicleRows[0].maintenanceCost).toBe(0);
       expect(component.totalMaintenanceCost).toBe(100);
     });
 
-    it('accumulates maintenance cost for a matching vehicle, treating a missing cost as zero', () => {
+    it('should accumulate maintenance cost for a matching vehicle and treat a missing cost as zero', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       loadWith(
         component,
         [{ id: 'v1', plate: 'ABC1234', status: VehicleStatus.Available }],
@@ -322,6 +375,7 @@ describe('FleetReportComponent', () => {
         ],
       );
 
+      // Assert
       expect(component.vehicleRows[0].maintenanceCost).toBe(100);
       expect(component.totalMaintenanceCost).toBe(100);
     });
@@ -341,39 +395,49 @@ describe('FleetReportComponent', () => {
       drivers$.next({ data: [] } as unknown as WebApiResponse<Driver[]>);
     }
 
-    it('excludes a record with no date once any date filter is active', () => {
+    it('should exclude a record with no date once any date filter is active', () => {
+      // Arrange
       const component = createComponent();
       loadWithTripDates(component, [null]);
-
       component.filterStartDate = '2024-01-01';
+
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.totalTrips).toBe(0);
     });
 
-    it('filters by start date alone (no end date)', () => {
+    it('should filter by start date alone when no end date is set', () => {
+      // Arrange
       const component = createComponent();
       loadWithTripDates(component, [new Date('2024-01-01'), new Date('2024-06-01')]);
-
       component.filterStartDate = '2024-03-01';
+
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.totalTrips).toBe(1);
       expect(component.totalRevenue).toBe(10);
     });
 
-    it('filters by end date alone (no start date)', () => {
+    it('should filter by end date alone when no start date is set', () => {
+      // Arrange
       const component = createComponent();
       loadWithTripDates(component, [new Date('2024-01-01'), new Date('2024-06-01')]);
-
       component.filterEndDate = '2024-03-01';
+
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.totalTrips).toBe(1);
       expect(component.totalRevenue).toBe(10);
     });
 
-    it('includes maintenance records within the selected date range', () => {
+    it('should include maintenance records within the selected date range', () => {
+      // Arrange
       const component = createComponent();
       vehicleMaintenanceServiceMock.getAll.mockReturnValue(
         of({
@@ -390,21 +454,30 @@ describe('FleetReportComponent', () => {
       drivers$.next({ data: [] } as unknown as WebApiResponse<Driver[]>);
       expect(component.totalMaintenanceCost).toBe(300);
 
+      // Act
       component.filterStartDate = '2024-01-01';
       component.filterEndDate = '2024-01-31';
       component.applyFilters();
 
+      // Assert
       expect(component.totalMaintenanceCost).toBe(100);
     });
   });
 
-  it('toggleFilters flips showFilters', () => {
+  it('should flip showFilters when toggleFilters is called', () => {
+    // Arrange
     const component = createComponent();
 
     expect(component.showFilters).toBe(false);
+
+    // Act
     component.toggleFilters();
+
+    // Assert
     expect(component.showFilters).toBe(true);
+
     component.toggleFilters();
+
     expect(component.showFilters).toBe(false);
   });
 });
