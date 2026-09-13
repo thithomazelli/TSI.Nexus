@@ -17,66 +17,83 @@ describe('NotificationService', () => {
     fireSpy.mockRestore();
   });
 
-  it('should be created', () => {
+  it('should be created when injected', () => {
+    // Act / Assert
     expect(service).toBeTruthy();
   });
 
   describe('showMessage', () => {
-    it('dispatches to success for type "Success"', () => {
+    it('should dispatch to success when the type is "Success"', () => {
+      // Act
       service.showMessage('Success', 'Salvo com sucesso');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({ icon: 'success', text: 'Salvo com sucesso', background: '#198754' }),
       );
     });
 
-    it('dispatches to error for type "Error"', () => {
+    it('should dispatch to error when the type is "Error"', () => {
+      // Act
       service.showMessage('Error', 'Falha ao salvar');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({ icon: 'error', text: 'Falha ao salvar', background: '#dc3545' }),
       );
     });
 
-    it('dispatches to info for type "Info"', () => {
+    it('should dispatch to info when the type is "Info"', () => {
+      // Act
       service.showMessage('Info', 'Aviso informativo');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({ icon: 'info', text: 'Aviso informativo', background: '#0d6efd' }),
       );
     });
 
-    it('dispatches to warning for type "Warning"', () => {
+    it('should dispatch to warning when the type is "Warning"', () => {
+      // Act
       service.showMessage('Warning', 'Atenção');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({ icon: 'warning', text: 'Atenção', background: '#ffc107' }),
       );
     });
 
-    it('matches the type case-insensitively (lowercase caller literal)', () => {
+    it('should match the type case-insensitively when the caller passes a lowercase literal', () => {
+      // Act
       service.showMessage('error', 'Falha ao salvar');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(expect.objectContaining({ icon: 'error' }));
     });
 
-    it('falls back to error for an unrecognized type', () => {
+    it('should fall back to error when the type is unrecognized', () => {
+      // Act
       service.showMessage('SomethingElse', 'Mensagem');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({ icon: 'error', text: 'Mensagem' }),
       );
     });
 
-    it('falls back to error when type is undefined', () => {
+    it('should fall back to error when the type is undefined', () => {
+      // Act
       service.showMessage(undefined as unknown as string, 'Mensagem');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(expect.objectContaining({ icon: 'error' }));
     });
 
-    it('passes the title through to the underlying Swal handler call', () => {
+    it('should pass the title through to the underlying Swal handler call', () => {
+      // Act
       service.showMessage('Success', 'Mensagem', 'Título');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(expect.objectContaining({ text: 'Mensagem' }));
     });
   });

@@ -13,40 +13,56 @@ describe('UserDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
-  });
-
-  it('defaults to add mode with no data when there is no dialog data', () => {
+  it('should create the component when instantiated', () => {
+    // Act
     const component = createComponent();
 
+    // Assert
+    expect(component).toBeTruthy();
+  });
+
+  it('should default to add mode with no data when there is no dialog data', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toBeNull();
     expect(component.id).toBeNull();
   });
 
-  it('initializes from dialog data in edit mode', () => {
+  it('should initialize from dialog data when in edit mode', () => {
+    // Arrange
     const user = { id: 'u1' } as User;
+
+    // Act
     const component = createComponent({ isEdit: true, data: user, id: 'u1' });
 
+    // Assert
     expect(component.isEdit).toBe(true);
     expect(component.data).toBe(user);
     expect(component.id).toBe('u1');
   });
 
-  it('falls back to defaults when dialog data omits fields', () => {
+  it('should fall back to defaults when dialog data omits fields', () => {
+    // Act
     const component = createComponent({});
 
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toBeNull();
     expect(component.id).toBeNull();
   });
 
   describe('close', () => {
-    it('closes the dialog with no result', () => {
+    it('should close the dialog with no result when close is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.close();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalledWith(null);
     });
   });

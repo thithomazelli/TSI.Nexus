@@ -87,123 +87,155 @@ describe('PhotoComponent', () => {
     vi.restoreAllMocks();
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('loadPhoto (via ngOnInit)', () => {
-    it('sets the placeholder image when there is no data', () => {
+    it('should set the placeholder image when there is no data', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.imageUrl).toBe('assets/img/no_photo_generic.svg');
     });
 
-    it('fetches and shows the photo when data/entityClass/photo/id are all present', () => {
+    it('should fetch and show the photo when data, entityClass, photo and id are all present', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       const blob = new Blob(['x']);
       photoServiceMock.getPhoto.mockReturnValue(of(blob));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(photoServiceMock.getPhoto).toHaveBeenCalledWith('Users', 'u1', 'photo.png');
       expect(component.imageUrl).toBe('blob:fake');
       expect(cdMock.detectChanges).toHaveBeenCalled();
     });
 
-    it('revokes a previously created object URL before assigning a new one', () => {
+    it('should revoke the previously created object URL when loadPhoto assigns a new one', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       component.loadPhoto();
       component.loadPhoto();
 
+      // Assert
       expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake');
     });
 
-    it('falls back to the placeholder image when the fetch errors', () => {
+    it('should fall back to the placeholder image when the fetch errors', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       photoServiceMock.getPhoto.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.loadPhoto();
 
+      // Assert
       expect(component.imageUrl).toBe('assets/img/no_profile.png');
     });
 
-    it('sets the placeholder image when the entity has no photo set', () => {
+    it('should set the placeholder image when the entity has no photo set', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1' };
 
+      // Act
       component.loadPhoto();
 
+      // Assert
       expect(photoServiceMock.getPhoto).not.toHaveBeenCalled();
       expect(component.imageUrl).toBe('assets/img/no_profile.png');
     });
   });
 
   describe('ngOnChanges', () => {
-    it('reloads the photo when imageUrl changes and data.photo is set', () => {
+    it('should reload the photo when imageUrl changes and data.photo is set', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       component.ngOnChanges({ imageUrl: {} as any });
 
+      // Assert
       expect(photoServiceMock.getPhoto).toHaveBeenCalled();
     });
 
-    it('does nothing when the changed input is not imageUrl', () => {
+    it('should do nothing when the changed input is not imageUrl', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'u1', photo: 'photo.png' };
 
+      // Assert
       expect(() => component.ngOnChanges({ entityClass: {} as any })).not.toThrow();
       expect(photoServiceMock.getPhoto).not.toHaveBeenCalled();
     });
 
-    it('does nothing when there is no data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent();
 
+      // Assert
       expect(() => component.ngOnChanges({ imageUrl: {} as any })).not.toThrow();
     });
 
-    it('does nothing when data has no photo', () => {
+    it('should do nothing when data has no photo', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'u1' };
 
+      // Assert
       expect(() => component.ngOnChanges({ imageUrl: {} as any })).not.toThrow();
       expect(photoServiceMock.getPhoto).not.toHaveBeenCalled();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('revokes the last object URL when one was created', () => {
+    it('should revoke the last object URL when one was created', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
       component.loadPhoto();
 
+      // Act
       component.ngOnDestroy();
 
+      // Assert
       expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake');
     });
 
-    it('does not throw when no object URL was ever created', () => {
+    it('should not throw when no object URL was ever created', () => {
+      // Arrange
       const component = createComponent();
 
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
       expect(URL.revokeObjectURL).not.toHaveBeenCalled();
     });
 
-    it('swallows an error thrown by revokeObjectURL', () => {
+    it('should swallow an error thrown by revokeObjectURL', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
@@ -213,37 +245,46 @@ describe('PhotoComponent', () => {
         throw new Error('boom');
       });
 
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('onImgError', () => {
-    it('replaces the broken image src with the placeholder image', () => {
+    it('should replace the broken image src with the placeholder image', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Vehicles';
       const img = document.createElement('img');
 
+      // Act
       component.onImgError({ target: img } as unknown as Event);
 
+      // Assert
       expect(img.src).toContain('no_photo_generic.svg');
     });
   });
 
   describe('triggerFile', () => {
-    it('clicks the native file input when present', () => {
+    it('should click the native file input when present', () => {
+      // Arrange
       const component = createComponent();
       const input = document.createElement('input');
       const clickSpy = vi.spyOn(input, 'click');
       component.fileInput = new ElementRef(input);
 
+      // Act
       component.triggerFile();
 
+      // Assert
       expect(clickSpy).toHaveBeenCalled();
     });
 
-    it('does not throw when the file input is not yet available', () => {
+    it('should not throw when the file input is not yet available', () => {
+      // Arrange
       const component = createComponent();
 
+      // Assert
       expect(() => component.triggerFile()).not.toThrow();
     });
   });
@@ -258,91 +299,115 @@ describe('PhotoComponent', () => {
       return { target: input } as unknown as Event;
     }
 
-    it('does nothing when no file was selected', () => {
+    it('should do nothing when no file was selected', () => {
+      // Arrange
       const component = createComponent();
 
+      // Assert
       expect(() => component.onFileSelected(fileEvent(null))).not.toThrow();
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the selected file is not an image', () => {
+    it('should do nothing when the selected file is not an image', () => {
+      // Arrange
       const component = createComponent();
       const file = new File(['x'], 'doc.pdf', { type: 'application/pdf' });
 
+      // Act
       component.onFileSelected(fileEvent(file));
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });
 
-    it('opens the crop modal for a valid image file', () => {
+    it('should open the crop modal when a valid image file is selected', () => {
+      // Arrange
       const component = createComponent();
       const file = new File(['x'], 'photo.png', { type: 'image/png' });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.onFileSelected(fileEvent(file));
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ source: file }),
       );
     });
 
-    it('resets the input value after handling the selection', () => {
+    it('should reset the input value after handling the selection', () => {
+      // Arrange
       const component = createComponent();
       const input = document.createElement('input');
       Object.defineProperty(input, 'files', { value: [], writable: false });
       input.value = 'C:\\fakepath\\photo.png';
 
+      // Act
       component.onFileSelected({ target: input } as unknown as Event);
 
+      // Assert
       expect(input.value).toBe('');
     });
   });
 
   describe('openCamera', () => {
-    it('opens the crop modal when a photo was captured', () => {
+    it('should open the crop modal when a photo was captured', () => {
+      // Arrange
       const component = createComponent();
       const file = new File(['x'], 'capture.png', { type: 'image/png' });
       modalServiceMock.showTemplateModal
         .mockReturnValueOnce({ afterClosed: () => of(file) })
         .mockReturnValueOnce({ afterClosed: () => of(undefined) });
 
+      // Act
       component.openCamera();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledTimes(2);
     });
 
-    it('does nothing further when the camera modal closes without a file', () => {
+    it('should do nothing further when the camera modal closes without a file', () => {
+      // Arrange
       const component = createComponent();
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.openCamera();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('removePhotoConfirm', () => {
-    it('does nothing without a data id', () => {
+    it('should do nothing when there is no data id', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = {};
 
+      // Act
       component.removePhotoConfirm();
 
+      // Assert
       expect(modalServiceMock.showSweetConfirmation).not.toHaveBeenCalled();
     });
 
-    it('does nothing without an entityClass', () => {
+    it('should do nothing when there is no entityClass', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'u1' };
 
+      // Act
       component.removePhotoConfirm();
 
+      // Assert
       expect(modalServiceMock.showSweetConfirmation).not.toHaveBeenCalled();
     });
 
-    it('removes the photo when the user confirms', async () => {
+    it('should remove the photo when the user confirms', async () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
@@ -350,21 +415,26 @@ describe('PhotoComponent', () => {
       attachmentServiceMock.getByUserId.mockReturnValue(of({ data: [] }));
       photoServiceMock.removePhoto.mockReturnValue(of(null));
 
+      // Act
       component.removePhotoConfirm();
       await Promise.resolve();
 
+      // Assert
       expect(photoServiceMock.removePhoto).toHaveBeenCalledWith('Users', 'u1');
     });
 
-    it('does nothing further when the user declines', async () => {
+    it('should do nothing further when the user declines', async () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.removePhotoConfirm();
       await Promise.resolve();
 
+      // Assert
       expect(photoServiceMock.removePhoto).not.toHaveBeenCalled();
     });
   });
@@ -381,26 +451,33 @@ describe('PhotoComponent', () => {
       component.onFileSelected(inputEvent);
     }
 
-    it('does nothing without a data id', () => {
+    it('should do nothing when there is no data id', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = {};
 
+      // Act
       uploadFlow(component, new Blob(['x'], { type: 'image/png' }));
 
+      // Assert
       expect(attachmentServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('does nothing without an entityClass', () => {
+    it('should do nothing when there is no entityClass', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'u1' };
 
+      // Act
       uploadFlow(component, new Blob(['x'], { type: 'image/png' }));
 
+      // Assert
       expect(attachmentServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('attaches then uploads the photo, updating the entity photo path and notifying', () => {
+    it('should attach then upload the photo, updating the entity photo path and notifying', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: '' };
@@ -408,8 +485,10 @@ describe('PhotoComponent', () => {
       photoServiceMock.uploadPhoto.mockReturnValue(of({ fileName: 'new.png' }));
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       uploadFlow(component, new Blob(['x'], { type: 'image/png' }));
 
+      // Assert
       expect(attachmentServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ userId: 'u1' }),
         'photos/Users',
@@ -423,7 +502,8 @@ describe('PhotoComponent', () => {
       expect(photoServiceMock.updateUserPhoto).toHaveBeenCalledWith('new.png', 'u1');
     });
 
-    it('falls back to the upload response path when fileName is absent', () => {
+    it('should fall back to the upload response path when fileName is absent', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Vehicles';
       component.data = { id: 'v1', photo: '' };
@@ -431,13 +511,16 @@ describe('PhotoComponent', () => {
       photoServiceMock.uploadPhoto.mockReturnValue(of({ path: 'from-path.png' }));
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       uploadFlow(component, new Blob(['x'], { type: 'image/png' }));
 
+      // Assert
       expect(component.data.photo).toBe('from-path.png');
       expect(photoServiceMock.updateUserPhoto).not.toHaveBeenCalled();
     });
 
-    it('falls back to an empty photo path when the upload response has neither', () => {
+    it('should fall back to an empty photo path when the upload response has neither fileName nor path', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Vehicles';
       component.data = { id: 'v1', photo: '' };
@@ -445,12 +528,15 @@ describe('PhotoComponent', () => {
       photoServiceMock.uploadPhoto.mockReturnValue(of({}));
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       uploadFlow(component, new Blob(['x'], { type: 'image/png' }));
 
+      // Assert
       expect(component.data.photo).toBe('');
     });
 
-    it('defaults the uploaded file type to image/png when the blob has no type', () => {
+    it('should default the uploaded file type to image/png when the blob has no type', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: '' };
@@ -458,13 +544,16 @@ describe('PhotoComponent', () => {
       photoServiceMock.uploadPhoto.mockReturnValue(of({}));
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       uploadFlow(component, new Blob(['x']));
 
+      // Assert
       const uploadedFile = photoServiceMock.uploadPhoto.mock.calls[0][2] as File;
       expect(uploadedFile.type).toBe('image/png');
     });
 
-    it('proceeds to upload even when attaching the file fails', () => {
+    it('should proceed to upload even when attaching the file fails', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: '' };
@@ -472,20 +561,25 @@ describe('PhotoComponent', () => {
       photoServiceMock.uploadPhoto.mockReturnValue(of({ fileName: 'new.png' }));
       photoServiceMock.getPhoto.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       uploadFlow(component, new Blob(['x'], { type: 'image/png' }));
 
+      // Assert
       expect(photoServiceMock.uploadPhoto).toHaveBeenCalled();
     });
 
-    it('shows an error notification when the upload request fails', () => {
+    it('should show an error notification when the upload request fails', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: '' };
       attachmentServiceMock.add.mockReturnValue(of(null));
       photoServiceMock.uploadPhoto.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       uploadFlow(component, new Blob(['x'], { type: 'image/png' }));
 
+      // Assert
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
         'Erro ao salvar foto.',
@@ -493,13 +587,16 @@ describe('PhotoComponent', () => {
       );
     });
 
-    it('does nothing further when the crop modal closes without a cropped blob', () => {
+    it('should do nothing further when the crop modal closes without a cropped blob', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1' };
 
+      // Act
       uploadFlow(component, undefined as unknown as Blob);
 
+      // Assert
       expect(attachmentServiceMock.add).not.toHaveBeenCalled();
     });
   });
@@ -511,7 +608,8 @@ describe('PhotoComponent', () => {
       await Promise.resolve();
     }
 
-    it('finds and deletes the matching attachment, then clears the entity photo and notifies', async () => {
+    it('should find and delete the matching attachment, then clear the entity photo and notify', async () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
@@ -520,8 +618,10 @@ describe('PhotoComponent', () => {
       );
       photoServiceMock.removePhoto.mockReturnValue(of(null));
 
+      // Act
       await removeFlow(component);
 
+      // Assert
       expect(attachmentServiceMock.delete).toHaveBeenCalledWith('a1');
       expect(component.data.photo).toBe('');
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -532,7 +632,8 @@ describe('PhotoComponent', () => {
       expect(photoServiceMock.updateUserPhoto).toHaveBeenCalledWith('', 'u1');
     });
 
-    it('does not delete any attachment when none matches the photo filename', async () => {
+    it('should not delete any attachment when none matches the photo filename', async () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
@@ -541,43 +642,53 @@ describe('PhotoComponent', () => {
       );
       photoServiceMock.removePhoto.mockReturnValue(of(null));
 
+      // Act
       await removeFlow(component);
 
+      // Assert
       expect(attachmentServiceMock.delete).not.toHaveBeenCalled();
     });
 
-    it('falls back to an empty attachments array when the response has no data', async () => {
+    it('should fall back to an empty attachments array when the response has no data', async () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       attachmentServiceMock.getByUserId.mockReturnValue(of({}));
       photoServiceMock.removePhoto.mockReturnValue(of(null));
 
+      // Act & Assert
       await expect(removeFlow(component)).resolves.not.toThrow();
       expect(attachmentServiceMock.delete).not.toHaveBeenCalled();
     });
 
-    it('does not attempt to find an attachment when data has no photo', async () => {
+    it('should not attempt to find an attachment when data has no photo', async () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1' };
       photoServiceMock.removePhoto.mockReturnValue(of(null));
 
+      // Act
       await removeFlow(component);
 
+      // Assert
       expect(attachmentServiceMock.getByUserId).not.toHaveBeenCalled();
       expect(photoServiceMock.removePhoto).toHaveBeenCalled();
     });
 
-    it('shows an error notification when the remove request fails', async () => {
+    it('should show an error notification when the remove request fails', async () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       attachmentServiceMock.getByUserId.mockReturnValue(of({ data: [] }));
       photoServiceMock.removePhoto.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       await removeFlow(component);
 
+      // Assert
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
         'Erro ao remover foto.',
@@ -593,58 +704,71 @@ describe('PhotoComponent', () => {
       ['Payments', 'getByPaymentId'],
       ['Vehicles', 'getByVehicleId'],
       ['Drivers', 'getByDriverId'],
-    ] as const)('resolves the fetch function for entityClass %s', async (entityClass, methodName) => {
+    ] as const)('should resolve the fetch function for entityClass %s', async (entityClass, methodName) => {
+      // Arrange
       const component = createComponent();
       component.entityClass = entityClass;
       component.data = { id: 'e1', photo: 'photo.png' };
       (attachmentServiceMock as any)[methodName].mockReturnValue(of({ data: [] }));
       photoServiceMock.removePhoto.mockReturnValue(of(null));
 
+      // Act
       await removeFlow(component);
 
+      // Assert
       expect((attachmentServiceMock as any)[methodName]).toHaveBeenCalledWith('e1');
       expect(photoServiceMock.updateUserPhoto).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the resolved entity id field has no matching fetch function', () => {
+    it('should do nothing when the resolved entity id field has no matching fetch function', () => {
       // Every entityClass getEntityIdField() can produce has a matching key in entityMap, so this
       // guard is unreachable via the public API - exercised directly with a stubbed field name.
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
       component.data = { id: 'u1', photo: 'photo.png' };
       vi.spyOn(component as any, 'getEntityIdField').mockReturnValue('unknownField');
 
+      // Act
       expect(() => (component as any).deletePhotoAttachment()).not.toThrow();
 
+      // Assert
       expect(attachmentServiceMock.getByUserId).not.toHaveBeenCalled();
     });
   });
 
   describe('getNoImage', () => {
-    it('returns the profile placeholder for Users', () => {
+    it('should return the profile placeholder for Users', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
 
+      // Assert
       expect((component as any).getNoImage()).toBe('assets/img/no_profile.png');
     });
 
-    it('returns the generic placeholder for any other entity', () => {
+    it('should return the generic placeholder for any other entity', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Vehicles';
 
+      // Assert
       expect((component as any).getNoImage()).toBe('assets/img/no_photo_generic.svg');
     });
   });
 
   describe('getEntityIdField (default fallback)', () => {
-    it('defaults to userId for an unknown entityClass', () => {
+    it('should default to userId for an unknown entityClass', () => {
+      // Arrange
       const component = createComponent();
       component.entityClass = 'Unknown';
       component.data = { id: 'e1' };
       attachmentServiceMock.add.mockReturnValue(of(null));
 
+      // Act
       (component as any).addPhotoAsAttachment(new File(['x'], 'a.png'));
 
+      // Assert
       expect(attachmentServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ userId: 'e1' }),
         'photos/Unknown',

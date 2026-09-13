@@ -76,50 +76,66 @@ describe('PaymentsComponent', () => {
     } as unknown as GridComponent<Payment>;
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('isTopLevelList', () => {
-    it('is true when there is no entity', () => {
+    it('should return true when there is no entity', () => {
+      // Assert
       expect(createComponent().isTopLevelList).toBe(true);
     });
 
-    it('is false when embedded under an entity', () => {
+    it('should return false when embedded under an entity', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
+
+      // Assert
       expect(component.isTopLevelList).toBe(false);
     });
   });
 
   describe('ngOnInit', () => {
-    it('reads filters from the route query params', () => {
+    it('should populate filter state when the route query params include filters', () => {
+      // Arrange
       const component = createComponent();
-      component.ngOnInit();
 
+      // Act
+      component.ngOnInit();
       queryParams$.next({ status: 'Approved,Pending', startDate: '2024-01-01' });
 
+      // Assert
       expect(component.filterStatus.Approved).toBe(true);
       expect(component.filterStatus.Pending).toBe(true);
       expect(component.filterStartDate).toBe('2024-01-01');
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('top-level: purges the grid cache on paymentChanged$, skipping the initial replay', () => {
+    it('should purge the grid cache on the second paymentChanged$ emission when top-level, skipping the initial replay', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
       queryParams$.next({});
 
+      // Act
       paymentChanged$.next();
+
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
 
+      // Act
       paymentChanged$.next();
+
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalledTimes(1);
     });
 
-    it('embedded: reloads on every paymentChanged$ emission', () => {
+    it('should reload the payments when embedded and paymentChanged$ emits', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.parentData = { id: 'o1' } as Order;
@@ -127,19 +143,24 @@ describe('PaymentsComponent', () => {
       component.ngOnInit();
       queryParams$.next({});
 
+      // Act
       paymentChanged$.next();
 
+      // Assert
       expect(paymentServiceMock.getByEntityId).toHaveBeenCalledWith('o1', 'Order');
     });
   });
 
   describe('openModal', () => {
-    it('includes the parent id and data in the initial state', () => {
+    it('should include the parent id and data in the initial state when opening the modal', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'o1' } as Order;
 
+      // Act
       component.openModal({ isEdit: false });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ parentId: 'o1', parentData: component.parentData }),
@@ -148,7 +169,8 @@ describe('PaymentsComponent', () => {
   });
 
   describe('deleteOrder', () => {
-    it('top-level: purges the grid cache on success', () => {
+    it('should purge the grid cache when the delete succeeds at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -156,12 +178,15 @@ describe('PaymentsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteOrder({ id: 'p1' } as Payment);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('does not purge or filter rows when the delete reports an error', () => {
+    it('should not purge the cache or filter rows when the delete reports an error', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -170,13 +195,16 @@ describe('PaymentsComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' }),
       );
 
+      // Act
       component.deleteOrder({ id: 'p1' } as Payment);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
       expect(component.filteredRowData).toEqual([{ id: 'p1' }]);
     });
 
-    it('embedded: removes the payment from the filtered rows on success', () => {
+    it('should remove the payment from the filtered rows when the embedded delete succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.filteredRowData = [{ id: 'p1' } as Payment, { id: 'p2' } as Payment];
@@ -184,21 +212,28 @@ describe('PaymentsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteOrder({ id: 'p1' } as Payment);
 
+      // Assert
       expect(component.filteredRowData).toEqual([{ id: 'p2' }]);
     });
   });
 
   describe('updatePaymentStatus', () => {
-    it('does nothing for an already-approved payment', () => {
+    it('should do nothing when the payment is already approved', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.updatePaymentStatus({ id: 'p1', status: PaymentStatus.Approved } as Payment);
 
+      // Assert
       expect(modalServiceMock.showSweetConfirmation).not.toHaveBeenCalled();
     });
 
-    it('marks the payment approved and purges the cache when confirmed (top-level)', async () => {
+    it('should mark the payment approved and purge the cache when confirmed at the top level', async () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -207,30 +242,36 @@ describe('PaymentsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Atualizado' }),
       );
 
+      // Act
       component.updatePaymentStatus({ id: 'p1', status: PaymentStatus.Pending } as Payment);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(paymentServiceMock.update).toHaveBeenCalledWith(
         expect.objectContaining({ status: PaymentStatus.Approved }),
       );
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('re-applies filters and does not update when cancelled', async () => {
+    it('should not update the payment when the confirmation is cancelled', async () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.updatePaymentStatus({ id: 'p1', status: PaymentStatus.Pending } as Payment);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(paymentServiceMock.update).not.toHaveBeenCalled();
     });
   });
 
   describe('applyFilters / clearFilters (embedded)', () => {
-    it('filters client-side rows by status and type', () => {
+    it('should filter client-side rows by status and type when applyFilters is called', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [
@@ -239,20 +280,25 @@ describe('PaymentsComponent', () => {
       ];
       component.filterStatus.Approved = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((p) => p.id)).toEqual(['p1']);
     });
 
-    it('clearFilters resets state', () => {
+    it('should reset the filter and filtered-row state when clearFilters is called', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [{ id: 'p1' } as Payment];
       component.filterStatus.Approved = true;
       component.filterType.Incoming = true;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(component.filterStatus).toEqual({
         Approved: false,
         Pending: false,
@@ -264,13 +310,16 @@ describe('PaymentsComponent', () => {
   });
 
   describe('pagedDataSource', () => {
-    it('forwards the active filters', () => {
+    it('should forward the active filters when pagedDataSource is called', () => {
+      // Arrange
       const component = createComponent();
       component.filterStatus.Delayed = true;
       component.filterType.Outgoing = true;
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(paymentServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({ statuses: ['Delayed'], types: ['Outgoing'] }),
       );
@@ -278,245 +327,311 @@ describe('PaymentsComponent', () => {
   });
 
   describe('column cell renderers', () => {
-    it('renders a checked checkbox for an approved status', () => {
+    it('should render a checked checkbox when the payment status is approved', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.headerName === 'PAYMENTS.PAID_QUESTION')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({
         value: PaymentStatus.Approved,
       });
 
+      // Assert
       expect(html).toContain('checked');
     });
 
-    it('translates the payment type with its icon', () => {
+    it('should render the translated payment type with its icon when rendering the type column', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: 'Incoming' });
 
+      // Assert
       expect(html).toContain('REPORTS.INCOMING');
       expect(html).toContain('bi-arrow-up-circle-fill');
     });
 
-    it('renders an unchecked checkbox for a non-approved status', () => {
+    it('should render an unchecked checkbox when the payment status is not approved', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.headerName === 'PAYMENTS.PAID_QUESTION')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: PaymentStatus.Pending });
 
+      // Assert
       expect(html).not.toContain('checked');
     });
 
-    it('renders description as a link, falling back to empty when there is no value', () => {
+    it('should render description as a link and fall back to empty when there is no value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'description')!;
 
+      // Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'Aluguel' } as any)).toContain('Aluguel');
       expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toContain('></a>');
     });
 
-    it('renders paymentNumber as a link and hides the column unless compact', () => {
+    it('should render paymentNumber as a link and hide the column when not compact', () => {
+      // Arrange
       const component = createComponent();
       component.compact = false;
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'paymentNumber')!;
 
+      // Assert
       expect(column.hide).toBe(true);
       expect((column.cellRenderer as (p: any) => string)({ value: '#1' } as any)).toContain('#1');
       expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toContain('></a>');
     });
 
-    it('shows the paymentNumber column when compact', () => {
+    it('should show the paymentNumber column when compact is true', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'paymentNumber')!;
 
+      // Assert
       expect(column.hide).toBe(false);
     });
 
-    it('filters by the translated type label via filterValueGetter', () => {
+    it('should return the translated type label when filterValueGetter is called on the type column', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Assert
       expect((column.filterValueGetter as (p: any) => string)({ data: { type: 'Outgoing' } } as any)).toBe(
         'REPORTS.OUTGOING',
       );
     });
 
-    it('falls back to an empty type value when there is none', () => {
+    it('should fall back to an empty type value when there is none', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: null });
 
+      // Assert
       expect(html).toBe('');
     });
 
     describe('price column', () => {
-      it('applies text-success for Incoming', () => {
+      it('should apply the text-success class when the payment type is Incoming', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'price')!;
 
+        // Assert
         expect((column.cellClass as (p: any) => string)({ data: { type: 'Incoming' } } as any)).toBe('text-success');
       });
 
-      it('applies text-danger for Outgoing', () => {
+      it('should apply the text-danger class when the payment type is Outgoing', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'price')!;
 
+        // Assert
         expect((column.cellClass as (p: any) => string)({ data: { type: 'Outgoing' } } as any)).toBe('text-danger');
       });
 
-      it('applies no class for an unknown type', () => {
+      it('should apply no class when the payment type is unknown', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'price')!;
 
+        // Assert
         expect((column.cellClass as (p: any) => string)({ data: { type: 'Other' } } as any)).toBe('');
       });
 
-      it('formats the value as BRL currency', () => {
+      it('should format the value as BRL currency when rendering the price column', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'price')!;
 
+        // Assert
         expect((column.valueFormatter as (p: any) => string)({ value: 100 } as any)).toContain('R$');
       });
     });
 
     describe('status column', () => {
-      it('filters by the translated status label via filterValueGetter', () => {
+      it('should return the translated status label when filterValueGetter is called on the status column', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.filter((c) => c.field === 'status')[1];
 
+        // Assert
         expect((column.filterValueGetter as (p: any) => string)({ data: { status: 'Approved' } } as any)).toBe(
           'REPORTS.STATUS_PAID',
         );
       });
 
-      it('renders the status badge with the mapped color and label', () => {
+      it('should render the status badge with the mapped color and label', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.filter((c) => c.field === 'status')[1];
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: 'Delayed' } as any);
 
+        // Assert
         expect(html).toContain('bg-danger');
         expect(html).toContain('REPORTS.STATUS_DELAYED');
       });
 
-      it('falls back to a secondary badge for an unknown status', () => {
+      it('should fall back to a secondary badge when the status is unknown', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.filter((c) => c.field === 'status')[1];
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: 'Unknown' } as any);
 
+        // Assert
         expect(html).toContain('bg-secondary');
         expect(html).toContain('Unknown');
       });
     });
 
-    it('formats date as a BR date', () => {
+    it('should format the date column value as a BR date', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'date')!;
 
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: '2024-01-15' } as any)).toContain('/');
     });
 
-    it('renders businessPartnerName with an N/A fallback and hides when entity is BusinessPartner', () => {
+    it('should render businessPartnerName with an N/A fallback and hide the column when entity is BusinessPartner', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'businessPartnerName')!;
 
+      // Assert
       expect(column.hide).toBe(true);
       expect((column.cellRenderer as (p: any) => string)({ value: 'Cliente X' } as any)).toBe('Cliente X');
       expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toBe('N/A');
     });
 
-    it('shows businessPartnerName when entity is not BusinessPartner', () => {
+    it('should show the businessPartnerName column when entity is not BusinessPartner', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'businessPartnerName')!;
 
+      // Assert
       expect(column.hide).toBe(false);
     });
 
-    it('renders orderNumber with an N/A fallback and hides for Order/Trip entities', () => {
+    it('should render orderNumber with an N/A fallback and hide the column when entity is Order or Trip', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.ngOnInit();
       const orderColumn = component.columnDefs.find((c) => c.field === 'orderNumber')!;
+
+      // Assert
       expect(orderColumn.hide).toBe(true);
       expect((orderColumn.cellRenderer as (p: any) => string)({ value: 'ORD-1' } as any)).toBe('ORD-1');
       expect((orderColumn.cellRenderer as (p: any) => string)({ value: null } as any)).toBe('N/A');
 
+      // Arrange
       const tripComponent = createComponent();
       tripComponent.entity = 'Trip';
       tripComponent.ngOnInit();
+
+      // Assert
       expect(tripComponent.columnDefs.find((c) => c.field === 'orderNumber')!.hide).toBe(true);
     });
 
-    it('shows orderNumber for other entities', () => {
+    it('should show the orderNumber column when entity is neither Order nor Trip', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'orderNumber')!;
+
+      // Assert
       expect(column.hide).toBe(false);
     });
 
-    it('renders tripNumber with an N/A fallback and hides for Order/Trip entities', () => {
+    it('should render tripNumber with an N/A fallback and hide the column when entity is Trip', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Trip';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'tripNumber')!;
+
+      // Assert
       expect(column.hide).toBe(true);
       expect((column.cellRenderer as (p: any) => string)({ value: 'TRIP-1' } as any)).toBe('TRIP-1');
       expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toBe('N/A');
     });
 
-    it('shows tripNumber for other entities', () => {
+    it('should show the tripNumber column when entity is not Trip', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'tripNumber')!;
+
+      // Assert
       expect(column.hide).toBe(false);
     });
 
-    it('renders the actions column with edit and delete buttons', () => {
+    it('should render the actions column with edit and delete buttons', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as (p: any) => string)({});
 
+      // Assert
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
     });
   });
 
   describe('typeMap / statusMap getters', () => {
-    it('typeMap exposes translated labels for Incoming/Outgoing', () => {
+    it('should expose translated labels for Incoming and Outgoing when reading typeMap', () => {
+      // Arrange
       const component = createComponent();
+
+      // Assert
       expect(component.typeMap).toEqual({ Incoming: 'REPORTS.INCOMING', Outgoing: 'REPORTS.OUTGOING' });
     });
 
-    it('statusMap exposes translated labels for all statuses', () => {
+    it('should expose translated labels for all statuses when reading statusMap', () => {
+      // Arrange
       const component = createComponent();
+
+      // Assert
       expect(component.statusMap).toEqual({
         Approved: 'REPORTS.STATUS_PAID',
         Pending: 'REPORTS.STATUS_OPEN',
@@ -526,33 +641,41 @@ describe('PaymentsComponent', () => {
   });
 
   describe('ngOnInit - additional coverage', () => {
-    it('rebuilds column defs on language change', () => {
+    it('should rebuild column defs when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParams$.next({});
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).not.toBe(before);
     });
 
-    it('showFiltersOnInit stays false when there are no initial filters', () => {
+    it('should keep showFiltersOnInit false when there are no initial filters', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       queryParams$.next({});
 
+      // Assert
       expect(component.showFiltersOnInit).toBe(false);
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('completes the destroy subject and unsubscribes the payment-changed subscription', () => {
+    it('should not throw when ngOnDestroy completes the destroy subject and unsubscribes the payment-changed subscription', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParams$.next({});
 
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
 
       paymentChanged$.next();
@@ -560,18 +683,24 @@ describe('PaymentsComponent', () => {
       // what the accompanying unsubscribe spy below verifies precisely
     });
 
-    it('does not throw when called before ngOnInit ever subscribed', () => {
+    it('should not throw when ngOnDestroy is called before ngOnInit ever subscribed', () => {
+      // Arrange
       const component = createComponent();
+
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('refreshOrders', () => {
-    it('shows a notification without reloading for the top-level list', () => {
+    it('should show a refresh notification without reloading when the list is top-level', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.refreshOrders();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         'PAYMENTS.PAYMENTS_REFRESHED',
@@ -579,7 +708,8 @@ describe('PaymentsComponent', () => {
       expect(paymentServiceMock.getAll).not.toHaveBeenCalled();
     });
 
-    it('reloads with a refresh notification when embedded', () => {
+    it('should reload and show a refresh notification when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.parentData = { id: 'o1' } as Order;
@@ -587,8 +717,10 @@ describe('PaymentsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Atualizado', data: [] }),
       );
 
+      // Act
       component.refreshOrders();
 
+      // Assert
       expect(paymentServiceMock.getByEntityId).toHaveBeenCalledWith('o1', 'Order');
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -598,17 +730,21 @@ describe('PaymentsComponent', () => {
   });
 
   describe('applyFilters - date range and top-level', () => {
-    it('purges the grid cache and returns early for the top-level list', () => {
+    it('should purge the grid cache and return early when applyFilters runs on the top-level list', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('excludes rows without a date when a date range filter is active', () => {
+    it('should exclude rows without a date when a date range filter is active', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [
@@ -617,12 +753,15 @@ describe('PaymentsComponent', () => {
       ];
       component.filterStartDate = '2024-01-01';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((p) => p.id)).toEqual(['p2']);
     });
 
-    it('filters using only a start date', () => {
+    it('should filter out rows before the start date when only a start date filter is set', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [
@@ -631,12 +770,15 @@ describe('PaymentsComponent', () => {
       ];
       component.filterStartDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((p) => p.id)).toEqual(['p2']);
     });
 
-    it('filters using only an end date', () => {
+    it('should filter out rows after the end date when only an end date filter is set', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [
@@ -645,12 +787,15 @@ describe('PaymentsComponent', () => {
       ];
       component.filterEndDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((p) => p.id)).toEqual(['p1']);
     });
 
-    it('filters by type', () => {
+    it('should filter rows by type when a type filter is active', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [
@@ -659,108 +804,135 @@ describe('PaymentsComponent', () => {
       ];
       component.filterType.Outgoing = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((p) => p.id)).toEqual(['p2']);
     });
 
-    it('treats a missing status/type as an empty string when filtering', () => {
+    it('should exclude a row with no status when a status filter is active', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [{ id: 'p1' } as unknown as Payment];
       component.filterStatus.Approved = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData).toEqual([]);
     });
 
-    it('excludes a row with no type when a type filter is active', () => {
+    it('should exclude a row with no type when a type filter is active', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.rowData = [{ id: 'p1' } as unknown as Payment];
       component.filterType.Incoming = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData).toEqual([]);
     });
   });
 
   describe('clearFilters - top-level', () => {
-    it('purges the grid cache and returns early for the top-level list', () => {
+    it('should purge the grid cache and return early when clearFilters runs on the top-level list', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
   });
 
   describe('getPayment (private, via ngOnInit/refreshOrders/paymentChanged$)', () => {
-    it('fetches all payments when there is no entity', () => {
+    it('should fetch all payments when there is no entity', () => {
+      // Arrange
       const component = createComponent();
       paymentServiceMock.getAll.mockReturnValue(of({ data: [{ id: 'p1' } as Payment] }));
 
+      // Act
       (component as any).getPayment();
 
+      // Assert
       expect(paymentServiceMock.getAll).toHaveBeenCalled();
       expect(component.rowData).toEqual([{ id: 'p1' }]);
     });
 
-    it('does nothing but invoke the callback when embedded without a saved parent yet', () => {
+    it('should invoke the callback without loading data when embedded without a saved parent yet', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.parentData = null;
       let called = false;
 
+      // Act
       (component as any).getPayment(() => (called = true));
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(called).toBe(true);
     });
 
-    it('does not throw when there is no callback and no saved parent', () => {
+    it('should not throw when there is no callback and no saved parent', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.parentData = null;
 
+      // Assert
       expect(() => (component as any).getPayment()).not.toThrow();
     });
 
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.parentData = { id: 'o1' } as Order;
       paymentServiceMock.getByEntityId.mockReturnValue(of({}));
 
+      // Act
       (component as any).getPayment();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.parentData = { id: 'o1' } as Order;
       paymentServiceMock.getByEntityId.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       (component as any).getPayment();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
 
   describe('markAsApproved (private, via updatePaymentStatus)', () => {
-    it('does nothing for a falsy payment', () => {
+    it('should do nothing when the payment is falsy', () => {
+      // Assert
       expect(() => (createComponent() as any).markAsApproved(null)).not.toThrow();
       expect(paymentServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('reloads with applyFilters when embedded and confirmed', async () => {
+    it('should reload the list and notify success when embedded and the status change is confirmed', async () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Order';
       component.parentData = { id: 'o1' } as Order;
@@ -770,9 +942,11 @@ describe('PaymentsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Atualizado' }),
       );
 
+      // Act
       component.updatePaymentStatus({ id: 'p1', status: PaymentStatus.Pending } as Payment);
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(paymentServiceMock.getByEntityId).toHaveBeenCalledWith('o1', 'Order');
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Atualizado', ResponseStatus.Success);
@@ -780,101 +954,129 @@ describe('PaymentsComponent', () => {
   });
 
   describe('getTypeLabel / getStatusLabel / getStatusColor (private, via column defs)', () => {
-    it('falls back to the raw type when there is no mapped label', () => {
+    it('should fall back to the raw type label when there is no mapped label', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Act
       const html = (column.cellRenderer as (p: any) => string)({ value: 'CustomType' });
 
+      // Assert
       expect(html).toContain('CustomType');
     });
 
-    it('falls back to the raw status when there is no mapped label', () => {
+    it('should fall back to the raw status label when there is no mapped label', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.filter((c) => c.field === 'status')[1];
 
+      // Act
       const html = (column.cellRenderer as (p: any) => string)({ value: 'CustomStatus' });
 
+      // Assert
       expect(html).toContain('CustomStatus');
     });
 
-    it('getStatusColor falls back to the default color for an unmapped status', () => {
+    it('should fall back to the default color when the status is unmapped', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.filter((c) => c.field === 'status')[1];
 
+      // Act
       const html = (column.cellRenderer as (p: any) => string)({ value: 'CustomStatus' });
 
+      // Assert
       expect(html).toContain('bg-secondary');
     });
 
-    it('getTypeLabel falls back to an empty string when there is no type at all', () => {
+    it('should fall back to an empty string when there is no type at all', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Assert
       expect((column.filterValueGetter as (p: any) => string)({} as any)).toBe('');
     });
 
-    it('getStatusLabel falls back to an empty string when there is no status at all', () => {
+    it('should fall back to an empty string when there is no status at all', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.filter((c) => c.field === 'status')[1];
 
+      // Assert
       expect((column.filterValueGetter as (p: any) => string)({} as any)).toBe('');
     });
   });
 
   describe('setFiltersFromQueryParams edge cases', () => {
-    it('accepts status/type as arrays instead of comma-separated strings', () => {
+    it('should accept status and type as arrays instead of comma-separated strings', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       queryParams$.next({ status: ['Approved', 'Delayed'] as any, type: ['Incoming'] as any });
 
+      // Assert
       expect(component.filterStatus.Approved).toBe(true);
       expect(component.filterStatus.Delayed).toBe(true);
       expect(component.filterType.Incoming).toBe(true);
     });
 
-    it('ignores unknown status/type values', () => {
+    it('should ignore unknown status and type values', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       queryParams$.next({ status: 'NotAStatus', type: 'NotAType' });
 
+      // Assert
       expect(Object.values(component.filterStatus).some(Boolean)).toBe(false);
       expect(Object.values(component.filterType).some(Boolean)).toBe(false);
     });
 
-    it('sets showFiltersOnInit from a type-only filter', () => {
+    it('should set showFiltersOnInit to true when only a type filter is present', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       queryParams$.next({ type: 'Incoming' });
 
+      // Assert
       expect(component.filterType.Incoming).toBe(true);
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('sets showFiltersOnInit from an end-date-only filter', () => {
+    it('should set showFiltersOnInit to true when only an end-date filter is present', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       queryParams$.next({ endDate: '2024-01-31' });
 
+      // Assert
       expect(component.filterEndDate).toBe('2024-01-31');
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('defaults dates to null when absent from the query params', () => {
+    it('should default start and end dates to null when absent from the query params', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       queryParams$.next({});
 
+      // Assert
       expect(component.filterStartDate).toBeNull();
       expect(component.filterEndDate).toBeNull();
     });
