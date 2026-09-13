@@ -11,7 +11,10 @@ import { ReportsComponent } from './reports.component';
 
 describe('ReportsComponent', () => {
   let apiServiceMock: { get: ReturnType<typeof vi.fn> };
-  let modalServiceMock: { showTemplateModal: ReturnType<typeof vi.fn>; showPdfProgress: ReturnType<typeof vi.fn> };
+  let modalServiceMock: {
+    showTemplateModal: ReturnType<typeof vi.fn>;
+    showPdfProgress: ReturnType<typeof vi.fn>;
+  };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
 
   function createComponent(): ReportsComponent {
@@ -26,41 +29,52 @@ describe('ReportsComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('fetches payments and applies filters', () => {
+    it('should fetch payments and apply filters when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(
         of({ data: [{ id: 'p1', type: 'Incoming', price: 10 } as unknown as Payment] }),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith('payments/getAll');
       expect(component.filteredData).toEqual(component.data);
     });
   });
 
   describe('showPaymentDetails', () => {
-    it('opens the payment details modal with the transaction as parent', () => {
+    it('should open the payment details modal with the transaction as parent', () => {
+      // Arrange
       const component = createComponent();
       modalServiceMock.showTemplateModal.mockReturnValue({
         componentInstance: null,
         close: vi.fn(),
       });
 
+      // Act
       component.showPaymentDetails({ id: 'p1', transactionId: 't1' } as Payment);
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ id: 'p1', parentId: 't1' }),
       );
     });
 
-    it('reloads the payments and closes the modal when the form emits saved', () => {
+    it('should reload the payments and close the modal when the form emits saved', () => {
+      // Arrange
       const component = createComponent();
       const saved$ = new Subject<void>();
       const closeMock = vi.fn();
@@ -69,29 +83,45 @@ describe('ReportsComponent', () => {
         close: closeMock,
       });
 
+      // Act
       component.showPaymentDetails({ id: 'p1' } as Payment);
       saved$.next();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith('payments/getAll');
       expect(closeMock).toHaveBeenCalled();
     });
   });
 
   describe('applyFilters / clearFilters', () => {
-    it('filters by status, type, and date range', () => {
+    it('should filter by status, type, and date range when applyFilters is called', () => {
+      // Arrange
       const component = createComponent();
       component.data = [
-        { id: 'p1', status: 'Approved', type: 'Incoming', date: '2024-01-01' } as unknown as Payment,
-        { id: 'p2', status: 'Pending', type: 'Outgoing', date: '2024-02-01' } as unknown as Payment,
+        {
+          id: 'p1',
+          status: 'Approved',
+          type: 'Incoming',
+          date: '2024-01-01',
+        } as unknown as Payment,
+        {
+          id: 'p2',
+          status: 'Pending',
+          type: 'Outgoing',
+          date: '2024-02-01',
+        } as unknown as Payment,
       ];
       component.filterStatus.Approved = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredData.map((p) => p.id)).toEqual(['p1']);
     });
 
-    it('excludes items with no date when a date filter is active', () => {
+    it('should exclude items with no date when a date filter is active', () => {
+      // Arrange
       const component = createComponent();
       component.data = [
         { id: 'p1' } as unknown as Payment,
@@ -99,12 +129,15 @@ describe('ReportsComponent', () => {
       ];
       component.filterStartDate = '2024-01-01';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredData.map((p) => p.id)).toEqual(['p2']);
     });
 
-    it('filters by start date only', () => {
+    it('should filter by start date only when only filterStartDate is set', () => {
+      // Arrange
       const component = createComponent();
       component.data = [
         { id: 'p1', date: '2024-01-01' } as unknown as Payment,
@@ -112,12 +145,15 @@ describe('ReportsComponent', () => {
       ];
       component.filterStartDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredData.map((p) => p.id)).toEqual(['p2']);
     });
 
-    it('filters by end date only', () => {
+    it('should filter by end date only when only filterEndDate is set', () => {
+      // Arrange
       const component = createComponent();
       component.data = [
         { id: 'p1', date: '2024-01-01' } as unknown as Payment,
@@ -125,22 +161,28 @@ describe('ReportsComponent', () => {
       ];
       component.filterEndDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredData.map((p) => p.id)).toEqual(['p1']);
     });
 
-    it('treats a missing status as an empty string when filtering by status', () => {
+    it('should treat a missing status as an empty string when filtering by status', () => {
+      // Arrange
       const component = createComponent();
       component.data = [{ id: 'p1' } as unknown as Payment];
       component.filterStatus.Approved = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredData).toEqual([]);
     });
 
-    it('filters by type', () => {
+    it('should filter by type when applyFilters is called', () => {
+      // Arrange
       const component = createComponent();
       component.data = [
         { id: 'p1', type: 'Incoming' } as unknown as Payment,
@@ -148,19 +190,24 @@ describe('ReportsComponent', () => {
       ];
       component.filterType.Incoming = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredData.map((p) => p.id)).toEqual(['p1']);
     });
 
-    it('clearFilters resets state and shows all data', () => {
+    it('should reset state and show all data when clearFilters is called', () => {
+      // Arrange
       const component = createComponent();
       component.data = [{ id: 'p1' } as Payment];
       component.filterStatus.Approved = true;
       component.filterType.Incoming = true;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(component.filterStatus).toEqual({
         Approved: false,
         Pending: false,
@@ -172,77 +219,99 @@ describe('ReportsComponent', () => {
   });
 
   describe('label/color helpers', () => {
-    it('returns empty strings for undefined values', () => {
+    it('should return empty strings when the value is undefined', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getTypeLabel(undefined)).toBe('');
       expect(component.getStatusLabel(undefined)).toBe('');
       expect(component.getStatusColor(undefined)).toBe('');
     });
 
-    it('translates known type/status/color values', () => {
+    it('should translate known type/status/color values', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getTypeLabel(PaymentType.Incoming)).toBe('REPORTS.INCOMING');
       expect(component.getStatusLabel(PaymentStatus.Delayed)).toBe('REPORTS.STATUS_DELAYED');
       expect(component.getStatusColor(PaymentStatus.Delayed)).toBe('danger');
     });
 
-    it('falls back to the raw type/status when not found in the translation map', () => {
+    it('should fall back to the raw type/status when not found in the translation map', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getTypeLabel('SomethingElse' as PaymentType)).toBe('SomethingElse');
       expect(component.getStatusLabel('SomethingElse' as PaymentStatus)).toBe('SomethingElse');
     });
 
-    it('falls back to the default color for an unknown status', () => {
+    it('should fall back to the default color when the status is unknown', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getStatusColor('SomethingElse' as PaymentStatus)).toBe('secondary');
     });
   });
 
   describe('totals', () => {
-    it('sums incoming, outgoing, and the net total', () => {
+    it('should sum incoming, outgoing, and the net total', () => {
+      // Arrange
       const component = createComponent();
       component.filteredData = [
         { type: 'Incoming', price: 100 } as unknown as Payment,
         { type: 'Outgoing', price: 40 } as unknown as Payment,
       ];
 
+      // Act / Assert
       expect(component.getTotalIncoming()).toBe(100);
       expect(component.getTotalOutgoing()).toBe(40);
       expect(component.getTotal()).toBe(60);
     });
 
-    it('excludes items with a null price', () => {
+    it('should exclude items with a null price', () => {
+      // Arrange
       const component = createComponent();
       component.filteredData = [
         { type: 'Incoming', price: null } as unknown as Payment,
         { type: 'Outgoing', price: null } as unknown as Payment,
       ];
 
+      // Act / Assert
       expect(component.getTotalIncoming()).toBe(0);
       expect(component.getTotalOutgoing()).toBe(0);
       expect(component.getTotal()).toBe(0);
     });
 
-    it('treats a type that is neither Incoming nor Outgoing as zero in the net total', () => {
+    it('should treat a type that is neither Incoming nor Outgoing as zero in the net total', () => {
+      // Arrange
       const component = createComponent();
       component.filteredData = [{ type: 'Other', price: 50 } as unknown as Payment];
 
+      // Act / Assert
       expect(component.getTotal()).toBe(0);
     });
   });
 
   describe('printSection', () => {
-    it('does nothing when the print section is missing', () => {
+    it('should do nothing when the print section is missing', () => {
+      // Arrange
       const component = createComponent();
       const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
 
+      // Act
       component.printSection();
 
+      // Assert
       expect(printSpy).not.toHaveBeenCalled();
       printSpy.mockRestore();
     });
 
-    it('swaps in the print section content and restores it afterwards', () => {
+    it('should swap in the print section content and restore it afterwards', () => {
+      // Arrange
       const component = createComponent();
       const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
       const section = document.createElement('div');
@@ -251,8 +320,10 @@ describe('ReportsComponent', () => {
       document.body.appendChild(section);
       const originalBody = document.body.innerHTML;
 
+      // Act
       component.printSection();
 
+      // Assert
       expect(printSpy).toHaveBeenCalled();
       expect(document.body.innerHTML).toBe(originalBody);
       printSpy.mockRestore();
@@ -260,25 +331,32 @@ describe('ReportsComponent', () => {
   });
 
   describe('generatePDF', () => {
-    it('does nothing while already generating a PDF', async () => {
+    it('should do nothing when already generating a PDF', async () => {
+      // Arrange
       const component = createComponent();
       component.generatingPdf = true;
 
+      // Act
       await component.generatePDF();
 
+      // Assert
       expect(modalServiceMock.showPdfProgress).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the report table is missing from the DOM', async () => {
+    it('should do nothing when the report table is missing from the DOM', async () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       await component.generatePDF();
 
+      // Assert
       expect(modalServiceMock.showPdfProgress).not.toHaveBeenCalled();
       expect(component.generatingPdf).toBe(false);
     });
 
-    it('does nothing when the table has no thead', async () => {
+    it('should do nothing when the table has no thead', async () => {
+      // Arrange
       const component = createComponent();
       const section = document.createElement('div');
       section.id = 'print-section';
@@ -287,8 +365,10 @@ describe('ReportsComponent', () => {
       section.appendChild(table);
       document.body.appendChild(section);
 
+      // Act
       await component.generatePDF();
 
+      // Assert
       expect(modalServiceMock.showPdfProgress).not.toHaveBeenCalled();
       section.remove();
     });

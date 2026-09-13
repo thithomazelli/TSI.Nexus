@@ -7,7 +7,7 @@ import { DriverDetailsPageComponent } from './driver-details-page.component';
 
 describe('DriverDetailsPageComponent', () => {
   let paramMap$: Subject<{ get: (key: string) => string | null }>;
-  let activatedRouteMock: { paramMap: Subject<{ get: (key: string) => string | null } > };
+  let activatedRouteMock: { paramMap: Subject<{ get: (key: string) => string | null }> };
   let driverServiceMock: { getById: ReturnType<typeof vi.fn> };
   let routerMock: { navigateByUrl: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
@@ -38,16 +38,24 @@ describe('DriverDetailsPageComponent', () => {
     return { get: (key: string) => (key === 'id' ? id : null) };
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('isAgendaEnabled combines the group and entity flags', () => {
+  it('should combine the group and entity flags when isAgendaEnabled is called', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act / Assert
     expect(component.isAgendaEnabled()).toBe(true);
   });
 
-  it('isAgendaEnabled is false when either flag is disabled', () => {
+  it('should return false from isAgendaEnabled when either flag is disabled', () => {
+    // Arrange
     paramMap$ = new Subject();
     activatedRouteMock = { paramMap: paramMap$ };
     driverServiceMock = { getById: vi.fn().mockReturnValue(new Subject()) };
@@ -66,88 +74,109 @@ describe('DriverDetailsPageComponent', () => {
         ),
     );
 
+    // Act / Assert
     expect(component.isAgendaEnabled()).toBe(false);
   });
 
   describe('ngOnInit', () => {
-    it('sets isEdit=false and clears data for a new driver', () => {
+    it('should set isEdit to false and clear data when the id is "new"', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       paramMap$.next(paramMap('new'));
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.data).toBeNull();
     });
 
-    it('loads an existing driver by id', () => {
+    it('should load an existing driver when an id is provided', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Driver>>();
       driverServiceMock.getById.mockReturnValue(response$);
-
       component.ngOnInit();
-      paramMap$.next(paramMap('d1'));
 
+      // Act
+      paramMap$.next(paramMap('d1'));
       expect(component.isEdit).toBe(true);
       expect(component.loading).toBe(true);
       expect(driverServiceMock.getById).toHaveBeenCalledWith('d1');
-
       const data = { id: 'd1' } as Driver;
       response$.next({ data } as WebApiResponse<Driver>);
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
     });
 
-    it('navigates to not-found when the driver does not exist', () => {
+    it('should navigate to not-found when the driver does not exist', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Driver>>();
       driverServiceMock.getById.mockReturnValue(response$);
-
       component.ngOnInit();
+
+      // Act
       paramMap$.next(paramMap('missing'));
       response$.next({ data: null } as unknown as WebApiResponse<Driver>);
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('navigates to not-found and stops loading when the request errors', () => {
+    it('should navigate to not-found and stop loading when the request errors', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Driver>>();
       driverServiceMock.getById.mockReturnValue(response$);
-
       component.ngOnInit();
+
+      // Act
       paramMap$.next(paramMap('d1'));
       response$.error(new Error('fail'));
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
   });
 
   describe('getStatusLabel', () => {
-    it('returns an empty string when there is no data', () => {
+    it('should return an empty string when there is no data', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getStatusLabel()).toBe('');
     });
 
-    it('resolves the translated status label', () => {
+    it('should resolve the translated status label when data is set', () => {
+      // Arrange
       const component = createComponent();
       component.data = { status: 'Active' } as Driver;
 
+      // Act / Assert
       expect(component.getStatusLabel()).toBe('DRIVERS.STATUS_ACTIVE');
     });
 
-    it('falls back to an empty string for a status with no mapped label', () => {
+    it('should fall back to an empty string when the status has no mapped label', () => {
+      // Arrange
       const component = createComponent();
       component.data = { status: 'Unknown' } as unknown as Driver;
 
+      // Act / Assert
       expect(component.getStatusLabel()).toBe('');
     });
   });
 
-  it('ngOnDestroy does not throw', () => {
+  it('should not throw when ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act / Assert
     expect(() => component.ngOnDestroy()).not.toThrow();
   });
 });

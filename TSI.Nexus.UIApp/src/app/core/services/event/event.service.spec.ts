@@ -19,15 +19,23 @@ describe('EventService', () => {
     return TestBed.inject(EventService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getAll/getById/getByUserId/getByEntityId hit the expected endpoints', () => {
+  it('should hit the expected endpoints when getAll/getById/getByUserId/getByEntityId are called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAll();
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('events/getAll');
 
     service.getById('e1');
@@ -40,16 +48,21 @@ describe('EventService', () => {
     expect(apiServiceMock.get).toHaveBeenCalledWith('events/getByTripId/t1');
   });
 
-  it('eventChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when eventChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.eventChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each notify eventChanged$ after the request completes', () => {
+  it('should notify eventChanged$ after each request completes when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<AgendaEvent>>();
     const updateResponse$ = new Subject<WebApiResponse<AgendaEvent>>();
@@ -57,12 +70,12 @@ describe('EventService', () => {
     apiServiceMock.post.mockReturnValue(addResponse$);
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
-
     let emissions = 0;
     service.eventChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
     expect(emissions).toBe(1); // the initial replay
 
+    // Act / Assert
     service.add({} as AgendaEvent).subscribe();
     addResponse$.next({} as WebApiResponse<AgendaEvent>);
     TestBed.flushEffects();
@@ -79,14 +92,18 @@ describe('EventService', () => {
     expect(emissions).toBe(4);
   });
 
-  it('add/update/delete post to the expected endpoints with the given payload', () => {
+  it('should post to the expected endpoints with the given payload when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.post.mockReturnValue(new Subject());
     apiServiceMock.put.mockReturnValue(new Subject());
     apiServiceMock.delete.mockReturnValue(new Subject());
     const event = { id: 'e1' } as AgendaEvent;
 
+    // Act
     service.add(event).subscribe();
+
+    // Assert
     expect(apiServiceMock.post).toHaveBeenCalledWith('events/add', event);
 
     service.update(event).subscribe();
