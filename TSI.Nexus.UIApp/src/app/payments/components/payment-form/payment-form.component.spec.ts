@@ -74,14 +74,20 @@ describe('PaymentFormComponent', () => {
     component.form.patchValue(validRawValue());
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('option getters', () => {
-    it('exposes translated status, type, method and condition options', () => {
+    it('should expose translated status, type, method and condition options when read', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(component.statusOptions).toEqual([
         { label: 'REPORTS.STATUS_OPEN', value: PaymentStatus.Pending },
         { label: 'REPORTS.STATUS_PAID', value: PaymentStatus.Approved },
@@ -104,81 +110,106 @@ describe('PaymentFormComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('builds a form without an id control when adding', () => {
+    it('should build a form without an id control when adding', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeNull();
     });
 
-    it('builds a form with an id control when editing', () => {
+    it('should build a form with an id control when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('patches the form with the provided data', () => {
+    it('should patch the form with the provided data when data is set', () => {
+      // Arrange
       const component = createComponent();
       component.data = { description: 'Pgto existente' } as Payment;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('Pgto existente');
     });
 
-    it('disables the form when the payment is already Approved', () => {
+    it('should disable the form when the payment is already Approved', () => {
+      // Arrange
       const component = createComponent();
       component.data = { status: PaymentStatus.Approved } as Payment;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.disabled).toBe(true);
     });
 
-    it('does not disable the form when there is no data', () => {
+    it('should not disable the form when there is no data', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.disabled).toBe(false);
     });
 
-    it('disables businessPartnerName, orderNumber and type when editing', () => {
+    it('should disable businessPartnerName, orderNumber and type when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('businessPartnerName')!.disabled).toBe(true);
       expect(component.form.get('orderNumber')!.disabled).toBe(true);
       expect(component.form.get('type')!.disabled).toBe(true);
     });
 
-    it('loads categories and falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the categories response has no data', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.categories).toEqual([]);
     });
 
-    it('loads categories from the response data', () => {
+    it('should load categories from the response data when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(
         of({ data: [{ value: 'cat1', label: 'Categoria 1' }] }),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.categories).toEqual([{ value: 'cat1', label: 'Categoria 1' }]);
     });
 
-    it('builds the transaction-derived fields from Order-like parentData', () => {
+    it('should build the transaction-derived fields when parentData is Order-like', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = {
         id: 'o1',
@@ -189,15 +220,18 @@ describe('PaymentFormComponent', () => {
         orderNumber: 'ORD-1',
       } as unknown as Order;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transactionId')!.value).toBe('t1');
       expect(component.form.get('transactionDescription')!.value).toBe('Desc do pedido');
       expect(component.form.get('orderId')!.value).toBe('o1');
       expect(component.form.get('tripId')!.value).toBe('');
     });
 
-    it('builds the transaction-derived fields from Trip-like parentData', () => {
+    it('should build the transaction-derived fields when parentData is Trip-like', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = {
         id: 'trip1',
@@ -206,14 +240,17 @@ describe('PaymentFormComponent', () => {
         tripNumber: 'TRIP-1',
       } as unknown as Trip;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('tripId')!.value).toBe('trip1');
       expect(component.form.get('orderId')!.value).toBe('');
       expect(component.form.get('transactionDescription')!.value).toBe('');
     });
 
-    it('falls back to empty strings when Order-like parentData has no transactionId or id', () => {
+    it('should fall back to empty strings when Order-like parentData has no transactionId or id', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = {
         id: '',
@@ -222,13 +259,16 @@ describe('PaymentFormComponent', () => {
         orderNumber: 'ORD-2',
       } as unknown as Order;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transactionId')!.value).toBe('');
       expect(component.form.get('orderId')!.value).toBe('');
     });
 
-    it('falls back to an empty tripId when Trip-like parentData has no id', () => {
+    it('should fall back to an empty tripId when Trip-like parentData has no id', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = {
         id: '',
@@ -236,12 +276,15 @@ describe('PaymentFormComponent', () => {
         tripNumber: 'TRIP-2',
       } as unknown as Trip;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('tripId')!.value).toBe('');
     });
 
-    it('builds the transaction-derived fields from Transaction-like parentData', () => {
+    it('should build the transaction-derived fields when parentData is Transaction-like', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'tx1';
       component.parentData = {
@@ -250,29 +293,37 @@ describe('PaymentFormComponent', () => {
         tripId: 'trip2',
       } as unknown as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transactionDescription')!.value).toBe('Desc da transacao');
       expect(component.form.get('orderId')!.value).toBe('o2');
       expect(component.form.get('tripId')!.value).toBe('trip2');
       expect(component.form.get('transactionId')!.value).toBe('tx1');
     });
 
-    it('falls back to empty transactionId when there is no parentId for a Transaction parent', () => {
+    it('should fall back to an empty transactionId when there is no parentId for a Transaction parent', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = null;
       component.parentData = { description: '', orderId: '', tripId: '' } as unknown as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transactionId')!.value).toBe('');
     });
 
-    it('leaves the transaction-derived fields empty when there is no parentData', () => {
+    it('should leave the transaction-derived fields empty when there is no parentData', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transactionId')!.value).toBe('');
       expect(component.form.get('orderId')!.value).toBe('');
       expect(component.form.get('tripId')!.value).toBe('');
@@ -280,101 +331,126 @@ describe('PaymentFormComponent', () => {
   });
 
   describe('ngOnChanges', () => {
-    it('patches the form when data changes to a new value after init', () => {
+    it('should patch the form when data changes to a new value after init', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { description: 'Novo' } as Payment;
 
+      // Act
       component.ngOnChanges({ data: { currentValue: component.data } as never });
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('Novo');
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ compact: { currentValue: true } as never });
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('');
     });
 
-    it('does nothing when data has no currentValue', () => {
+    it('should do nothing when data has no currentValue', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act / Assert
       expect(() =>
         component.ngOnChanges({ data: { currentValue: null } as never }),
       ).not.toThrow();
       expect(component.form.get('description')!.value).toBe('');
     });
 
-    it('does nothing when there is no form yet', () => {
+    it('should do nothing when there is no form yet', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(() =>
         component.ngOnChanges({ data: { currentValue: { description: 'X' } } as never }),
       ).not.toThrow();
     });
 
-    it('re-initializes the form when isEdit changes after the first change', () => {
+    it('should re-initialize the form when isEdit changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       expect(component.form.get('id')).toBeNull();
       component.isEdit = true;
 
+      // Act
       component.ngOnChanges({
         isEdit: { currentValue: true, firstChange: false } as never,
       });
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('does not re-initialize the form on the first isEdit change', () => {
+    it('should not re-initialize the form on the first isEdit change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.form;
 
+      // Act
       component.ngOnChanges({
         isEdit: { currentValue: false, firstChange: true } as never,
       });
 
+      // Assert
       expect(component.form).toBe(before);
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes all tracked subscriptions', () => {
+    it('should unsubscribe all tracked subscriptions when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       const unsubscribe = vi.fn();
       (component as any)._subscriptions = [{ unsubscribe }];
 
+      // Act
       component.ngOnDestroy();
 
+      // Assert
       expect(unsubscribe).toHaveBeenCalled();
     });
 
-    it('does not throw when there are no subscriptions to clean up', () => {
+    it('should not throw when there are no subscriptions to clean up', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: unknown;
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.form.get('type')!.touched).toBe(true);
       expect(paymentServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('adds a new payment when not editing and there is no existing data', () => {
+    it('should add a new payment when not editing and there is no existing data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -382,12 +458,15 @@ describe('PaymentFormComponent', () => {
         of({ status: 'Success', message: 'OK', data: { id: 'p1' } } as WebApiResponse<Payment>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(paymentServiceMock.add).toHaveBeenCalled();
     });
 
-    it('merges the raw value into data before saving, and updates when editing', () => {
+    it('should merge the raw value into data and update when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'p1' } as Payment;
@@ -397,14 +476,17 @@ describe('PaymentFormComponent', () => {
         of({ status: 'Success', message: 'OK', data: { id: 'p1' } } as WebApiResponse<Payment>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(paymentServiceMock.update).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'p1', description: 'Pagamento' }),
       );
     });
 
-    it('adds instead of updating when isEdit is true but there is no existing data', () => {
+    it('should add instead of update when isEdit is true but there is no existing data', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
@@ -413,13 +495,16 @@ describe('PaymentFormComponent', () => {
         of({ status: 'Success', message: 'OK', data: { id: 'p1' } } as WebApiResponse<Payment>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(paymentServiceMock.add).toHaveBeenCalled();
       expect(paymentServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('closes the dialog and shows a sweet notification on success', () => {
+    it('should close the dialog and show a sweet notification when the save succeeds', () => {
+      // Arrange
       const component = createComponent();
       const dialogRefMock = { close: vi.fn() };
       component.dialogRef = dialogRefMock as any;
@@ -429,8 +514,10 @@ describe('PaymentFormComponent', () => {
         of({ status: 'Success', message: 'Salvo com sucesso' } as WebApiResponse<Payment>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'Salvo com sucesso' }),
       );
@@ -441,14 +528,17 @@ describe('PaymentFormComponent', () => {
       );
     });
 
-    it('notifies an error when the save request errors', () => {
+    it('should notify an error when the save request fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       paymentServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'Error',
         'COMMON.SAVE_ERROR',
@@ -457,19 +547,23 @@ describe('PaymentFormComponent', () => {
   });
 
   describe('cancel', () => {
-    it('hides the modal via the dialogRef', () => {
+    it('should hide the modal via the dialogRef when cancel is called', () => {
+      // Arrange
       const component = createComponent();
       const dialogRefMock = {};
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
   });
 
   describe('remove', () => {
-    it('hides the current modal and deletes when confirmed, notifying via the modal path', async () => {
+    it('should hide the current modal and delete via the modal path when confirmed', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.data = { id: 'p1' } as Payment;
@@ -480,10 +574,12 @@ describe('PaymentFormComponent', () => {
         of({ status: 'Success', message: 'Removido' } as WebApiResponse<Payment>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith();
       expect(paymentServiceMock.delete).toHaveBeenCalledWith(component.data);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -493,7 +589,8 @@ describe('PaymentFormComponent', () => {
       );
     });
 
-    it('deletes and notifies without hiding the dialogRef when not a modal', async () => {
+    it('should delete and notify without hiding the dialogRef when not a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'p1' } as Payment;
@@ -502,10 +599,12 @@ describe('PaymentFormComponent', () => {
         of({ status: 'Success', message: 'Removido' } as WebApiResponse<Payment>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
         'Removido',
@@ -513,7 +612,8 @@ describe('PaymentFormComponent', () => {
       );
     });
 
-    it('notifies an error when the delete request errors', async () => {
+    it('should notify an error when the delete request fails', async () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'p1' } as Payment;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
@@ -522,10 +622,12 @@ describe('PaymentFormComponent', () => {
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
+        // Act
         component.remove();
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           'error',
           'ORDERS.REMOVE_ERROR',
@@ -536,17 +638,20 @@ describe('PaymentFormComponent', () => {
       }
     });
 
-    it('does not delete and reopens the modal when cancelled inside a modal', async () => {
+    it('should not delete and should reopen the modal when cancelled inside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.isEdit = true;
       component.data = { id: 'p1' } as Payment;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(paymentServiceMock.delete).not.toHaveBeenCalled();
       // Reopening the modal goes through a dynamic `import(...)` of
       // PaymentDetailsModalComponent, which is impractical to assert on
@@ -554,16 +659,19 @@ describe('PaymentFormComponent', () => {
       // the same accepted residual pattern).
     });
 
-    it('does nothing further when cancelled outside a modal', async () => {
+    it('should do nothing further when cancelled outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'p1' } as Payment;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(paymentServiceMock.delete).not.toHaveBeenCalled();
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });

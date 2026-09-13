@@ -9,28 +9,44 @@ describe('AgendaComponent', () => {
     return new AgendaComponent(activatedRouteMock as unknown as ActivatedRoute);
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('defaults onlyMine to false when the query param is absent', () => {
+  it('should default onlyMine to false when the query param is absent', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.onlyMine).toBe(false);
   });
 
-  it('sets onlyMine to true when the query param is "true"', () => {
+  it('should set onlyMine to true when the query param is "true"', () => {
+    // Arrange
     const component = createComponent({ onlyMine: 'true' });
+
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.onlyMine).toBe(true);
   });
 
-  it('sets onlyMine to false for any other query param value', () => {
+  it('should set onlyMine to false when the query param has any other value', () => {
+    // Arrange
     const component = createComponent({ onlyMine: 'yes' });
+
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.onlyMine).toBe(false);
   });
 });
