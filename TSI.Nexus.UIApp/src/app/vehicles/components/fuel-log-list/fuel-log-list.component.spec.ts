@@ -53,127 +53,170 @@ describe('FuelLogListComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('isTopLevelList', () => {
-    it('is true when there is no vehicleId', () => {
+    it('should return true when there is no vehicleId', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(true);
     });
 
-    it('is false when a vehicleId is provided', () => {
+    it('should return false when a vehicleId is provided', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(false);
     });
   });
 
   describe('pagedDataSource', () => {
-    it('delegates to fuelLogService.getAllPaged', () => {
+    it('should delegate to fuelLogService.getAllPaged when called', () => {
+      // Arrange
       const component = createComponent();
       const request = { page: 1 } as any;
       fuelLogServiceMock.getAllPaged.mockReturnValue(of({ data: [], total: 0 }));
 
+      // Act
       component.pagedDataSource(request);
 
+      // Assert
       expect(fuelLogServiceMock.getAllPaged).toHaveBeenCalledWith(request);
     });
   });
 
   describe('ngOnInit', () => {
-    it('builds the column defs and does not load eagerly for the top-level list', () => {
+    it('should build the column defs and not load eagerly for the top-level list', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.columnDefs.length).toBeGreaterThan(0);
       expect(fuelLogServiceMock.getAll).not.toHaveBeenCalled();
       expect(fuelLogServiceMock.getByVehicle).not.toHaveBeenCalled();
     });
 
-    it('loads eagerly when embedded for a specific vehicle', () => {
+    it('should load eagerly when embedded for a specific vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(fuelLogServiceMock.getByVehicle).toHaveBeenCalledWith('v1');
     });
 
-    it('rebuilds the column defs on language change', () => {
+    it('should rebuild the column defs when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).not.toBe(before);
     });
 
-    it('purges the grid cache on fuelLogChanged$ for the top-level list', () => {
+    it('should purge the grid cache when fuelLogChanged$ fires for the top-level list', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       fuelLogChanged$.next();
 
+      // Assert
       expect(gridRef.gridApi!.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('does not throw when fuelLogChanged$ fires without a gridRef', () => {
+    it('should not throw when fuelLogChanged$ fires without a gridRef', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => fuelLogChanged$.next()).not.toThrow();
     });
 
-    it('reloads when embedded and fuelLogChanged$ fires', () => {
+    it('should reload when embedded and fuelLogChanged$ fires', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       component.ngOnInit();
       fuelLogServiceMock.getByVehicle.mockClear();
 
+      // Act
       fuelLogChanged$.next();
 
+      // Assert
       expect(fuelLogServiceMock.getByVehicle).toHaveBeenCalledWith('v1');
     });
   });
 
   describe('ngOnChanges', () => {
-    it('reloads when vehicleId changes after the first change', () => {
+    it('should reload when vehicleId changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v2';
 
+      // Act
       component.ngOnChanges({ vehicleId: { firstChange: false } as any });
 
+      // Assert
       expect(fuelLogServiceMock.getByVehicle).toHaveBeenCalledWith('v2');
     });
 
-    it('does not reload on the first change', () => {
+    it('should not reload when it is the first change', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v2';
 
+      // Act
       component.ngOnChanges({ vehicleId: { firstChange: true } as any });
 
+      // Assert
       expect(fuelLogServiceMock.getByVehicle).not.toHaveBeenCalled();
     });
 
-    it('loads via getAll when vehicleId changes back to undefined', () => {
+    it('should load via getAll when vehicleId changes back to undefined', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = undefined;
 
+      // Act
       component.ngOnChanges({ vehicleId: { firstChange: false } as any });
 
+      // Assert
       expect(fuelLogServiceMock.getAll).toHaveBeenCalled();
       expect(fuelLogServiceMock.getByVehicle).not.toHaveBeenCalled();
     });
 
-    it('does nothing when vehicleId is not part of the change set', () => {
+    it('should do nothing when vehicleId is not part of the change set', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({})).not.toThrow();
       expect(fuelLogServiceMock.getByVehicle).not.toHaveBeenCalled();
       expect(fuelLogServiceMock.getAll).not.toHaveBeenCalled();
@@ -181,29 +224,35 @@ describe('FuelLogListComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('stops reacting to language changes and fuelLogChanged$', () => {
+    it('should stop reacting to language changes and fuelLogChanged$ after ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       component.ngOnDestroy();
       const before = component.columnDefs;
       language$.next('en');
       fuelLogChanged$.next();
 
+      // Assert
       expect(component.columnDefs).toBe(before);
       expect(gridRef.gridApi!.purgeInfiniteCache).not.toHaveBeenCalled();
     });
   });
 
   describe('openModal', () => {
-    it('opens the details modal, always forcing the component vehicleId', () => {
+    it('should open the details modal and always force the component vehicleId', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
 
+      // Act
       component.openModal({ data: { id: 'f1', vehicleId: 'other-vehicle' } });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ vehicleId: 'v1', data: { id: 'f1', vehicleId: 'other-vehicle' } }),
@@ -212,7 +261,8 @@ describe('FuelLogListComponent', () => {
   });
 
   describe('removeFuelLog', () => {
-    it('purges the grid cache on success for the top-level list', () => {
+    it('should purge the grid cache on success for the top-level list', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -220,8 +270,10 @@ describe('FuelLogListComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.removeFuelLog({ id: 'f1' } as FuelLog);
 
+      // Assert
       expect(gridRef.gridApi!.purgeInfiniteCache).toHaveBeenCalled();
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -231,7 +283,8 @@ describe('FuelLogListComponent', () => {
       );
     });
 
-    it('removes the row locally on success when embedded for a vehicle', () => {
+    it('should remove the row locally on success when embedded for a vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       component.rowData = [{ id: 'f1' } as FuelLog, { id: 'f2' } as FuelLog];
@@ -239,12 +292,15 @@ describe('FuelLogListComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.removeFuelLog({ id: 'f1' } as FuelLog);
 
+      // Assert
       expect(component.rowData).toEqual([{ id: 'f2' }]);
     });
 
-    it('does not purge or filter rows when the delete reports an error', () => {
+    it('should not purge or filter rows when the delete reports an error', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -253,8 +309,10 @@ describe('FuelLogListComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' }),
       );
 
+      // Act
       component.removeFuelLog({ id: 'f1' } as FuelLog);
 
+      // Assert
       expect(gridRef.gridApi!.purgeInfiniteCache).not.toHaveBeenCalled();
       expect(component.rowData).toEqual([{ id: 'f1' }]);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Falhou', ResponseStatus.Error);
@@ -262,11 +320,14 @@ describe('FuelLogListComponent', () => {
   });
 
   describe('refresh', () => {
-    it('shows a notification without reloading for the top-level list', () => {
+    it('should show a notification without reloading for the top-level list', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.refresh();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         'VEHICLES.FUEL_LOGS_REFRESHED',
@@ -274,32 +335,39 @@ describe('FuelLogListComponent', () => {
       expect(fuelLogServiceMock.getAll).not.toHaveBeenCalled();
     });
 
-    it('reloads with the refresh notification when embedded for a vehicle', () => {
+    it('should reload with the refresh notification when embedded for a vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       fuelLogServiceMock.getByVehicle.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'Atualizado', data: [] }),
       );
 
+      // Act
       component.refresh();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'Atualizado');
     });
   });
 
   describe('load (private, via ngOnInit/refresh)', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       fuelLogServiceMock.getByVehicle.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       fuelLogServiceMock.getByVehicle.mockReturnValue({
@@ -308,46 +376,60 @@ describe('FuelLogListComponent', () => {
         }),
       } as any);
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
 
   describe('column defs', () => {
-    it('renders vehicle.plate as a link and hides the column when embedded', () => {
+    it('should render vehicle.plate as a link and hide the column when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'vehicle.plate')!;
 
+      // Act
+      // Assert
       expect(column.hide).toBe(true);
       expect((column.cellRenderer as (p: any) => string)({ value: 'ABC-1234' } as any)).toContain('ABC-1234');
       expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toContain('></a>');
     });
 
-    it('shows the vehicle.plate column for the top-level list', () => {
+    it('should show the vehicle.plate column for the top-level list', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'vehicle.plate')!;
 
+      // Act
+      // Assert
       expect(column.hide).toBe(false);
     });
 
-    it('formats date as BR', () => {
+    it('should format the date column as BR when rendered', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'date')!;
 
+      // Act
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: '2024-01-15' } as any)).toContain('/');
     });
 
-    it('formats pricePerLiter and totalCost as BRL currency', () => {
+    it('should format pricePerLiter and totalCost as BRL currency', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const priceColumn = component.columnDefs.find((c) => c.field === 'pricePerLiter')!;
       const totalColumn = component.columnDefs.find((c) => c.field === 'totalCost')!;
 
+      // Act
+      // Assert
       expect((priceColumn.valueFormatter as (p: any) => string)({ value: 5.5 } as any)).toContain('R$');
       expect((totalColumn.valueFormatter as (p: any) => string)({ value: 100 } as any)).toContain('R$');
     });
@@ -357,47 +439,59 @@ describe('FuelLogListComponent', () => {
         ['Concluído', 'success'],
         ['Agendado', 'info'],
         ['Cancelado', 'secondary'],
-      ])('renders status %s with the %s color', (status, color) => {
+      ])('should render status %s with the %s color when the status matches a known value', (status, color) => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: status } as any);
 
+        // Assert
         expect(html).toContain(`bg-${color}`);
         expect(html).toContain(status);
       });
 
-      it('falls back to a secondary badge for an unknown status', () => {
+      it('should fall back to a secondary badge when the status is unknown', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: 'Unknown' } as any);
 
+        // Assert
         expect(html).toContain('bg-secondary');
         expect(html).toContain('Unknown');
       });
 
-      it('renders an empty label when there is no status', () => {
+      it('should render an empty label when there is no status', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: null } as any);
 
+        // Assert
         expect(html).toContain('bg-secondary');
         expect(html).toContain('></span>');
       });
     });
 
-    it('renders the actions column with edit and delete buttons', () => {
+    it('should render the actions column with edit and delete buttons', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as (p: any) => string)({} as any);
 
+      // Assert
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
     });

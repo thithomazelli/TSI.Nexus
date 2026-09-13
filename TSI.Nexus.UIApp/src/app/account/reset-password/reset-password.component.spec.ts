@@ -31,116 +31,149 @@ describe('ResetPasswordComponent', () => {
     return { get: (key: string) => entries[key] ?? null };
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('starts on the "request" step when there is no token/email', () => {
+    it('should start on the "request" step when there is no token/email', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
       queryParamMap$.next(paramMap({}));
 
+      // Assert
       expect(component.step).toBe('request');
       expect(component.form.get('email')).toBeTruthy();
     });
 
-    it('starts on the "reset" step when token and email are present', () => {
+    it('should start on the "reset" step when token and email are present', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
       queryParamMap$.next(paramMap({ token: 'tok', email: 'a@b.com' }));
 
+      // Assert
       expect(component.step).toBe('reset');
       expect(component.form.get('newPassword')).toBeTruthy();
     });
   });
 
   describe('requestReset', () => {
-    it('does not submit an invalid form', () => {
+    it('should not submit when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({}));
 
+      // Act
       component.requestReset();
 
+      // Assert
       expect(component.submitted).toBe(true);
       expect(accountServiceMock.forgotUsernameOrPassword).not.toHaveBeenCalled();
     });
 
-    it('moves to the "sent" step on success', () => {
+    it('should move to the "sent" step when the request succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({}));
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(of(undefined));
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.requestReset();
 
+      // Assert
       expect(accountServiceMock.forgotUsernameOrPassword).toHaveBeenCalledWith('a@b.com');
       expect(component.step).toBe('sent');
     });
 
-    it('surfaces an error message on failure', () => {
+    it('should surface an error message when the request fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({}));
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(
         throwError(() => ({ error: { errors: ['E-mail não encontrado'] } })),
       );
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.requestReset();
 
+      // Assert
       expect(component.errorMessages).toEqual(['E-mail não encontrado']);
     });
 
-    it('falls back to the plain response.error string when there is no errors array', () => {
+    it('should fall back to the plain response.error string when there is no errors array', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({}));
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(
         throwError(() => ({ error: 'Conta bloqueada' })),
       );
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.requestReset();
 
+      // Assert
       expect(component.errorMessages).toEqual(['Conta bloqueada']);
     });
 
-    it('falls back to a generic message when the response has no error at all', () => {
+    it('should fall back to a generic message when the response has no error at all', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({}));
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(throwError(() => ({})));
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.requestReset();
 
+      // Assert
       expect(component.errorMessages).toEqual(['Erro ao enviar o e-mail.']);
     });
   });
 
   describe('resetPassword', () => {
-    it('does not submit without a valid form/token/email', () => {
+    it('should not submit when the form/token/email is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({}));
 
+      // Act
       component.resetPassword();
 
+      // Assert
       expect(accountServiceMock.resetPassword).not.toHaveBeenCalled();
     });
 
-    it('resets the password and moves to the "done" step', () => {
+    it('should reset the password and move to the "done" step when the request succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({ token: 'tok', email: 'a@b.com' }));
       accountServiceMock.resetPassword.mockReturnValue(of(undefined));
-
       component.form.setValue({ newPassword: '123456' });
+
+      // Act
       component.resetPassword();
 
+      // Assert
       expect(accountServiceMock.resetPassword).toHaveBeenCalledWith({
         token: 'tok',
         email: 'a@b.com',
@@ -149,50 +182,62 @@ describe('ResetPasswordComponent', () => {
       expect(component.step).toBe('done');
     });
 
-    it('surfaces an error message on failure', () => {
+    it('should surface an error message when the request fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({ token: 'bad', email: 'a@b.com' }));
       accountServiceMock.resetPassword.mockReturnValue(
         throwError(() => ({ error: { errors: ['Token expirado'] } })),
       );
-
       component.form.setValue({ newPassword: '123456' });
+
+      // Act
       component.resetPassword();
 
+      // Assert
       expect(component.errorMessages).toEqual(['Token expirado']);
     });
 
-    it('falls back to the plain response.error string when there is no errors array', () => {
+    it('should fall back to the plain response.error string when there is no errors array', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({ token: 'tok', email: 'a@b.com' }));
       accountServiceMock.resetPassword.mockReturnValue(
         throwError(() => ({ error: 'Token invalido' })),
       );
-
       component.form.setValue({ newPassword: '123456' });
+
+      // Act
       component.resetPassword();
 
+      // Assert
       expect(component.errorMessages).toEqual(['Token invalido']);
     });
 
-    it('falls back to a generic message when the response has no error at all', () => {
+    it('should fall back to a generic message when the response has no error at all', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParamMap$.next(paramMap({ token: 'tok', email: 'a@b.com' }));
       accountServiceMock.resetPassword.mockReturnValue(throwError(() => ({})));
-
       component.form.setValue({ newPassword: '123456' });
+
+      // Act
       component.resetPassword();
 
+      // Assert
       expect(component.errorMessages).toEqual(['Erro ao redefinir a senha.']);
     });
   });
 
   describe('togglePasswordVisibility', () => {
-    it('flips passwordVisible', () => {
+    it('should flip passwordVisible when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.passwordVisible).toBe(false);
       component.togglePasswordVisibility();
       expect(component.passwordVisible).toBe(true);
