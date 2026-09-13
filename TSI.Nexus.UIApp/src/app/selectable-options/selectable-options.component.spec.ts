@@ -40,42 +40,60 @@ describe('SelectableOptionsComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('loads options for the active group on init', () => {
+  it('should load options for the active group when ngOnInit is called', () => {
+    // Arrange
     const options = [{ id: 'o1' }] as SelectableOption[];
     const component = createComponent();
     selectableOptionServiceMock.getByGroup.mockReturnValue(of({ data: options }));
 
+    // Act
     component.ngOnInit();
 
-    expect(selectableOptionServiceMock.getByGroup).toHaveBeenCalledWith(SelectableOptionGroup.AddressType);
+    // Assert
+    expect(selectableOptionServiceMock.getByGroup).toHaveBeenCalledWith(
+      SelectableOptionGroup.AddressType,
+    );
     expect(component.options).toBe(options);
     expect(component.loading).toBe(false);
   });
 
-  it('defaults to an empty list when the response has no data', () => {
+  it('should default to an empty list when the response has no data', () => {
+    // Arrange
     const component = createComponent();
     selectableOptionServiceMock.getByGroup.mockReturnValue(of({}));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.options).toEqual([]);
   });
 
-  it('stops loading and keeps options empty when the load request errors out', () => {
+  it('should stop loading and keep options empty when the load request errors out', () => {
+    // Arrange
     const component = createComponent();
     selectableOptionServiceMock.getByGroup.mockReturnValue(throwError(() => new Error('boom')));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.loading).toBe(false);
   });
 
-  it('isEventTypeGroup reflects whether the active group is EventType', () => {
+  it('should reflect whether the active group is EventType when isEventTypeGroup is read', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act / Assert
     expect(component.isEventTypeGroup).toBe(false);
 
     component.activeGroup = SelectableOptionGroup.EventType;
@@ -83,55 +101,72 @@ describe('SelectableOptionsComponent', () => {
   });
 
   describe('selectGroup', () => {
-    it('switches the active group, clears newValue, and reloads', () => {
+    it('should switch the active group, clear newValue, and reload when a different group is selected', () => {
+      // Arrange
       const component = createComponent();
       component.newValue = 'draft';
 
+      // Act
       component.selectGroup(SelectableOptionGroup.EventType);
 
+      // Assert
       expect(component.activeGroup).toBe(SelectableOptionGroup.EventType);
       expect(component.newValue).toBe('');
-      expect(selectableOptionServiceMock.getByGroup).toHaveBeenCalledWith(SelectableOptionGroup.EventType);
+      expect(selectableOptionServiceMock.getByGroup).toHaveBeenCalledWith(
+        SelectableOptionGroup.EventType,
+      );
     });
 
-    it('does nothing when selecting the group that is already active', () => {
+    it('should do nothing when selecting the group that is already active', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockClear();
 
+      // Act
       component.selectGroup(SelectableOptionGroup.AddressType);
 
+      // Assert
       expect(selectableOptionServiceMock.getByGroup).not.toHaveBeenCalled();
     });
   });
 
   describe('add', () => {
-    it('does nothing for a blank value', () => {
+    it('should do nothing when the value is blank', () => {
+      // Arrange
       const component = createComponent();
       component.newValue = '   ';
 
+      // Act
       component.add();
 
+      // Assert
       expect(selectableOptionServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('does nothing while a save is already in flight', () => {
+    it('should do nothing when a save is already in flight', () => {
+      // Arrange
       const component = createComponent();
       component.newValue = 'Novo';
       component.saving = true;
 
+      // Act
       component.add();
 
+      // Assert
       expect(selectableOptionServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('adds the trimmed value without a color for a non-event-type group', () => {
+    it('should add the trimmed value without a color when the group is not event-type', () => {
+      // Arrange
       const response = { status: ResponseStatus.Success, message: 'ok' };
       const component = createComponent();
       selectableOptionServiceMock.add.mockReturnValue(of(response));
       component.newValue = '  Novo  ';
 
+      // Act
       component.add();
 
+      // Assert
       expect(selectableOptionServiceMock.add).toHaveBeenCalledWith({
         group: SelectableOptionGroup.AddressType,
         value: 'Novo',
@@ -139,10 +174,14 @@ describe('SelectableOptionsComponent', () => {
       });
       expect(component.newValue).toBe('');
       expect(component.saving).toBe(false);
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        response.status,
+        response.message,
+      );
     });
 
-    it('includes the color for the EventType group', () => {
+    it('should include the color when the active group is EventType', () => {
+      // Arrange
       const response = { status: ResponseStatus.Success, message: 'ok' };
       const component = createComponent();
       selectableOptionServiceMock.add.mockReturnValue(of(response));
@@ -150,8 +189,10 @@ describe('SelectableOptionsComponent', () => {
       component.newValue = 'Reunião';
       component.newColor = '#ff0000';
 
+      // Act
       component.add();
 
+      // Assert
       expect(selectableOptionServiceMock.add).toHaveBeenCalledWith({
         group: SelectableOptionGroup.EventType,
         value: 'Reunião',
@@ -159,103 +200,142 @@ describe('SelectableOptionsComponent', () => {
       });
     });
 
-    it('keeps newValue unchanged when the backend reports a non-success status', () => {
+    it('should keep newValue unchanged when the backend reports a non-success status', () => {
+      // Arrange
       const response = { status: ResponseStatus.Error, message: 'falhou' };
       const component = createComponent();
       selectableOptionServiceMock.add.mockReturnValue(of(response));
       component.newValue = 'Novo';
 
+      // Act
       component.add();
 
+      // Assert
       expect(component.newValue).toBe('Novo');
     });
 
-    it('shows a translated error notification and stops saving when the request errors out', () => {
+    it('should show a translated error notification and stop saving when the request errors out', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
       component.newValue = 'Novo';
 
+      // Act
       component.add();
 
+      // Assert
       expect(component.saving).toBe(false);
       expect(translationServiceMock.instant).toHaveBeenCalledWith('COMMON.SAVE_ERROR');
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'COMMON.SAVE_ERROR');
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        'Error',
+        'COMMON.SAVE_ERROR',
+      );
     });
   });
 
   describe('updateColor', () => {
-    it('updates the option color locally on success', () => {
+    it('should update the option color locally when the backend reports success', () => {
+      // Arrange
       const option = { id: 'o1', color: '#000000' } as SelectableOption;
       const response = { status: ResponseStatus.Success, message: 'ok' };
       const component = createComponent();
       selectableOptionServiceMock.update.mockReturnValue(of(response));
 
+      // Act
       component.updateColor(option, '#ffffff');
 
-      expect(selectableOptionServiceMock.update).toHaveBeenCalledWith({ ...option, color: '#ffffff' });
+      // Assert
+      expect(selectableOptionServiceMock.update).toHaveBeenCalledWith({
+        ...option,
+        color: '#ffffff',
+      });
       expect(option.color).toBe('#ffffff');
     });
 
-    it('does not update the local color when the backend reports a non-success status', () => {
+    it('should not update the local color when the backend reports a non-success status', () => {
+      // Arrange
       const option = { id: 'o1', color: '#000000' } as SelectableOption;
       const response = { status: ResponseStatus.Error, message: 'falhou' };
       const component = createComponent();
       selectableOptionServiceMock.update.mockReturnValue(of(response));
 
+      // Act
       component.updateColor(option, '#ffffff');
 
+      // Assert
       expect(option.color).toBe('#000000');
     });
 
-    it('shows a translated error notification when the request errors out', () => {
+    it('should show a translated error notification when the request errors out', () => {
+      // Arrange
       const option = { id: 'o1' } as SelectableOption;
       const component = createComponent();
       selectableOptionServiceMock.update.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.updateColor(option, '#ffffff');
 
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'COMMON.SAVE_ERROR');
+      // Assert
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        'Error',
+        'COMMON.SAVE_ERROR',
+      );
     });
   });
 
   describe('remove', () => {
-    it('removes the option and reloads when the user confirms', async () => {
+    it('should remove the option and reload when the user confirms', async () => {
+      // Arrange
       const option = { id: 'o1' } as SelectableOption;
       const response = { status: ResponseStatus.Success, message: 'removido' };
       const component = createComponent();
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
       selectableOptionServiceMock.remove.mockReturnValue(of(response));
 
+      // Act
       component.remove(option);
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(selectableOptionServiceMock.remove).toHaveBeenCalledWith(option);
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        response.status,
+        response.message,
+      );
     });
 
-    it('does nothing when the user cancels the confirmation', async () => {
+    it('should do nothing when the user cancels the confirmation', async () => {
+      // Arrange
       const option = { id: 'o1' } as SelectableOption;
       const component = createComponent();
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove(option);
       await Promise.resolve();
 
+      // Assert
       expect(selectableOptionServiceMock.remove).not.toHaveBeenCalled();
     });
 
-    it('shows a translated error notification when the remove request errors out', async () => {
+    it('should show a translated error notification when the remove request errors out', async () => {
+      // Arrange
       const option = { id: 'o1' } as SelectableOption;
       const component = createComponent();
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
       selectableOptionServiceMock.remove.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.remove(option);
       await Promise.resolve();
       await Promise.resolve();
 
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'COMMON.SAVE_ERROR');
+      // Assert
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        'Error',
+        'COMMON.SAVE_ERROR',
+      );
     });
   });
 });

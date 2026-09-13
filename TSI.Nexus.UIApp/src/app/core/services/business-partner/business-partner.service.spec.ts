@@ -26,34 +26,45 @@ describe('BusinessPartnerService', () => {
     return TestBed.inject(BusinessPartnerService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getClients hits getAllClients and caches per type', () => {
+  it('should hit getAllClients and cache the result per type when getClients is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getClients();
     service.getClients();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('businesspartners/getAllClients');
     expect(apiServiceMock.get).toHaveBeenCalledTimes(1);
   });
 
-  it('getSuppliers hits getAllSuppliers and caches separately from getClients', () => {
+  it('should hit getAllSuppliers and cache it separately from getClients when getSuppliers is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getSuppliers();
     service.getClients();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('businesspartners/getAllSuppliers');
     expect(apiServiceMock.get).toHaveBeenCalledWith('businesspartners/getAllClients');
     expect(apiServiceMock.get).toHaveBeenCalledTimes(2);
   });
 
-  it('getClients$ emits the loaded response once the request resolves', () => {
+  it('should emit the loaded response when getClients$ resolves', () => {
+    // Arrange
     const load$ = new Subject<WebApiResponse<BusinessPartner[]>>();
     apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
     apiServiceMock.get.mockReturnValue(load$);
@@ -61,20 +72,24 @@ describe('BusinessPartnerService', () => {
       providers: [{ provide: ApiService, useValue: apiServiceMock }],
     });
     const service = TestBed.inject(BusinessPartnerService);
-
     let response: WebApiResponse<BusinessPartner[]> | undefined;
     service.getClients().subscribe((v) => (response = v));
     TestBed.flushEffects();
     expect(response).toBeUndefined();
 
-    const loaded = { data: [{ id: 'bp1' } as BusinessPartner] } as WebApiResponse<BusinessPartner[]>;
+    // Act
+    const loaded = { data: [{ id: 'bp1' } as BusinessPartner] } as WebApiResponse<
+      BusinessPartner[]
+    >;
     load$.next(loaded);
     TestBed.flushEffects();
 
+    // Assert
     expect(response).toBe(loaded);
   });
 
-  it('getClients()/getSuppliers() complete after their single emission (forkJoin compatibility)', () => {
+  it('should complete after their single emission when getClients()/getSuppliers() are used with forkJoin', () => {
+    // Arrange
     const load$ = new Subject<WebApiResponse<BusinessPartner[]>>();
     apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
     apiServiceMock.get.mockReturnValue(load$);
@@ -82,76 +97,95 @@ describe('BusinessPartnerService', () => {
       providers: [{ provide: ApiService, useValue: apiServiceMock }],
     });
     const service = TestBed.inject(BusinessPartnerService);
-
     let completed = false;
     service.getClients().subscribe({ complete: () => (completed = true) });
     TestBed.flushEffects();
     expect(completed).toBe(false);
 
+    // Act
     load$.next({ data: [] } as unknown as WebApiResponse<BusinessPartner[]>);
     TestBed.flushEffects();
 
+    // Assert
     expect(completed).toBe(true);
   });
 
-  it('refresh clears the cache for that type and re-fetches', () => {
+  it('should clear the cache for that type and re-fetch when refresh is called', () => {
+    // Arrange
     const service = createService();
     const second$ = new Subject<WebApiResponse<BusinessPartner[]>>();
     apiServiceMock.get.mockReturnValue(new Subject());
-
     service.getClients();
+
+    // Act
     apiServiceMock.get.mockReturnValue(second$);
     service.refresh(BusinessPartnerType.Client);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledTimes(2);
   });
 
-  it('getAllPaged builds the query string and unwraps response.data', () => {
+  it('should build the query string and unwrap response.data when getAllPaged is called for clients', () => {
+    // Arrange
     const service = createService();
     const paged$ = new Subject<WebApiResponse<unknown>>();
     apiServiceMock.get.mockReturnValue(paged$);
 
+    // Act
     let result: unknown;
-    service.getAllPaged(BusinessPartnerType.Client, { page: 1, pageSize: 10 } as never)
+    service
+      .getAllPaged(BusinessPartnerType.Client, { page: 1, pageSize: 10 } as never)
       .subscribe((r) => (result = r));
     paged$.next({ data: { items: [] } } as unknown as WebApiResponse<unknown>);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith(
       expect.stringContaining('businesspartners/getAllClientsPaged?'),
     );
     expect(result).toEqual({ items: [] });
   });
 
-  it('getAllPaged hits getAllSuppliersPaged for supplier type', () => {
+  it('should hit getAllSuppliersPaged when getAllPaged is called for suppliers', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAllPaged(BusinessPartnerType.Supplier, { page: 1, pageSize: 10 } as never);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith(
       expect.stringContaining('businesspartners/getAllSuppliersPaged?'),
     );
   });
 
-  it('getById hits the expected endpoint', () => {
+  it('should hit the expected endpoint when getById is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getById('bp1');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('businesspartners/getById/bp1');
   });
 
-  it('businessPartnerChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when businessPartnerChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.businessPartnerChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each clear the per-type cache and notify businessPartnerChanged$', () => {
+  it('should clear the per-type cache and notify businessPartnerChanged$ when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<Company | Individual>>();
     const updateResponse$ = new Subject<WebApiResponse<Company | Individual>>();
@@ -160,15 +194,14 @@ describe('BusinessPartnerService', () => {
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
     apiServiceMock.get.mockReturnValue(new Subject());
-
     let emissions = 0;
     service.businessPartnerChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
     expect(emissions).toBe(1);
-
     service.getClients();
     const getCallsAfterFirstFetch = apiServiceMock.get.mock.calls.length;
 
+    // Act / Assert
     service.add({ documentType: 'Física' } as Individual).subscribe();
     addResponse$.next({} as WebApiResponse<Individual>);
     TestBed.flushEffects();
@@ -188,37 +221,47 @@ describe('BusinessPartnerService', () => {
     expect(emissions).toBe(4);
   });
 
-  it('add posts to the Companies endpoint for a non-Física documentType', () => {
+  it('should post to the Companies endpoint when add is called with a non-Física documentType', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.post.mockReturnValue(new Subject());
 
+    // Act
     service.add({ documentType: 'Jurídica' } as Company).subscribe();
 
+    // Assert
     expect(apiServiceMock.post).toHaveBeenCalledWith('companies/add', expect.anything());
   });
 
-  it('update puts to the Individuals endpoint for a Física documentType', () => {
+  it('should put to the Individuals endpoint when update is called with a Física documentType', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.put.mockReturnValue(new Subject());
 
+    // Act
     service.update({ documentType: 'Física' } as Individual).subscribe();
 
+    // Assert
     expect(apiServiceMock.put).toHaveBeenCalledWith('individuals/update', expect.anything());
   });
 
-  it('falls back to an empty array when the loaded response carries no data', () => {
+  it('should fall back to an empty array when the loaded response carries no data', () => {
+    // Arrange
     const service = createService();
     const load$ = new Subject<WebApiResponse<BusinessPartner[]>>();
     apiServiceMock.get.mockReturnValue(load$);
-
     service.getClients();
+
+    // Act / Assert
     expect(() => load$.next({} as WebApiResponse<BusinessPartner[]>)).not.toThrow();
   });
 
   describe('addOrUpdateBusinessPartner', () => {
-    it('does not throw and can be called for a new or existing id', () => {
+    it('should not throw when called for a new or existing id', () => {
+      // Arrange
       const service = createService();
 
+      // Act / Assert
       expect(() => {
         service.addOrUpdateBusinessPartner({ id: 'bp1', name: 'A' } as BusinessPartner);
         service.addOrUpdateBusinessPartner({ id: 'bp1', name: 'A updated' } as BusinessPartner);
@@ -228,85 +271,124 @@ describe('BusinessPartnerService', () => {
   });
 
   describe('cpfValidator', () => {
-    it('accepts an empty value', () => {
+    it('should accept an empty value when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cpfValidator();
+
+      // Act / Assert
       expect(validator({ value: '' } as never)).toBeNull();
     });
 
-    it('accepts a valid CPF', () => {
+    it('should accept a valid CPF when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cpfValidator();
+
+      // Act / Assert
       expect(validator({ value: '52998224725' } as never)).toBeNull();
     });
 
-    it('rejects an invalid CPF', () => {
+    it('should reject an invalid CPF when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cpfValidator();
+
+      // Act / Assert
       expect(validator({ value: '11111111111' } as never)).toEqual({ cpfInvalido: true });
       expect(validator({ value: '12345678900' } as never)).toEqual({ cpfInvalido: true });
     });
 
-    it('rejects a CPF with the wrong number of digits', () => {
+    it('should reject a CPF with the wrong number of digits when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cpfValidator();
+
+      // Act / Assert
       expect(validator({ value: '123' } as never)).toEqual({ cpfInvalido: true });
     });
 
-    it("rejects a CPF whose first check digit doesn't match", () => {
+    it("should reject a CPF when its first check digit doesn't match", () => {
+      // Arrange
       const service = createService();
       const validator = service.cpfValidator();
+
+      // Act / Assert
       expect(validator({ value: '52998224700' } as never)).toEqual({ cpfInvalido: true });
     });
 
-    it('accepts a valid CPF whose second check digit needed the 10/11 reset rule', () => {
+    it('should accept a valid CPF when its second check digit needs the 10/11 reset rule', () => {
+      // Arrange
       const service = createService();
       const validator = service.cpfValidator();
+
+      // Act / Assert
       expect(validator({ value: '10000002810' } as never)).toBeNull();
     });
   });
 
   describe('cnpjValidator', () => {
-    it('accepts an empty value', () => {
+    it('should accept an empty value when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cnpjValidator();
+
+      // Act / Assert
       expect(validator({ value: '' } as never)).toBeNull();
     });
 
-    it('accepts a valid CNPJ', () => {
+    it('should accept a valid CNPJ when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cnpjValidator();
+
+      // Act / Assert
       expect(validator({ value: '11222333000181' } as never)).toBeNull();
     });
 
-    it('rejects an invalid CNPJ', () => {
+    it('should reject an invalid CNPJ when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cnpjValidator();
+
+      // Act / Assert
       expect(validator({ value: '11111111111111' } as never)).toEqual({ cnpjInvalido: true });
       expect(validator({ value: '11222333000199' } as never)).toEqual({ cnpjInvalido: true });
     });
 
-    it('rejects a CNPJ with the wrong number of digits', () => {
+    it('should reject a CNPJ with the wrong number of digits when validated', () => {
+      // Arrange
       const service = createService();
       const validator = service.cnpjValidator();
+
+      // Act / Assert
       expect(validator({ value: '123' } as never)).toEqual({ cnpjInvalido: true });
     });
 
-    it('accepts a valid CNPJ whose first check digit needed the 0/1 reset rule', () => {
+    it('should accept a valid CNPJ when its first check digit needs the 0/1 reset rule', () => {
+      // Arrange
       const service = createService();
       const validator = service.cnpjValidator();
+
+      // Act / Assert
       expect(validator({ value: '10000000000307' } as never)).toBeNull();
     });
 
-    it('accepts a valid CNPJ whose second check digit needed the 0/1 reset rule', () => {
+    it('should accept a valid CNPJ when its second check digit needs the 0/1 reset rule', () => {
+      // Arrange
       const service = createService();
       const validator = service.cnpjValidator();
+
+      // Act / Assert
       expect(validator({ value: '10000000000650' } as never)).toBeNull();
     });
 
-    it("rejects a CNPJ with a correct first digit but a wrong second check digit", () => {
+    it('should reject a CNPJ when it has a correct first digit but a wrong second check digit', () => {
+      // Arrange
       const service = createService();
       const validator = service.cnpjValidator();
+
+      // Act / Assert
       expect(validator({ value: '10000000000308' } as never)).toEqual({ cnpjInvalido: true });
     });
   });

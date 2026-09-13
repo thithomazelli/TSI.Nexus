@@ -20,17 +20,24 @@ describe('VehicleService', () => {
     return TestBed.inject(VehicleService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('triggers a getAll fetch eagerly on construction', () => {
+  it('should trigger a getAll fetch eagerly on construction', () => {
+    // Act
     createService();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('vehicles/getAll');
   });
 
-  it('vehicles$/getAll() emits the loaded response once the request resolves', () => {
+  it('should emit the loaded response on vehicles$/getAll() once the request resolves', () => {
+    // Arrange
     const load$ = new Subject<WebApiResponse<Vehicle[]>>();
     apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
     apiServiceMock.get.mockReturnValue(load$);
@@ -38,81 +45,97 @@ describe('VehicleService', () => {
       providers: [{ provide: ApiService, useValue: apiServiceMock }],
     });
     const service = TestBed.inject(VehicleService);
-
     let response: WebApiResponse<Vehicle[]> | undefined;
     service.getAll().subscribe((v) => (response = v));
     TestBed.flushEffects();
     expect(response).toBeUndefined();
 
+    // Act
     const loaded = { data: [{ id: 'v1' } as Vehicle] } as WebApiResponse<Vehicle[]>;
     load$.next(loaded);
     TestBed.flushEffects();
 
+    // Assert
     expect(response).toBe(loaded);
   });
 
-  it('getAllPaged builds the query string and unwraps response.data', () => {
+  it('should build the query string and unwrap response.data when getAllPaged is called', () => {
+    // Arrange
     const service = createService();
     const paged$ = new Subject<WebApiResponse<unknown>>();
     apiServiceMock.get.mockReturnValue(paged$);
 
+    // Act
     let result: unknown;
     service.getAllPaged({ page: 1, pageSize: 10 } as never).subscribe((r) => (result = r));
     const pagedResult = { items: [], totalCount: 0 };
     paged$.next({ data: pagedResult } as WebApiResponse<unknown>);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith(
       expect.stringContaining('vehicles/getAllPaged?'),
     );
     expect(result).toBe(pagedResult);
   });
 
-  it('getById hits the expected endpoint', () => {
+  it('should hit the expected endpoint when getById is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getById('v1');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('vehicles/getById/v1');
   });
 
-  it('getAvailable hits the expected endpoint', () => {
+  it('should hit the expected endpoint when getAvailable is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAvailable();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('vehicles/getAvailable');
   });
 
-  it('refresh re-fetches directly and also invalidates the shared vehicles$ cache', () => {
+  it('should re-fetch directly and also invalidate the shared vehicles$ cache when refresh is called', () => {
+    // Arrange
     const service = createService();
     const refreshResponse$ = new Subject<WebApiResponse<Vehicle[]>>();
     apiServiceMock.get.mockReturnValue(refreshResponse$);
 
+    // Act
     let refreshResult: WebApiResponse<Vehicle[]> | undefined;
     service.refresh().subscribe((v) => (refreshResult = v));
-
     const getCallsBefore = apiServiceMock.get.mock.calls.length;
     apiServiceMock.get.mockReturnValue(new Subject());
-
     const refreshed = { data: [{ id: 'v2' } as Vehicle] } as WebApiResponse<Vehicle[]>;
     refreshResponse$.next(refreshed);
 
+    // Assert
     expect(refreshResult).toBe(refreshed);
     expect(apiServiceMock.get.mock.calls.length).toBe(getCallsBefore + 1);
   });
 
-  it('vehicleChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when vehicleChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.vehicleChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each re-fetch the shared list and notify vehicleChanged$', () => {
+  it('should re-fetch the shared list and notify vehicleChanged$ when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<Vehicle>>();
     const updateResponse$ = new Subject<WebApiResponse<Vehicle>>();
@@ -121,14 +144,13 @@ describe('VehicleService', () => {
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
     apiServiceMock.get.mockReturnValue(new Subject());
-
     let changedEmissions = 0;
     service.vehicleChanged$.subscribe(() => changedEmissions++);
     TestBed.flushEffects();
     expect(changedEmissions).toBe(1);
-
     const getCallsBefore = apiServiceMock.get.mock.calls.length;
 
+    // Act / Assert
     service.add({} as Vehicle).subscribe();
     addResponse$.next({} as WebApiResponse<Vehicle>);
     TestBed.flushEffects();
