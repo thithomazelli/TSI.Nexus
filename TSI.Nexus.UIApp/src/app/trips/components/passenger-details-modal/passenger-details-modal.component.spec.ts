@@ -1,4 +1,5 @@
 import { FormBuilder } from '@angular/forms';
+import { ChangeDetectorRef } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
 import { NotificationService, Passenger, PassengerService, ResponseStatus } from '@nexus/core';
@@ -8,11 +9,13 @@ describe('PassengerDetailsModalComponent', () => {
   let dialogRefMock: { close: ReturnType<typeof vi.fn> };
   let passengerServiceMock: { add: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(dialogData: unknown) {
     dialogRefMock = { close: vi.fn() };
     passengerServiceMock = { add: vi.fn(), update: vi.fn() };
     notificationServiceMock = { showMessage: vi.fn() };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new PassengerDetailsModalComponent(
       dialogRefMock as unknown as MatDialogRef<PassengerDetailsModalComponent>,
@@ -20,6 +23,7 @@ describe('PassengerDetailsModalComponent', () => {
       new FormBuilder(),
       passengerServiceMock as unknown as PassengerService,
       notificationServiceMock as unknown as NotificationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -92,7 +96,7 @@ describe('PassengerDetailsModalComponent', () => {
     expect(passengerServiceMock.add).not.toHaveBeenCalled();
   });
 
-  it('should add a new passenger and close the dialog when submit succeeds', () => {
+  it('should add a new passenger, close the dialog and mark for check when submit succeeds', () => {
     // Arrange
     const response = { status: ResponseStatus.Success, message: 'ok', data: {} as Passenger };
     const component = createComponent({ tripId: 't1' });
@@ -109,6 +113,7 @@ describe('PassengerDetailsModalComponent', () => {
     expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
     expect(dialogRefMock.close).toHaveBeenCalledWith(response);
     expect(component.saving).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should update an existing passenger including its id in the payload when editing', () => {
@@ -144,7 +149,7 @@ describe('PassengerDetailsModalComponent', () => {
     expect(component.saving).toBe(false);
   });
 
-  it('should show a generic error notification and stop saving when the request errors out', () => {
+  it('should show a generic error notification, stop saving and mark for check when the request errors out', () => {
     // Arrange
     const component = createComponent({ tripId: 't1' });
     passengerServiceMock.add.mockReturnValue(throwError(() => new Error('network error')));
@@ -159,6 +164,7 @@ describe('PassengerDetailsModalComponent', () => {
       'Erro ao salvar o passageiro.',
     );
     expect(component.saving).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should not submit again when a save is already in flight', () => {

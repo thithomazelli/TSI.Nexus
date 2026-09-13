@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { User, UserService } from '@nexus/core';
 import { DateFieldComponent } from '../date-field/date-field.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -30,7 +30,10 @@ export class AuditTabComponent implements OnChanges {
   createUserName = '';
   modifyUserName = '';
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']) {
@@ -46,6 +49,7 @@ export class AuditTabComponent implements OnChanges {
     if (createUserId) {
       this.userService.getById(createUserId).subscribe((response) => {
         this.createUserName = this.formatUserName(response.data);
+        this.cdr.markForCheck();
       });
     }
 
@@ -53,6 +57,7 @@ export class AuditTabComponent implements OnChanges {
     if (modifyUserId) {
       this.userService.getById(modifyUserId).subscribe((response) => {
         this.modifyUserName = this.formatUserName(response.data);
+        this.cdr.markForCheck();
       });
     }
   }

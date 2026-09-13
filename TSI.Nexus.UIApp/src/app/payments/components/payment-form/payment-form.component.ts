@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -136,6 +137,7 @@ export class PaymentFormComponent
     private paymentService: PaymentService,
     private selectableOptionService: SelectableOptionService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {
     super();
   }
@@ -329,6 +331,7 @@ export class PaymentFormComponent
       .getByGroup(SelectableOptionGroup.TransactionCategory)
       .subscribe((response) => {
         this.categories = response.data ?? [];
+        this.cdr.markForCheck();
       });
   }
 

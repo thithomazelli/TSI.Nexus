@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TranslationService } from '@nexus/core';
 import { Subject } from 'rxjs';
 import { AlertBannerComponentComponent } from './alert-banner-component.component';
@@ -5,6 +6,7 @@ import { AlertBannerComponentComponent } from './alert-banner-component.componen
 describe('AlertBannerComponentComponent', () => {
   let language$: Subject<string>;
   let translationServiceMock: { instant: ReturnType<typeof vi.fn>; language$: Subject<string> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): AlertBannerComponentComponent {
     language$ = new Subject();
@@ -12,9 +14,11 @@ describe('AlertBannerComponentComponent', () => {
       instant: vi.fn((key: string) => key),
       language$,
     };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new AlertBannerComponentComponent(
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -27,7 +31,7 @@ describe('AlertBannerComponentComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should build the status messages and rebuild them when the language changes', () => {
+    it('should build the status messages and rebuild them and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.status = 'Pending';
@@ -42,6 +46,7 @@ describe('AlertBannerComponentComponent', () => {
       language$.next('en');
 
       expect(component.statusMessage).toBe('traduzido');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should use the feminine wording when the entity is a transaction', () => {

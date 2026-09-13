@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
@@ -30,6 +30,7 @@ export class VehiclePickerModalComponent implements OnInit, OnDestroy {
     public dialogRef: MatDialogRef<VehiclePickerModalComponent>,
     private vehicleService: VehicleService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   get statusMap(): { [key: string]: { label: string; color: string } } {
@@ -60,6 +61,7 @@ export class VehiclePickerModalComponent implements OnInit, OnDestroy {
       .subscribe((response) => {
         this.vehicles = response.data ?? [];
         this.applyFilter();
+        this.cdr.markForCheck();
       });
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -34,6 +34,7 @@ export class PassengerImportComponent {
     private passengerService: PassengerService,
     private attachmentService: AttachmentService,
     private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.tripId = dialogData?.tripId ?? '';
   }
@@ -85,6 +86,7 @@ export class PassengerImportComponent {
         if (passengers.status === ResponseStatus.Success) {
           this.dialogRef.close(true);
         }
+        this.cdr.markForCheck();
       },
       error: (err: HttpErrorResponse) => {
         this.importing = false;
@@ -92,6 +94,7 @@ export class PassengerImportComponent {
           'Error',
           this.extractErrorMessage(err),
         );
+        this.cdr.markForCheck();
       },
     });
   }

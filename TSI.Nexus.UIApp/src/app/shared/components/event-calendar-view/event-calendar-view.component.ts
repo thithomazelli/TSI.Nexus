@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -80,13 +81,19 @@ export class EventCalendarViewComponent implements OnInit, OnChanges, OnDestroy 
 
   private _destroy$ = new Subject<void>();
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.applyLocale(this.translationService.current);
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe((language) => this.applyLocale(language));
+      .subscribe((language) => {
+        this.applyLocale(language);
+        this.cdr.markForCheck();
+      });
     this.applyEvents();
   }
 

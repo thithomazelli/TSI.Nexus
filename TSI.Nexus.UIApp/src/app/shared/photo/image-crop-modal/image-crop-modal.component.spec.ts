@@ -1,4 +1,4 @@
-import { ElementRef, NgZone } from '@angular/core';
+import { ChangeDetectorRef, ElementRef, NgZone } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
@@ -9,18 +9,21 @@ describe('ImageCropModalComponent', () => {
   let elementRefMock: ElementRef<HTMLElement>;
   let ngZone: NgZone;
   let source: File;
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(dialogData?: ImageCropModalData) {
     source = new File(['x'], 'photo.png', { type: 'image/png' });
     dialogRefMock = { close: vi.fn(), afterOpened: vi.fn().mockReturnValue(of(undefined)) };
     elementRefMock = { nativeElement: document.createElement('div') };
     ngZone = { run: (fn: () => void) => fn() } as unknown as NgZone;
+    cdrMock = { markForCheck: vi.fn() };
 
     return new ImageCropModalComponent(
       dialogRefMock as unknown as MatDialogRef<ImageCropModalComponent>,
       dialogData ?? { source },
       elementRefMock,
       ngZone,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -259,7 +262,7 @@ describe('ImageCropModalComponent', () => {
       expect((component as unknown as { resizeObserver?: unknown }).resizeObserver).toBeUndefined();
     });
 
-    it('should observe the wrapper and re-measure after the dialog finishes opening', () => {
+    it('should observe the wrapper and re-measure and mark for check after the dialog finishes opening', () => {
       // Arrange
       const component = createComponent();
       const wrapper = document.createElement('div');
@@ -272,6 +275,7 @@ describe('ImageCropModalComponent', () => {
       // Assert
       expect((component as unknown as { resizeObserver?: { observe: unknown } }).resizeObserver).toBeTruthy();
       expect(dialogRefMock.afterOpened).toHaveBeenCalled();
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

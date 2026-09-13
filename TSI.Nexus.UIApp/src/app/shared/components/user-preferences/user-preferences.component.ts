@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import {
   AppLanguage,
   AppTheme,
@@ -33,6 +33,7 @@ export class UserPreferencesComponent {
     public translationService: TranslationService,
     private preferencesService: PreferencesService,
     private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   onThemeSelect(theme: AppTheme): void {
@@ -58,7 +59,12 @@ export class UserPreferencesComponent {
         theme: this.themeService.current,
         language: this.translationService.current,
       })
-      .pipe(finalize(() => (this.saving = false)))
+      .pipe(
+        finalize(() => {
+          this.saving = false;
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         error: () => {
           this.notificationService.showMessage(

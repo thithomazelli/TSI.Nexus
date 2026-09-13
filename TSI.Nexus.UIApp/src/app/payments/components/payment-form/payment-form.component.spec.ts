@@ -16,9 +16,11 @@ import {
   WebApiResponse,
 } from '@nexus/core';
 import { config, of, throwError } from 'rxjs';
+import { ChangeDetectorRef } from '@angular/core';
 import { PaymentFormComponent } from './payment-form.component';
 
 describe('PaymentFormComponent', () => {
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
   let modalServiceMock: {
     hideModal: ReturnType<typeof vi.fn>;
     showSweetConfirmation: ReturnType<typeof vi.fn>;
@@ -35,6 +37,7 @@ describe('PaymentFormComponent', () => {
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
 
   function createComponent(): PaymentFormComponent {
+    cdrMock = { markForCheck: vi.fn() };
     modalServiceMock = {
       hideModal: vi.fn(),
       showSweetConfirmation: vi.fn(),
@@ -53,6 +56,7 @@ describe('PaymentFormComponent', () => {
       paymentServiceMock as unknown as PaymentService,
       selectableOptionServiceMock as unknown as SelectableOptionService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -194,7 +198,7 @@ describe('PaymentFormComponent', () => {
       expect(component.categories).toEqual([]);
     });
 
-    it('should load categories from the response data when ngOnInit is called', () => {
+    it('should load categories from the response data and mark for check when ngOnInit is called', () => {
       // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(
@@ -206,6 +210,7 @@ describe('PaymentFormComponent', () => {
 
       // Assert
       expect(component.categories).toEqual([{ value: 'cat1', label: 'Categoria 1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should build the transaction-derived fields when parentData is Order-like', () => {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -29,6 +29,7 @@ export class PassengerDetailsModalComponent {
     private formBuilder: FormBuilder,
     private passengerService: PassengerService,
     private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef,
   ) {
     const existing: Passenger | null = dialogData?.data ?? null;
     this.tripId = dialogData?.tripId ?? '';
@@ -76,6 +77,7 @@ export class PassengerDetailsModalComponent {
         if (response.status === ResponseStatus.Success) {
           this.dialogRef.close(response);
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.saving = false;
@@ -83,6 +85,7 @@ export class PassengerDetailsModalComponent {
           ResponseStatus.Error,
           'Erro ao salvar o passageiro.',
         );
+        this.cdr.markForCheck();
       },
     });
   }

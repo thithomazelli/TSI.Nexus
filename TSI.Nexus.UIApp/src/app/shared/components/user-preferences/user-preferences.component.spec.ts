@@ -1,4 +1,5 @@
 import { of, throwError } from 'rxjs';
+import { ChangeDetectorRef } from '@angular/core';
 import {
   NotificationService,
   PreferencesService,
@@ -12,18 +13,21 @@ describe('UserPreferencesComponent', () => {
   let translationServiceMock: { current: string; use: ReturnType<typeof vi.fn>; instant: ReturnType<typeof vi.fn> };
   let preferencesServiceMock: { update: ReturnType<typeof vi.fn> };
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent() {
     themeServiceMock = { current: 'light', apply: vi.fn() };
     translationServiceMock = { current: 'pt-BR', use: vi.fn(), instant: vi.fn((key: string) => key) };
     preferencesServiceMock = { update: vi.fn().mockReturnValue(of({})) };
     notificationServiceMock = { showMessage: vi.fn() };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new UserPreferencesComponent(
       themeServiceMock as unknown as ThemeService,
       translationServiceMock as unknown as TranslationService,
       preferencesServiceMock as unknown as PreferencesService,
       notificationServiceMock as unknown as NotificationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -86,7 +90,7 @@ describe('UserPreferencesComponent', () => {
   });
 
   describe('persist', () => {
-    it('should reset saving to false when the update succeeds', () => {
+    it('should reset saving to false and mark for check when the update succeeds', () => {
       // Arrange
       const component = createComponent();
 
@@ -95,9 +99,10 @@ describe('UserPreferencesComponent', () => {
 
       // Assert
       expect(component.saving).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should show a translated error notification and reset saving when the update fails', () => {
+    it('should show a translated error notification, reset saving and mark for check when the update fails', () => {
       // Arrange
       const component = createComponent();
       preferencesServiceMock.update.mockReturnValue(throwError(() => new Error('boom')));
@@ -108,6 +113,7 @@ describe('UserPreferencesComponent', () => {
       // Assert
       expect(component.saving).toBe(false);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'PREFERENCES.ERROR');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 });

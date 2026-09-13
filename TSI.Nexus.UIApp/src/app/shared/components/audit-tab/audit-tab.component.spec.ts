@@ -1,14 +1,20 @@
 import { of } from 'rxjs';
+import { ChangeDetectorRef } from '@angular/core';
 import { User, UserService } from '@nexus/core';
 import { AuditTabComponent } from './audit-tab.component';
 
 describe('AuditTabComponent', () => {
   let userServiceMock: { getById: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
   let component: AuditTabComponent;
 
   beforeEach(() => {
     userServiceMock = { getById: vi.fn() };
-    component = new AuditTabComponent(userServiceMock as unknown as UserService);
+    cdrMock = { markForCheck: vi.fn() };
+    component = new AuditTabComponent(
+      userServiceMock as unknown as UserService,
+      cdrMock as unknown as ChangeDetectorRef,
+    );
   });
 
   it('should create the component when instantiated', () => {
@@ -24,7 +30,7 @@ describe('AuditTabComponent', () => {
     expect(userServiceMock.getById).not.toHaveBeenCalled();
   });
 
-  it('should resolve both create and modify user names when both ids are present', () => {
+  it('should resolve both create and modify user names and mark for check when both ids are present', () => {
     // Arrange
     userServiceMock.getById.mockImplementation((id: string) =>
       of({
@@ -41,6 +47,7 @@ describe('AuditTabComponent', () => {
     expect(userServiceMock.getById).toHaveBeenCalledWith('u2');
     expect(component.createUserName).toBe('Ana Silva');
     expect(component.modifyUserName).toBe('Joao Souza');
+    expect(cdrMock.markForCheck).toHaveBeenCalledTimes(2);
   });
 
   it('should not call the service when an id is not present', () => {
@@ -54,6 +61,7 @@ describe('AuditTabComponent', () => {
     // Assert
     expect(userServiceMock.getById).toHaveBeenCalledTimes(1);
     expect(userServiceMock.getById).toHaveBeenCalledWith('u1');
+    expect(cdrMock.markForCheck).toHaveBeenCalledTimes(1);
   });
 
   it('should reset both names to empty when resolving on every data change', () => {

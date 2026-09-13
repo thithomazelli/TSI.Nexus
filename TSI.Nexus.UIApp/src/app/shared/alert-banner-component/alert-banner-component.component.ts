@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { TranslationService } from '@nexus/core';
 import { NgClass } from '@angular/common';
 
@@ -16,7 +16,10 @@ export class AlertBannerComponentComponent implements OnInit {
   @Input()
   entity: string = '';
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   private _statusIconMap: { [key: string]: string } = {
     Pending: 'info',
@@ -50,7 +53,10 @@ export class AlertBannerComponentComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeMessages();
-    this.translationService.language$.subscribe(() => this.initializeMessages());
+    this.translationService.language$.subscribe(() => {
+      this.initializeMessages();
+      this.cdr.markForCheck();
+    });
   }
 
   get statusIcon(): string {

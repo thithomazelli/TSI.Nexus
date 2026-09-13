@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectorRef } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AttachmentService, Passenger, PassengerService, NotificationService, ResponseStatus } from '@nexus/core';
 import { of, throwError } from 'rxjs';
@@ -9,12 +10,14 @@ describe('PassengerImportComponent', () => {
   let passengerServiceMock: { addRange: ReturnType<typeof vi.fn> };
   let attachmentServiceMock: { add: ReturnType<typeof vi.fn> };
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(dialogData: any = { tripId: 't1' }): PassengerImportComponent {
     dialogRefMock = { close: vi.fn() };
     passengerServiceMock = { addRange: vi.fn() };
     attachmentServiceMock = { add: vi.fn() };
     notificationServiceMock = { showMessage: vi.fn() };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new PassengerImportComponent(
       dialogRefMock as unknown as MatDialogRef<PassengerImportComponent>,
@@ -22,6 +25,7 @@ describe('PassengerImportComponent', () => {
       passengerServiceMock as unknown as PassengerService,
       attachmentServiceMock as unknown as AttachmentService,
       notificationServiceMock as unknown as NotificationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -141,7 +145,7 @@ describe('PassengerImportComponent', () => {
       expect(passengerServiceMock.addRange).not.toHaveBeenCalled();
     });
 
-    it('should import the passengers and attachment and close the dialog when the import succeeds', () => {
+    it('should import the passengers and attachment, close the dialog and mark for check when the import succeeds', () => {
       // Arrange
       const component = createComponent();
       component.selectedFile = new File(['x'], 'f.csv');
@@ -161,6 +165,7 @@ describe('PassengerImportComponent', () => {
         'Importado',
       );
       expect(dialogRefMock.close).toHaveBeenCalledWith(true);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not close the dialog when the import response is not a success', () => {
@@ -180,7 +185,7 @@ describe('PassengerImportComponent', () => {
       expect(dialogRefMock.close).not.toHaveBeenCalled();
     });
 
-    it('should stop importing and show the extracted error message when the import fails', () => {
+    it('should stop importing, show the extracted error message and mark for check when the import fails', () => {
       // Arrange
       const component = createComponent();
       component.selectedFile = new File(['x'], 'f.csv');
@@ -196,6 +201,7 @@ describe('PassengerImportComponent', () => {
       // Assert
       expect(component.importing).toBe(false);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'Deu erro');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

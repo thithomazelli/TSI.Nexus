@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   Inject,
@@ -61,6 +62,7 @@ export class ImageCropModalComponent implements AfterViewInit, OnDestroy {
     @Inject(MAT_DIALOG_DATA) public dialogData: ImageCropModalData,
     private readonly elementRef: ElementRef<HTMLElement>,
     private readonly ngZone: NgZone,
+    private readonly cdr: ChangeDetectorRef,
   ) {
     this.source = dialogData.source;
   }
@@ -81,7 +83,10 @@ export class ImageCropModalComponent implements AfterViewInit, OnDestroy {
     // mid-animation - afterOpened() only fires once that animation has
     // actually finished, so re-measuring there catches the real settled size
     // even if the observer itself went quiet before the animation was done.
-    this.dialogRef.afterOpened().subscribe(() => this.measure());
+    this.dialogRef.afterOpened().subscribe(() => {
+      this.measure();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {
