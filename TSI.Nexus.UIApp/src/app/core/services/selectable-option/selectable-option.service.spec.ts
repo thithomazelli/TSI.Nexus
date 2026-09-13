@@ -21,45 +21,59 @@ describe('SelectableOptionService', () => {
     return TestBed.inject(SelectableOptionService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getAll hits the expected endpoint (not cached)', () => {
+  it('should call the getAll endpoint without caching when getAll is called twice', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAll();
     service.getAll();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('selectableoptions/getAll');
     expect(apiServiceMock.get).toHaveBeenCalledTimes(2);
   });
 
-  it('getByGroup caches per group - a second call for the same group does not re-fetch', () => {
+  it('should not re-fetch when getByGroup is called twice for the same group', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getByGroup(SelectableOptionGroup.AddressType);
     service.getByGroup(SelectableOptionGroup.AddressType);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith(
       `selectableoptions/getByGroup/${SelectableOptionGroup.AddressType}`,
     );
     expect(apiServiceMock.get).toHaveBeenCalledTimes(1);
   });
 
-  it('getByGroup caches separately per group', () => {
+  it('should cache separately per group when getByGroup is called for different groups', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getByGroup(SelectableOptionGroup.AddressType);
     service.getByGroup(SelectableOptionGroup.EventType);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledTimes(2);
   });
 
-  it('getByGroup emits the loaded response once the request resolves', () => {
+  it('should emit the loaded response when the getByGroup request resolves', () => {
+    // Arrange
     const load$ = new Subject<WebApiResponse<SelectableOption[]>>();
     apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
     apiServiceMock.get.mockReturnValue(load$);
@@ -73,16 +87,19 @@ describe('SelectableOptionService', () => {
     TestBed.flushEffects();
     expect(response).toBeUndefined();
 
+    // Act
     const loaded = { data: [{ id: 'o1' } as SelectableOption] } as WebApiResponse<
       SelectableOption[]
     >;
     load$.next(loaded);
     TestBed.flushEffects();
 
+    // Assert
     expect(response).toBe(loaded);
   });
 
-  it('getByGroup completes after its single emission (forkJoin compatibility)', () => {
+  it('should complete after its single emission when getByGroup resolves (forkJoin compatibility)', () => {
+    // Arrange
     const load$ = new Subject<WebApiResponse<SelectableOption[]>>();
     apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
     apiServiceMock.get.mockReturnValue(load$);
@@ -98,13 +115,16 @@ describe('SelectableOptionService', () => {
     TestBed.flushEffects();
     expect(completed).toBe(false);
 
+    // Act
     load$.next({ data: [] } as unknown as WebApiResponse<SelectableOption[]>);
     TestBed.flushEffects();
 
+    // Assert
     expect(completed).toBe(true);
   });
 
-  it('add/update/remove each clear the per-group cache so the next getByGroup re-fetches', () => {
+  it('should clear the per-group cache so the next getByGroup re-fetches when add, update or remove completes', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<SelectableOption>>();
     const updateResponse$ = new Subject<WebApiResponse<SelectableOption>>();
@@ -117,19 +137,28 @@ describe('SelectableOptionService', () => {
     service.getByGroup(SelectableOptionGroup.AddressType);
     const getCallsAfterFirstFetch = apiServiceMock.get.mock.calls.length;
 
+    // Act
     service.add({} as SelectableOption).subscribe();
     addResponse$.next({} as WebApiResponse<SelectableOption>);
     service.getByGroup(SelectableOptionGroup.AddressType);
+
+    // Assert
     expect(apiServiceMock.get.mock.calls.length).toBe(getCallsAfterFirstFetch + 1);
 
+    // Act
     service.update({} as SelectableOption).subscribe();
     updateResponse$.next({} as WebApiResponse<SelectableOption>);
     service.getByGroup(SelectableOptionGroup.AddressType);
+
+    // Assert
     expect(apiServiceMock.get.mock.calls.length).toBe(getCallsAfterFirstFetch + 2);
 
+    // Act
     service.remove({} as SelectableOption).subscribe();
     removeResponse$.next({} as WebApiResponse<SelectableOption>);
     service.getByGroup(SelectableOptionGroup.AddressType);
+
+    // Assert
     expect(apiServiceMock.get.mock.calls.length).toBe(getCallsAfterFirstFetch + 3);
   });
 });

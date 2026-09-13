@@ -65,166 +65,231 @@ describe('VehicleMaintenanceFormComponent', () => {
     });
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('exposes translated type and status options', () => {
+  it('should expose translated type and status options', () => {
+    // Act
     const component = createComponent();
+
+    // Assert
     expect(component.typeOptions.length).toBe(2);
     expect(component.statusOptions.length).toBe(5);
   });
 
   describe('ngOnInit', () => {
-    it('builds a form without an id control when adding', () => {
+    it('should build a form without an id control when adding', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('id')).toBeNull();
     });
 
-    it('builds a form with an id control when editing', () => {
+    it('should build a form with an id control when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('loads the vehicle list and marks for check when there is no pre-set vehicleId', () => {
+    it('should load the vehicle list and mark for check when there is no pre-set vehicleId', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(vehicleServiceMock.getAll).toHaveBeenCalled();
       expect(component.vehicles).toEqual([{ id: 'v1' }]);
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('falls back to an empty vehicle list when the response has no data', () => {
+    it('should fall back to an empty vehicle list when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       vehicleServiceMock.getAll.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.vehicles).toEqual([]);
     });
 
-    it('does not load the vehicle list when embedded with a pre-set vehicleId', () => {
+    it('should not load the vehicle list when embedded with a pre-set vehicleId', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(vehicleServiceMock.getAll).not.toHaveBeenCalled();
     });
 
-    it('marks vehicleId as not required when pre-set', () => {
+    it('should mark vehicleId as not required when pre-set', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('vehicleId')!.hasError('required')).toBe(false);
+
+      // Act
       component.form.get('vehicleId')!.setValue(null);
+
+      // Assert
       expect(component.form.get('vehicleId')!.valid).toBe(true);
     });
 
-    it('patches the form and product list with the provided data', () => {
+    it('should patch the form and product list with the provided data', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         description: 'Revisão',
         vehicleMaintenanceProducts: [{ id: 'p1' } as VehicleMaintenanceProduct],
       } as VehicleMaintenance;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('Revisão');
       expect(component.vehicleMaintenanceProducts).toEqual([{ id: 'p1' }]);
     });
 
-    it('defaults the product list to empty when data has none', () => {
+    it('should default the product list to empty when data has none', () => {
+      // Arrange
       const component = createComponent();
       component.data = { description: 'Revisão' } as VehicleMaintenance;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.vehicleMaintenanceProducts).toEqual([]);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('re-patches the form when data changes after init', () => {
+    it('should re-patch the form when data changes after init', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { description: 'Revisão' } as VehicleMaintenance;
 
+      // Act
       component.ngOnChanges({ data: { currentValue: component.data } as never });
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('Revisão');
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: true } as never });
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('');
     });
 
-    it('does nothing when data has no currentValue', () => {
+    it('should do nothing when data has no currentValue', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
-      expect(() =>
-        component.ngOnChanges({ data: { currentValue: null } as never }),
-      ).not.toThrow();
+      // Act
+      const act = () => component.ngOnChanges({ data: { currentValue: null } as never });
+
+      // Assert
+      expect(act).not.toThrow();
       expect(component.form.get('description')!.value).toBe('');
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { description: 'Revisão' } as VehicleMaintenance;
 
-      expect(() =>
-        component.ngOnChanges({ data: { currentValue: component.data } as never }),
-      ).not.toThrow();
+      // Act
+      const act = () => component.ngOnChanges({ data: { currentValue: component.data } as never });
+
+      // Assert
+      expect(act).not.toThrow();
     });
   });
 
   describe('product picker', () => {
-    it('appends an added item', () => {
+    it('should append an added item when onProductPickerItemAdded is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.onProductPickerItemAdded({ id: 'p1' } as VehicleMaintenanceProduct);
       component.onProductPickerItemAdded({ id: 'p2' } as VehicleMaintenanceProduct);
 
+      // Assert
       expect(component.vehicleMaintenanceProducts).toEqual([{ id: 'p1' }, { id: 'p2' }]);
     });
 
-    it('removes a product by index', () => {
+    it('should remove a product by index when removeProduct is called', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleMaintenanceProducts = [
         { id: 'p1' } as VehicleMaintenanceProduct,
         { id: 'p2' } as VehicleMaintenanceProduct,
       ];
 
+      // Act
       component.removeProduct(0);
 
+      // Assert
       expect(component.vehicleMaintenanceProducts).toEqual([{ id: 'p2' }]);
     });
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let result: unknown;
+
+      // Act
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.form.get('description')!.touched).toBe(true);
       expect(vehicleMaintenanceServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('uses the form vehicleId when there is no pre-set vehicleId', () => {
+    it('should use the form vehicleId when there is no pre-set vehicleId', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -232,14 +297,17 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'm1' } } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ vehicleId: 'v1' }),
       );
     });
 
-    it('prefers the pre-set vehicleId over the form value', () => {
+    it('should prefer the pre-set vehicleId over the form value', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'preset-vehicle';
       component.ngOnInit();
@@ -248,14 +316,17 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'm1' } } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ vehicleId: 'preset-vehicle' }),
       );
     });
 
-    it('includes the current product list in the saved payload', () => {
+    it('should include the current product list in the saved payload', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -264,14 +335,17 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'm1' } } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ vehicleMaintenanceProducts: [{ id: 'p1' }] }),
       );
     });
 
-    it('updates instead of adding when editing', () => {
+    it('should update instead of adding when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'm1' } as VehicleMaintenance;
@@ -281,12 +355,15 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'm1' } } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.update).toHaveBeenCalled();
     });
 
-    it('notifies without saving when the backend reports a business-rule failure', () => {
+    it('should notify without saving when the backend reports a business-rule failure', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -294,15 +371,18 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'Falhou',
       );
     });
 
-    it('saves via the modal path when isModal is true', () => {
+    it('should save via the modal path when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = { close: vi.fn() };
@@ -313,13 +393,16 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'm1' }, message: 'OK' } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'OK');
     });
 
-    it('saves via the page path when isModal is false', () => {
+    it('should save via the page path when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -328,19 +411,24 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'm1' } } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/vehicle-maintenances/m1');
     });
 
-    it('notifies an error when the save request errors', () => {
+    it('should notify an error when the save request errors', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       vehicleMaintenanceServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'VEHICLES.SAVE_MAINTENANCE_ERROR',
@@ -349,38 +437,48 @@ describe('VehicleMaintenanceFormComponent', () => {
   });
 
   describe('cancel', () => {
-    it('hides the modal when isModal is true', () => {
+    it('should hide the modal when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the list when isModal is false', () => {
+    it('should navigate back to the list when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/vehicle-maintenances');
     });
   });
 
   describe('remove', () => {
-    it('does nothing without data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
       component.remove();
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.delete).not.toHaveBeenCalled();
     });
 
-    it('deletes, hides the modal and navigates on success outside a modal', () => {
+    it('should delete, hide the modal and navigate when the delete succeeds outside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'm1' } as VehicleMaintenance;
@@ -388,8 +486,10 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(modalServiceMock.hideModal).not.toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -398,7 +498,8 @@ describe('VehicleMaintenanceFormComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/vehicle-maintenances');
     });
 
-    it('hides the modal and does not navigate on success inside a modal', () => {
+    it('should hide the modal and not navigate when the delete succeeds inside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
@@ -408,13 +509,16 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('does not navigate when the delete reports an error', () => {
+    it('should not navigate when the delete reports an error', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'm1' } as VehicleMaintenance;
@@ -422,12 +526,15 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('notifies an error when the delete request errors', async () => {
+    it('should notify an error when the delete request errors', async () => {
+      // Arrange
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
@@ -435,8 +542,10 @@ describe('VehicleMaintenanceFormComponent', () => {
         component.data = { id: 'm1' } as VehicleMaintenance;
         vehicleMaintenanceServiceMock.delete.mockReturnValue(throwError(() => new Error('boom')));
 
+        // Act
         component.remove();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           ResponseStatus.Error,
           'VEHICLES.SAVE_MAINTENANCE_ERROR',
@@ -450,7 +559,8 @@ describe('VehicleMaintenanceFormComponent', () => {
   });
 
   describe('savePage (via submit)', () => {
-    it('notifies and marks for check when editing successfully', () => {
+    it('should notify and mark for check when editing succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.isEdit = true;
@@ -461,21 +571,26 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'm1' }, message: 'OK' } as WebApiResponse<VehicleMaintenance>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'OK');
       expect(component.data).toEqual({ id: 'm1' });
     });
 
-    it('notifies without navigating when adding a new maintenance fails (defensive branch)', () => {
+    it('should notify without navigating when adding a new maintenance fails (defensive branch)', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       (component as any).savePage({
         status: ResponseStatus.Error,
         message: 'Falhou',
       } as WebApiResponse<VehicleMaintenance>);
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'Falhou',
@@ -485,7 +600,8 @@ describe('VehicleMaintenanceFormComponent', () => {
   });
 
   describe('saveModal (via submit)', () => {
-    it('does not throw when there is no dialogRef to close', () => {
+    it('should not throw when there is no dialogRef to close', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.dialogRef = undefined;
@@ -495,7 +611,11 @@ describe('VehicleMaintenanceFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK' } as WebApiResponse<VehicleMaintenance>),
       );
 
-      expect(() => component.submit().subscribe()).not.toThrow();
+      // Act
+      const act = () => component.submit().subscribe();
+
+      // Assert
+      expect(act).not.toThrow();
     });
   });
 });

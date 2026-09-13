@@ -19,36 +19,49 @@ describe('EventParticipantService', () => {
     return TestBed.inject(EventParticipantService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getByEventId hits the expected endpoint', () => {
+  it('should call the getByEventId endpoint when getByEventId is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getByEventId('e1');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('eventparticipants/getByEventId/e1');
   });
 
-  it('add hits the expected endpoint with the participant payload', () => {
+  it('should call the add endpoint with the participant payload when add is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.post.mockReturnValue(new Subject());
     const participant = { id: 'p1' } as EventParticipant;
 
+    // Act
     service.add(participant);
 
+    // Assert
     expect(apiServiceMock.post).toHaveBeenCalledWith('eventparticipants/add', participant);
   });
 
-  it('delete hits the expected endpoint with the participant payload', () => {
+  it('should call the remove endpoint with the participant payload when delete is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.delete.mockReturnValue(new Subject());
     const participant = { id: 'p1' } as EventParticipant;
 
+    // Act
     service.delete(participant);
 
+    // Assert
     expect(apiServiceMock.delete).toHaveBeenCalledWith('eventparticipants/remove', participant);
   });
 });

@@ -59,64 +59,91 @@ describe('OrderDetailsPageComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent(null)).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent(null);
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('isAgendaEnabled combines the group and entity flags', () => {
+  it('should combine the group and entity flags when isAgendaEnabled is called', () => {
+    // Arrange
     const component = createComponent(null);
-    expect(component.isAgendaEnabled()).toBe(true);
+
+    // Act
+    const result = component.isAgendaEnabled();
+
+    // Assert
+    expect(result).toBe(true);
   });
 
   describe('ngOnInit', () => {
-    it('sets isEdit=false for a new order', () => {
+    it('should set isEdit to false for a new order', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.data).toBeNull();
     });
 
-    it('loads an existing order by id', () => {
+    it('should load an existing order by id', () => {
+      // Arrange
       const component = createComponent('o1');
       const response$ = new Subject<WebApiResponse<Order>>();
       orderServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.loading).toBe(true);
       expect(orderServiceMock.getById).toHaveBeenCalledWith('o1');
 
+      // Act
       const data = { id: 'o1' } as Order;
       response$.next({ data } as WebApiResponse<Order>);
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
     });
 
-    it('navigates to not-found when the order does not exist', () => {
+    it('should navigate to not-found when the order does not exist', () => {
+      // Arrange
       const component = createComponent('missing');
       const response$ = new Subject<WebApiResponse<Order>>();
       orderServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       response$.next({ data: null } as unknown as WebApiResponse<Order>);
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('navigates to not-found and stops loading when the request errors', () => {
+    it('should navigate to not-found and stop loading when the request errors', () => {
+      // Arrange
       const component = createComponent('o1');
       const response$ = new Subject<WebApiResponse<Order>>();
       orderServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       response$.error(new Error('fail'));
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('re-fetches on a real orderProductChanged$ event, but not on the skip(1)-dropped first one', () => {
+    it('should re-fetch on a real orderProductChanged$ event but not on the skip(1)-dropped first one', () => {
+      // Arrange
       const component = createComponent('o1');
       const firstResponse$ = new Subject<WebApiResponse<Order>>();
       const secondResponse$ = new Subject<WebApiResponse<Order>>();
@@ -124,110 +151,169 @@ describe('OrderDetailsPageComponent', () => {
         .mockReturnValueOnce(firstResponse$)
         .mockReturnValueOnce(secondResponse$);
 
+      // Act
       component.ngOnInit();
       firstResponse$.next({ data: { id: 'o1' } } as WebApiResponse<Order>);
+
+      // Assert
       expect(orderServiceMock.getById).toHaveBeenCalledTimes(1);
 
+      // Act
       // skip(1) is per-source (mirrors a BehaviorSubject's replay-on-subscribe), so the first
       // .next() on any one of the three merged sources is dropped - this one alone must not
       // trigger a re-fetch.
       orderProductServiceMock.orderProductChanged$.next();
+
+      // Assert
       expect(orderServiceMock.getById).toHaveBeenCalledTimes(1);
 
+      // Act
       // A second, real change on that same source does trigger a re-fetch.
       orderProductServiceMock.orderProductChanged$.next();
+
+      // Assert
       expect(orderServiceMock.getById).toHaveBeenCalledTimes(2);
 
+      // Act
       secondResponse$.next({ data: { id: 'o1' } } as WebApiResponse<Order>);
+
+      // Assert
       expect(component.data).toEqual({ id: 'o1' });
     });
   });
 
   describe('getStatusLabel', () => {
-    it('returns an empty string when there is no data', () => {
+    it('should return an empty string when there is no data', () => {
+      // Arrange
       const component = createComponent(null);
-      expect(component.getStatusLabel()).toBe('');
+
+      // Act
+      const result = component.getStatusLabel();
+
+      // Assert
+      expect(result).toBe('');
     });
 
-    it('returns an empty string when data has no status', () => {
+    it('should return an empty string when data has no status', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'o1', status: null } as unknown as Order;
-      expect(component.getStatusLabel()).toBe('');
+
+      // Act
+      const result = component.getStatusLabel();
+
+      // Assert
+      expect(result).toBe('');
     });
 
-    it('resolves the mapped status label', () => {
+    it('should resolve the mapped status label when data has a known status', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'o1', status: 'Open' } as unknown as Order;
-      expect(component.getStatusLabel()).toBe('Em aberto');
+
+      // Act
+      const result = component.getStatusLabel();
+
+      // Assert
+      expect(result).toBe('Em aberto');
     });
 
-    it('falls back to an empty string for a status with no mapped label', () => {
+    it('should fall back to an empty string when the status has no mapped label', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'o1', status: 'Unknown' } as unknown as Order;
-      expect(component.getStatusLabel()).toBe('');
+
+      // Act
+      const result = component.getStatusLabel();
+
+      // Assert
+      expect(result).toBe('');
     });
   });
 
   describe('emitSalesOrder', () => {
-    it('does nothing without data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
       component.emitSalesOrder();
+
+      // Assert
       expect(modalServiceMock.showPdfProgress).not.toHaveBeenCalled();
     });
 
-    it('shows progress and reports success on a resolved PDF', () => {
+    it('should show progress and report success when the PDF resolves', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'o1', orderNumber: '123' } as Order;
       const blob = new Blob(['x']);
       orderServiceMock.getPdf.mockReturnValue(of(blob));
 
+      // Act
       component.emitSalesOrder();
 
+      // Assert
       expect(progressHandle.setIndeterminate).toHaveBeenCalled();
       expect(progressHandle.success).toHaveBeenCalled();
       expect(component.emittingSalesOrder).toBe(false);
     });
 
-    it('reports an error when PDF generation fails', () => {
+    it('should report an error when PDF generation fails', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'o1', orderNumber: '123' } as Order;
       const error$ = new Subject<Blob>();
       orderServiceMock.getPdf.mockReturnValue(error$);
 
+      // Act
       component.emitSalesOrder();
       error$.error(new Error('boom'));
 
+      // Assert
       expect(progressHandle.error).toHaveBeenCalled();
       expect(component.emittingSalesOrder).toBe(false);
     });
 
-    it('does nothing while a previous emission is still in flight', () => {
+    it('should do nothing while a previous emission is still in flight', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 'o1', orderNumber: '123' } as Order;
       component.emittingSalesOrder = true;
 
+      // Act
       component.emitSalesOrder();
 
+      // Assert
       expect(modalServiceMock.showPdfProgress).not.toHaveBeenCalled();
     });
   });
 
-  it('ngOnDestroy does not throw', () => {
+  it('should not throw when ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent(null);
     component.ngOnInit();
-    expect(() => component.ngOnDestroy()).not.toThrow();
+
+    // Act
+    const act = () => component.ngOnDestroy();
+
+    // Assert
+    expect(act).not.toThrow();
   });
 
-  it('ngOnDestroy also unsubscribes from orderChanged$/orderProductChanged$/paymentChanged$ when editing an existing order', () => {
+  it('should also unsubscribe from orderChanged$/orderProductChanged$/paymentChanged$ when editing an existing order', () => {
+    // Arrange
     const component = createComponent('o1');
     orderServiceMock.getById.mockReturnValue(new Subject());
     component.ngOnInit();
 
+    // Act
     component.ngOnDestroy();
     orderServiceMock.getById.mockClear();
     orderServiceMock.orderChanged$.next();
     orderServiceMock.orderChanged$.next();
 
+    // Assert
     expect(orderServiceMock.getById).not.toHaveBeenCalled();
   });
 });
