@@ -12,52 +12,68 @@ describe('ThemeService', () => {
     return TestBed.inject(ThemeService);
   }
 
-  it('should create', () => {
+  it('should create the service when instantiated', () => {
+    // Act
+    // Assert
     expect(createService()).toBeTruthy();
   });
 
-  it('defaults to light when nothing is stored', () => {
+  it('should default to light when nothing is stored', () => {
+    // Act
     const service = createService();
 
+    // Assert
     expect(service.current).toBe('light');
     expect(document.documentElement.getAttribute('data-bs-theme')).toBe('light');
   });
 
-  it('reads the stored theme on construction', () => {
+  it('should read the stored theme when constructed', () => {
+    // Arrange
     localStorage.setItem('app-theme', 'dark');
 
+    // Act
     const service = createService();
 
+    // Assert
     expect(service.current).toBe('dark');
     expect(document.documentElement.getAttribute('data-bs-theme')).toBe('dark');
   });
 
-  it('ignores an invalid stored value and falls back to light', () => {
+  it('should fall back to light when the stored value is invalid', () => {
+    // Arrange
     localStorage.setItem('app-theme', 'purple');
 
+    // Act
     const service = createService();
 
+    // Assert
     expect(service.current).toBe('light');
   });
 
-  it('apply sets the DOM attribute, persists to localStorage, and updates current/theme$', () => {
+  it('should set the DOM attribute, persist to localStorage, and update current and theme$ when apply is called', () => {
+    // Arrange
     const service = createService();
     let latest: string | undefined;
     service.theme$.subscribe((t) => (latest = t));
     TestBed.flushEffects();
 
+    // Act
     service.apply('dark');
     TestBed.flushEffects();
 
+    // Assert
     expect(service.current).toBe('dark');
     expect(document.documentElement.getAttribute('data-bs-theme')).toBe('dark');
     expect(localStorage.getItem('app-theme')).toBe('dark');
     expect(latest).toBe('dark');
   });
 
-  it('toggle flips between light and dark and returns the new value', () => {
+  it('should flip between light and dark and return the new value when toggle is called', () => {
+    // Arrange
     const service = createService();
 
+    // Act
+    // Assert
     expect(service.current).toBe('light');
     expect(service.toggle()).toBe('dark');
     expect(service.current).toBe('dark');

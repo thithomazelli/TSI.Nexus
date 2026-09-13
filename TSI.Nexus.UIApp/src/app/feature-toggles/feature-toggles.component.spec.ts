@@ -19,41 +19,53 @@ describe('FeatureTogglesComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('loads all toggles on init', () => {
+  it('should load all toggles when ngOnInit is called', () => {
+    // Arrange
     const toggles = [{ key: 'FleetModule' }] as FeatureToggle[];
     const component = createComponent();
     featureFlagServiceMock.getAll.mockReturnValue(of({ data: toggles }));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.toggles).toBe(toggles);
     expect(component.loading).toBe(false);
   });
 
-  it('defaults to an empty list when the response has no data', () => {
+  it('should default to an empty list when the response has no data', () => {
+    // Arrange
     const component = createComponent();
     featureFlagServiceMock.getAll.mockReturnValue(of({}));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.toggles).toEqual([]);
   });
 
-  it('stops loading when the load request errors out', () => {
+  it('should stop loading when the load request errors out', () => {
+    // Arrange
     const component = createComponent();
     featureFlagServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.loading).toBe(false);
   });
 
   describe('groupToggles / detailedGroups', () => {
-    it('groupToggles returns only the top-level (no groupKey) toggles', () => {
+    it('should return only the top-level toggles when accessing groupToggles', () => {
+      // Arrange
       const component = createComponent();
       component.toggles = [
         { key: 'FleetModule' } as FeatureToggle,
@@ -61,10 +73,13 @@ describe('FeatureTogglesComponent', () => {
         { key: 'FinanceModule' } as FeatureToggle,
       ];
 
+      // Act
+      // Assert
       expect(component.groupToggles.map((t) => t.key)).toEqual(['FleetModule', 'FinanceModule']);
     });
 
-    it('detailedGroups nests each group with only its own entity toggles', () => {
+    it('should nest each group with only its own entity toggles when accessing detailedGroups', () => {
+      // Arrange
       const component = createComponent();
       const fleetGroup = { key: 'FleetModule' } as FeatureToggle;
       const financeGroup = { key: 'FinanceModule' } as FeatureToggle;
@@ -72,85 +87,112 @@ describe('FeatureTogglesComponent', () => {
       const drivers = { key: 'Drivers', groupKey: 'FleetModule' } as FeatureToggle;
       component.toggles = [fleetGroup, financeGroup, vehicles, drivers];
 
+      // Act
       const groups = component.detailedGroups;
 
+      // Assert
       expect(groups).toHaveLength(1);
       expect(groups[0].group).toBe(fleetGroup);
       expect(groups[0].entities).toEqual([vehicles, drivers]);
     });
 
-    it('omits a group from detailedGroups when it has no entity toggles', () => {
+    it('should omit a group from detailedGroups when it has no entity toggles', () => {
+      // Arrange
       const component = createComponent();
       component.toggles = [{ key: 'FleetModule' } as FeatureToggle];
 
+      // Act
+      // Assert
       expect(component.detailedGroups).toEqual([]);
     });
   });
 
   describe('trackBy helpers', () => {
-    it('trackByGroupKey returns the nested group key', () => {
+    it('should return the nested group key when trackByGroupKey is called', () => {
+      // Arrange
       const component = createComponent();
       const groupView = { group: { key: 'FleetModule' } as FeatureToggle, entities: [] };
 
+      // Act
+      // Assert
       expect(component.trackByGroupKey(0, groupView)).toBe('FleetModule');
     });
 
-    it('trackByToggleKey returns the toggle key', () => {
+    it('should return the toggle key when trackByToggleKey is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.trackByToggleKey(0, { key: 'Vehicles' } as FeatureToggle)).toBe('Vehicles');
     });
   });
 
   describe('toggle', () => {
-    it('does nothing when the toggle has no key', () => {
+    it('should do nothing when the toggle has no key', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.toggle({ key: '' } as FeatureToggle);
 
+      // Assert
       expect(featureFlagServiceMock.setEnabled).not.toHaveBeenCalled();
     });
 
-    it('does nothing while another save is already in flight', () => {
+    it('should do nothing when another save is already in flight', () => {
+      // Arrange
       const component = createComponent();
       component.savingKey = 'other';
 
+      // Act
       component.toggle({ key: 'FleetModule', enabled: false } as FeatureToggle);
 
+      // Assert
       expect(featureFlagServiceMock.setEnabled).not.toHaveBeenCalled();
     });
 
-    it('flips enabled, calls the service, and applies the confirmed value on success', () => {
+    it('should flip enabled, call the service, and apply the confirmed value when the update succeeds', () => {
+      // Arrange
       const toggle = { key: 'FleetModule', enabled: false } as FeatureToggle;
       const response = { status: ResponseStatus.Success, message: 'ok', data: { enabled: true } };
       const component = createComponent();
       featureFlagServiceMock.setEnabled.mockReturnValue(of(response));
 
+      // Act
       component.toggle(toggle);
 
+      // Assert
       expect(featureFlagServiceMock.setEnabled).toHaveBeenCalledWith('FleetModule', true);
       expect(toggle.enabled).toBe(true);
       expect(component.savingKey).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
     });
 
-    it('does not apply the response value when the backend reports a non-success status', () => {
+    it('should not apply the response value when the backend reports a non-success status', () => {
+      // Arrange
       const toggle = { key: 'FleetModule', enabled: false } as FeatureToggle;
       const response = { status: ResponseStatus.Error, message: 'falhou', data: { enabled: true } };
       const component = createComponent();
       featureFlagServiceMock.setEnabled.mockReturnValue(of(response));
 
+      // Act
       component.toggle(toggle);
 
+      // Assert
       expect(toggle.enabled).toBe(false);
     });
 
-    it('shows a translated error notification and clears savingKey when the request errors out', () => {
+    it('should show a translated error notification and clear savingKey when the request errors out', () => {
+      // Arrange
       const toggle = { key: 'FleetModule', enabled: false } as FeatureToggle;
       const component = createComponent();
       featureFlagServiceMock.setEnabled.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.toggle(toggle);
 
+      // Assert
       expect(component.savingKey).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'FEATURE_TOGGLES.UPDATE_ERROR');
     });

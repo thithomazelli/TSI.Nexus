@@ -28,17 +28,22 @@ describe('ModalService', () => {
     fireSpy.mockRestore();
   });
 
-  it('should be created', () => {
+  it('should create the service when instantiated', () => {
+    // Act
+    // Assert
     expect(createService()).toBeTruthy();
   });
 
   describe('showTemplateModal', () => {
-    it('opens a dialog with the given component/template and default width', () => {
+    it('should open a dialog with the given component and default width when called with data', () => {
+      // Arrange
       const service = createService();
       const Component = class {};
 
+      // Act
       service.showTemplateModal(Component, { foo: 'bar' });
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         Component,
         expect.objectContaining({
@@ -51,55 +56,70 @@ describe('ModalService', () => {
       );
     });
 
-    it('carries the id through to dialogData when present', () => {
+    it('should include the id in dialogData when the id is present', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showTemplateModal(class {}, { id: 'x1' });
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ data: expect.objectContaining({ id: 'x1' }) }),
       );
     });
 
-    it('carries the parentId through to dialogData when present', () => {
+    it('should include the parentId in dialogData when the parentId is present', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showTemplateModal(class {}, { parentId: 'p1' });
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ data: expect.objectContaining({ parentId: 'p1' }) }),
       );
     });
 
-    it('uses a custom width when provided', () => {
+    it('should use the custom width when a width is provided', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showTemplateModal(class {}, { width: '900px' });
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ width: '900px' }),
       );
     });
 
-    it('honors disableClose when set', () => {
+    it('should honor disableClose when it is set', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showTemplateModal(class {}, { disableClose: true });
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ disableClose: true }),
       );
     });
 
-    it('works with no data at all', () => {
+    it('should open the dialog with default data when no data is provided', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showTemplateModal(class {});
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ data: {}, width: '760px', disableClose: false }),
@@ -108,11 +128,14 @@ describe('ModalService', () => {
   });
 
   describe('showNotification', () => {
-    it('opens the notification dialog with the given data', () => {
+    it('should open the notification dialog with the given data when called', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showNotification(true, 'Título', 'Mensagem');
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -135,39 +158,51 @@ describe('ModalService', () => {
       ['warning', 'warning'],
       ['warn', 'warning'],
       ['alert', 'warning'],
-    ])('maps status "%s" to icon "%s"', (status, expectedIcon) => {
+    ])('should map status "%s" to icon "%s" when showSweetNotification is called', (status, expectedIcon) => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showSweetNotification('Título', 'Texto', status);
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({ icon: expectedIcon, title: 'Título', text: 'Texto' }),
       );
     });
 
-    it('maps an unrecognized status to the info icon', () => {
+    it('should map an unrecognized status to the info icon when the status is not recognized', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showSweetNotification('Título', 'Texto', 'something-else');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(expect.objectContaining({ icon: 'info' }));
     });
 
-    it('matches status case-insensitively', () => {
+    it('should match the status case-insensitively when the status has different casing', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showSweetNotification('Título', 'Texto', 'SUCCESS');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(expect.objectContaining({ icon: 'success' }));
     });
   });
 
   describe('showConfirmation', () => {
-    it('opens the confirmation dialog with the given data', () => {
+    it('should open the confirmation dialog with the given data when called', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showConfirmation({ message: 'Tem certeza?' });
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -181,11 +216,14 @@ describe('ModalService', () => {
   });
 
   describe('showSweetConfirmation', () => {
-    it('fires a question confirmation with translated default button labels', () => {
+    it('should fire a question confirmation with translated default button labels when no custom options are provided', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showSweetConfirmation('Título', 'Texto');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Título',
@@ -197,11 +235,14 @@ describe('ModalService', () => {
       );
     });
 
-    it('uses a warning icon and custom button labels when provided', () => {
+    it('should use a warning icon and custom button labels when they are provided', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.showSweetConfirmation('Título', 'Texto', 'warning', 'Sim', 'Não');
 
+      // Assert
       expect(fireSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           icon: 'warning',
@@ -213,7 +254,8 @@ describe('ModalService', () => {
   });
 
   describe('showPdfProgress', () => {
-    it('opens the pdf progress dialog and delegates handle calls to the component instance', () => {
+    it('should open the pdf progress dialog and delegate handle calls to the component instance when showPdfProgress is called', () => {
+      // Arrange
       const service = createService();
       const instance = {
         setProgress: vi.fn(),
@@ -223,8 +265,10 @@ describe('ModalService', () => {
       };
       dialogMock.open.mockReturnValue({ componentInstance: instance });
 
+      // Act
       const handle = service.showPdfProgress('Gerando PDF');
 
+      // Assert
       expect(dialogMock.open).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -236,36 +280,50 @@ describe('ModalService', () => {
         }),
       );
 
+      // Act
       handle.setProgress(2, 5);
+      // Assert
       expect(instance.setProgress).toHaveBeenCalledWith(2, 5);
 
+      // Act
       handle.setIndeterminate();
+      // Assert
       expect(instance.setIndeterminate).toHaveBeenCalled();
 
+      // Act
       handle.success('Concluído', { name: 'a.pdf' } as any);
+      // Assert
       expect(instance.success).toHaveBeenCalledWith('Concluído', { name: 'a.pdf' });
 
+      // Act
       handle.error('Falhou');
+      // Assert
       expect(instance.error).toHaveBeenCalledWith('Falhou');
     });
   });
 
   describe('hideModal', () => {
-    it('closes the given dialogRef when provided', () => {
+    it('should close the given dialogRef when a dialogRef is provided', () => {
+      // Arrange
       const service = createService();
       const dialogRef = { close: vi.fn() } as unknown as MatDialogRef<any>;
 
+      // Act
       service.hideModal(dialogRef);
 
+      // Assert
       expect(dialogRef.close).toHaveBeenCalled();
       expect(dialogMock.closeAll).not.toHaveBeenCalled();
     });
 
-    it('closes all dialogs when no dialogRef is given', () => {
+    it('should close all dialogs when no dialogRef is given', () => {
+      // Arrange
       const service = createService();
 
+      // Act
       service.hideModal();
 
+      // Assert
       expect(dialogMock.closeAll).toHaveBeenCalled();
     });
   });

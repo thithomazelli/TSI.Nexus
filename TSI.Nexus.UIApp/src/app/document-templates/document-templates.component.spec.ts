@@ -48,60 +48,87 @@ describe('DocumentTemplatesComponent', () => {
     vi.restoreAllMocks();
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('loads all templates on init', () => {
+  it('should load all templates when ngOnInit is called', () => {
+    // Arrange
     const templates = [{ type: DocumentTemplateType.Quote }] as DocumentTemplate[];
     const component = createComponent();
     documentTemplateServiceMock.getAll.mockReturnValue(of({ data: templates }));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.templates).toBe(templates);
     expect(component.loading).toBe(false);
   });
 
-  it('stops loading when the load request errors out', () => {
+  it('should stop loading when the load request errors out', () => {
+    // Arrange
     const component = createComponent();
     documentTemplateServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.loading).toBe(false);
   });
 
-  it('defaults to an empty list when the response has no data', () => {
+  it('should default to an empty list when the response has no data', () => {
+    // Arrange
     const component = createComponent();
     documentTemplateServiceMock.getAll.mockReturnValue(of({}));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.templates).toEqual([]);
   });
 
   describe('getFileExtension', () => {
-    it('returns jpg for Letterhead', () => {
+    it('should return jpg when the type is Letterhead', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.getFileExtension(DocumentTemplateType.Letterhead)).toBe('jpg');
     });
 
-    it('returns png for Signature', () => {
+    it('should return png when the type is Signature', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.getFileExtension(DocumentTemplateType.Signature)).toBe('png');
     });
 
-    it('returns docx for every other type', () => {
+    it('should return docx when the type is any other value or undefined', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.getFileExtension(DocumentTemplateType.Quote)).toBe('docx');
       expect(component.getFileExtension(undefined)).toBe('docx');
     });
   });
 
   describe('getFileInputAccept', () => {
-    it('matches the accept filter to the file extension', () => {
+    it('should match the accept filter to the file extension when given each template type', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.getFileInputAccept(DocumentTemplateType.Letterhead)).toBe('.jpg,.jpeg,image/jpeg');
       expect(component.getFileInputAccept(DocumentTemplateType.Signature)).toBe('.png,image/png');
       expect(component.getFileInputAccept(DocumentTemplateType.Quote)).toBe(
@@ -111,41 +138,53 @@ describe('DocumentTemplatesComponent', () => {
   });
 
   describe('download', () => {
-    it('does nothing when the template has no type', () => {
+    it('should do nothing when the template has no type', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.download({} as DocumentTemplate);
 
+      // Assert
       expect(documentTemplateServiceMock.download).not.toHaveBeenCalled();
     });
 
-    it('downloads the template blob under its own fileName', () => {
+    it('should download the template blob under its own fileName when the template has a fileName', () => {
+      // Arrange
       const blob = new Blob(['x']);
       const component = createComponent();
       documentTemplateServiceMock.download.mockReturnValue(of(blob));
 
+      // Act
       component.download({ type: DocumentTemplateType.Quote, fileName: 'orcamento.docx' } as DocumentTemplate);
 
+      // Assert
       expect(documentTemplateServiceMock.download).toHaveBeenCalledWith(DocumentTemplateType.Quote);
     });
 
-    it('falls back to a type-based filename when fileName is absent', () => {
+    it('should fall back to a type-based filename when fileName is absent', () => {
+      // Arrange
       const blob = new Blob(['x']);
       const component = createComponent();
       documentTemplateServiceMock.download.mockReturnValue(of(blob));
 
+      // Act
+      // Assert
       expect(() =>
         component.download({ type: DocumentTemplateType.Letterhead } as DocumentTemplate),
       ).not.toThrow();
     });
   });
 
-  it('triggerUpload clicks the given file input', () => {
+  it('should click the given file input when triggerUpload is called', () => {
+    // Arrange
     const component = createComponent();
     const input = { click: vi.fn() } as unknown as HTMLInputElement;
 
+    // Act
     component.triggerUpload(input);
 
+    // Assert
     expect(input.click).toHaveBeenCalled();
   });
 
@@ -154,57 +193,72 @@ describe('DocumentTemplatesComponent', () => {
       return { target: { files: file ? [file] : [], value: '' } } as unknown as Event;
     }
 
-    it('does nothing when no file was selected', () => {
+    it('should do nothing when no file was selected', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onFileSelected(fileEvent(null), { type: DocumentTemplateType.Quote } as DocumentTemplate);
 
+      // Assert
       expect(documentTemplateServiceMock.upload).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the template has no type', () => {
+    it('should do nothing when the template has no type', () => {
+      // Arrange
       const component = createComponent();
       const file = new File(['x'], 'a.docx');
 
+      // Act
       component.onFileSelected(fileEvent(file), {} as DocumentTemplate);
 
+      // Assert
       expect(documentTemplateServiceMock.upload).not.toHaveBeenCalled();
     });
 
-    it('uploads the file and applies the returned fileName on success', () => {
+    it('should upload the file and apply the returned fileName when the upload succeeds', () => {
+      // Arrange
       const file = new File(['x'], 'a.docx');
       const response = { status: ResponseStatus.Success, message: 'ok', data: { fileName: 'novo.docx' } };
       const component = createComponent();
       documentTemplateServiceMock.upload.mockReturnValue(of(response));
       const template = { type: DocumentTemplateType.Quote } as DocumentTemplate;
 
+      // Act
       component.onFileSelected(fileEvent(file), template);
 
+      // Assert
       expect(documentTemplateServiceMock.upload).toHaveBeenCalledWith(DocumentTemplateType.Quote, file);
       expect(template.fileName).toBe('novo.docx');
       expect(component.uploadingType).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
     });
 
-    it('does not apply fileName when the backend reports a non-success status', () => {
+    it('should not apply fileName when the backend reports a non-success status', () => {
+      // Arrange
       const file = new File(['x'], 'a.docx');
       const response = { status: ResponseStatus.Error, message: 'falhou', data: { fileName: 'novo.docx' } };
       const component = createComponent();
       documentTemplateServiceMock.upload.mockReturnValue(of(response));
       const template = { type: DocumentTemplateType.Quote, fileName: 'antigo.docx' } as DocumentTemplate;
 
+      // Act
       component.onFileSelected(fileEvent(file), template);
 
+      // Assert
       expect(template.fileName).toBe('antigo.docx');
     });
 
-    it('shows a translated error notification and clears uploadingType when the request errors out', () => {
+    it('should show a translated error notification and clear uploadingType when the request errors out', () => {
+      // Arrange
       const file = new File(['x'], 'a.docx');
       const component = createComponent();
       documentTemplateServiceMock.upload.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.onFileSelected(fileEvent(file), { type: DocumentTemplateType.Quote } as DocumentTemplate);
 
+      // Assert
       expect(component.uploadingType).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'DOCUMENT_TEMPLATES.UPDATE_ERROR');
     });

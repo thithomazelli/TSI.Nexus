@@ -80,183 +80,245 @@ describe('ProductFormComponent', () => {
     component.form.patchValue(validRawValue());
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('exposes translated unit and product type options', () => {
+  it('should expose translated unit and product type options when constructed', () => {
+    // Act
     const component = createComponent();
+
+    // Assert
     expect(component.unitOptions.length).toBe(3);
     expect(component.productTypeOptions.length).toBe(3);
   });
 
   describe('ngOnInit', () => {
-    it('builds a form without an id control when adding', () => {
+    it('should build a form without an id control when adding a new product', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('id')).toBeNull();
     });
 
-    it('builds a form with an id control when editing', () => {
+    it('should build a form with an id control when editing an existing product', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('patches the form with the provided data', () => {
+    it('should patch the form with the provided data when ngOnInit runs', () => {
+      // Arrange
       const component = createComponent();
       component.data = { name: 'Produto B' } as Product;
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('name')!.value).toBe('Produto B');
     });
 
-    it('loads categories and falls back to an empty array when the response has no data', () => {
+    it('should load categories and fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.categories).toEqual([]);
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('loads categories from the response data', () => {
+    it('should load categories from the response data when the response has data', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(
         of({ data: [{ id: 'cat1', name: 'Categoria 1' }] }),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.categories).toEqual([{ id: 'cat1', name: 'Categoria 1' }]);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('patches the form when data changes to a new value after init', () => {
+    it('should patch the form when data changes to a new value after init', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { name: 'Produto C' } as Product;
 
+      // Act
       component.ngOnChanges({ data: { currentValue: component.data } as never });
 
+      // Assert
       expect(component.form.get('name')!.value).toBe('Produto C');
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ compact: { currentValue: true } as never });
 
+      // Assert
       expect(component.form.get('name')!.value).toBe('');
     });
 
-    it('does nothing when data has no currentValue', () => {
+    it('should do nothing when data has no currentValue', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() =>
         component.ngOnChanges({ data: { currentValue: null } as never }),
       ).not.toThrow();
       expect(component.form.get('name')!.value).toBe('');
     });
 
-    it('re-initializes the form when isEdit changes after the first change', () => {
+    it('should re-initialize the form when isEdit changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       expect(component.form.get('id')).toBeNull();
       component.isEdit = true;
 
+      // Act
       component.ngOnChanges({
         isEdit: { currentValue: true, firstChange: false } as never,
       });
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('does not re-initialize the form on the first isEdit change', () => {
+    it('should not re-initialize the form when isEdit changes on the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.form;
 
+      // Act
       component.ngOnChanges({
         isEdit: { currentValue: false, firstChange: true } as never,
       });
 
+      // Assert
       expect(component.form).toBe(before);
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes all tracked subscriptions', () => {
+    it('should unsubscribe all tracked subscriptions when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
       expect((component as any)._subscriptions).toEqual([]);
     });
 
-    it('does not throw when there are no subscriptions to clean up', () => {
+    it('should not throw when there are no subscriptions to clean up', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('patchFormWithData (type -> quantityInStock)', () => {
-    it('zeroes and disables quantityInStock when the type changes to Service', () => {
+    it('should zero and disable quantityInStock when the type changes to Service', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('type')!.setValue(ProductType.Service);
 
+      // Assert
       expect(component.form.get('quantityInStock')!.value).toBe(0);
       expect(component.form.get('quantityInStock')!.disabled).toBe(true);
     });
 
-    it('enables quantityInStock when the type changes away from Service', () => {
+    it('should enable quantityInStock when the type changes away from Service', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('type')!.setValue(ProductType.Service);
 
+      // Act
       component.form.get('type')!.setValue(ProductType.Sale);
 
+      // Assert
       expect(component.form.get('quantityInStock')!.disabled).toBe(false);
     });
 
-    it('does not throw when there is no data to patch', () => {
+    it('should not throw when there is no data to patch', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
+      // Assert
       expect(() => component.ngOnInit()).not.toThrow();
     });
 
-    it('does not track a subscription when the form has no type control', () => {
+    it('should not track a subscription when the form has no type control', () => {
+      // Arrange
       const component = createComponent();
       component.form = new FormBuilder().group({ other: [''] }) as any;
 
+      // Act
+      // Assert
       expect(() => (component as any).patchFormWithData()).not.toThrow();
-
       expect((component as any)._subscriptions).toEqual([]);
     });
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
-
       let result: unknown;
+
+      // Act
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.form.get('sku')!.touched).toBe(true);
       expect(productServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('adds a new product when not editing and there is no existing data', () => {
+    it('should add a new product when not editing and there is no existing data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -264,12 +326,15 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'p1' } } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(productServiceMock.add).toHaveBeenCalled();
     });
 
-    it('merges the raw value into data before saving, and updates when editing', () => {
+    it('should merge the raw value into data before saving and update when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'p1' } as Product;
@@ -279,14 +344,17 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'p1' } } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(productServiceMock.update).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'p1', name: 'Produto A' }),
       );
     });
 
-    it('adds instead of updating when isEdit is true but there is no existing data', () => {
+    it('should add instead of update when isEdit is true but there is no existing data', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
@@ -295,13 +363,16 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'p1' } } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(productServiceMock.add).toHaveBeenCalled();
       expect(productServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('notifies without saving when the backend reports a business-rule failure', () => {
+    it('should notify without saving when the backend reports a business-rule failure', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -309,15 +380,18 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'SKU duplicado' } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'SKU duplicado',
       );
     });
 
-    it('saves via the modal path when isModal is true', () => {
+    it('should save via the modal path when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = { close: vi.fn() };
@@ -328,12 +402,15 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'p1' }, message: 'OK' } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
     });
 
-    it('saves via the page path when isModal is false', () => {
+    it('should save via the page path when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -342,19 +419,24 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'p1' } } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/products/p1');
     });
 
-    it('notifies an error when the save request errors', () => {
+    it('should notify an error when the save request errors', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       productServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'error',
         'Erro ao salvar',
@@ -363,29 +445,36 @@ describe('ProductFormComponent', () => {
   });
 
   describe('cancel', () => {
-    it('hides the modal when isModal is true', () => {
+    it('should hide the modal when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the list when isModal is false', () => {
+    it('should navigate back to the list when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/products');
     });
   });
 
   describe('remove', () => {
-    it('deletes and notifies success outside a modal when confirmed', async () => {
+    it('should delete and notify success outside a modal when the deletion is confirmed', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'p1' } as Product;
@@ -394,10 +483,12 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<Product>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -407,7 +498,8 @@ describe('ProductFormComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/products');
     });
 
-    it('hides the modal and does not navigate on success inside a modal', async () => {
+    it('should hide the modal and not navigate when the deletion succeeds inside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
@@ -418,15 +510,18 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<Product>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('does not navigate when the delete reports an error status', async () => {
+    it('should not navigate when the delete reports an error status', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'p1' } as Product;
@@ -435,14 +530,17 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as WebApiResponse<Product>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('notifies an error when the delete request fails', async () => {
+    it('should notify an error when the delete request fails', async () => {
+      // Arrange
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
@@ -451,10 +549,12 @@ describe('ProductFormComponent', () => {
         modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
         productServiceMock.delete.mockReturnValue(throwError(() => new Error('boom')));
 
+        // Act
         component.remove();
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           'error',
           'Erro ao remover',
@@ -466,16 +566,19 @@ describe('ProductFormComponent', () => {
       }
     });
 
-    it('does nothing further when the deletion is cancelled outside a modal', async () => {
+    it('should do nothing further when the deletion is cancelled outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'p1' } as Product;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
       expect(productServiceMock.delete).not.toHaveBeenCalled();
     });
@@ -490,7 +593,8 @@ describe('ProductFormComponent', () => {
   });
 
   describe('saveModal (via submit)', () => {
-    it('shows a success notification when saving via the modal', () => {
+    it('should show a success notification when saving via the modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
@@ -499,8 +603,10 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK' } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         true,
         'Produto adicionado',
@@ -508,7 +614,8 @@ describe('ProductFormComponent', () => {
       );
     });
 
-    it('does not throw when there is no dialogRef to close', () => {
+    it('should not throw when there is no dialogRef to close', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.dialogRef = undefined;
@@ -518,12 +625,15 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK' } as WebApiResponse<Product>),
       );
 
+      // Act
+      // Assert
       expect(() => component.submit().subscribe()).not.toThrow();
     });
   });
 
   describe('savePage (via submit)', () => {
-    it('notifies and updates local data when editing', () => {
+    it('should notify and update local data when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.isEdit = true;
@@ -535,14 +645,17 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: updated } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'OK');
       expect(component.data).toBe(updated);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalledWith('/products/p1');
     });
 
-    it('navigates to the new product when adding', () => {
+    it('should navigate to the new product when adding', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -551,8 +664,10 @@ describe('ProductFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'p2' } } as WebApiResponse<Product>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/products/p2');
     });
   });
