@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -69,13 +70,17 @@ export class ServiceOrderListComponent
     private notificationService: NotificationService,
     private serviceOrderService: ServiceOrderService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
     this.load();
   }
 
@@ -113,6 +118,7 @@ export class ServiceOrderListComponent
       .subscribe((response: WebApiResponse<Commission>) => {
         this.notificationService.showMessage(response.status, response.message);
         this.load();
+        this.cdr.markForCheck();
       });
   }
 
@@ -214,9 +220,11 @@ export class ServiceOrderListComponent
           if (isRefresh) {
             this.notificationService.showMessage(response.status, response.message);
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       });
   }

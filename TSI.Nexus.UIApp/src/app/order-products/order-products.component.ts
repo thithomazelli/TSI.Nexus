@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import {
   ModalService,
   NotificationService,
@@ -48,13 +48,17 @@ export class OrderProductsComponent implements OnInit, OnChanges, OnDestroy {
     private notificationService: NotificationService,
     private orderProductService: OrderProductService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeColumnDefs());
+      .subscribe(() => {
+        this.initializeColumnDefs();
+        this.cdr.markForCheck();
+      });
     this.load();
     this.orderProductService.orderProductChanged$
       .pipe(takeUntil(this._destroy$))
@@ -98,6 +102,7 @@ export class OrderProductsComponent implements OnInit, OnChanges, OnDestroy {
           response.message,
           'success',
         );
+        this.cdr.markForCheck();
       });
   }
 
@@ -218,9 +223,11 @@ export class OrderProductsComponent implements OnInit, OnChanges, OnDestroy {
             this.translationService.instant('ORDER_PRODUCTS.ORDER_PRODUCTS_REFRESHED'),
           );
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

@@ -6,6 +6,7 @@ import {
   ResponseStatus,
   TranslationService,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { PurchaseOrderProductsComponent } from './purchase-order-products.component';
 
@@ -27,6 +28,7 @@ describe('PurchaseOrderProductsComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): PurchaseOrderProductsComponent {
     modalServiceMock = {
@@ -43,12 +45,14 @@ describe('PurchaseOrderProductsComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new PurchaseOrderProductsComponent(
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       purchaseOrderProductServiceMock as unknown as PurchaseOrderProductService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -75,7 +79,7 @@ describe('PurchaseOrderProductsComponent', () => {
       );
     });
 
-    it('should rebuild the column defs when the language changes', () => {
+    it('should rebuild the column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -86,6 +90,7 @@ describe('PurchaseOrderProductsComponent', () => {
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should reload whenever purchaseOrderProductChanged$ emits', () => {
@@ -224,7 +229,7 @@ describe('PurchaseOrderProductsComponent', () => {
   });
 
   describe('deletePurchaseOrderProduct', () => {
-    it('should remove the product from the grid and notify when deleted', () => {
+    it('should remove the product from the grid, notify, and mark for check when deleted', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [
@@ -244,6 +249,7 @@ describe('PurchaseOrderProductsComponent', () => {
         'Removido',
         'success',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -261,7 +267,7 @@ describe('PurchaseOrderProductsComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should fall back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array and mark for check when the response has no data', () => {
       // Arrange
       const component = createComponent();
       component.parentId = 'po1';
@@ -273,9 +279,10 @@ describe('PurchaseOrderProductsComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.parentId = 'po1';
@@ -288,6 +295,7 @@ describe('PurchaseOrderProductsComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

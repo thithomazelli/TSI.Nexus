@@ -6,6 +6,7 @@ import {
   TripDriverService,
   TranslationService,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { TripDriverListComponent } from './trip-driver-list.component';
 
@@ -27,6 +28,7 @@ describe('TripDriverListComponent', () => {
     tripDriverChanged$: Subject<void>;
     delete: ReturnType<typeof vi.fn>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): TripDriverListComponent {
     modalServiceMock = {
@@ -43,12 +45,14 @@ describe('TripDriverListComponent', () => {
       tripDriverChanged$,
       delete: vi.fn(),
     };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new TripDriverListComponent(
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
       tripDriverServiceMock as unknown as TripDriverService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -72,7 +76,7 @@ describe('TripDriverListComponent', () => {
       expect(tripDriverServiceMock.getByTripId).toHaveBeenCalledWith('t1');
     });
 
-    it('should rebuild the column defs when the language changes', () => {
+    it('should rebuild the column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -83,6 +87,7 @@ describe('TripDriverListComponent', () => {
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should reload the drivers when tripDriverChanged$ emits', () => {
@@ -201,7 +206,7 @@ describe('TripDriverListComponent', () => {
   });
 
   describe('deleteTripDriver', () => {
-    it('should remove the driver from the grid when deletion succeeds', () => {
+    it('should remove the driver from the grid and mark for check when deletion succeeds', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'd1' } as TripDriver, { id: 'd2' } as TripDriver];
@@ -220,9 +225,10 @@ describe('TripDriverListComponent', () => {
         'Removido',
         ResponseStatus.Success,
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should not touch the grid rows when the deletion fails', () => {
+    it('should not touch the grid rows but still mark for check when the deletion fails', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'd1' } as TripDriver];
@@ -235,6 +241,7 @@ describe('TripDriverListComponent', () => {
 
       // Assert
       expect(component.rowData).toEqual([{ id: 'd1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -252,7 +259,7 @@ describe('TripDriverListComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should fall back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array and mark for check when the response has no data', () => {
       // Arrange
       const component = createComponent();
       component.tripId = 't1';
@@ -264,9 +271,10 @@ describe('TripDriverListComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.tripId = 't1';
@@ -277,6 +285,7 @@ describe('TripDriverListComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

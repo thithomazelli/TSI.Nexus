@@ -7,7 +7,7 @@ import {
   TranslationService,
   WebApiResponse,
 } from '@nexus/core';
-import { SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, SimpleChanges } from '@angular/core';
 import { Subject } from 'rxjs';
 import { OrderProductsComponent } from './order-products.component';
 
@@ -26,6 +26,7 @@ describe('OrderProductsComponent', () => {
   };
   let language$: Subject<string>;
   let translationServiceMock: { instant: ReturnType<typeof vi.fn>; language$: Subject<string> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): OrderProductsComponent {
     modalServiceMock = {
@@ -42,12 +43,14 @@ describe('OrderProductsComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new OrderProductsComponent(
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       orderProductServiceMock as unknown as OrderProductService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -60,7 +63,7 @@ describe('OrderProductsComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should build the columns and load data for the current parentId, reacting to language and orderProductChanged$', () => {
+    it('should build the columns and load data for the current parentId, reacting to language and orderProductChanged$, and mark for check', () => {
       // Arrange
       const component = createComponent();
       component.parentId = 'o1';
@@ -74,10 +77,12 @@ describe('OrderProductsComponent', () => {
 
       // Act
       const columnsBefore = component.columnDefs;
+      cdrMock.markForCheck.mockClear();
       language$.next('en');
 
       // Assert
       expect(component.columnDefs).not.toBe(columnsBefore);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
 
       // Act
       orderProductServiceMock.getByEntityId.mockClear();
@@ -222,7 +227,7 @@ describe('OrderProductsComponent', () => {
     expect(orderProductServiceMock.getByEntityId).not.toHaveBeenCalled();
   });
 
-  it('should fetch by product id and stop loading without a refresh notification on a plain load', () => {
+  it('should fetch by product id and stop loading without a refresh notification on a plain load, and mark for check', () => {
     // Arrange
     const component = createComponent();
     component.parentId = 'p1';
@@ -244,9 +249,10 @@ describe('OrderProductsComponent', () => {
     expect(component.rowData).toEqual([{ id: 'op1' }]);
     expect(component.loading).toBe(false);
     expect(notificationServiceMock.showMessage).not.toHaveBeenCalled();
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
-  it('should fall back to an empty list when the response has no data', () => {
+  it('should fall back to an empty list and mark for check when the response has no data', () => {
     // Arrange
     const component = createComponent();
     component.parentId = 'o1';
@@ -259,9 +265,10 @@ describe('OrderProductsComponent', () => {
 
     // Assert
     expect(component.rowData).toEqual([]);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
-  it('should reload and show a success notification once the data arrives when refresh is called', () => {
+  it('should reload, show a success notification, and mark for check once the data arrives when refresh is called', () => {
     // Arrange
     const component = createComponent();
     component.parentId = 'o1';
@@ -277,9 +284,10 @@ describe('OrderProductsComponent', () => {
       ResponseStatus.Success,
       'ORDER_PRODUCTS.ORDER_PRODUCTS_REFRESHED',
     );
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
-  it('should stop loading when the request errors', () => {
+  it('should stop loading and mark for check when the request errors', () => {
     // Arrange
     const component = createComponent();
     component.parentId = 'o1';
@@ -292,6 +300,7 @@ describe('OrderProductsComponent', () => {
 
     // Assert
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should do nothing when noop is called', () => {
@@ -337,7 +346,7 @@ describe('OrderProductsComponent', () => {
     });
   });
 
-  it('should remove the item, hide the modal, and show a success notification when deleteOrderProduct is called', () => {
+  it('should remove the item, hide the modal, show a success notification, and mark for check when deleteOrderProduct is called', () => {
     // Arrange
     const component = createComponent();
     component.rowData = [{ id: 'op1' } as OrderProduct, { id: 'op2' } as OrderProduct];
@@ -356,6 +365,7 @@ describe('OrderProductsComponent', () => {
       'removido',
       'success',
     );
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should complete the destroy subject so subscriptions stop reacting when ngOnDestroy is called', () => {

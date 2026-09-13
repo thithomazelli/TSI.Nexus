@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -62,13 +62,17 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
     private notificationService: NotificationService,
     private translationService: TranslationService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeColumnDefs());
+      .subscribe(() => {
+        this.initializeColumnDefs();
+        this.cdr.markForCheck();
+      });
     this.accountService.user$.pipe(takeUntil(this._destroy$)).subscribe((user) => {
       this._currentUserId = user?.id;
       this.load();
@@ -83,6 +87,7 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['extraEvents'] && !changes['extraEvents'].firstChange) {
       this.events = [...this.events.filter((e) => !e.readOnly), ...this.extraEvents];
       this.rowData = this.events;
+      this.cdr.markForCheck();
     }
   }
 
@@ -138,6 +143,7 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
         this.rowData = this.events;
         this.modalService.hideModal();
         this.modalService.showSweetNotification('', response.message, response.status);
+        this.cdr.markForCheck();
       });
   }
 
@@ -236,9 +242,11 @@ export class EventListComponent implements OnInit, OnChanges, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(response.status, response.message);
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import {
   ModalService,
   NotificationService,
@@ -44,13 +44,17 @@ export class VehicleMaintenanceProductsComponent implements OnInit, OnChanges, O
     private notificationService: NotificationService,
     private vehicleMaintenanceProductService: VehicleMaintenanceProductService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeColumnDefs());
+      .subscribe(() => {
+        this.initializeColumnDefs();
+        this.cdr.markForCheck();
+      });
     this.load();
     this.vehicleMaintenanceProductService.vehicleMaintenanceProductChanged$
       .pipe(takeUntil(this._destroy$))
@@ -97,6 +101,7 @@ export class VehicleMaintenanceProductsComponent implements OnInit, OnChanges, O
           response.message,
           response.status,
         );
+        this.cdr.markForCheck();
       });
   }
 
@@ -186,9 +191,11 @@ export class VehicleMaintenanceProductsComponent implements OnInit, OnChanges, O
             this.translationService.instant('VEHICLE_MAINTENANCE_PRODUCTS.VEHICLE_MAINTENANCE_PRODUCTS_REFRESHED'),
           );
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

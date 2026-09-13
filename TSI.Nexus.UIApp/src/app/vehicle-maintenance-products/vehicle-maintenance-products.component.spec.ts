@@ -6,6 +6,7 @@ import {
   VehicleMaintenanceProduct,
   VehicleMaintenanceProductService,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { VehicleMaintenanceProductsComponent } from './vehicle-maintenance-products.component';
 
@@ -27,6 +28,7 @@ describe('VehicleMaintenanceProductsComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): VehicleMaintenanceProductsComponent {
     modalServiceMock = {
@@ -43,12 +45,14 @@ describe('VehicleMaintenanceProductsComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new VehicleMaintenanceProductsComponent(
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       vehicleMaintenanceProductServiceMock as unknown as VehicleMaintenanceProductService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -77,7 +81,7 @@ describe('VehicleMaintenanceProductsComponent', () => {
       );
     });
 
-    it('should rebuild the column defs when the language changes', () => {
+    it('should rebuild the column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -88,6 +92,7 @@ describe('VehicleMaintenanceProductsComponent', () => {
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should reload when vehicleMaintenanceProductChanged$ emits', () => {
@@ -226,7 +231,7 @@ describe('VehicleMaintenanceProductsComponent', () => {
   });
 
   describe('deleteVehicleMaintenanceProduct', () => {
-    it('should remove the product from the grid and notify with the response status when deletion succeeds', () => {
+    it('should remove the product from the grid, notify with the response status, and mark for check when deletion succeeds', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [
@@ -248,6 +253,7 @@ describe('VehicleMaintenanceProductsComponent', () => {
         'Removido',
         ResponseStatus.Success,
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -265,7 +271,7 @@ describe('VehicleMaintenanceProductsComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should fall back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array and mark for check when the response has no data', () => {
       // Arrange
       const component = createComponent();
       component.parentId = 'vm1';
@@ -277,9 +283,10 @@ describe('VehicleMaintenanceProductsComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.parentId = 'vm1';
@@ -292,6 +299,7 @@ describe('VehicleMaintenanceProductsComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

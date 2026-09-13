@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -46,13 +47,17 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
     private notificationService: NotificationService,
     private passengerService: PassengerService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeColumnDefs());
+      .subscribe(() => {
+        this.initializeColumnDefs();
+        this.cdr.markForCheck();
+      });
     this.load();
     this.passengerService.passengerChanged$
       .pipe(takeUntil(this._destroy$))
@@ -106,6 +111,7 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
           response.message,
           response.status,
         );
+        this.cdr.markForCheck();
       });
   }
 
@@ -188,9 +194,11 @@ export class PassengerListComponent implements OnInit, OnChanges, OnDestroy {
               this.translationService.instant('TRIPS.PASSENGERS_REFRESHED'),
             );
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       });
   }

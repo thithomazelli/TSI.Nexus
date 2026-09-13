@@ -7,6 +7,7 @@ import {
   ResponseStatus,
   TranslationService,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { QuoteProductsComponent } from './quote-products.component';
 
@@ -29,6 +30,7 @@ describe('QuoteProductsComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): QuoteProductsComponent {
     modalServiceMock = {
@@ -46,6 +48,7 @@ describe('QuoteProductsComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new QuoteProductsComponent(
       modalServiceMock as unknown as ModalService,
@@ -53,6 +56,7 @@ describe('QuoteProductsComponent', () => {
       quoteProductServiceMock as unknown as QuoteProductService,
       {} as ActivatedRoute,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -63,7 +67,7 @@ describe('QuoteProductsComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should build the grid and react when the language changes', () => {
+    it('should build the grid, react, and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -75,9 +79,10 @@ describe('QuoteProductsComponent', () => {
       // Assert
       expect(before.length).toBeGreaterThan(0);
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should reload the full list when quoteProductChanged$ emits', () => {
+    it('should reload the full list and mark for check when quoteProductChanged$ emits', () => {
       // Arrange
       const component = createComponent();
       quoteProductServiceMock.getAll.mockReturnValue(of({ data: [{ id: 'qp1' }] }));
@@ -89,6 +94,7 @@ describe('QuoteProductsComponent', () => {
       // Assert
       expect(quoteProductServiceMock.getAll).toHaveBeenCalled();
       expect(component.rowData).toEqual([{ id: 'qp1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should stop reloading when ngOnDestroy has been called', () => {
@@ -161,7 +167,7 @@ describe('QuoteProductsComponent', () => {
       expect(quoteProductServiceMock.getByEntityId).toHaveBeenCalledWith('p1', 'Product');
     });
 
-    it('should fall back to an empty array when the response carries no data', () => {
+    it('should fall back to an empty array and mark for check when the response carries no data', () => {
       // Arrange
       const component = createComponent();
       quoteProductServiceMock.getAll.mockReturnValue(of({}));
@@ -172,9 +178,10 @@ describe('QuoteProductsComponent', () => {
 
       // Assert
       expect(component.rowData).toEqual([]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       quoteProductServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
@@ -185,6 +192,7 @@ describe('QuoteProductsComponent', () => {
       expect(() => quoteProductChanged$.next()).not.toThrow();
 
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -221,7 +229,7 @@ describe('QuoteProductsComponent', () => {
   });
 
   describe('deleteQuoteProduct', () => {
-    it('should remove the item from the filtered rows and notify when deleteQuoteProduct succeeds', () => {
+    it('should remove the item from the filtered rows, notify, and mark for check when deleteQuoteProduct succeeds', () => {
       // Arrange
       const component = createComponent();
       component.filteredRowData = [{ id: 'qp1' } as QuoteProduct, { id: 'qp2' } as QuoteProduct];
@@ -237,11 +245,12 @@ describe('QuoteProductsComponent', () => {
         'Removido',
         'success',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
   describe('refreshQuoteProducts', () => {
-    it('should reload and notify when refreshQuoteProducts succeeds', () => {
+    it('should reload, notify, and mark for check when refreshQuoteProducts succeeds', () => {
       // Arrange
       const component = createComponent();
       component.isFullList = true;
@@ -255,6 +264,7 @@ describe('QuoteProductsComponent', () => {
         ResponseStatus.Success,
         'QUOTES.QUOTE_PRODUCTS_REFRESHED',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

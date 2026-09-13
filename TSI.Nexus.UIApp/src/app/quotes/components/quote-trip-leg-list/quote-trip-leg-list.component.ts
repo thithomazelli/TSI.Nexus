@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -46,13 +47,17 @@ export class QuoteTripLegListComponent implements OnInit, OnChanges, OnDestroy {
     private notificationService: NotificationService,
     private translationService: TranslationService,
     private quoteTripLegService: QuoteTripLegService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeColumnDefs());
+      .subscribe(() => {
+        this.initializeColumnDefs();
+        this.cdr.markForCheck();
+      });
     this.load();
     this.quoteTripLegService.quoteTripLegChanged$
       .pipe(takeUntil(this._destroy$))
@@ -101,6 +106,7 @@ export class QuoteTripLegListComponent implements OnInit, OnChanges, OnDestroy {
           response.message,
           response.status,
         );
+        this.cdr.markForCheck();
       });
   }
 
@@ -192,9 +198,11 @@ export class QuoteTripLegListComponent implements OnInit, OnChanges, OnDestroy {
               this.translationService.instant('TRIPS.LEGS_REFRESHED'),
             );
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       });
   }

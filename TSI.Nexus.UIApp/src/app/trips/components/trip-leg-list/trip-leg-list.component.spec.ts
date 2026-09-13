@@ -6,6 +6,7 @@ import {
   TripLegService,
   TranslationService,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { TripLegListComponent } from './trip-leg-list.component';
 
@@ -27,6 +28,7 @@ describe('TripLegListComponent', () => {
     tripLegChanged$: Subject<void>;
     delete: ReturnType<typeof vi.fn>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): TripLegListComponent {
     modalServiceMock = {
@@ -43,12 +45,14 @@ describe('TripLegListComponent', () => {
       tripLegChanged$,
       delete: vi.fn(),
     };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new TripLegListComponent(
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
       tripLegServiceMock as unknown as TripLegService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -74,7 +78,7 @@ describe('TripLegListComponent', () => {
       expect(tripLegServiceMock.getByTrip).toHaveBeenCalledWith('t1');
     });
 
-    it('should rebuild the column defs when the language changes', () => {
+    it('should rebuild the column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -85,6 +89,7 @@ describe('TripLegListComponent', () => {
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should reload the legs when tripLegChanged$ emits', () => {
@@ -203,7 +208,7 @@ describe('TripLegListComponent', () => {
   });
 
   describe('deleteTripLeg', () => {
-    it('should remove the leg from the grid when deletion succeeds', () => {
+    it('should remove the leg from the grid and mark for check when deletion succeeds', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'l1' } as TripLeg, { id: 'l2' } as TripLeg];
@@ -222,9 +227,10 @@ describe('TripLegListComponent', () => {
         'Removido',
         ResponseStatus.Success,
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should not touch the grid rows when the deletion fails', () => {
+    it('should not touch the grid rows but still mark for check when the deletion fails', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'l1' } as TripLeg];
@@ -237,6 +243,7 @@ describe('TripLegListComponent', () => {
 
       // Assert
       expect(component.rowData).toEqual([{ id: 'l1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -254,7 +261,7 @@ describe('TripLegListComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should fall back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array and mark for check when the response has no data', () => {
       // Arrange
       const component = createComponent();
       component.tripId = 't1';
@@ -266,9 +273,10 @@ describe('TripLegListComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.tripId = 't1';
@@ -279,6 +287,7 @@ describe('TripLegListComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -48,13 +49,17 @@ export class TripDriverListComponent
     private notificationService: NotificationService,
     private translationService: TranslationService,
     private tripDriverService: TripDriverService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeColumnDefs();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeColumnDefs());
+      .subscribe(() => {
+        this.initializeColumnDefs();
+        this.cdr.markForCheck();
+      });
     this.load();
     this.tripDriverService.tripDriverChanged$
       .pipe(takeUntil(this._destroy$))
@@ -108,6 +113,7 @@ export class TripDriverListComponent
           response.message,
           response.status,
         );
+        this.cdr.markForCheck();
       });
   }
 
@@ -194,9 +200,11 @@ export class TripDriverListComponent
               this.translationService.instant('TRIPS.DRIVERS_REFRESHED'),
             );
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       });
   }

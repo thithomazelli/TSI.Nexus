@@ -6,6 +6,7 @@ import {
   ResponseStatus,
   TranslationService,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { PassengerListComponent } from './passenger-list.component';
 
@@ -27,6 +28,7 @@ describe('PassengerListComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): PassengerListComponent {
     modalServiceMock = {
@@ -43,12 +45,14 @@ describe('PassengerListComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new PassengerListComponent(
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       passengerServiceMock as unknown as PassengerService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -74,7 +78,7 @@ describe('PassengerListComponent', () => {
       expect(passengerServiceMock.getByTrip).toHaveBeenCalledWith('t1');
     });
 
-    it('should rebuild the column defs when the language changes', () => {
+    it('should rebuild the column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -85,6 +89,7 @@ describe('PassengerListComponent', () => {
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should reload the passengers when passengerChanged$ emits', () => {
@@ -216,7 +221,7 @@ describe('PassengerListComponent', () => {
   });
 
   describe('deletePassenger', () => {
-    it('should remove the passenger from the grid when the deletion succeeds', () => {
+    it('should remove the passenger from the grid and mark for check when the deletion succeeds', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'p1' } as Passenger, { id: 'p2' } as Passenger];
@@ -235,9 +240,10 @@ describe('PassengerListComponent', () => {
         'Removido',
         ResponseStatus.Success,
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should not touch the grid rows when the deletion fails', () => {
+    it('should not touch the grid rows but still mark for check when the deletion fails', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'p1' } as Passenger];
@@ -250,6 +256,7 @@ describe('PassengerListComponent', () => {
 
       // Assert
       expect(component.rowData).toEqual([{ id: 'p1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -267,7 +274,7 @@ describe('PassengerListComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should fall back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array and mark for check when the response has no data', () => {
       // Arrange
       const component = createComponent();
       component.tripId = 't1';
@@ -279,9 +286,10 @@ describe('PassengerListComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.tripId = 't1';
@@ -292,6 +300,7 @@ describe('PassengerListComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

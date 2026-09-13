@@ -9,6 +9,7 @@ import {
   TranslationService,
   WebApiResponse,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { EventListComponent } from './event-list.component';
 
@@ -29,6 +30,7 @@ describe('EventListComponent', () => {
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn>; language$: Subject<string> };
   let routerMock: { navigateByUrl: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): EventListComponent {
     eventServiceMock = {
@@ -47,6 +49,7 @@ describe('EventListComponent', () => {
     notificationServiceMock = { showMessage: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key), language$: new Subject() };
     routerMock = { navigateByUrl: vi.fn() };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new EventListComponent(
       eventServiceMock as unknown as EventService,
@@ -55,6 +58,7 @@ describe('EventListComponent', () => {
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
       routerMock as unknown as Router,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -67,7 +71,7 @@ describe('EventListComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should rebuild columns when the language changes', () => {
+    it('should rebuild columns and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -79,9 +83,10 @@ describe('EventListComponent', () => {
       // Assert
       expect(before.length).toBeGreaterThan(0);
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should load events when the current user resolves', () => {
+    it('should load events and mark for check when the current user resolves', () => {
       // Arrange
       const component = createComponent();
       eventServiceMock.getAll.mockReturnValue(of({ data: [{ id: 'e1' }] } as WebApiResponse<AgendaEvent[]>));
@@ -92,6 +97,7 @@ describe('EventListComponent', () => {
 
       // Assert
       expect(component.events).toEqual([{ id: 'e1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not throw when the logged-out user (no id) resolves', () => {
@@ -190,7 +196,7 @@ describe('EventListComponent', () => {
       expect(eventServiceMock.getAll).not.toHaveBeenCalled();
     });
 
-    it('should merge extraEvents into the row data, replacing prior read-only rows, after the first change', () => {
+    it('should merge extraEvents into the row data, replacing prior read-only rows, and mark for check after the first change', () => {
       // Arrange
       const component = createComponent();
       component.events = [
@@ -210,6 +216,7 @@ describe('EventListComponent', () => {
         { id: 'ro-new', readOnly: true },
       ]);
       expect(component.rowData).toBe(component.events);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not touch events on the first extraEvents change', () => {
@@ -397,7 +404,7 @@ describe('EventListComponent', () => {
       expect(eventServiceMock.delete).not.toHaveBeenCalled();
     });
 
-    it('should remove the event from the list and notify when deletion succeeds', () => {
+    it('should remove the event from the list, notify, and mark for check when deletion succeeds', () => {
       // Arrange
       const component = createComponent();
       component.events = [{ id: 'e1' } as AgendaEvent, { id: 'e2' } as AgendaEvent];
@@ -417,11 +424,12 @@ describe('EventListComponent', () => {
         'Removido',
         ResponseStatus.Success,
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
   describe('load', () => {
-    it('should append extraEvents to the loaded events when load is called', () => {
+    it('should append extraEvents to the loaded events and mark for check when load is called', () => {
       // Arrange
       const component = createComponent();
       component.extraEvents = [{ id: 'ro1', readOnly: true } as AgendaEvent];
@@ -435,6 +443,7 @@ describe('EventListComponent', () => {
       // Assert
       expect(component.events).toEqual([{ id: 'e1' }, { id: 'ro1', readOnly: true }]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should fall back to an empty array when the response has no data', () => {
@@ -463,7 +472,7 @@ describe('EventListComponent', () => {
       expect(notificationServiceMock.showMessage).not.toHaveBeenCalled();
     });
 
-    it('should set loading to false without throwing when the request errors', () => {
+    it('should set loading to false and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       eventServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
@@ -472,6 +481,7 @@ describe('EventListComponent', () => {
       // Assert
       expect(() => component.load()).not.toThrow();
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should do nothing when resolveRequest has nothing to fetch', () => {

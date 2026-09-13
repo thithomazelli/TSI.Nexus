@@ -7,6 +7,7 @@ import {
   ServiceOrderService,
   TranslationService,
 } from '@nexus/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
 import { ServiceOrderListComponent } from './service-order-list.component';
 
@@ -19,6 +20,7 @@ describe('ServiceOrderListComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): ServiceOrderListComponent {
     commissionServiceMock = { update: vi.fn() };
@@ -26,12 +28,14 @@ describe('ServiceOrderListComponent', () => {
     serviceOrderServiceMock = { getByDriver: vi.fn().mockReturnValue(of({ data: [] })) };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new ServiceOrderListComponent(
       commissionServiceMock as unknown as CommissionService,
       notificationServiceMock as unknown as NotificationService,
       serviceOrderServiceMock as unknown as ServiceOrderService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -55,7 +59,7 @@ describe('ServiceOrderListComponent', () => {
       expect(serviceOrderServiceMock.getByDriver).toHaveBeenCalledWith('d1');
     });
 
-    it('should rebuild the column defs when the language changes', () => {
+    it('should rebuild the column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -66,6 +70,7 @@ describe('ServiceOrderListComponent', () => {
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -122,7 +127,7 @@ describe('ServiceOrderListComponent', () => {
   });
 
   describe('refresh', () => {
-    it('should reload and show the response notification when refresh is called', () => {
+    it('should reload, show the response notification, and mark for check when refresh is called', () => {
       // Arrange
       const component = createComponent();
       component.driverId = 'd1';
@@ -135,6 +140,7 @@ describe('ServiceOrderListComponent', () => {
 
       // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Success', 'Atualizado');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -161,7 +167,7 @@ describe('ServiceOrderListComponent', () => {
       expect(commissionServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('should update the commission to Paid and reload when markAsPaid is called', () => {
+    it('should update the commission to Paid, reload, and mark for check when markAsPaid is called', () => {
       // Arrange
       const component = createComponent();
       component.driverId = 'd1';
@@ -182,6 +188,7 @@ describe('ServiceOrderListComponent', () => {
       );
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Success', 'Pago');
       expect(serviceOrderServiceMock.getByDriver).toHaveBeenCalledWith('d1');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -199,7 +206,7 @@ describe('ServiceOrderListComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should fall back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array and mark for check when the response has no data', () => {
       // Arrange
       const component = createComponent();
       component.driverId = 'd1';
@@ -211,9 +218,10 @@ describe('ServiceOrderListComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.driverId = 'd1';
@@ -224,6 +232,7 @@ describe('ServiceOrderListComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

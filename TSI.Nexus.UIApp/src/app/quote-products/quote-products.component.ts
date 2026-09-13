@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   ApiType,
@@ -60,6 +60,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
     private quoteProductService: QuoteProductService,
     private route: ActivatedRoute,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -71,7 +72,10 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
@@ -108,6 +112,7 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
           response.message,
           'success',
         );
+        this.cdr.markForCheck();
       });
   }
 
@@ -145,9 +150,11 @@ export class QuoteProductsComponent implements OnInit, OnDestroy {
             this.translationService.instant('QUOTES.QUOTE_PRODUCTS_REFRESHED'),
           );
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }
