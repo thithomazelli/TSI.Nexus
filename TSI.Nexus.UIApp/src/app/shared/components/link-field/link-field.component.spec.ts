@@ -16,35 +16,48 @@ describe('LinkFieldComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('onClick', () => {
-    it('navigates and hides the modal when linkUrl has segments', () => {
+    it('should navigate and hide the modal when linkUrl has segments', () => {
+      // Arrange
       const component = createComponent();
       component.linkUrl = ['/orders', 'o1'];
 
+      // Act
       component.onClick();
 
+      // Assert
       expect(routerMock.navigate).toHaveBeenCalledWith(['/orders', 'o1']);
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
     });
 
-    it('does nothing when linkUrl is empty', () => {
+    it('should do nothing when linkUrl is empty', () => {
+      // Arrange
       const component = createComponent();
       component.linkUrl = [];
 
+      // Act
       component.onClick();
 
+      // Assert
       expect(routerMock.navigate).not.toHaveBeenCalled();
       expect(modalServiceMock.hideModal).not.toHaveBeenCalled();
     });
 
-    it('does nothing when linkUrl is not set', () => {
+    it('should do nothing when linkUrl is not set', () => {
+      // Arrange
       const component = createComponent();
       component.linkUrl = undefined as unknown as string[];
 
+      // Act
+      // Assert
       expect(() => component.onClick()).not.toThrow();
       expect(routerMock.navigate).not.toHaveBeenCalled();
     });

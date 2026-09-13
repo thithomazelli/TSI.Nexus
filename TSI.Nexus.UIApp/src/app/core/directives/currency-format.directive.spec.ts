@@ -16,102 +16,138 @@ describe('CurrencyFormatDirective', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createDirective(null)).toBeTruthy();
+  it('should create the directive when instantiated', () => {
+    // Act
+    const directive = createDirective(null);
+
+    // Assert
+    expect(directive).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('formats the initial control value into the input', () => {
+    it('should format the initial control value into the input when there is a value', () => {
+      // Arrange
       const directive = createDirective(1234.5);
+
+      // Act
       directive.ngOnInit();
 
+      // Assert
       expect(input.value).toBe('1.234,50');
     });
 
-    it('leaves the input empty when there is no initial value', () => {
+    it('should leave the input empty when there is no initial value', () => {
+      // Arrange
       const directive = createDirective(null);
+
+      // Act
       directive.ngOnInit();
 
+      // Assert
       expect(input.value).toBe('');
     });
   });
 
   describe('onFocus', () => {
-    it('converts the formatted value to a plain comma-decimal string for editing', () => {
+    it('should convert the formatted value to a plain comma-decimal string when the input is focused', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = '1.234,50';
 
+      // Act
       directive.onFocus();
 
+      // Assert
       expect(input.value).toBe('1234,5');
     });
 
-    it('clears the input when there is nothing to convert', () => {
+    it('should clear the input when there is nothing to convert', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = '';
 
+      // Act
       directive.onFocus();
 
+      // Assert
       expect(input.value).toBe('');
     });
   });
 
   describe('onInput', () => {
-    it('strips characters other than digits, dot, and comma while typing', () => {
+    it('should strip characters other than digits, dot, and comma while typing', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = 'R$ 1a2b,3c';
 
+      // Act
       directive.onInput();
 
+      // Assert
       expect(input.value).toBe('12,3');
     });
   });
 
   describe('onBlur', () => {
-    it('formats a typed value and pushes the numeric value to the form control', () => {
+    it('should format a typed value and push the numeric value to the form control when the input is blurred', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = '1234,5';
 
+      // Act
       directive.onBlur();
 
+      // Assert
       expect(controlMock.control.setValue).toHaveBeenCalledWith(1234.5);
       expect(input.value).toBe('1.234,50');
     });
 
-    it('parses a value with a thousands separator correctly', () => {
+    it('should parse a value with a thousands separator correctly when the input is blurred', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = '1.234,56';
 
+      // Act
       directive.onBlur();
 
+      // Assert
       expect(controlMock.control.setValue).toHaveBeenCalledWith(1234.56);
     });
 
-    it('parses a plain value with no thousands or decimal separator', () => {
+    it('should parse a plain value with no thousands or decimal separator when the input is blurred', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = '1234';
 
+      // Act
       directive.onBlur();
 
+      // Assert
       expect(controlMock.control.setValue).toHaveBeenCalledWith(1234);
     });
 
-    it('clears the control when the cleaned value has no digits left to parse', () => {
+    it('should clear the control when the cleaned value has no digits left to parse', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = '.';
 
+      // Act
       directive.onBlur();
 
+      // Assert
       expect(controlMock.control.setValue).toHaveBeenCalledWith(null);
       expect(input.value).toBe('');
     });
 
-    it('clears the control and input when the typed value is not a number', () => {
+    it('should clear the control and input when the typed value is not a number', () => {
+      // Arrange
       const directive = createDirective(null);
       input.value = '';
 
+      // Act
       directive.onBlur();
 
+      // Assert
       expect(controlMock.control.setValue).toHaveBeenCalledWith(null);
       expect(input.value).toBe('');
     });
@@ -131,13 +167,16 @@ describe('CurrencyFormatDirective', () => {
       control = new FormControl(1234.5);
     }
 
-    it('runs onFocus through the compiled host-listener binding', () => {
+    it('should run onFocus through the compiled host-listener binding when a real focus event fires', () => {
+      // Arrange
       const fixture = TestBed.createComponent(HostComponent);
       fixture.detectChanges();
       const hostInput: HTMLInputElement = fixture.nativeElement.querySelector('input');
 
+      // Act
       hostInput.dispatchEvent(new Event('focus'));
 
+      // Assert
       expect(hostInput.value).toBe('1234,5');
     });
   });

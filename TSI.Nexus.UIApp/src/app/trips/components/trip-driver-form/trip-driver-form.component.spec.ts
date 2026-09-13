@@ -105,103 +105,142 @@ describe('TripDriverFormComponent', () => {
     vi.useRealTimers();
   });
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('initializes a create-mode form without an id control and auto-resolves driverId from driverName', () => {
+    it('should initialize a create-mode form without an id control and auto-resolve driverId from driverName', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeNull();
 
+      // Act
       component.form.get('driverName')!.setValue('João');
+
+      // Assert
       expect(component.form.get('driverId')!.value).toBe('d1');
     });
 
-    it('leaves driverId untouched when the typed driverName matches no driver', () => {
+    it('should leave driverId untouched when the typed driverName matches no driver', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('driverName')!.setValue('Ninguém');
+
+      // Assert
       expect(component.form.get('driverId')!.value).toBe('');
     });
 
-    it('initializes an edit-mode form with an id control and disables driverName', () => {
+    it('should initialize an edit-mode form with an id control and disable driverName', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
       expect(component.form.get('driverName')!.disabled).toBe(true);
     });
 
-    it('patches the form with the provided data', () => {
+    it('should patch the form with the provided data', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 't1', driverName: 'João', amount: 100 } as TripDriver;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('driverName')!.value).toBe('João');
       expect(component.form.get('amount')!.value).toBe(100);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('re-patches the form when data changes after init', () => {
+    it('should re-patch the form when data changes after init', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.data = { id: 't1', driverName: 'Maria' } as TripDriver;
       component.ngOnChanges({ data: {} as any });
 
+      // Assert
       expect(component.form.get('driverName')!.value).toBe('Maria');
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: {} as any });
 
+      // Assert
       expect(component.form.get('driverName')!.value).toBe('');
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 't1' } as TripDriver;
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ data: {} as any })).not.toThrow();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes the driverName auto-resolve subscription', () => {
+    it('should unsubscribe the driverName auto-resolve subscription when destroyed', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnDestroy();
       component.form.get('driverName')!.setValue('João');
 
+      // Assert
       expect(component.form.get('driverId')!.value).toBe('');
     });
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: unknown;
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.submitted).toBe(true);
       expect(component.form.get('driverId')!.touched).toBe(true);
     });
 
-    it('creates a temporary trip driver when there is no parentId', () => {
+    it('should create a temporary trip driver when there is no parentId', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.setValue({
@@ -214,13 +253,16 @@ describe('TripDriverFormComponent', () => {
       const response = { message: 'OK', status: 'success' } as unknown as WebApiResponse<TripDriver>;
       tripDriverServiceMock.addTemporary.mockReturnValue(of(response));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(tripDriverServiceMock.addTemporary).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'OK', 'success');
     });
 
-    it('adds a new trip driver against the parent trip when creating with a parentId', () => {
+    it('should add a new trip driver against the parent trip when creating with a parentId', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'trip1';
       component.ngOnInit();
@@ -234,14 +276,17 @@ describe('TripDriverFormComponent', () => {
       const response = { message: 'OK', status: 'success' } as unknown as WebApiResponse<TripDriver>;
       tripDriverServiceMock.add.mockReturnValue(of(response));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(tripDriverServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ tripId: 'trip1' }),
       );
     });
 
-    it('merges the raw form value into data and updates when editing with a parentId', () => {
+    it('should merge the raw form value into data and update when editing with a parentId', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'trip1';
       component.isEdit = true;
@@ -252,14 +297,17 @@ describe('TripDriverFormComponent', () => {
       const response = { message: 'Updated', status: 'success' } as unknown as WebApiResponse<TripDriver>;
       tripDriverServiceMock.update.mockReturnValue(of(response));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data).toMatchObject({ id: 'td1', driverId: 'd1', amount: 50 });
       expect(tripDriverServiceMock.update).toHaveBeenCalled();
       expect(modalServiceMock.hideModal).not.toHaveBeenCalled();
     });
 
-    it('closes the dialog when saving succeeds and a dialogRef is present', () => {
+    it('should close the dialog when saving succeeds and a dialogRef is present', () => {
+      // Arrange
       const component = createComponent();
       const dialogRefMock = { close: vi.fn() };
       component.dialogRef = dialogRefMock as any;
@@ -269,20 +317,25 @@ describe('TripDriverFormComponent', () => {
       const response = { message: 'OK', status: 'success' } as unknown as WebApiResponse<TripDriver>;
       tripDriverServiceMock.addTemporary.mockReturnValue(of(response));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalledWith(response);
     });
 
-    it('notifies an error when saving fails', () => {
+    it('should notify an error when saving fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('driverId')!.setValue('d1');
       component.form.get('amount')!.setValue(10);
       tripDriverServiceMock.addTemporary.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'Error',
         'COMMON.SAVE_ERROR',
@@ -290,18 +343,22 @@ describe('TripDriverFormComponent', () => {
     });
   });
 
-  it('cancel hides the modal via the dialogRef', () => {
+  it('should hide the modal via the dialogRef when cancel is called', () => {
+    // Arrange
     const component = createComponent();
     const dialogRefMock = {};
     component.dialogRef = dialogRefMock as any;
 
+    // Act
     component.cancel();
 
+    // Assert
     expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
   });
 
   describe('remove', () => {
-    it('deletes the trip driver and notifies success when confirmed', async () => {
+    it('should delete the trip driver and notify success when confirmed', async () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'td1' } as TripDriver;
       component.ngOnInit();
@@ -309,16 +366,18 @@ describe('TripDriverFormComponent', () => {
       const response = { message: 'Removed', status: 'success' } as unknown as WebApiResponse<TripDriver>;
       tripDriverServiceMock.delete.mockReturnValue(of(response));
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith();
       expect(tripDriverServiceMock.delete).toHaveBeenCalledWith(component.data);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Removed', 'success');
     });
 
-    it('notifies an error when the delete request fails', async () => {
+    it('should notify an error when the delete request fails', async () => {
       // remove() subscribes with no error callback, same as the production code path - RxJS
       // reports that as an unhandled error via a scheduled setTimeout (see reportUnhandledError)
       // after the tap side-effect below runs, so this test silences that reporting until that
@@ -326,16 +385,19 @@ describe('TripDriverFormComponent', () => {
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
+        // Arrange
         const component = createComponent();
         component.data = { id: 'td1' } as TripDriver;
         component.ngOnInit();
         modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
         tripDriverServiceMock.delete.mockReturnValue(throwError(() => new Error('boom')));
 
+        // Act
         expect(() => component.remove()).not.toThrow();
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           'error',
           'COMMON.SAVE_ERROR',
@@ -347,7 +409,8 @@ describe('TripDriverFormComponent', () => {
       }
     });
 
-    it('re-opens the details modal when the deletion is cancelled', async () => {
+    it('should re-open the details modal when the deletion is cancelled', async () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'td1' } as TripDriver;
@@ -356,10 +419,12 @@ describe('TripDriverFormComponent', () => {
       component.ngOnInit();
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -374,33 +439,40 @@ describe('TripDriverFormComponent', () => {
   });
 
   describe('onDriverNameBlur', () => {
-    it('cleans the selection when the typed name is blank', () => {
+    it('should clean the selection when the typed name is blank', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('driverName')!.setValue('   ');
 
+      // Act
       component.onDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('driverId')!.value).toBe('');
       expect(component.form.get('driverId')!.hasError('required')).toBe(true);
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('does nothing further when the typed name matches an existing driver', () => {
+    it('should do nothing further when the typed name matches an existing driver', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('driverName')!.setValue('João');
 
+      // Act
       component.onDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).not.toHaveBeenCalled();
     });
 
-    it('offers to create a new driver, then selects it once created', () => {
+    it('should offer to create a new driver, then select it once created', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -412,16 +484,19 @@ describe('TripDriverFormComponent', () => {
         afterClosed: () => of({ data: newDriver } as WebApiResponse<Driver>),
       });
 
+      // Act
       component.onDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).toHaveBeenCalled();
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalled();
       expect(component.form.get('driverId')!.value).toBe('d9');
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('cleans the selection when the new-driver modal closes without data', () => {
+    it('should clean the selection when the new-driver modal closes without data', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -430,14 +505,17 @@ describe('TripDriverFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.onDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('driverId')!.value).toBe('');
       expect(component.form.get('driverId')!.hasError('required')).toBe(true);
     });
 
-    it('cleans the selection when the user declines creating a new driver', () => {
+    it('should clean the selection when the user declines creating a new driver', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -445,9 +523,11 @@ describe('TripDriverFormComponent', () => {
 
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
       expect(component.form.get('driverId')!.value).toBe('');
       expect(component.form.get('driverId')!.hasError('required')).toBe(true);
@@ -455,44 +535,56 @@ describe('TripDriverFormComponent', () => {
   });
 
   describe('selectDriver', () => {
-    it('does nothing when no driver is given', () => {
+    it('should do nothing when no driver is given', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.selectDriver(null as unknown as Driver)).not.toThrow();
       expect(component.form.get('driverId')!.value).toBe('');
     });
 
-    it('notifies and cleans the selection when the driver is already attached to the trip', () => {
+    it('should notify and clean the selection when the driver is already attached to the trip', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'td1' } as TripDriver;
       component.parentData = [{ id: 'td2', driverId: 'd1' } as TripDriver];
       component.ngOnInit();
 
+      // Act
       component.selectDriver(drivers[0]);
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalled();
       expect(component.form.get('driverId')!.value).toBe('');
     });
 
-    it('re-adds the driverId control if missing, then patches the selected driver', () => {
+    it('should re-add the driverId control if missing, then patch the selected driver', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.removeControl('driverId');
 
+      // Act
       component.selectDriver(drivers[0]);
 
+      // Assert
       expect(component.form.get('driverId')!.value).toBe('d1');
       expect(component.form.get('driverName')!.value).toBe('João');
       expect(component.form.get('driverLicenseNumber')!.value).toBe('L1');
     });
 
-    it('patches the selected driver onto the form', () => {
+    it('should patch the selected driver onto the form', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.selectDriver(drivers[0]);
 
+      // Assert
       expect(component.form.get('driverId')!.value).toBe('d1');
       expect(component.form.get('driverLicenseExpiryDate')!.value).toEqual(
         drivers[0].licenseExpiryDate,
@@ -501,17 +593,22 @@ describe('TripDriverFormComponent', () => {
   });
 
   describe('filteredDriversByName$ / autocomplete', () => {
-    it('emits an empty list when there is no filter value', () => {
+    it('should emit an empty list when there is no filter value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let result: Driver[] = [];
+
+      // Act
       component.filteredDriversByName$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('filters by name (case-insensitive) and flags alreadyUsed/licenseExpired drivers', () => {
+    it('should filter by name case-insensitively and flag alreadyUsed/licenseExpired drivers', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'td-current' } as TripDriver;
       component.parentData = [{ id: 'td-other', driverId: 'd1' } as TripDriver];
@@ -519,14 +616,18 @@ describe('TripDriverFormComponent', () => {
 
       let result: Driver[] = [];
       component.filteredDriversByName$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('driverName')!.setValue('joão');
 
+      // Assert
       expect(result).toEqual([
         expect.objectContaining({ id: 'd1', alreadyUsed: true, licenseExpired: false }),
       ]);
     });
 
-    it('does not flag a driver as alreadyUsed when the match belongs to the record being edited', () => {
+    it('should not flag a driver as alreadyUsed when the match belongs to the record being edited', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'td-other' } as TripDriver;
       component.parentData = [{ id: 'td-other', driverId: 'd1' } as TripDriver];
@@ -534,76 +635,103 @@ describe('TripDriverFormComponent', () => {
 
       let result: Driver[] = [];
       component.filteredDriversByName$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('driverName')!.setValue('joão');
 
+      // Assert
       expect(result[0]).toMatchObject({ id: 'd1', alreadyUsed: false });
     });
 
-    it('flags a driver with a past license expiry date', () => {
+    it('should flag a driver with a past license expiry date', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let result: Driver[] = [];
       component.filteredDriversByName$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('driverName')!.setValue('maria');
 
+      // Assert
       expect(result[0]).toMatchObject({ id: 'd2', licenseExpired: true });
     });
 
-    it('treats a missing license expiry date as not expired', () => {
+    it('should treat a missing license expiry date as not expired', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let result: Driver[] = [];
       component.filteredDriversByName$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('driverName')!.setValue('carlos');
 
+      // Assert
       expect(result[0]).toMatchObject({ id: 'd3', licenseExpired: false });
     });
 
-    it('treats an unparseable license expiry date as not expired', () => {
+    it('should treat an unparseable license expiry date as not expired', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let result: Driver[] = [];
       component.filteredDriversByName$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('driverName')!.setValue('paula');
 
+      // Assert
       expect(result[0]).toMatchObject({ id: 'd4', licenseExpired: false });
     });
 
-    it('treats a nameless driver as an empty string when filtering', () => {
+    it('should treat a nameless driver as an empty string when filtering', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let result: Driver[] = [];
       component.filteredDriversByName$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('driverName')!.setValue('maria');
 
+      // Assert
       expect(result.find((d) => d.id === 'd5')).toBeUndefined();
     });
 
-    it('coerces a non-string driverName value to an empty filter', () => {
+    it('should coerce a non-string driverName value to an empty filter', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let result: Driver[] = [];
       component.filteredDriversByName$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('driverName')!.setValue(123 as unknown as string);
 
+      // Assert
       expect(result).toEqual([]);
     });
   });
 
   describe('driversArray$', () => {
-    it('falls back to an empty array when the response carries no data', () => {
+    it('should fall back to an empty array when the response carries no data', () => {
+      // Arrange
       const component = createComponent();
       driverServiceMock.getAll.mockReturnValue(of({} as WebApiResponse<Driver[]>));
       component.ngOnInit();
 
       let result: Driver[] = [];
+
+      // Act
       component.driversArray$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
   });

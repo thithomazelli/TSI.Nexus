@@ -24,18 +24,24 @@ describe('ClickDirective', () => {
     return { preventDefault: vi.fn() } as unknown as Event;
   }
 
-  it('does nothing when no action is bound', () => {
+  it('should do nothing when no action is bound', () => {
+    // Arrange
     const button = document.createElement('button');
     const directive = new ClickDirective(new ElementRef(button), fakeRenderer());
 
+    // Act
+    // Assert
     expect(() => directive.onClick(clickEvent())).not.toThrow();
   });
 
-  it('does nothing when the bound action is not a function', () => {
+  it('should do nothing when the bound action is not a function', () => {
+    // Arrange
     const button = document.createElement('button');
     const directive = new ClickDirective(new ElementRef(button), fakeRenderer());
     directive.action$ = 'not-a-function' as never;
 
+    // Act
+    // Assert
     expect(() => directive.onClick(clickEvent())).not.toThrow();
   });
 
@@ -49,57 +55,73 @@ describe('ClickDirective', () => {
       return { button, directive, action$ };
     }
 
-    it('disables the button and shows the loading spinner', () => {
+    it('should disable the button and show the loading spinner when clicked', () => {
+      // Arrange
       const { button, directive } = setup();
 
+      // Act
       directive.onClick(clickEvent());
 
+      // Assert
       expect(button.disabled).toBe(true);
       expect(button.classList.contains('app-click-loading')).toBe(true);
       expect(button.querySelector('.app-click-spinner')).toBeTruthy();
     });
 
-    it('restores the button and removes the spinner once the action completes', () => {
+    it('should restore the button and remove the spinner when the action completes', () => {
+      // Arrange
       const { button, directive, action$ } = setup();
 
+      // Act
       directive.onClick(clickEvent());
       action$.next(null);
       action$.complete();
 
+      // Assert
       expect(button.disabled).toBe(false);
       expect(button.classList.contains('app-click-loading')).toBe(false);
       expect(button.querySelector('.app-click-spinner')).toBeNull();
     });
 
-    it('restores the button even when the action errors', () => {
+    it('should restore the button when the action errors', () => {
+      // Arrange
       const { button, directive, action$ } = setup();
 
+      // Act
       directive.onClick(clickEvent());
       action$.error(new Error('fail'));
 
+      // Assert
       expect(button.disabled).toBe(false);
       expect(button.classList.contains('app-click-loading')).toBe(false);
     });
 
-    it('prevents the default action for a submit button, to avoid double-firing a wrapping ngSubmit', () => {
+    it('should prevent the default action when the button is a submit button, to avoid double-firing a wrapping ngSubmit', () => {
+      // Arrange
       const { directive } = setup('submit');
       const event = clickEvent();
 
+      // Act
       directive.onClick(event);
 
+      // Assert
       expect(event.preventDefault).toHaveBeenCalled();
     });
 
-    it('does not call preventDefault for a plain button', () => {
+    it('should not call preventDefault when the button is a plain button', () => {
+      // Arrange
       const { directive } = setup('button');
       const event = clickEvent();
 
+      // Act
       directive.onClick(event);
 
+      // Assert
       expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
-    it('disables the other controls inside the same form and restores them afterwards', () => {
+    it('should disable the other controls inside the same form and restore them afterwards', () => {
+      // Arrange
       const form = document.createElement('form');
       const button = document.createElement('button');
       const otherInput = document.createElement('input');
@@ -112,21 +134,26 @@ describe('ClickDirective', () => {
       const action$ = new Subject<null>();
       directive.action$ = () => action$;
 
+      // Act
       directive.onClick(clickEvent());
 
+      // Assert
       expect(otherInput.disabled).toBe(true);
       expect(otherLink.getAttribute('aria-disabled')).toBe('true');
       expect(otherLink.classList.contains('disabled')).toBe(true);
 
+      // Act
       action$.next(null);
       action$.complete();
 
+      // Assert
       expect(otherInput.disabled).toBe(false);
       expect(otherLink.hasAttribute('aria-disabled')).toBe(false);
       expect(otherLink.classList.contains('disabled')).toBe(false);
     });
 
-    it('blocks clicks on a disabled sibling link while the action is running', () => {
+    it('should block clicks on a disabled sibling link while the action is running', () => {
+      // Arrange
       const form = document.createElement('form');
       const button = document.createElement('button');
       const otherLink = document.createElement('a');
@@ -139,22 +166,28 @@ describe('ClickDirective', () => {
 
       directive.onClick(clickEvent());
 
+      // Act
       const linkClick = new MouseEvent('click', { cancelable: true });
       otherLink.dispatchEvent(linkClick);
 
+      // Assert
       expect(linkClick.defaultPrevented).toBe(true);
     });
 
-    it('does not add a second spinner on a re-entrant click while one is already showing', () => {
+    it('should not add a second spinner when a re-entrant click happens while one is already showing', () => {
+      // Arrange
       const { button, directive } = setup();
 
+      // Act
       directive.onClick(clickEvent());
       directive.onClick(clickEvent());
 
+      // Assert
       expect(button.querySelectorAll('.app-click-spinner').length).toBe(1);
     });
 
-    it('re-applies the disabled state to a sibling link that was already disabled before the click', () => {
+    it('should re-apply the disabled state to a sibling link that was already disabled before the click', () => {
+      // Arrange
       const form = document.createElement('form');
       const button = document.createElement('button');
       const otherLink = document.createElement('a');
@@ -168,16 +201,19 @@ describe('ClickDirective', () => {
       const action$ = new Subject<null>();
       directive.action$ = () => action$;
 
+      // Act
       directive.onClick(clickEvent());
       action$.next(null);
       action$.complete();
 
+      // Assert
       expect(otherLink.getAttribute('aria-disabled')).toBe('true');
       expect(otherLink.getAttribute('tabindex')).toBe('-1');
       expect(otherLink.classList.contains('disabled')).toBe(true);
     });
 
-    it('does not re-attach the blocking click handler to a sibling link on a re-entrant click', () => {
+    it('should not re-attach the blocking click handler to a sibling link on a re-entrant click', () => {
+      // Arrange
       const form = document.createElement('form');
       const button = document.createElement('button');
       const otherLink = document.createElement('a');
@@ -188,27 +224,33 @@ describe('ClickDirective', () => {
       const directive = new ClickDirective(new ElementRef(button), fakeRenderer());
       directive.action$ = () => new Subject<null>();
 
+      // Act
       directive.onClick(clickEvent());
       directive.onClick(clickEvent());
 
+      // Assert
       expect(addEventListenerSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('skips renderer.setProperty on the host element itself when it is an anchor', () => {
+    it('should skip renderer.setProperty on the host element itself when it is an anchor', () => {
+      // Arrange
       const link = document.createElement('a');
       const renderer = fakeRenderer();
       const setPropertySpy = vi.spyOn(renderer, 'setProperty');
       const directive = new ClickDirective(new ElementRef(link), renderer);
       directive.action$ = () => new Subject<null>();
 
+      // Act
       directive.onClick(clickEvent());
 
+      // Assert
       expect(setPropertySpy).not.toHaveBeenCalledWith(link, 'disabled', true);
     });
   });
 
   describe('setDisabled(false) (re-enabling siblings, direct call)', () => {
-    it('removes aria-disabled/tabindex/class and detaches the blocking handler from a re-enabled link', () => {
+    it('should remove aria-disabled/tabindex/class and detach the blocking handler when a link is re-enabled', () => {
+      // Arrange
       const form = document.createElement('form');
       const button = document.createElement('button');
       const otherLink = document.createElement('a');
@@ -216,9 +258,11 @@ describe('ClickDirective', () => {
       form.appendChild(otherLink);
       const directive = new ClickDirective(new ElementRef(button), fakeRenderer());
 
+      // Act
       (directive as unknown as { setDisabled: (d: boolean) => void }).setDisabled(true);
       (directive as unknown as { setDisabled: (d: boolean) => void }).setDisabled(false);
 
+      // Assert
       expect(otherLink.hasAttribute('aria-disabled')).toBe(false);
       expect(otherLink.hasAttribute('tabindex')).toBe(false);
       expect(otherLink.classList.contains('disabled')).toBe(false);
@@ -228,7 +272,8 @@ describe('ClickDirective', () => {
       expect(linkClick.defaultPrevented).toBe(false);
     });
 
-    it('does not throw when re-enabling a link that was never disabled', () => {
+    it('should not throw when re-enabling a link that was never disabled', () => {
+      // Arrange
       const form = document.createElement('form');
       const button = document.createElement('button');
       const otherLink = document.createElement('a');
@@ -236,6 +281,8 @@ describe('ClickDirective', () => {
       form.appendChild(otherLink);
       const directive = new ClickDirective(new ElementRef(button), fakeRenderer());
 
+      // Act
+      // Assert
       expect(() =>
         (directive as unknown as { setDisabled: (d: boolean) => void }).setDisabled(false),
       ).not.toThrow();
@@ -243,20 +290,26 @@ describe('ClickDirective', () => {
   });
 
   describe('addSpinner/removeSpinner edge cases', () => {
-    it('does not throw when the renderer fails to create the spinner element', () => {
+    it('should not throw when the renderer fails to create the spinner element', () => {
+      // Arrange
       const button = document.createElement('button');
       const renderer = fakeRenderer();
       vi.spyOn(renderer, 'createElement').mockReturnValueOnce(null as unknown as Element);
       const directive = new ClickDirective(new ElementRef(button), renderer);
       directive.action$ = () => new Subject<null>();
 
+      // Act
+      // Assert
       expect(() => directive.onClick(clickEvent())).not.toThrow();
     });
 
-    it('removeSpinner does nothing when no spinner was ever added', () => {
+    it('should do nothing when removeSpinner is called but no spinner was ever added', () => {
+      // Arrange
       const button = document.createElement('button');
       const directive = new ClickDirective(new ElementRef(button), fakeRenderer());
 
+      // Act
+      // Assert
       expect(() =>
         (directive as unknown as { removeSpinner: () => void }).removeSpinner(),
       ).not.toThrow();
@@ -276,13 +329,16 @@ describe('ClickDirective', () => {
       action = () => of(null);
     }
 
-    it('runs onClick through the compiled host-listener binding', () => {
+    it('should run onClick through the compiled host-listener binding when a real click event fires', () => {
+      // Arrange
       const fixture = TestBed.createComponent(HostComponent);
       fixture.detectChanges();
       const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
 
+      // Act
       button.click();
 
+      // Assert
       expect(button.querySelector('.app-click-spinner')).toBeFalsy();
     });
   });

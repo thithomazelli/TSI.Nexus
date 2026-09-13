@@ -16,21 +16,30 @@ describe('PurchaseOrderDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent(null)).toBeTruthy();
-  });
-
-  it('defaults to add mode with an empty purchase order when no dialogData is provided', () => {
+  it('should create the component when instantiated', () => {
+    // Act
     const component = createComponent(null);
 
+    // Assert
+    expect(component).toBeTruthy();
+  });
+
+  it('should default to add mode with an empty purchase order when no dialogData is provided', () => {
+    // Act
+    const component = createComponent(null);
+
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toEqual({ purchaseOrderProducts: [] });
     expect(component.id).toBeNull();
     expect(component.preselectedProductId).toBeNull();
   });
 
-  it('populates edit state and preselectedProductId from dialogData', () => {
+  it('should populate edit state and preselectedProductId when dialogData is provided', () => {
+    // Arrange
     const order = { id: 'po1', purchaseOrderProducts: [] } as PurchaseOrder;
+
+    // Act
     const component = createComponent({
       isEdit: true,
       data: order,
@@ -38,25 +47,32 @@ describe('PurchaseOrderDetailsModalComponent', () => {
       preselectedProductId: 'prod-1',
     });
 
+    // Assert
     expect(component.isEdit).toBe(true);
     expect(component.data).toBe(order);
     expect(component.id).toBe('po1');
     expect(component.preselectedProductId).toBe('prod-1');
   });
 
-  it('falls back to defaults when dialog data omits fields', () => {
+  it('should fall back to defaults when dialog data omits fields', () => {
+    // Act
     const component = createComponent({});
 
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toEqual({ purchaseOrderProducts: [] });
     expect(component.id).toBeNull();
     expect(component.preselectedProductId).toBeNull();
   });
 
-  it('closes the dialog with null when close() is called', () => {
+  it('should close the dialog with null when close() is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
     component.close();
 
+    // Assert
     expect(dialogRefMock.close).toHaveBeenCalledWith(null);
   });
 });
