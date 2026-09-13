@@ -52,17 +52,22 @@ describe('PurchaseOrderProductsComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the column defs and loads the products', () => {
+    it('should build the column defs and load the products', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.columnDefs.length).toBeGreaterThan(0);
       expect(purchaseOrderProductServiceMock.getByEntityId).toHaveBeenCalledWith(
         'po1',
@@ -70,31 +75,38 @@ describe('PurchaseOrderProductsComponent', () => {
       );
     });
 
-    it('rebuilds the column defs on language change', () => {
+    it('should rebuild the column defs when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).not.toBe(before);
     });
 
-    it('reloads whenever purchaseOrderProductChanged$ emits', () => {
+    it('should reload whenever purchaseOrderProductChanged$ emits', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
       component.ngOnInit();
       purchaseOrderProductServiceMock.getByEntityId.mockClear();
 
+      // Act
       purchaseOrderProductChanged$.next();
 
+      // Assert
       expect(purchaseOrderProductServiceMock.getByEntityId).toHaveBeenCalledWith(
         'po1',
         'PurchaseOrder',
       );
     });
 
-    it('stops reacting to language/purchaseOrderProductChanged$ after ngOnDestroy', () => {
+    it('should stop reacting to language/purchaseOrderProductChanged$ after ngOnDestroy', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
       component.ngOnInit();
@@ -102,63 +114,80 @@ describe('PurchaseOrderProductsComponent', () => {
       const before = component.columnDefs;
       purchaseOrderProductServiceMock.getByEntityId.mockClear();
 
+      // Act
       language$.next('en');
       purchaseOrderProductChanged$.next();
 
+      // Assert
       expect(component.columnDefs).toBe(before);
       expect(purchaseOrderProductServiceMock.getByEntityId).not.toHaveBeenCalled();
     });
   });
 
   describe('ngOnChanges', () => {
-    it('reloads when parentId changes after the first change', () => {
+    it('should reload when parentId changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po2';
 
+      // Act
       component.ngOnChanges({ parentId: { firstChange: false } as any });
 
+      // Assert
       expect(purchaseOrderProductServiceMock.getByEntityId).toHaveBeenCalledWith(
         'po2',
         'PurchaseOrder',
       );
     });
 
-    it('does not reload on the first change', () => {
+    it('should not reload on the first change', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po2';
 
+      // Act
       component.ngOnChanges({ parentId: { firstChange: true } as any });
 
+      // Assert
       expect(purchaseOrderProductServiceMock.getByEntityId).not.toHaveBeenCalled();
     });
 
-    it('does nothing when parentId is not part of the change set', () => {
+    it('should do nothing when parentId is not part of the change set', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({})).not.toThrow();
       expect(purchaseOrderProductServiceMock.getByEntityId).not.toHaveBeenCalled();
     });
   });
 
   describe('openModal', () => {
-    it('uses the purchaseOrderId from the initial data when present', () => {
+    it('should use the purchaseOrderId from the initial data when present', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
 
+      // Act
       component.openModal({ isEdit: true, data: { purchaseOrderId: 'po-from-data' } });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ parentId: 'po-from-data' }),
       );
     });
 
-    it('falls back to the component parentId when the initial data has none', () => {
+    it('should fall back to the component parentId when the initial data has none', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
 
+      // Act
       component.openModal({ isEdit: false, data: {} });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ parentId: 'po1' }),
@@ -167,12 +196,15 @@ describe('PurchaseOrderProductsComponent', () => {
   });
 
   describe('refresh', () => {
-    it('reloads and shows a success notification', () => {
+    it('should reload and show a success notification', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
 
+      // Act
       component.refresh();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         'PURCHASE_ORDER_PRODUCTS.PURCHASE_ORDER_PRODUCTS_REFRESHED',
@@ -181,14 +213,19 @@ describe('PurchaseOrderProductsComponent', () => {
   });
 
   describe('noop', () => {
-    it('does nothing', () => {
+    it('should do nothing when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => component.noop()).not.toThrow();
     });
   });
 
   describe('deletePurchaseOrderProduct', () => {
-    it('removes the product from the grid and notifies', () => {
+    it('should remove the product from the grid and notify when deleted', () => {
+      // Arrange
       const component = createComponent();
       component.rowData = [
         { id: 'x1' } as PurchaseOrderProduct,
@@ -196,8 +233,10 @@ describe('PurchaseOrderProductsComponent', () => {
       ];
       purchaseOrderProductServiceMock.delete.mockReturnValue(of({ message: 'Removido' }));
 
+      // Act
       component.deletePurchaseOrderProduct({ id: 'x1' } as PurchaseOrderProduct);
 
+      // Assert
       expect(component.rowData).toEqual([{ id: 'x2' }]);
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -209,66 +248,84 @@ describe('PurchaseOrderProductsComponent', () => {
   });
 
   describe('load (private, via ngOnInit)', () => {
-    it('does nothing when there is no parentId', () => {
+    it('should do nothing when there is no parentId', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = null;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(purchaseOrderProductServiceMock.getByEntityId).not.toHaveBeenCalled();
       expect(component.loading).toBe(false);
     });
 
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
       purchaseOrderProductServiceMock.getByEntityId.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'po1';
       purchaseOrderProductServiceMock.getByEntityId.mockReturnValue(
         throwError(() => new Error('fail')),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
 
   describe('column defs cell renderers', () => {
-    it('renders the productSku as a link, falling back to an empty string', () => {
+    it('should render the productSku as a link, falling back to an empty string', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'productSku')!;
 
+      // Act
+      // Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'SKU1' })).toContain('SKU1');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
 
-    it('renders the productName as a link, falling back to an empty string', () => {
+    it('should render the productName as a link, falling back to an empty string', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'productName')!;
 
+      // Act
+      // Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'Produto A' })).toContain(
         'Produto A',
       );
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
 
-    it('formats totalPrice as BRL currency, falling back to R$ 0,00', () => {
+    it('should format totalPrice as BRL currency, falling back to R$ 0,00', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'totalPrice')!;
 
+      // Act
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: 12.5 } as any)).toBe(
         'R$ 12.50',
       );
@@ -278,13 +335,16 @@ describe('PurchaseOrderProductsComponent', () => {
       );
     });
 
-    it('renders the actions column buttons', () => {
+    it('should render the actions column buttons', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
     });

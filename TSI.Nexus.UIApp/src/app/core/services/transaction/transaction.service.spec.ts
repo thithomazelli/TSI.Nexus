@@ -19,15 +19,23 @@ describe('TransactionService', () => {
     return TestBed.inject(TransactionService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getAll/getById/getByBusinessPartnerId hit the expected endpoints', () => {
+  it('should hit the expected endpoints when getAll/getById/getByBusinessPartnerId are called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAll();
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('transactions/getAll');
 
     service.getById('t1');
@@ -37,38 +45,49 @@ describe('TransactionService', () => {
     expect(apiServiceMock.get).toHaveBeenCalledWith('transactions/getByBusinessPartnerId/bp1');
   });
 
-  it('getAllPaged builds the query string and unwraps response.data', () => {
+  it('should build the query string and unwrap response.data when getAllPaged is called', () => {
+    // Arrange
     const service = createService();
     const paged$ = new Subject<WebApiResponse<{ items: Transaction[] }>>();
     apiServiceMock.get.mockReturnValue(paged$);
 
+    // Act
     let result: unknown;
     service.getAllPaged({ page: 1, pageSize: 20 }).subscribe((v) => (result = v));
     paged$.next({ data: { items: [] } } as unknown as WebApiResponse<{ items: Transaction[] }>);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('transactions/getAllPaged?page=1&pageSize=20');
     expect(result).toEqual({ items: [] });
   });
 
-  it('refreshTransactions delegates to getAll', () => {
+  it('should delegate to getAll when refreshTransactions is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.refreshTransactions();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('transactions/getAll');
   });
 
-  it('transactionChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when transactionChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.transactionChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each notify transactionChanged$ after the request completes', () => {
+  it('should notify transactionChanged$ after each request completes when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<Transaction>>();
     const updateResponse$ = new Subject<WebApiResponse<Transaction>>();
@@ -76,12 +95,12 @@ describe('TransactionService', () => {
     apiServiceMock.post.mockReturnValue(addResponse$);
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
-
     let emissions = 0;
     service.transactionChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
     expect(emissions).toBe(1);
 
+    // Act / Assert
     service.add({} as Transaction).subscribe();
     addResponse$.next({} as WebApiResponse<Transaction>);
     TestBed.flushEffects();

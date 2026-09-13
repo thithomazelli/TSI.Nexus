@@ -20,15 +20,20 @@ describe('AttachmentService', () => {
     return TestBed.inject(AttachmentService);
   }
 
-  it('should create', () => {
+  it('should create the service when instantiated', () => {
+    // Act
+    // Assert
     expect(createService()).toBeTruthy();
   });
 
-  it('getById and every getByXId hit the expected endpoint', () => {
+  it('should hit the expected endpoint when getById or any getByXId method is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getById('a1');
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('attachments/getById/a1');
 
     service.getByBusinessPartnerId('bp1');
@@ -65,25 +70,33 @@ describe('AttachmentService', () => {
     expect(apiServiceMock.get).toHaveBeenCalledWith('attachments/getByUserId/u1');
   });
 
-  it('downloadFile fetches a blob from the expected endpoint', () => {
+  it('should fetch a blob from the expected endpoint when downloadFile is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.getBlob.mockReturnValue(new Subject());
 
+    // Act
     service.downloadFile('a1');
 
+    // Assert
     expect(apiServiceMock.getBlob).toHaveBeenCalledWith('attachments/getFileById/a1');
   });
 
-  it('attachmentChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately when a new subscriber subscribes to attachmentChanged$', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.attachmentChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add builds a FormData payload including an override path and notifies on success', () => {
+  it('should build a FormData payload including an override path and notify attachmentChanged$ when add succeeds', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<Attachment>>();
     apiServiceMock.post.mockReturnValue(addResponse$);
@@ -91,8 +104,10 @@ describe('AttachmentService', () => {
     service.attachmentChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Act
     service.add({ id: 'a1', file: new File(['x'], 'a.pdf') } as Attachment, 'custom/path').subscribe();
 
+    // Assert
     expect(apiServiceMock.post).toHaveBeenCalledWith('attachments/add', expect.any(FormData));
     const formData = apiServiceMock.post.mock.calls[0][1] as FormData;
     expect(formData.get('id')).toBe('a1');
@@ -103,7 +118,8 @@ describe('AttachmentService', () => {
     expect(emissions).toBe(2);
   });
 
-  it('update and delete also notify on success', () => {
+  it('should notify attachmentChanged$ when update or delete succeeds', () => {
+    // Arrange
     const service = createService();
     const updateResponse$ = new Subject<WebApiResponse<Attachment>>();
     const deleteResponse$ = new Subject<WebApiResponse<Attachment>>();
@@ -113,9 +129,12 @@ describe('AttachmentService', () => {
     service.attachmentChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Act
     service.update({ id: 'a1' } as Attachment).subscribe();
     updateResponse$.next({} as WebApiResponse<Attachment>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(2);
 
     service.delete('a1').subscribe();
@@ -125,20 +144,25 @@ describe('AttachmentService', () => {
     expect(emissions).toBe(3);
   });
 
-  it('update includes the override path in the FormData when given', () => {
+  it('should include the override path in the FormData when update is called with one', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.put.mockReturnValue(new Subject());
 
+    // Act
     service.update({ id: 'a1' } as Attachment, 'custom/path').subscribe();
 
+    // Assert
     const formData = apiServiceMock.put.mock.calls[0][1] as FormData;
     expect(formData.get('overridePath')).toBe('custom/path');
   });
 
-  it('buildFormData (via add) includes every optional attachment field when present', () => {
+  it('should include every optional attachment field in the FormData when add is called with all fields present', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.post.mockReturnValue(new Subject());
 
+    // Act
     service
       .add({
         id: 'a1',
@@ -157,6 +181,7 @@ describe('AttachmentService', () => {
       } as Attachment)
       .subscribe();
 
+    // Assert
     const formData = apiServiceMock.post.mock.calls[0][1] as FormData;
     expect(formData.get('businessPartnerId')).toBe('bp1');
     expect(formData.get('orderId')).toBe('o1');
@@ -171,12 +196,15 @@ describe('AttachmentService', () => {
     expect(formData.get('userId')).toBe('u1');
   });
 
-  it('buildFormData (via add) omits every optional field when absent', () => {
+  it('should omit every optional field from the FormData when add is called without them', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.post.mockReturnValue(new Subject());
 
+    // Act
     service.add({} as Attachment).subscribe();
 
+    // Assert
     const formData = apiServiceMock.post.mock.calls[0][1] as FormData;
     expect(formData.get('id')).toBeNull();
     expect(formData.get('file')).toBeNull();
