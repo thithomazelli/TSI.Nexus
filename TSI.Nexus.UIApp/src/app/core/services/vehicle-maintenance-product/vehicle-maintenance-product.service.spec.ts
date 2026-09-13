@@ -20,31 +20,43 @@ describe('VehicleMaintenanceProductService', () => {
     return TestBed.inject(VehicleMaintenanceProductService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getByEntityId hits the expected endpoint', () => {
+  it('should hit the expected endpoint when getByEntityId is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getByEntityId('vm1', 'VehicleMaintenance');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith(
       'vehiclemaintenanceproducts/getByVehicleMaintenanceId/vm1',
     );
   });
 
-  it('vehicleMaintenanceProductChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when vehicleMaintenanceProductChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.vehicleMaintenanceProductChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each notify vehicleMaintenanceProductChanged$ after the request completes', () => {
+  it('should notify vehicleMaintenanceProductChanged$ after each request completes when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<VehicleMaintenanceProduct>>();
     const updateResponse$ = new Subject<WebApiResponse<VehicleMaintenanceProduct>>();
@@ -52,12 +64,12 @@ describe('VehicleMaintenanceProductService', () => {
     apiServiceMock.post.mockReturnValue(addResponse$);
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
-
     let emissions = 0;
     service.vehicleMaintenanceProductChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
     expect(emissions).toBe(1);
 
+    // Act / Assert
     service.add({} as VehicleMaintenanceProduct).subscribe();
     addResponse$.next({} as WebApiResponse<VehicleMaintenanceProduct>);
     TestBed.flushEffects();
