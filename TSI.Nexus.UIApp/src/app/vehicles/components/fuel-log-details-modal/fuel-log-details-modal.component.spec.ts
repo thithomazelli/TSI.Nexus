@@ -16,37 +16,53 @@ describe('FuelLogDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent(null)).toBeTruthy();
-  });
-
-  it('defaults to add mode with no data/vehicleId when no dialogData is provided', () => {
+  it('should create the component when instantiated', () => {
+    // Act
     const component = createComponent(null);
 
+    // Assert
+    expect(component).toBeTruthy();
+  });
+
+  it('should default to add mode with no data/vehicleId when no dialogData is provided', () => {
+    // Act
+    const component = createComponent(null);
+
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toBeNull();
     expect(component.vehicleId).toBe('');
   });
 
-  it('derives isEdit from whether the fuel log data has an id', () => {
+  it('should derive isEdit from whether the fuel log data has an id', () => {
+    // Arrange
     const fuelLog = { id: 'fl1' } as FuelLog;
+
+    // Act
     const component = createComponent({ data: fuelLog, vehicleId: 'v1' });
 
+    // Assert
     expect(component.isEdit).toBe(true);
     expect(component.data).toBe(fuelLog);
     expect(component.vehicleId).toBe('v1');
   });
 
-  it('is not in edit mode when the provided data has no id', () => {
+  it('should not be in edit mode when the provided data has no id', () => {
+    // Act
     const component = createComponent({ data: {} as FuelLog, vehicleId: 'v1' });
 
+    // Assert
     expect(component.isEdit).toBe(false);
   });
 
-  it('closes the dialog with null when close() is called', () => {
+  it('should close the dialog with null when close is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
     component.close();
 
+    // Assert
     expect(dialogRefMock.close).toHaveBeenCalledWith(null);
   });
 });

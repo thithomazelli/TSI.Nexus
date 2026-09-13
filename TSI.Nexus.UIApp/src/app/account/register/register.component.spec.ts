@@ -29,36 +29,50 @@ describe('RegisterComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('redirects home immediately when already logged in', () => {
+  it('should redirect home immediately when already logged in', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
     accountServiceMock.user$.next({ id: 'u1' });
 
+    // Assert
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/');
   });
 
-  it('does not redirect when there is no logged-in user', () => {
+  it('should not redirect when there is no logged-in user', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
     accountServiceMock.user$.next(null);
 
+    // Assert
     expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
   });
 
   describe('register', () => {
-    it('does not submit an invalid form', () => {
+    it('should not submit an invalid form', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.register();
 
+      // Assert
       expect(component.submitted).toBe(true);
       expect(accountServiceMock.register).not.toHaveBeenCalled();
     });
 
-    it('registers and navigates to login on success', () => {
+    it('should register and navigate to login when the registration succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.register.mockReturnValue(
@@ -71,8 +85,11 @@ describe('RegisterComponent', () => {
         email: 'ana@example.com',
         password: '123456',
       });
+
+      // Act
       component.register();
 
+      // Assert
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         'ACCOUNT.USER_REGISTERED',
         'Welcome',
@@ -81,7 +98,8 @@ describe('RegisterComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('account/login');
     });
 
-    it('surfaces server validation errors', () => {
+    it('should surface server validation errors when the registration request fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.register.mockReturnValue(
@@ -94,12 +112,16 @@ describe('RegisterComponent', () => {
         email: 'ana@example.com',
         password: '123456',
       });
+
+      // Act
       component.register();
 
+      // Assert
       expect(component.errorMessages).toEqual(['Email already in use']);
     });
 
-    it('appends a plain server error when there is no errors array', () => {
+    it('should append a plain server error when there is no errors array', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.register.mockReturnValue(
@@ -112,16 +134,20 @@ describe('RegisterComponent', () => {
         email: 'ana@example.com',
         password: '123456',
       });
+
+      // Act
       component.register();
 
+      // Assert
       expect(component.errorMessages).toEqual(['E-mail já cadastrado']);
     });
 
-    it('falls back to the generic message without throwing when response.error itself is null', () => {
+    it('should fall back to the generic message without throwing when response.error itself is null', () => {
       // Regression test: a failure that never reaches the API with a JSON body (dead
       // upstream/dev-proxy 500, timeout) carries response.error === null. response.error.errors
       // used to throw reading .errors off null right there in the error handler, aborting before
       // errorMessages/markForCheck() ever ran.
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.register.mockReturnValue(
@@ -135,6 +161,8 @@ describe('RegisterComponent', () => {
         password: '123456',
       });
 
+      // Act
+      // Assert
       expect(() => component.register()).not.toThrow();
       expect(component.errorMessages).toEqual(['ACCOUNT.SERVER_ERROR']);
     });

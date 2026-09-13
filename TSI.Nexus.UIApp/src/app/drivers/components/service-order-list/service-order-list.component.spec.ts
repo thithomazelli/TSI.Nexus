@@ -35,103 +35,134 @@ describe('ServiceOrderListComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the column defs and loads the service orders', () => {
+    it('should build the column defs and load the service orders when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = 'd1';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.columnDefs.length).toBeGreaterThan(0);
       expect(serviceOrderServiceMock.getByDriver).toHaveBeenCalledWith('d1');
     });
 
-    it('rebuilds the column defs on language change', () => {
+    it('should rebuild the column defs when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).not.toBe(before);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('reloads when driverId changes after the first change', () => {
+    it('should reload when driverId changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = 'd2';
 
+      // Act
       component.ngOnChanges({ driverId: { firstChange: false } as any });
 
+      // Assert
       expect(serviceOrderServiceMock.getByDriver).toHaveBeenCalledWith('d2');
     });
 
-    it('does not reload on the first change', () => {
+    it('should not reload when it is the first change', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = 'd2';
 
+      // Act
       component.ngOnChanges({ driverId: { firstChange: true } as any });
 
+      // Assert
       expect(serviceOrderServiceMock.getByDriver).not.toHaveBeenCalled();
     });
 
-    it('does nothing when driverId is not part of the change set', () => {
+    it('should do nothing when driverId is not part of the change set', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({})).not.toThrow();
       expect(serviceOrderServiceMock.getByDriver).not.toHaveBeenCalled();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('stops reacting to language changes', () => {
+    it('should stop reacting to language changes when the component is destroyed', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.ngOnDestroy();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).toBe(before);
     });
   });
 
   describe('refresh', () => {
-    it('reloads and shows the response notification', () => {
+    it('should reload and show the response notification when refresh is called', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = 'd1';
       serviceOrderServiceMock.getByDriver.mockReturnValue(
         of({ status: 'Success', message: 'Atualizado', data: [] }),
       );
 
+      // Act
       component.refresh();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Success', 'Atualizado');
     });
   });
 
   describe('noop', () => {
-    it('does nothing', () => {
+    it('should do nothing when noop is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => component.noop()).not.toThrow();
     });
   });
 
   describe('markAsPaid', () => {
-    it('does nothing when the service order has no commission', () => {
+    it('should do nothing when the service order has no commission', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.markAsPaid({ id: 'so1' } as ServiceOrder);
 
+      // Assert
       expect(commissionServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('updates the commission to Paid and reloads', () => {
+    it('should update the commission to Paid and reload when markAsPaid is called', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = 'd1';
       const serviceOrder = {
@@ -142,8 +173,10 @@ describe('ServiceOrderListComponent', () => {
         of({ status: 'Success', message: 'Pago' }),
       );
 
+      // Act
       component.markAsPaid(serviceOrder);
 
+      // Assert
       expect(commissionServiceMock.update).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'c1', status: CommissionStatus.Paid }),
       );
@@ -153,74 +186,95 @@ describe('ServiceOrderListComponent', () => {
   });
 
   describe('load (private, via ngOnInit)', () => {
-    it('does nothing when there is no driverId', () => {
+    it('should do nothing when there is no driverId', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = '' as any;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(serviceOrderServiceMock.getByDriver).not.toHaveBeenCalled();
       expect(component.loading).toBe(false);
     });
 
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = 'd1';
       serviceOrderServiceMock.getByDriver.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.driverId = 'd1';
       serviceOrderServiceMock.getByDriver.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
 
   describe('column defs cell renderers', () => {
-    it('formats issueDate as a BR date', () => {
+    it('should format issueDate as a BR date', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'issueDate')!;
 
+      // Act
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: '2024-01-15' } as any)).toContain(
         '/',
       );
     });
 
-    it('formats commission.baseAmount and commission.amount as BRL currency', () => {
+    it('should format commission.baseAmount and commission.amount as BRL currency', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const baseColumn = component.columnDefs.find((c) => c.field === 'commission.baseAmount')!;
       const amountColumn = component.columnDefs.find((c) => c.field === 'commission.amount')!;
 
+      // Act
+      // Assert
       expect((baseColumn.valueFormatter as (p: any) => string)({ value: 100 } as any)).toContain('R$');
       expect((amountColumn.valueFormatter as (p: any) => string)({ value: 50 } as any)).toContain('R$');
     });
 
-    it('formats commission.percentage with a % suffix, falling back to an empty string', () => {
+    it('should format commission.percentage with a % suffix and fall back to an empty string when there is no value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'commission.percentage')!;
 
+      // Act
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: 10 } as any)).toBe('10%');
       expect((column.valueFormatter as (p: any) => string)({ value: null } as any)).toBe('');
     });
 
     describe('commission.status column', () => {
-      it('renders an empty string when there is no status', () => {
+      it('should render an empty string when there is no status', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'commission.status')!;
 
+        // Act
+        // Assert
         expect((column.cellRenderer as (p: any) => string)({ value: null })).toBe('');
       });
 
@@ -228,61 +282,76 @@ describe('ServiceOrderListComponent', () => {
         ['Pending', 'warning', 'DRIVERS.COMMISSION_STATUS_PENDING'],
         ['Paid', 'success', 'DRIVERS.COMMISSION_STATUS_PAID'],
         ['Cancelled', 'secondary', 'DRIVERS.COMMISSION_STATUS_CANCELLED'],
-      ])('renders status %s with the %s color and translated label', (status, color, label) => {
+      ])('should render status %s with the %s color and translated label when the commission has that status', (status, color, label) => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'commission.status')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: status });
 
+        // Assert
         expect(html).toContain(`bg-${color}`);
         expect(html).toContain(label);
       });
 
-      it('falls back to a secondary badge with the raw value for an unknown status', () => {
+      it('should fall back to a secondary badge with the raw value when the status is unknown', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'commission.status')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: 'Unknown' });
 
+        // Assert
         expect(html).toContain('bg-secondary');
         expect(html).toContain('Unknown');
       });
     });
 
     describe('actions column', () => {
-      it('renders nothing when the commission is not Pending', () => {
+      it('should render nothing when the commission is not Pending', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs[component.columnDefs.length - 1];
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({
           data: { commission: { status: CommissionStatus.Paid } },
         });
 
+        // Assert
         expect(html).toBe('');
       });
 
-      it('renders nothing when there is no commission at all', () => {
+      it('should render nothing when there is no commission at all', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs[component.columnDefs.length - 1];
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ data: {} });
 
+        // Assert
         expect(html).toBe('');
       });
 
-      it('renders the pay button when the commission is Pending', () => {
+      it('should render the pay button when the commission is Pending', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs[component.columnDefs.length - 1];
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({
           data: { commission: { status: CommissionStatus.Pending } },
         });
 
+        // Assert
         expect(html).toContain('data-action="update"');
         expect(html).toContain('DRIVERS.PAY_BUTTON');
       });

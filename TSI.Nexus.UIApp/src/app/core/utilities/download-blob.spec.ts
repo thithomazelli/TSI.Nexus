@@ -22,10 +22,14 @@ describe('triggerBlobDownload', () => {
     vi.restoreAllMocks();
   });
 
-  it('creates an object URL, triggers a click on an anchor, and returns the URL', () => {
+  it('should create an object URL, trigger a click on an anchor, and return the URL when called', () => {
+    // Arrange
     const blob = new Blob(['content']);
+
+    // Act
     const url = triggerBlobDownload(blob, 'file.pdf');
 
+    // Assert
     expect(createObjectURLSpy).toHaveBeenCalledWith(blob);
     expect(clickSpy).toHaveBeenCalled();
     expect(url).toBe('blob:mock-url');
@@ -48,10 +52,14 @@ describe('downloadBlob', () => {
     vi.restoreAllMocks();
   });
 
-  it('revokes the object URL after triggering the download', () => {
+  it('should revoke the object URL after triggering the download', () => {
+    // Arrange
     const blob = new Blob(['content']);
+
+    // Act
     downloadBlob(blob, 'file.pdf');
 
+    // Assert
     expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
   });
 });

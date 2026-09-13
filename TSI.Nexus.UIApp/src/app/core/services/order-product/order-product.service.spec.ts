@@ -19,31 +19,44 @@ describe('OrderProductService', () => {
     return TestBed.inject(OrderProductService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getAll/getByEntityId hit the expected endpoints', () => {
+  it('should hit the expected endpoints when getAll/getByEntityId are called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAll();
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('orderproducts/getAll');
 
     service.getByEntityId('o1', 'Order');
     expect(apiServiceMock.get).toHaveBeenCalledWith('orderproducts/getByOrderId/o1');
   });
 
-  it('orderProductChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when orderProductChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.orderProductChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each notify orderProductChanged$ after the request completes', () => {
+  it('should notify orderProductChanged$ after each request completes when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<OrderProduct>>();
     const updateResponse$ = new Subject<WebApiResponse<OrderProduct>>();
@@ -51,12 +64,12 @@ describe('OrderProductService', () => {
     apiServiceMock.post.mockReturnValue(addResponse$);
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
-
     let emissions = 0;
     service.orderProductChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
     expect(emissions).toBe(1);
 
+    // Act / Assert
     service.add({} as OrderProduct).subscribe();
     addResponse$.next({} as WebApiResponse<OrderProduct>);
     TestBed.flushEffects();
@@ -74,31 +87,37 @@ describe('OrderProductService', () => {
   });
 
   describe('addTemporary', () => {
-    it('emits the item on orderProductAdded$ and returns a synthetic success response', () => {
+    it('should emit the item on orderProductAdded$ and return a synthetic success response', () => {
+      // Arrange
       const service = createService();
       const orderProduct = { id: 'op1' } as OrderProduct;
       let added: OrderProduct | undefined;
       service.orderProductAdded$.subscribe((v) => (added = v));
 
+      // Act
       let response: WebApiResponse<OrderProduct> | undefined;
       service.addTemporary(orderProduct).subscribe((v) => (response = v));
 
+      // Assert
       expect(added).toBe(orderProduct);
       expect(response?.status).toBe(ResponseStatus.Success);
       expect(response?.data).toBe(orderProduct);
       expect(apiServiceMock.post).not.toHaveBeenCalled();
     });
 
-    it('does not notify orderProductChanged$ (it is not a persisted change)', () => {
+    it('should not notify orderProductChanged$ because it is not a persisted change', () => {
+      // Arrange
       const service = createService();
       let emissions = 0;
       service.orderProductChanged$.subscribe(() => emissions++);
       TestBed.flushEffects();
       expect(emissions).toBe(1);
 
+      // Act
       service.addTemporary({} as OrderProduct).subscribe();
       TestBed.flushEffects();
 
+      // Assert
       expect(emissions).toBe(1);
     });
   });
