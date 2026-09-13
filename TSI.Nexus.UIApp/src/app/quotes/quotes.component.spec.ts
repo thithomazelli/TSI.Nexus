@@ -74,97 +74,133 @@ describe('QuotesComponent', () => {
     window.history.pushState({}, '', '/quotes');
   });
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('isTopLevelList', () => {
-    it('is true for the main quotes screen', () => {
-      expect(createComponent().isTopLevelList).toBe(true);
+    it('should be true when on the main quotes screen', () => {
+      // Act
+      const component = createComponent();
+
+      // Assert
+      expect(component.isTopLevelList).toBe(true);
     });
 
-    it('is false when embedded in a business partner with an id', () => {
+    it('should be false when embedded in a business partner with an id', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(false);
     });
   });
 
   describe('ngOnInit', () => {
-    it('builds the grid and reads the fleet module flag', () => {
+    it('should build the grid and read the fleet module flag when initialized', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.columnDefs.length).toBeGreaterThan(0);
       expect(featureFlagServiceMock.isEnabled).toHaveBeenCalled();
       expect(component.isFleetModuleEnabled).toBe(true);
     });
 
-    it('top-level: purges the grid cache on quoteChanged$, skipping the initial replay', () => {
+    it('should purge the grid cache on quoteChanged$ skipping the initial replay when top-level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       quoteChanged$.next();
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
 
+      // Act
       quoteChanged$.next();
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalledTimes(1);
     });
 
-    it('embedded: reloads on every quoteChanged$ emission', () => {
+    it('should reload on every quoteChanged$ emission when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
       quoteServiceMock.getByBusinessPartnerId.mockReturnValue(of({ data: [] }));
       component.ngOnInit();
 
+      // Act
       quoteChanged$.next();
 
+      // Assert
       expect(quoteServiceMock.getByBusinessPartnerId).toHaveBeenCalledWith('bp1');
     });
 
-    it('stops reacting after ngOnDestroy', () => {
+    it('should stop reacting when ngOnDestroy has run', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
       component.ngOnDestroy();
 
+      // Act
       quoteChanged$.next();
       quoteChanged$.next();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
     });
 
-    it('rebuilds the grid on language change', () => {
+    it('should rebuild the grid when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).not.toBe(before);
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('does not throw when destroyed before ngOnInit ever subscribed', () => {
+    it('should not throw when destroyed before ngOnInit ever subscribed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('openModal', () => {
-    it('prefills a new quote with the parent business partner', () => {
+    it('should prefill a new quote with the parent business partner when opening the modal', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1', name: 'Cliente A' } as Company;
 
+      // Act
       component.openModal({ isEdit: false, data: { type: QuoteType.Product } });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -179,20 +215,28 @@ describe('QuotesComponent', () => {
   });
 
   describe('openNewProductQuoteModal / openNewTripQuoteModal', () => {
-    it('opens with the Product type', () => {
+    it('should open the modal with the Product type when openNewProductQuoteModal is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.openNewProductQuoteModal();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ data: expect.objectContaining({ type: QuoteType.Product }) }),
       );
     });
 
-    it('opens with the Trip type', () => {
+    it('should open the modal with the Trip type when openNewTripQuoteModal is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.openNewTripQuoteModal();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ data: expect.objectContaining({ type: QuoteType.Trip }) }),
@@ -201,7 +245,8 @@ describe('QuotesComponent', () => {
   });
 
   describe('deleteQuote', () => {
-    it('top-level: purges the grid cache on success', () => {
+    it('should purge the grid cache when deletion succeeds at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -209,12 +254,15 @@ describe('QuotesComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteQuote({ id: 'q1' } as Quote);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('embedded: removes the quote from the filtered rows on success', () => {
+    it('should remove the quote from the filtered rows when deletion succeeds while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
@@ -223,12 +271,15 @@ describe('QuotesComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteQuote({ id: 'q1' } as Quote);
 
+      // Assert
       expect(component.filteredRowData).toEqual([{ id: 'q2' }]);
     });
 
-    it('does not touch the grid/rows when the deletion fails, but still notifies', () => {
+    it('should not touch the grid/rows but still notify when the deletion fails', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -236,8 +287,10 @@ describe('QuotesComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falha' }),
       );
 
+      // Act
       component.deleteQuote({ id: 'q1' } as Quote);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -248,11 +301,14 @@ describe('QuotesComponent', () => {
   });
 
   describe('refreshQuotes', () => {
-    it('top-level: just shows a notification', () => {
+    it('should just show a notification when at the top level', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.refreshQuotes();
 
+      // Assert
       expect(quoteServiceMock.getAll).not.toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -260,30 +316,37 @@ describe('QuotesComponent', () => {
       );
     });
 
-    it('embedded: reloads quotes for the business partner', () => {
+    it('should reload quotes for the business partner when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
       quoteServiceMock.getByBusinessPartnerId.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.refreshQuotes();
 
+      // Assert
       expect(quoteServiceMock.getByBusinessPartnerId).toHaveBeenCalledWith('bp1');
     });
   });
 
   describe('applyFilters / clearFilters', () => {
-    it('top-level: applyFilters just purges the grid cache', () => {
+    it('should just purge the grid cache when applyFilters is called at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('embedded: filters client-side rows by status', () => {
+    it('should filter client-side rows by status when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
@@ -293,20 +356,25 @@ describe('QuotesComponent', () => {
       ];
       component.filterStatus.Open = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((q) => q.id)).toEqual(['q1']);
     });
 
-    it('clearFilters resets state', () => {
+    it('should reset the filter state when clearFilters is called', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
       component.rowData = [{ id: 'q1' } as Quote];
       component.filterStatus.Open = true;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(component.filterStatus).toEqual({
         Open: false,
         WaitingPayment: false,
@@ -315,18 +383,22 @@ describe('QuotesComponent', () => {
       expect(component.filteredRowData).toEqual([{ id: 'q1' }]);
     });
 
-    it('top-level: clearFilters purges the grid cache without touching filteredRowData', () => {
+    it('should purge the grid cache without touching filteredRowData when clearFilters runs at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.filterStatus.Open = true;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('embedded: excludes rows with no createDate when a date filter is active', () => {
+    it('should exclude rows with no createDate when a date filter is active while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
@@ -336,12 +408,15 @@ describe('QuotesComponent', () => {
       ];
       component.filterStartDate = '2024-01-01';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((q) => q.id)).toEqual(['q2']);
     });
 
-    it('embedded: filters by start date only', () => {
+    it('should filter by start date only when only a start date is set', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
@@ -351,12 +426,15 @@ describe('QuotesComponent', () => {
       ];
       component.filterStartDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((q) => q.id)).toEqual(['q2']);
     });
 
-    it('embedded: filters by end date only', () => {
+    it('should filter by end date only when only an end date is set', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
@@ -366,31 +444,39 @@ describe('QuotesComponent', () => {
       ];
       component.filterEndDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((q) => q.id)).toEqual(['q1']);
     });
 
-    it('embedded: treats a missing status as an empty string when filtering by status', () => {
+    it('should treat a missing status as an empty string when filtering by status', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
       component.rowData = [{ id: 'q1' } as unknown as Quote];
       component.filterStatus.Open = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData).toEqual([]);
     });
   });
 
   describe('pagedDataSource', () => {
-    it('forwards the active filters', () => {
+    it('should forward the active filters when requesting a page', () => {
+      // Arrange
       const component = createComponent();
       component.filterStatus.Closed = true;
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(quoteServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({ statuses: ['Closed'] }),
       );
@@ -398,18 +484,22 @@ describe('QuotesComponent', () => {
   });
 
   describe('getQuotes (private, via ngOnInit/refreshQuotes)', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
       quoteServiceMock.getByBusinessPartnerId.mockReturnValue(of({}));
 
+      // Act
       component.refreshQuotes();
 
+      // Assert
       expect(component.rowData).toEqual([]);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
@@ -417,21 +507,27 @@ describe('QuotesComponent', () => {
         throwError(() => new Error('fail')),
       );
 
+      // Act
       component.refreshQuotes();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
 
-    it('runs without a callback when called directly with none', () => {
+    it('should run without a callback when called directly with none', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.getAll.mockReturnValue(of({ data: [] }));
 
+      // Act
+      // Assert
       expect(() => (component as any).getQuotes()).not.toThrow();
     });
   });
 
   describe('setFiltersFromQueryParams (via ngOnInit)', () => {
-    it('reads filters from the URL', () => {
+    it('should read filters from the URL when they are present', () => {
+      // Arrange
       window.history.pushState(
         {},
         '',
@@ -439,107 +535,140 @@ describe('QuotesComponent', () => {
       );
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.filterStatus.Open).toBe(true);
       expect(component.filterStartDate).toBe('2024-01-01');
       expect(component.filterEndDate).toBe('2024-01-31');
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('ignores status values that are not known filter keys', () => {
+    it('should ignore status values that are not known filter keys', () => {
+      // Arrange
       window.history.pushState({}, '', '/quotes?status=Bogus,Open');
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.filterStatus.Open).toBe(true);
       expect((component.filterStatus as any).Bogus).toBeUndefined();
     });
 
-    it('sets showFiltersOnInit true when only a status filter is active (no dates)', () => {
+    it('should set showFiltersOnInit true when only a status filter is active with no dates', () => {
+      // Arrange
       window.history.pushState({}, '', '/quotes?status=Open');
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('leaves showFiltersOnInit false with no query params', () => {
+    it('should leave showFiltersOnInit false when there are no query params', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showFiltersOnInit).toBe(false);
     });
   });
 
   describe('column cell renderers', () => {
-    it('labels a Trip quote', () => {
+    it('should label a Trip quote when the type column renders', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: 'Trip' });
 
+      // Assert
       expect(html).toContain('TRIPS.SINGULAR');
     });
 
-    it('labels a Product quote', () => {
+    it('should label a Product quote when the type column renders', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: 'Product' });
 
+      // Assert
       expect(html).toContain('PRODUCTS.SINGULAR');
     });
 
-    it('renders the quoteNumber value as a link, falling back to an empty string', () => {
+    it('should render the quoteNumber value as a link and fall back to an empty string when there is no value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'quoteNumber')!;
 
+      // Act
+      // Assert
       expect((column.cellRenderer as (p: any) => string)({ value: '123' })).toContain('123');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
 
-    it('renders the businessPartnerName value as a link, falling back to an empty string', () => {
+    it('should render the businessPartnerName value as a link and fall back to an empty string when there is no value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'businessPartnerName')!;
 
+      // Act
+      // Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'Cliente A' })).toContain(
         'Cliente A',
       );
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
 
-    it('hides the businessPartnerName column when embedded in a business partner', () => {
+    it('should hide the businessPartnerName column when embedded in a business partner', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
+
+      // Act
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'businessPartnerName')!;
 
+      // Assert
       expect(column.hide).toBe(true);
     });
 
-    it('formats totalPrice as BRL currency', () => {
+    it('should format totalPrice as BRL currency when the column renders', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'totalPrice')!;
 
+      // Act
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: 100 } as any)).toContain(
         'R$',
       );
     });
 
-    it('formats date as BR date', () => {
+    it('should format date as a BR date when the column renders', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'date')!;
 
+      // Act
+      // Assert
       expect(
         (column.valueFormatter as (p: any) => string)({ value: '2024-01-15' } as any),
       ).toContain('/');
@@ -550,36 +679,45 @@ describe('QuotesComponent', () => {
         ['Closed', 'success', 'QUOTES.STATUS_CLOSED'],
         ['Open', 'info', 'QUOTES.STATUS_OPEN'],
         ['WaitingPayment', 'warning', 'QUOTES.STATUS_WAITING_PAYMENT'],
-      ])('renders status %s with the %s color and translated label', (status, color, label) => {
+      ])('should render status %s with the %s color and its translated label when the cell renders', (status, color, label) => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.headerName === 'COMMON.STATUS')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: status });
 
+        // Assert
         expect(html).toContain(`bg-${color}`);
         expect(html).toContain(label);
       });
 
-      it('falls back to a secondary badge with the raw value for an unknown status', () => {
+      it('should fall back to a secondary badge with the raw value when the status is unknown', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.headerName === 'COMMON.STATUS')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: 'Unknown' });
 
+        // Assert
         expect(html).toContain('bg-secondary');
         expect(html).toContain('Unknown');
       });
     });
 
-    it('renders the actions column buttons', () => {
+    it('should render the actions column buttons when the cell renderer runs', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="view"');
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');

@@ -11,17 +11,21 @@ describe('AuditTabComponent', () => {
     component = new AuditTabComponent(userServiceMock as unknown as UserService);
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Assert
     expect(component).toBeTruthy();
   });
 
-  it('does nothing when ngOnChanges fires without a "data" change', () => {
+  it('should do nothing when ngOnChanges fires without a "data" change', () => {
+    // Act
     component.ngOnChanges({});
 
+    // Assert
     expect(userServiceMock.getById).not.toHaveBeenCalled();
   });
 
-  it('resolves both create and modify user names when both ids are present', () => {
+  it('should resolve both create and modify user names when both ids are present', () => {
+    // Arrange
     userServiceMock.getById.mockImplementation((id: string) =>
       of({
         data: id === 'u1' ? { firstName: 'Ana', lastName: 'Silva' } : { firstName: 'Joao', lastName: 'Souza' },
@@ -29,50 +33,64 @@ describe('AuditTabComponent', () => {
     );
     component.data = { createUserId: 'u1', modifyUserId: 'u2' };
 
+    // Act
     component.ngOnChanges({ data: {} as never });
 
+    // Assert
     expect(userServiceMock.getById).toHaveBeenCalledWith('u1');
     expect(userServiceMock.getById).toHaveBeenCalledWith('u2');
     expect(component.createUserName).toBe('Ana Silva');
     expect(component.modifyUserName).toBe('Joao Souza');
   });
 
-  it('does not call the service for an id that is not present', () => {
+  it('should not call the service when an id is not present', () => {
+    // Arrange
     userServiceMock.getById.mockReturnValue(of({ data: { firstName: 'Ana' } as User }));
     component.data = { createUserId: 'u1' };
 
+    // Act
     component.ngOnChanges({ data: {} as never });
 
+    // Assert
     expect(userServiceMock.getById).toHaveBeenCalledTimes(1);
     expect(userServiceMock.getById).toHaveBeenCalledWith('u1');
   });
 
-  it('resets both names to empty before resolving on every data change', () => {
+  it('should reset both names to empty when resolving on every data change', () => {
+    // Arrange
     component.createUserName = 'stale name';
     component.modifyUserName = 'stale name';
     component.data = null;
 
+    // Act
     component.ngOnChanges({ data: {} as never });
 
+    // Assert
     expect(component.createUserName).toBe('');
     expect(component.modifyUserName).toBe('');
   });
 
-  it('falls back to userName when first/last name are both absent', () => {
+  it('should fall back to userName when first/last name are both absent', () => {
+    // Arrange
     userServiceMock.getById.mockReturnValue(of({ data: { userName: 'ana.silva' } as User }));
     component.data = { createUserId: 'u1' };
 
+    // Act
     component.ngOnChanges({ data: {} as never });
 
+    // Assert
     expect(component.createUserName).toBe('ana.silva');
   });
 
-  it('resolves to an empty string when the user is not found', () => {
+  it('should resolve to an empty string when the user is not found', () => {
+    // Arrange
     userServiceMock.getById.mockReturnValue(of({ data: null }));
     component.data = { createUserId: 'u1' };
 
+    // Act
     component.ngOnChanges({ data: {} as never });
 
+    // Assert
     expect(component.createUserName).toBe('');
   });
 });

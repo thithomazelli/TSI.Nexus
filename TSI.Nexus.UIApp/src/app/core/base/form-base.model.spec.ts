@@ -11,125 +11,181 @@ describe('FormBaseComponent', () => {
   }
 
   describe('isInvalid', () => {
-    it('returns false when the field does not exist', () => {
+    it('should return false when the field does not exist', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.isInvalid('missing')).toBe(false);
     });
 
-    it('returns false for an invalid field that has not been touched or submitted', () => {
+    it('should return false when an invalid field has not been touched or submitted', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.isInvalid('name')).toBe(false);
     });
 
-    it('returns true for an invalid field once it has been touched', () => {
+    it('should return true when an invalid field has been touched', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.markAsTouched();
 
+      // Act
+      // Assert
       expect(component.isInvalid('name')).toBe(true);
     });
 
-    it('returns true for an invalid field once the form has been submitted', () => {
+    it('should return true when an invalid field is checked after the form has been submitted', () => {
+      // Arrange
       const component = createComponent();
       component.submitted = true;
 
+      // Act
+      // Assert
       expect(component.isInvalid('name')).toBe(true);
     });
 
-    it('returns false for a valid, touched field', () => {
+    it('should return false when the field is valid and touched', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.setValue('Ana');
       component.form.get('name')?.markAsTouched();
 
+      // Act
+      // Assert
       expect(component.isInvalid('name')).toBe(false);
     });
   });
 
   describe('isValid', () => {
-    it('returns false when the field does not exist', () => {
+    it('should return false when the field does not exist', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.isValid('missing')).toBe(false);
     });
 
-    it('returns false for an invalid field', () => {
+    it('should return false when the field is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.markAsTouched();
 
+      // Act
+      // Assert
       expect(component.isValid('name')).toBe(false);
     });
 
-    it('returns false for a valid field that has not been touched or submitted', () => {
+    it('should return false when a valid field has not been touched or submitted', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.setValue('Ana');
 
+      // Act
+      // Assert
       expect(component.isValid('name')).toBe(false);
     });
 
-    it('returns false for a valid, touched field whose value is only whitespace', () => {
+    it('should return false when a valid, touched field has only whitespace as its value', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.setValue('   ');
       component.form.get('name')?.markAsTouched();
 
+      // Act
+      // Assert
       expect(component.isValid('name')).toBe(false);
     });
 
-    it('returns true for a valid, touched field with a real value', () => {
+    it('should return true when a valid, touched field has a real value', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.setValue('Ana');
       component.form.get('name')?.markAsTouched();
 
+      // Act
+      // Assert
       expect(component.isValid('name')).toBe(true);
     });
 
-    it('returns true for a valid field once the form has been submitted', () => {
+    it('should return true when a valid field is checked after the form has been submitted', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.setValue('Ana');
       component.submitted = true;
 
+      // Act
+      // Assert
       expect(component.isValid('name')).toBe(true);
     });
   });
 
   describe('inputHasError', () => {
-    it('returns false before the form has been submitted, even with a matching error', () => {
+    it('should return false when the form has not been submitted, even with a matching error', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.inputHasError('name', 'required')).toBe(false);
     });
 
-    it('returns true once submitted when the field has the given error', () => {
+    it('should return true when the field has the given error after being submitted', () => {
+      // Arrange
       const component = createComponent();
       component.submitted = true;
 
+      // Act
+      // Assert
       expect(component.inputHasError('name', 'required')).toBe(true);
     });
 
-    it('returns false once submitted when the field does not have the given error', () => {
+    it('should return false when the field does not have the given error after being submitted', () => {
+      // Arrange
       const component = createComponent();
       component.form.get('name')?.setValue('Ana');
       component.submitted = true;
 
+      // Act
+      // Assert
       expect(component.inputHasError('name', 'required')).toBe(false);
     });
 
-    it('returns false for a field that does not exist', () => {
+    it('should return false when the field does not exist', () => {
+      // Arrange
       const component = createComponent();
       component.submitted = true;
 
+      // Act
+      // Assert
       expect(component.inputHasError('missing', 'required')).toBe(false);
     });
   });
 
   describe('markAsTouched', () => {
-    it('marks the given field as touched', () => {
+    it('should mark the given field as touched when called', () => {
+      // Arrange
       const component = createComponent();
       expect(component.form.get('name')?.touched).toBe(false);
 
+      // Act
       component.markAsTouched('name');
 
+      // Assert
       expect(component.form.get('name')?.touched).toBe(true);
     });
 
-    it('does nothing when the field does not exist', () => {
+    it('should do nothing when the field does not exist', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => component.markAsTouched('missing')).not.toThrow();
     });
   });
