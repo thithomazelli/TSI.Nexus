@@ -70,138 +70,175 @@ describe('AppComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('falls back to a 30s refresh interval when the environment value is missing', () => {
+  it('should fall back to a 30s refresh interval when the environment value is missing', () => {
+    // Arrange
     const original = environment.tokenRefreshIntervalSeconds;
     (environment as any).tokenRefreshIntervalSeconds = undefined;
     try {
+      // Act
       const component = createComponent();
+
+      // Assert
       expect((component as any).refreshIntervalMs).toBe(30000);
     } finally {
       environment.tokenRefreshIntervalSeconds = original;
     }
   });
 
-  it('exposes isLoggedIn$ derived from AccountService.user$', () => {
+  it('should expose isLoggedIn$ derived from AccountService.user$', () => {
+    // Arrange
     const component = createComponent();
     let loggedIn: boolean | undefined;
     component.isLoggedIn$.subscribe((v) => (loggedIn = v));
 
+    // Act
     user$.next({ id: '1' } as unknown as User);
 
+    // Assert
     expect(loggedIn).toBe(true);
   });
 
   describe('showShell$', () => {
-    it('is false while logged out, even off /account', () => {
+    it('should be false while logged out, even off /account', () => {
+      // Arrange
       const component = createComponent('/');
       let shown: boolean | undefined;
       component.showShell$.subscribe((v) => (shown = v));
 
+      // Act
       user$.next(null);
 
+      // Assert
       expect(shown).toBe(false);
     });
 
-    it('is false while logged in but still on an /account page', () => {
+    it('should be false while logged in but still on an /account page', () => {
+      // Arrange
       const component = createComponent('/account/login');
       let shown: boolean | undefined;
       component.showShell$.subscribe((v) => (shown = v));
 
+      // Act
       user$.next({ id: '1' } as unknown as User);
 
+      // Assert
       expect(shown).toBe(false);
     });
 
-    it('is true once logged in and off /account', () => {
+    it('should be true once logged in and off /account', () => {
+      // Arrange
       const component = createComponent('/');
       let shown: boolean | undefined;
       component.showShell$.subscribe((v) => (shown = v));
 
+      // Act
       user$.next({ id: '1' } as unknown as User);
 
+      // Assert
       expect(shown).toBe(true);
     });
 
-    it('flips back to false when navigation lands back on an /account page', () => {
+    it('should flip back to false when navigation lands back on an /account page', () => {
+      // Arrange
       const component = createComponent('/');
       let shown: boolean | undefined;
       component.showShell$.subscribe((v) => (shown = v));
       user$.next({ id: '1' } as unknown as User);
       expect(shown).toBe(true);
 
+      // Act
       routerMock.events.next(new NavigationEnd(1, '/account/login', '/account/login'));
 
+      // Assert
       expect(shown).toBe(false);
     });
 
-    it('falls back to evt.url when urlAfterRedirects is empty', () => {
+    it('should fall back to evt.url when urlAfterRedirects is empty', () => {
+      // Arrange
       const component = createComponent('/');
       let shown: boolean | undefined;
       component.showShell$.subscribe((v) => (shown = v));
       user$.next({ id: '1' } as unknown as User);
 
+      // Act
       const navEnd = new NavigationEnd(1, '/account/login', '');
       routerMock.events.next(navEnd);
 
+      // Assert
       expect(shown).toBe(false);
     });
   });
 
   describe('ngOnInit', () => {
-    it('sets the page title and updates it again on language change', () => {
+    it('should set the page title and update it again when the language changes', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
       titleServiceMock.setTitle.mockClear();
       language$.next('en');
 
+      // Assert
       expect(titleServiceMock.setTitle).toHaveBeenCalledWith('APP_TITLE');
 
       component.ngOnDestroy();
     });
 
-    it('emits no user and does not call refreshUser when nothing is stored', () => {
+    it('should emit no user and not call refreshUser when nothing is stored', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(accountServiceMock.emitNoUser).toHaveBeenCalled();
       expect(accountServiceMock.refreshUser).not.toHaveBeenCalled();
 
       component.ngOnDestroy();
     });
 
-    it('logs out when the stored token is already expired', () => {
+    it('should log out when the stored token is already expired', () => {
+      // Arrange
       const component = createComponent();
       accountServiceMock.getStoredUser.mockReturnValue({ tokenExpiresAtUtc: '2000-01-01' });
       accountServiceMock.isTokenExpired.mockReturnValue(true);
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(accountServiceMock.logout).toHaveBeenCalled();
       expect(accountServiceMock.refreshUser).not.toHaveBeenCalled();
 
       component.ngOnDestroy();
     });
 
-    it('refreshes the session when a valid token is stored', () => {
+    it('should refresh the session when a valid token is stored', () => {
+      // Arrange
       const component = createComponent();
       accountServiceMock.getStoredUser.mockReturnValue({ tokenExpiresAtUtc: '2999-01-01' });
       accountServiceMock.isTokenExpired.mockReturnValue(false);
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(accountServiceMock.refreshUser).toHaveBeenCalled();
       expect(accountServiceMock.logout).not.toHaveBeenCalled();
 
       component.ngOnDestroy();
     });
 
-    it('logs out when the refreshUser call on init errors', () => {
+    it('should log out when the refreshUser call on init errors', () => {
+      // Arrange
       const component = createComponent();
       accountServiceMock.getStoredUser.mockReturnValue({ tokenExpiresAtUtc: '2999-01-01' });
       accountServiceMock.isTokenExpired.mockReturnValue(false);
@@ -209,34 +246,42 @@ describe('AppComponent', () => {
         new Observable((subscriber) => subscriber.error(new Error('fail'))),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(accountServiceMock.logout).toHaveBeenCalled();
 
       component.ngOnDestroy();
     });
 
-    it('does nothing when the service worker is disabled', () => {
+    it('should do nothing when the service worker is disabled', () => {
+      // Arrange
       const component = createComponent();
       swUpdateMock.isEnabled = false;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(() => versionUpdates$.next({ type: 'VERSION_READY' })).not.toThrow();
 
       component.ngOnDestroy();
     });
 
-    it('activates the update when a new version is ready', async () => {
+    it('should activate the update when a new version is ready', async () => {
+      // Arrange
       const component = createComponent();
       swUpdateMock.isEnabled = true;
       swUpdateMock.activateUpdate.mockResolvedValue(undefined);
 
+      // Act
       component.ngOnInit();
       versionUpdates$.next({ type: 'VERSION_READY' });
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       // document.location.reload() itself is not spyable under jsdom (non-configurable), but
       // jsdom no-ops real navigation attempts with a console warning rather than throwing, so
       // reaching this point without an unhandled error confirms the .then() callback ran.
@@ -245,24 +290,30 @@ describe('AppComponent', () => {
       component.ngOnDestroy();
     });
 
-    it('ignores service worker events that are not VERSION_READY', () => {
+    it('should ignore service worker events that are not VERSION_READY', () => {
+      // Arrange
       const component = createComponent();
       swUpdateMock.isEnabled = true;
 
+      // Act
       component.ngOnInit();
       versionUpdates$.next({ type: 'NO_NEW_VERSION_DETECTED' });
 
+      // Assert
       expect(swUpdateMock.activateUpdate).not.toHaveBeenCalled();
 
       component.ngOnDestroy();
     });
 
-    it('registers an activity listener per event that resets auto-logout when logged in', () => {
+    it('should register an activity listener per event that resets auto-logout when logged in', () => {
+      // Arrange
       const component = createComponent();
       accountServiceMock.getStoredUser.mockReturnValue({ tokenExpiresAtUtc: '2999-01-01' });
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(rendererMock.listen).toHaveBeenCalledWith('document', 'mousemove', expect.any(Function));
       const handler = rendererMock.listen.mock.calls.find((c) => c[1] === 'mousemove')![2];
       handler();
@@ -272,74 +323,92 @@ describe('AppComponent', () => {
       component.ngOnDestroy();
     });
 
-    it('does not reset auto-logout from an activity event when there is no stored user', () => {
+    it('should not reset auto-logout from an activity event when there is no stored user', () => {
+      // Arrange
       const component = createComponent();
       accountServiceMock.getStoredUser.mockReturnValue(null);
 
+      // Act
       component.ngOnInit();
       const handler = rendererMock.listen.mock.calls.find((c) => c[1] === 'mousemove')![2];
       handler();
 
+      // Assert
       expect(accountServiceMock.startAutoLogout).not.toHaveBeenCalled();
 
       component.ngOnDestroy();
     });
 
-    it('applies register-page classes on /account/register', () => {
+    it('should apply register-page classes when navigating to /account/register', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       routerMock.events.next(new NavigationEnd(1, '/account/register', '/account/register'));
 
+      // Assert
       expect(rendererMock.addClass).toHaveBeenCalledWith(document.body, 'register-page');
       expect(rendererMock.addClass).toHaveBeenCalledWith(document.body, 'bg-body-secondary');
 
       component.ngOnDestroy();
     });
 
-    it('applies login-page classes on /account/login', () => {
+    it('should apply login-page classes when navigating to /account/login', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       routerMock.events.next(new NavigationEnd(1, '/account/login', '/account/login'));
 
+      // Assert
       expect(rendererMock.addClass).toHaveBeenCalledWith(document.body, 'login-page');
 
       component.ngOnDestroy();
     });
 
-    it('falls back to evt.url when urlAfterRedirects is empty on a body-class navigation', () => {
+    it('should fall back to evt.url when urlAfterRedirects is empty on a body-class navigation', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       routerMock.events.next(new NavigationEnd(1, '/account/login', ''));
 
+      // Assert
       expect(rendererMock.addClass).toHaveBeenCalledWith(document.body, 'login-page');
 
       component.ngOnDestroy();
     });
 
-    it('applies no extra classes on a regular page, removing any previously applied ones', () => {
+    it('should apply no extra classes and remove previously applied ones on a regular page', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       routerMock.events.next(new NavigationEnd(1, '/account/login', '/account/login'));
       rendererMock.removeClass.mockClear();
 
+      // Act
       routerMock.events.next(new NavigationEnd(2, '/dashboard', '/dashboard'));
 
+      // Assert
       expect(rendererMock.removeClass).toHaveBeenCalledWith(document.body, 'login-page');
 
       component.ngOnDestroy();
     });
 
-    it('delegates NavigationError router events to the chunk-load-error handler', () => {
+    it('should delegate NavigationError router events to the chunk-load-error handler', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const handleSpy = vi.spyOn(component as any, 'handleChunkLoadError');
 
+      // Act
       const navError = new NavigationError(1, '/orders', new Error('boom'));
       routerMock.events.next(navError);
 
+      // Assert
       expect(handleSpy).toHaveBeenCalledWith(navError);
 
       component.ngOnDestroy();
@@ -347,31 +416,40 @@ describe('AppComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes, removes applied body classes, and unlistens activity handlers', () => {
+    it('should unsubscribe, remove applied body classes, and unlisten activity handlers when called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       routerMock.events.next(new NavigationEnd(1, '/account/login', '/account/login'));
       rendererMock.removeClass.mockClear();
 
+      // Act
       component.ngOnDestroy();
 
+      // Assert
       expect(rendererMock.removeClass).toHaveBeenCalledWith(document.body, 'login-page');
       expect(() => routerMock.events.next(new NavigationEnd(2, '/', '/'))).not.toThrow();
     });
 
-    it('swallows an error thrown by an activity unlisten function', () => {
+    it('should swallow an error thrown by an activity unlisten function', () => {
+      // Arrange
       const component = createComponent();
       rendererMock.listen.mockReturnValue(() => {
         throw new Error('fail');
       });
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
-    it('does not throw when nothing was ever subscribed', () => {
+    it('should not throw when nothing was ever subscribed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
@@ -389,84 +467,109 @@ describe('AppComponent', () => {
       return JSON.parse(sessionStorage.getItem('nexusChunkReload') || 'null');
     }
 
-    it('ignores an unrelated navigation error', () => {
+    it('should ignore an unrelated navigation error', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       call(component, new Error('some other failure'));
 
+      // Assert
       expect(storedReload()).toBeNull();
     });
 
-    it('reloads via a hard navigation for a ChunkLoadError', () => {
+    it('should reload via a hard navigation when the error is a ChunkLoadError', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       call(component, 'ChunkLoadError', '/orders');
 
+      // Assert
       expect(storedReload()?.url).toBe('/orders');
     });
 
-    it('reloads for a "Loading chunk ... failed" webpack-style message', () => {
+    it('should reload when the error is a "Loading chunk ... failed" webpack-style message', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       call(component, { message: 'Loading chunk 12 failed' }, '/orders');
 
+      // Assert
       expect(storedReload()?.url).toBe('/orders');
     });
 
-    it('treats a missing error entirely as an empty message (ignored)', () => {
+    it('should treat a missing error entirely as an empty message and ignore it', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       call(component, undefined);
 
+      // Assert
       expect(storedReload()).toBeNull();
     });
 
-    it('does not reload again for the same url within the 15s throttle window', () => {
+    it('should not reload again for the same url within the 15s throttle window', () => {
+      // Arrange
       const component = createComponent();
       const original = { url: '/orders', ts: Date.now() };
       sessionStorage.setItem('nexusChunkReload', JSON.stringify(original));
 
+      // Act
       call(component, 'ChunkLoadError', '/orders');
 
+      // Assert
       expect(storedReload()!.ts).toBe(original.ts);
     });
 
-    it('reloads again once the throttle window has elapsed', () => {
+    it('should reload again once the throttle window has elapsed', () => {
+      // Arrange
       const component = createComponent();
       const staleTs = Date.now() - 20000;
       sessionStorage.setItem('nexusChunkReload', JSON.stringify({ url: '/orders', ts: staleTs }));
 
+      // Act
       call(component, 'ChunkLoadError', '/orders');
 
+      // Assert
       expect(storedReload()!.ts).not.toBe(staleTs);
     });
 
-    it('reloads for a different url even within the throttle window', () => {
+    it('should reload for a different url even within the throttle window', () => {
+      // Arrange
       const component = createComponent();
       sessionStorage.setItem(
         'nexusChunkReload',
         JSON.stringify({ url: '/orders', ts: Date.now() }),
       );
 
+      // Act
       call(component, 'ChunkLoadError', '/quotes');
 
+      // Assert
       expect(storedReload()?.url).toBe('/quotes');
     });
   });
 
   describe('checkRefreshOnNavigation (private, via NavigationEnd events)', () => {
-    it('does not attempt a refresh on an /account page', () => {
+    it('should not attempt a refresh on an /account page', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.refreshUser.mockClear();
 
+      // Act
       routerMock.events.next(new NavigationEnd(2, '/account/login', '/account/login'));
 
+      // Assert
       expect(accountServiceMock.refreshUser).not.toHaveBeenCalled();
       component.ngOnDestroy();
     });
 
-    it('throttles repeated refresh attempts within the interval', () => {
+    it('should throttle repeated refresh attempts within the interval', () => {
+      // Arrange
       const component = createComponent();
       (component as any).refreshIntervalMs = 999999;
       (component as any).lastRefresh = Date.now();
@@ -475,18 +578,23 @@ describe('AppComponent', () => {
       accountServiceMock.getStoredUser.mockReturnValue({ tokenExpiresAtUtc: '2999-01-01' });
       accountServiceMock.isTokenExpired.mockReturnValue(false);
 
+      // Act
       routerMock.events.next(new NavigationEnd(2, '/dashboard', '/dashboard'));
 
+      // Assert
       expect(accountServiceMock.refreshUser).not.toHaveBeenCalled();
       component.ngOnDestroy();
     });
 
-    it('does nothing when there is no stored user on navigation', () => {
+    it('should do nothing when there is no stored user on navigation', () => {
+      // Arrange
       const component = createComponent();
       (component as any).refreshIntervalMs = 0;
       component.ngOnInit();
       accountServiceMock.getStoredUser.mockReturnValue(null);
 
+      // Act
+      // Assert
       expect(() =>
         routerMock.events.next(new NavigationEnd(2, '/dashboard', '/dashboard')),
       ).not.toThrow();
@@ -494,21 +602,25 @@ describe('AppComponent', () => {
       component.ngOnDestroy();
     });
 
-    it('logs out immediately when the stored token has expired', () => {
+    it('should log out immediately when the stored token has expired', () => {
+      // Arrange
       const component = createComponent();
       (component as any).refreshIntervalMs = 0;
       component.ngOnInit();
       accountServiceMock.getStoredUser.mockReturnValue({ tokenExpiresAtUtc: '2000-01-01' });
       accountServiceMock.isTokenExpired.mockReturnValue(true);
 
+      // Act
       routerMock.events.next(new NavigationEnd(2, '/dashboard', '/dashboard'));
 
+      // Assert
       expect(accountServiceMock.logout).toHaveBeenCalled();
       expect(accountServiceMock.refreshUser).not.toHaveBeenCalled();
       component.ngOnDestroy();
     });
 
-    it('refreshes the token and records the timestamp on success', () => {
+    it('should refresh the token and record the timestamp on success', () => {
+      // Arrange
       const component = createComponent();
       (component as any).refreshIntervalMs = 0;
       component.ngOnInit();
@@ -516,13 +628,16 @@ describe('AppComponent', () => {
       accountServiceMock.isTokenExpired.mockReturnValue(false);
       accountServiceMock.refreshUser.mockReturnValue(of(undefined));
 
+      // Act
       routerMock.events.next(new NavigationEnd(2, '/dashboard', '/dashboard'));
 
+      // Assert
       expect((component as any).lastRefresh).toBeGreaterThan(0);
       component.ngOnDestroy();
     });
 
-    it('logs out and records the timestamp when the refresh request errors', () => {
+    it('should log out and record the timestamp when the refresh request errors', () => {
+      // Arrange
       const component = createComponent();
       (component as any).refreshIntervalMs = 0;
       component.ngOnInit();
@@ -532,8 +647,10 @@ describe('AppComponent', () => {
         new Observable((subscriber) => subscriber.error(new Error('fail'))),
       );
 
+      // Act
       routerMock.events.next(new NavigationEnd(2, '/dashboard', '/dashboard'));
 
+      // Assert
       expect(accountServiceMock.logout).toHaveBeenCalled();
       expect((component as any).lastRefresh).toBeGreaterThan(0);
       component.ngOnDestroy();

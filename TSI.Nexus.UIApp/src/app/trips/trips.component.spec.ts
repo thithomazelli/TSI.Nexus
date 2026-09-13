@@ -76,88 +76,123 @@ describe('TripsComponent', () => {
     window.history.pushState({}, '', '/trips');
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('isTopLevelList', () => {
-    it('is true for the main trips screen', () => {
+    it('should be true when it is the main trips screen', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(true);
     });
 
-    it('is false when embedded in a driver with an id', () => {
+    it('should be false when embedded in a driver with an id', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(false);
     });
 
-    it('is false when embedded in a vehicle with an id', () => {
+    it('should be false when embedded in a vehicle with an id', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Vehicle';
       component.parentData = { id: 'v1' } as Vehicle;
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(false);
     });
 
-    it('is false when embedded in any other entity with an id', () => {
+    it('should be false when embedded in any other entity with an id', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(false);
     });
 
-    it('is true when an entity is set but the parent has no id', () => {
+    it('should be true when an entity is set but the parent has no id', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = null;
+
+      // Act
+      // Assert
       expect(component.isTopLevelList).toBe(true);
     });
   });
 
   describe('ngOnInit', () => {
-    it('builds the grid and reacts to language changes', () => {
+    it('should build the grid and react to language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(before.length).toBeGreaterThan(0);
       expect(component.columnDefs).not.toBe(before);
     });
 
-    it('top-level: purges the grid cache on tripChanged$, skipping the initial replay', () => {
+    it('should purge the grid cache on tripChanged$, skipping the initial replay, when top-level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       tripChanged$.next();
+
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
 
       tripChanged$.next();
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalledTimes(1);
     });
 
-    it('embedded: reloads trips on every tripChanged$ emission, including the first', () => {
+    it('should reload trips on every tripChanged$ emission, including the first, when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
       tripServiceMock.getByDriverId.mockReturnValue(of({ data: [] }));
       component.ngOnInit();
 
+      // Act
       tripChanged$.next();
 
+      // Assert
       expect(tripServiceMock.getByDriverId).toHaveBeenCalledWith('d1');
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes tripChanged$ and completes the destroy subject', () => {
+    it('should unsubscribe tripChanged$ and complete the destroy subject when called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
 
       tripChanged$.next();
@@ -166,21 +201,27 @@ describe('TripsComponent', () => {
       );
     });
 
-    it('does not throw when called before ngOnInit ever subscribed', () => {
+    it('should not throw when called before ngOnInit ever subscribed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('openModal', () => {
-    it('prefills a new trip with the parent vehicle on add', () => {
+    it('should prefill a new trip with the parent vehicle when adding', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Vehicle';
       component.parentData = { id: 'v1', plate: 'ABC1234' } as Vehicle;
 
+      // Act
       component.openModal({ isEdit: false });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -189,13 +230,16 @@ describe('TripsComponent', () => {
       );
     });
 
-    it('prefills a new trip with the parent business partner on add', () => {
+    it('should prefill a new trip with the parent business partner when adding', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1', name: 'Motorista A' } as Driver;
 
+      // Act
       component.openModal({ isEdit: false });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -207,25 +251,31 @@ describe('TripsComponent', () => {
       );
     });
 
-    it('does not overwrite the trip data when editing', () => {
+    it('should not overwrite the trip data when editing', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Vehicle';
       component.parentData = { id: 'v1' } as Vehicle;
       const trip = { id: 't1' };
 
+      // Act
       component.openModal({ isEdit: true, data: trip });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ data: trip }),
       );
     });
 
-    it('does not prefill when there is no parent data', () => {
+    it('should not prefill when there is no parent data', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.openModal({ isEdit: false });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         { isEdit: false },
@@ -234,7 +284,8 @@ describe('TripsComponent', () => {
   });
 
   describe('deleteTrip', () => {
-    it('top-level: purges the grid cache on success', () => {
+    it('should purge the grid cache when the deletion succeeds, when top-level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -242,8 +293,10 @@ describe('TripsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteTrip({ id: 't1' } as Trip);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -253,7 +306,8 @@ describe('TripsComponent', () => {
       );
     });
 
-    it('embedded: removes the trip from the filtered rows on success', () => {
+    it('should remove the trip from the filtered rows when the deletion succeeds, when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
@@ -262,12 +316,15 @@ describe('TripsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteTrip({ id: 't1' } as Trip);
 
+      // Assert
       expect(component.filteredRowData).toEqual([{ id: 't2' }]);
     });
 
-    it('does not touch rows when the delete reports an error status', () => {
+    it('should not touch rows when the delete reports an error status', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
@@ -276,8 +333,10 @@ describe('TripsComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' }),
       );
 
+      // Act
       component.deleteTrip({ id: 't1' } as Trip);
 
+      // Assert
       expect(component.filteredRowData).toEqual([{ id: 't1' }]);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -288,11 +347,14 @@ describe('TripsComponent', () => {
   });
 
   describe('refreshTrips', () => {
-    it('top-level: just shows a notification', () => {
+    it('should just show a notification when top-level', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.refreshTrips();
 
+      // Assert
       expect(tripServiceMock.getAll).not.toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -300,14 +362,17 @@ describe('TripsComponent', () => {
       );
     });
 
-    it('embedded: reloads trips for the driver and notifies', () => {
+    it('should reload trips for the driver and notify when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
       tripServiceMock.getByDriverId.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.refreshTrips();
 
+      // Assert
       expect(tripServiceMock.getByDriverId).toHaveBeenCalledWith('d1');
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -317,17 +382,21 @@ describe('TripsComponent', () => {
   });
 
   describe('applyFilters / clearFilters', () => {
-    it('top-level: applyFilters just purges the grid cache', () => {
+    it('should just purge the grid cache when applyFilters is called top-level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('embedded: filters client-side rows by status', () => {
+    it('should filter client-side rows by status when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
@@ -337,24 +406,30 @@ describe('TripsComponent', () => {
       ];
       component.filterStatus.Open = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t1']);
     });
 
-    it('embedded: treats a row with no status as not matching any selected status', () => {
+    it('should treat a row with no status as not matching any selected status when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
       component.rowData = [{ id: 't1', status: undefined } as unknown as Trip];
       component.filterStatus.Open = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData).toEqual([]);
     });
 
-    it('embedded: filters client-side rows by an end date only', () => {
+    it('should filter client-side rows by an end date only when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
@@ -364,12 +439,15 @@ describe('TripsComponent', () => {
       ];
       component.filterEndDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t1']);
     });
 
-    it('embedded: filters client-side rows by a start/end date range', () => {
+    it('should filter client-side rows by a start/end date range when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
@@ -381,12 +459,15 @@ describe('TripsComponent', () => {
       component.filterStartDate = '2024-01-15';
       component.filterEndDate = '2024-02-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t2']);
     });
 
-    it('embedded: excludes rows without a createDate when a date filter is active', () => {
+    it('should exclude rows without a createDate when a date filter is active, when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
@@ -396,20 +477,25 @@ describe('TripsComponent', () => {
       ];
       component.filterStartDate = '2024-01-01';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t2']);
     });
 
-    it('clearFilters resets state and reapplies (embedded)', () => {
+    it('should reset state and reapply when clearFilters is called, when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
       component.rowData = [{ id: 't1' } as Trip];
       component.filterStatus.Open = true;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(component.filterStatus).toEqual({
         Open: false,
         WaitingPayment: false,
@@ -418,26 +504,32 @@ describe('TripsComponent', () => {
       expect(component.filteredRowData).toEqual([{ id: 't1' }]);
     });
 
-    it('clearFilters just purges the grid cache (top-level)', () => {
+    it('should just purge the grid cache when clearFilters is called, when top-level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
   });
 
   describe('pagedDataSource', () => {
-    it('forwards the active filters to the paged request', () => {
+    it('should forward the active filters to the paged request', () => {
+      // Arrange
       const component = createComponent();
       component.filterStartDate = '2024-01-01';
       component.filterEndDate = '2024-01-31';
       component.filterStatus.Closed = true;
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(tripServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({
           startDate: '2024-01-01',
@@ -447,11 +539,14 @@ describe('TripsComponent', () => {
       );
     });
 
-    it('omits start/end date when neither filter is set', () => {
+    it('should omit start/end date when neither filter is set', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(tripServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({ startDate: undefined, endDate: undefined }),
       );
@@ -459,7 +554,8 @@ describe('TripsComponent', () => {
   });
 
   describe('setFiltersFromQueryParams (via ngOnInit)', () => {
-    it('reads status and date filters from the URL', () => {
+    it('should read status and date filters from the URL', () => {
+      // Arrange
       window.history.pushState(
         {},
         '',
@@ -467,8 +563,10 @@ describe('TripsComponent', () => {
       );
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.filterStatus.Open).toBe(true);
       expect(component.filterStatus.Closed).toBe(true);
       expect(component.filterStatus.WaitingPayment).toBe(false);
@@ -477,12 +575,15 @@ describe('TripsComponent', () => {
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('ignores unknown status values from the URL', () => {
+    it('should ignore unknown status values from the URL', () => {
+      // Arrange
       window.history.pushState({}, '', '/trips?status=Bogus');
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.filterStatus).toEqual({
         Open: false,
         WaitingPayment: false,
@@ -490,29 +591,38 @@ describe('TripsComponent', () => {
       });
     });
 
-    it('leaves filters empty and showFiltersOnInit false with no query params', () => {
+    it('should leave filters empty and showFiltersOnInit false when there are no query params', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showFiltersOnInit).toBe(false);
     });
 
-    it('sets showFiltersOnInit from a status filter alone, with no date range', () => {
+    it('should set showFiltersOnInit from a status filter alone, with no date range', () => {
+      // Arrange
       window.history.pushState({}, '', '/trips?status=Open');
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showFiltersOnInit).toBe(true);
     });
   });
 
   describe('getTrips (private, direct call)', () => {
-    it('falls back to tripService.getAll() when not scoped to any parent entity', () => {
+    it('should fall back to tripService.getAll() when not scoped to any parent entity', () => {
+      // Arrange
       const component = createComponent();
       tripServiceMock.getAll.mockReturnValue(of({ data: [] }));
 
+      // Act
+      // Assert
       expect(() => (component as any).getTrips()).not.toThrow();
 
       expect(tripServiceMock.getAll).toHaveBeenCalled();
@@ -521,51 +631,63 @@ describe('TripsComponent', () => {
   });
 
   describe('getTrips (via refreshTrips on embedded views)', () => {
-    it('fetches by vehicle when embedded in a vehicle', () => {
+    it('should fetch by vehicle when embedded in a vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Vehicle';
       component.parentData = { id: 'v1' } as Vehicle;
       tripServiceMock.getByVehicleId.mockReturnValue(of({ data: [{ id: 't1' }] }));
 
+      // Act
       component.refreshTrips();
 
+      // Assert
       expect(tripServiceMock.getByVehicleId).toHaveBeenCalledWith('v1');
       expect(component.rowData).toEqual([{ id: 't1' }]);
       expect(component.loading).toBe(false);
     });
 
-    it('fetches by business partner for any other embedded entity', () => {
+    it('should fetch by business partner when embedded in any other entity', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' } as Company;
       tripServiceMock.getByBusinessPartnerId.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.refreshTrips();
 
+      // Assert
       expect(tripServiceMock.getByBusinessPartnerId).toHaveBeenCalledWith('bp1');
     });
 
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
       tripServiceMock.getByDriverId.mockReturnValue(of({}));
 
+      // Act
       component.refreshTrips();
 
+      // Assert
       expect(component.rowData).toEqual([]);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Driver';
       component.parentData = { id: 'd1' } as Driver;
       const errorSubject = new Subject<never>();
       tripServiceMock.getByDriverId.mockReturnValue(errorSubject.asObservable());
 
+      // Act
       component.refreshTrips();
       expect(() => errorSubject.error(new Error('boom'))).not.toThrow();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
@@ -575,10 +697,12 @@ describe('TripsComponent', () => {
       return component.columnDefs.find((c) => c.field === field)!;
     }
 
-    it('renders the trip number and business partner name as links', () => {
+    it('should render the trip number and business partner name as links', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       const tripNumberHtml = (columnByField(component, 'tripNumber').cellRenderer as any)({
         value: 'T-1',
       });
@@ -586,14 +710,17 @@ describe('TripsComponent', () => {
         value: 'Cliente A',
       });
 
+      // Assert
       expect(tripNumberHtml).toContain('T-1');
       expect(partnerHtml).toContain('Cliente A');
     });
 
-    it('renders an empty link when the cell value is missing', () => {
+    it('should render an empty link when the cell value is missing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       const tripNumberHtml = (columnByField(component, 'tripNumber').cellRenderer as any)({
         value: null,
       });
@@ -601,30 +728,41 @@ describe('TripsComponent', () => {
         value: null,
       });
 
+      // Assert
       expect(tripNumberHtml).toContain('ag-link');
       expect(partnerHtml).toContain('ag-link');
     });
 
-    it('hides the business partner column when embedded in a business partner', () => {
+    it('should hide the business partner column when embedded in a business partner', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(columnByField(component, 'businessPartnerName').hide).toBe(true);
     });
 
-    it('hides the vehicle plate column when embedded in a vehicle', () => {
+    it('should hide the vehicle plate column when embedded in a vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'Vehicle';
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(columnByField(component, 'vehiclePlate').hide).toBe(true);
     });
 
-    it('formats total price and date columns', () => {
+    it('should format total price and date columns', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       const priceHtml = (columnByField(component, 'totalPrice').valueFormatter as any)({
         value: 1234.5,
       });
@@ -632,6 +770,7 @@ describe('TripsComponent', () => {
         value: '2024-01-15',
       });
 
+      // Assert
       expect(typeof priceHtml).toBe('string');
       expect(typeof dateHtml).toBe('string');
     });
@@ -641,23 +780,29 @@ describe('TripsComponent', () => {
       ['Open', 'QUOTES.STATUS_OPEN', 'info'],
       ['WaitingPayment', 'QUOTES.STATUS_WAITING_PAYMENT', 'warning'],
       ['SomethingElse', 'SomethingElse', 'secondary'],
-    ])('renders the %s status badge', (value, expectedLabel, expectedColor) => {
+    ])('should render the %s status badge with the expected label and color', (value, expectedLabel, expectedColor) => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       const html = (columnByField(component, 'status').cellRenderer as any)({ value });
 
+      // Assert
       expect(html).toContain(expectedColor);
       expect(html).toContain(expectedLabel);
     });
 
-    it('renders the action buttons column', () => {
+    it('should render the action buttons column', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       const actionsColumn = component.columnDefs[component.columnDefs.length - 1];
       const html = (actionsColumn.cellRenderer as any)();
 
+      // Assert
       expect(html).toContain('data-action="view"');
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
