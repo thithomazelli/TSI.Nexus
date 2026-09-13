@@ -19,31 +19,46 @@ describe('PurchaseOrderProductService', () => {
     return TestBed.inject(PurchaseOrderProductService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getAll/getByEntityId hit the expected endpoints', () => {
+  it('should hit the expected endpoints when getAll/getByEntityId are called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAll();
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('purchaseorderproducts/getAll');
 
     service.getByEntityId('po1', 'PurchaseOrder');
-    expect(apiServiceMock.get).toHaveBeenCalledWith('purchaseorderproducts/getByPurchaseOrderId/po1');
+    expect(apiServiceMock.get).toHaveBeenCalledWith(
+      'purchaseorderproducts/getByPurchaseOrderId/po1',
+    );
   });
 
-  it('purchaseOrderProductChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when purchaseOrderProductChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.purchaseOrderProductChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each notify purchaseOrderProductChanged$ after the request completes', () => {
+  it('should notify purchaseOrderProductChanged$ after each request completes when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<PurchaseOrderProduct>>();
     const updateResponse$ = new Subject<WebApiResponse<PurchaseOrderProduct>>();
@@ -51,12 +66,12 @@ describe('PurchaseOrderProductService', () => {
     apiServiceMock.post.mockReturnValue(addResponse$);
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
-
     let emissions = 0;
     service.purchaseOrderProductChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
     expect(emissions).toBe(1);
 
+    // Act / Assert
     service.add({} as PurchaseOrderProduct).subscribe();
     addResponse$.next({} as WebApiResponse<PurchaseOrderProduct>);
     TestBed.flushEffects();
@@ -74,31 +89,37 @@ describe('PurchaseOrderProductService', () => {
   });
 
   describe('addTemporary', () => {
-    it('emits the item on purchaseOrderProductAdded$ and returns a synthetic success response', () => {
+    it('should emit the item on purchaseOrderProductAdded$ and return a synthetic success response', () => {
+      // Arrange
       const service = createService();
       const item = { id: 'pop1' } as PurchaseOrderProduct;
       let added: PurchaseOrderProduct | undefined;
       service.purchaseOrderProductAdded$.subscribe((v) => (added = v));
 
+      // Act
       let response: WebApiResponse<PurchaseOrderProduct> | undefined;
       service.addTemporary(item).subscribe((v) => (response = v));
 
+      // Assert
       expect(added).toBe(item);
       expect(response?.status).toBe(ResponseStatus.Success);
       expect(response?.data).toBe(item);
       expect(apiServiceMock.post).not.toHaveBeenCalled();
     });
 
-    it('does not notify purchaseOrderProductChanged$ (it is not a persisted change)', () => {
+    it('should not notify purchaseOrderProductChanged$ since it is not a persisted change', () => {
+      // Arrange
       const service = createService();
       let emissions = 0;
       service.purchaseOrderProductChanged$.subscribe(() => emissions++);
       TestBed.flushEffects();
       expect(emissions).toBe(1);
 
+      // Act
       service.addTemporary({} as PurchaseOrderProduct).subscribe();
       TestBed.flushEffects();
 
+      // Assert
       expect(emissions).toBe(1);
     });
   });

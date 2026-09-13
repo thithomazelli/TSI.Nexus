@@ -72,88 +72,115 @@ describe('TransactionsComponent', () => {
     window.history.pushState({}, '', '/transactions');
   });
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('isTopLevelList', () => {
-    it('is true for the main transactions screen', () => {
+    it('should be true when the screen is the main transactions screen', () => {
+      // Act / Assert
       expect(createComponent().isTopLevelList).toBe(true);
     });
 
-    it('is false when embedded under a parent with an id', () => {
+    it('should be false when embedded under a parent with an id', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
+
+      // Act / Assert
       expect(component.isTopLevelList).toBe(false);
     });
   });
 
   describe('ngOnInit', () => {
-    it('builds the grid and reacts to language changes', () => {
+    it('should build the grid and react to language changes when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(before.length).toBeGreaterThan(0);
       expect(component.columnDefs).not.toBe(before);
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('top-level: purges the grid cache on transactionChanged$, skipping the initial replay', () => {
+    it('should purge the grid cache on transactionChanged$, skipping the initial replay, at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       transactionChanged$.next();
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
-
       transactionChanged$.next();
+
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalledTimes(1);
     });
 
-    it('embedded: reloads on every transactionChanged$ emission', () => {
+    it('should reload on every transactionChanged$ emission when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
       transactionServiceMock.getByBusinessPartnerId.mockReturnValue(of({ data: [] }));
       component.ngOnInit();
 
+      // Act
       transactionChanged$.next();
 
+      // Assert
       expect(transactionServiceMock.getByBusinessPartnerId).toHaveBeenCalledWith('bp1');
     });
 
-    it('stops reacting after ngOnDestroy', () => {
+    it('should stop reacting when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
       component.ngOnDestroy();
 
+      // Act
       transactionChanged$.next();
       transactionChanged$.next();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('does not throw when destroyed before ngOnInit ever subscribed', () => {
+    it('should not throw when destroyed before ngOnInit ever subscribed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('typeMap / conditionMap / statusMap getters', () => {
-    it('exposes translated labels', () => {
+    it('should expose translated labels when read', () => {
+      // Arrange
       const component = createComponent();
 
-      expect(component.typeMap).toEqual({ Incoming: 'REPORTS.INCOMING', Outgoing: 'REPORTS.OUTGOING' });
+      // Act / Assert
+      expect(component.typeMap).toEqual({
+        Incoming: 'REPORTS.INCOMING',
+        Outgoing: 'REPORTS.OUTGOING',
+      });
       expect(component.conditionMap).toEqual({
         FullPayment: 'TRANSACTIONS.FULL_PAYMENT',
         InPayments: 'TRANSACTIONS.IN_PAYMENTS',
@@ -167,19 +194,23 @@ describe('TransactionsComponent', () => {
   });
 
   describe('openModal', () => {
-    it('opens the transaction details modal', () => {
+    it('should open the transaction details modal when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.openModal({ isEdit: false });
 
-      expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
-        expect.anything(),
-        { isEdit: false },
-      );
+      // Assert
+      expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(expect.anything(), {
+        isEdit: false,
+      });
     });
   });
 
   describe('deleteTransaction', () => {
-    it('top-level: purges the grid cache on success', () => {
+    it('should purge the grid cache when the deletion succeeds at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -187,12 +218,15 @@ describe('TransactionsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteTransaction({ id: 't1' } as Transaction);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('embedded: removes the transaction from the filtered rows on success', () => {
+    it('should remove the transaction from the filtered rows when the deletion succeeds while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
@@ -201,12 +235,15 @@ describe('TransactionsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteTransaction({ id: 't1' } as Transaction);
 
+      // Assert
       expect(component.filteredRowData).toEqual([{ id: 't2' }]);
     });
 
-    it('does not touch the grid/rows when the deletion fails, but still notifies', () => {
+    it('should not touch the grid/rows but still notify when the deletion fails', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -214,8 +251,10 @@ describe('TransactionsComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falha' }),
       );
 
+      // Act
       component.deleteTransaction({ id: 't1' } as Transaction);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -226,11 +265,14 @@ describe('TransactionsComponent', () => {
   });
 
   describe('refreshTransactions', () => {
-    it('top-level: just shows a notification', () => {
+    it('should just show a notification at the top level', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.refreshTransactions();
 
+      // Assert
       expect(transactionServiceMock.getAll).not.toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -238,45 +280,65 @@ describe('TransactionsComponent', () => {
       );
     });
 
-    it('embedded: reloads transactions for the business partner', () => {
+    it('should reload transactions for the business partner when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
       transactionServiceMock.getByBusinessPartnerId.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.refreshTransactions();
 
+      // Assert
       expect(transactionServiceMock.getByBusinessPartnerId).toHaveBeenCalledWith('bp1');
     });
   });
 
   describe('applyFilters / clearFilters', () => {
-    it('top-level: applyFilters just purges the grid cache', () => {
+    it('should just purge the grid cache when applyFilters is called at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('embedded: filters client-side rows by status and type', () => {
+    it('should filter client-side rows by status and type when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
       component.rowData = [
-        { id: 't1', status: 'Approved', type: 'Incoming', date: '2024-01-01' } as unknown as Transaction,
-        { id: 't2', status: 'Pending', type: 'Outgoing', date: '2024-01-02' } as unknown as Transaction,
+        {
+          id: 't1',
+          status: 'Approved',
+          type: 'Incoming',
+          date: '2024-01-01',
+        } as unknown as Transaction,
+        {
+          id: 't2',
+          status: 'Pending',
+          type: 'Outgoing',
+          date: '2024-01-02',
+        } as unknown as Transaction,
       ];
       component.filterStatus.Approved = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t1']);
     });
 
-    it('clearFilters resets state', () => {
+    it('should reset state when clearFilters is called', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
@@ -284,8 +346,10 @@ describe('TransactionsComponent', () => {
       component.filterStatus.Approved = true;
       component.filterType.Incoming = true;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(component.filterStatus).toEqual({
         Approved: false,
         Pending: false,
@@ -295,18 +359,22 @@ describe('TransactionsComponent', () => {
       expect(component.filteredRowData).toEqual([{ id: 't1' }]);
     });
 
-    it('top-level: clearFilters purges the grid cache without touching filteredRowData', () => {
+    it('should purge the grid cache without touching filteredRowData when clearFilters is called at the top level', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.filterStatus.Approved = true;
 
+      // Act
       component.clearFilters();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('embedded: excludes rows with no date when a date filter is active', () => {
+    it('should exclude rows with no date when a date filter is active while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
@@ -316,12 +384,15 @@ describe('TransactionsComponent', () => {
       ];
       component.filterStartDate = '2024-01-01';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t2']);
     });
 
-    it('embedded: filters by start date only', () => {
+    it('should filter by start date only while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
@@ -331,12 +402,15 @@ describe('TransactionsComponent', () => {
       ];
       component.filterStartDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t2']);
     });
 
-    it('embedded: filters by end date only', () => {
+    it('should filter by end date only while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
@@ -346,24 +420,30 @@ describe('TransactionsComponent', () => {
       ];
       component.filterEndDate = '2024-01-15';
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t1']);
     });
 
-    it('embedded: treats a missing status as an empty string when filtering by status', () => {
+    it('should treat a missing status as an empty string when filtering by status while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
       component.rowData = [{ id: 't1' } as unknown as Transaction];
       component.filterStatus.Approved = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData).toEqual([]);
     });
 
-    it('embedded: filters by type', () => {
+    it('should filter by type while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
@@ -373,37 +453,46 @@ describe('TransactionsComponent', () => {
       ];
       component.filterType.Incoming = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData.map((t) => t.id)).toEqual(['t1']);
     });
 
-    it('embedded: treats a missing type as an empty string when filtering by type', () => {
+    it('should treat a missing type as an empty string when filtering by type while embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
       component.rowData = [{ id: 't1' } as unknown as Transaction];
       component.filterType.Incoming = true;
 
+      // Act
       component.applyFilters();
 
+      // Assert
       expect(component.filteredRowData).toEqual([]);
     });
   });
 
   describe('getTransactions (private, via ngOnInit/refreshTransactions)', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
       transactionServiceMock.getByBusinessPartnerId.mockReturnValue(of({}));
 
+      // Act
       component.refreshTransactions();
 
+      // Assert
       expect(component.rowData).toEqual([]);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.parentData = { id: 'bp1' };
@@ -411,36 +500,46 @@ describe('TransactionsComponent', () => {
         throwError(() => new Error('fail')),
       );
 
+      // Act
       component.refreshTransactions();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
 
-    it('runs without a callback when called directly with none', () => {
+    it('should run without a callback when called directly with none', () => {
+      // Arrange
       const component = createComponent();
       transactionServiceMock.getAll.mockReturnValue(of({ data: [] }));
 
+      // Act / Assert
       expect(() => (component as any).getTransactions()).not.toThrow();
     });
   });
 
   describe('pagedDataSource', () => {
-    it('forwards the active status filters', () => {
+    it('should forward the active status filters when pagedDataSource is called', () => {
+      // Arrange
       const component = createComponent();
       component.filterStatus.Delayed = true;
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(transactionServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({ statuses: ['Delayed'] }),
       );
     });
 
-    it('falls back to undefined dates when no date filter is set', () => {
+    it('should fall back to undefined dates when no date filter is set', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(transactionServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({ startDate: undefined, endDate: undefined, statuses: [] }),
       );
@@ -448,7 +547,8 @@ describe('TransactionsComponent', () => {
   });
 
   describe('setFiltersFromQueryParams (via ngOnInit)', () => {
-    it('reads filters from the URL', () => {
+    it('should read filters from the URL when ngOnInit is called', () => {
+      // Arrange
       window.history.pushState(
         {},
         '',
@@ -456,8 +556,10 @@ describe('TransactionsComponent', () => {
       );
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.filterStatus.Approved).toBe(true);
       expect(component.filterType.Incoming).toBe(true);
       expect(component.filterStartDate).toBe('2024-01-01');
@@ -465,42 +567,53 @@ describe('TransactionsComponent', () => {
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('ignores status/type values that are not known filter keys', () => {
+    it('should ignore status/type values that are not known filter keys', () => {
+      // Arrange
       window.history.pushState({}, '', '/transactions?status=Bogus,Approved&type=Bogus,Incoming');
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.filterStatus.Approved).toBe(true);
       expect(component.filterType.Incoming).toBe(true);
       expect((component.filterStatus as any).Bogus).toBeUndefined();
       expect((component.filterType as any).Bogus).toBeUndefined();
     });
 
-    it('sets showFiltersOnInit true when only a type filter is active', () => {
+    it('should set showFiltersOnInit to true when only a type filter is active', () => {
+      // Arrange
       window.history.pushState({}, '', '/transactions?type=Incoming');
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showFiltersOnInit).toBe(true);
     });
 
-    it('leaves showFiltersOnInit false with no query params', () => {
+    it('should leave showFiltersOnInit false when there are no query params', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showFiltersOnInit).toBe(false);
     });
   });
 
   describe('column value formatters', () => {
-    it('translates a known condition and falls back to the raw value otherwise', () => {
+    it('should translate a known condition and fall back to the raw value otherwise', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'condition')!;
 
+      // Act / Assert
       expect((column.valueFormatter as (params: any) => string)({ value: 'FullPayment' })).toBe(
         'TRANSACTIONS.FULL_PAYMENT',
       );
@@ -509,73 +622,87 @@ describe('TransactionsComponent', () => {
       );
     });
 
-    it('falls back to an empty string when the condition is missing entirely', () => {
+    it('should fall back to an empty string when the condition is missing entirely', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'condition')!;
 
+      // Act / Assert
       expect((column.valueFormatter as (params: any) => string)({ value: null })).toBe('');
     });
 
-    it('resolves the condition filterValueGetter from the row data', () => {
+    it('should resolve the condition filterValueGetter from the row data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'condition')!;
 
+      // Act / Assert
       expect(
         (column.filterValueGetter as (p: any) => string)({ data: { condition: 'InPayments' } }),
       ).toBe('TRANSACTIONS.IN_PAYMENTS');
     });
 
-    it('colors the status badge based on the status', () => {
+    it('should color the status badge based on the status when rendered', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
-      const column = component.columnDefs.find(
-        (c) => c.field === 'status' && c.cellRenderer,
-      )!;
+      const column = component.columnDefs.find((c) => c.field === 'status' && c.cellRenderer)!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: 'Delayed' });
 
+      // Assert
       expect(html).toContain('bg-danger');
       expect(html).toContain('REPORTS.STATUS_DELAYED');
     });
 
-    it('falls back to the raw value and default color for an unknown status', () => {
+    it('should fall back to the raw value and default color when the status is unknown', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: 'Weird' });
 
+      // Assert
       expect(html).toContain('bg-secondary');
       expect(html).toContain('Weird');
     });
 
-    it('resolves the status filterValueGetter from the row data', () => {
+    it('should resolve the status filterValueGetter from the row data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+      // Act / Assert
       expect(
         (column.filterValueGetter as (p: any) => string)({ data: { status: 'Approved' } }),
       ).toBe('REPORTS.STATUS_PAID');
     });
 
-    it('renders the description as a link, falling back to an empty string', () => {
+    it('should render the description as a link, falling back to an empty string when missing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'description')!;
 
+      // Act / Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'Desc' })).toContain('Desc');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
 
-    it('applies a success/danger cell class to positive payment/expense values, none otherwise', () => {
+    it('should apply a success/danger cell class to positive payment/expense values and none otherwise', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const paymentColumn = component.columnDefs.find((c) => c.field === 'paymentTotalPrice')!;
       const expenseColumn = component.columnDefs.find((c) => c.field === 'expenseTotalPrice')!;
 
+      // Act / Assert
       expect((paymentColumn.cellClass as (p: any) => string)({ value: 10 })).toBe('text-success');
       expect((paymentColumn.cellClass as (p: any) => string)({ value: 0 })).toBe('');
       expect((expenseColumn.cellClass as (p: any) => string)({ value: 10 })).toBe('text-danger');
@@ -588,33 +715,40 @@ describe('TransactionsComponent', () => {
       ).toContain('R$');
     });
 
-    it('falls back to an empty string for a completely missing status', () => {
+    it('should fall back to an empty string when the status is completely missing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: undefined });
 
+      // Assert
       expect(html).toContain('bg-secondary');
       expect(html).not.toContain('undefined');
     });
 
-    it('formats date as a BR date', () => {
+    it('should format date as a BR date when rendered', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'date')!;
 
+      // Act / Assert
       expect(
         (column.valueFormatter as (p: any) => string)({ value: '2024-01-15' } as any),
       ).toContain('/');
     });
 
-    it('renders businessPartnerName, falling back to N/A, and hides the column when embedded', () => {
+    it('should render businessPartnerName falling back to N/A and hide the column when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'businessPartnerName')!;
 
+      // Act / Assert
       expect(column.hide).toBe(true);
       expect((column.cellRenderer as (p: any) => string)({ value: 'Cliente A' })).toBe(
         'Cliente A',
@@ -622,22 +756,27 @@ describe('TransactionsComponent', () => {
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toBe('N/A');
     });
 
-    it('renders orderNumber, falling back to N/A', () => {
+    it('should render orderNumber falling back to N/A when missing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'orderNumber')!;
 
+      // Act / Assert
       expect((column.cellRenderer as (p: any) => string)({ value: '123' })).toBe('123');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toBe('N/A');
     });
 
-    it('renders the actions column buttons', () => {
+    it('should render the actions column buttons when rendered', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="view"');
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');

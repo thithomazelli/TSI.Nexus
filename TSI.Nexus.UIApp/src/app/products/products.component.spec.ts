@@ -72,92 +72,117 @@ describe('ProductsComponent', () => {
     } as unknown as GridComponent<Product>;
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('rebuilds the column definitions when the language changes', () => {
+  it('should rebuild the column definitions when the language changes', () => {
+    // Arrange
     const component = createComponent();
     const before = component.columnDefs;
 
+    // Act
     language$.next('en');
 
+    // Assert
     expect(component.columnDefs).not.toBe(before);
     expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   describe('ngOnInit', () => {
-    it('reads the stockStatus query param and forwards lowStockOnly to the paged request', () => {
+    it('should read the stockStatus query param and forward lowStockOnly to the paged request', () => {
+      // Arrange
       const component = createComponent('Low');
       component.ngOnInit();
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(productServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({ lowStockOnly: true }),
       );
     });
 
-    it('defaults lowStockOnly to false without the query param', () => {
+    it('should default lowStockOnly to false when there is no query param', () => {
+      // Arrange
       const component = createComponent(null);
       component.ngOnInit();
 
+      // Act
       component.pagedDataSource({ page: 1, pageSize: 10 });
 
+      // Assert
       expect(productServiceMock.getAllPaged).toHaveBeenCalledWith(
         expect.objectContaining({ lowStockOnly: false }),
       );
     });
 
-    it('ignores the first (replay) emission but purges the cache on later changes', () => {
+    it('should ignore the first (replay) emission but purge the cache on later changes', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       productChanged$.next();
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
-
       productChanged$.next();
+
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalledTimes(1);
     });
 
-    it('stops reacting after ngOnDestroy', () => {
+    it('should stop reacting when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
       component.ngOnDestroy();
 
+      // Act
       productChanged$.next();
       productChanged$.next();
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('does not throw when called before ngOnInit ever subscribed', () => {
+    it('should not throw when called before ngOnInit ever subscribed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('openModal', () => {
-    it('opens the product details modal', () => {
+    it('should open the product details modal when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.openModal({ isEdit: false });
 
-      expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
-        expect.anything(),
-        { isEdit: false },
-      );
+      // Assert
+      expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(expect.anything(), {
+        isEdit: false,
+      });
     });
   });
 
   describe('deleteProduct', () => {
-    it('purges the grid cache and notifies on success', () => {
+    it('should purge the grid cache and notify when the deletion succeeds', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -165,8 +190,10 @@ describe('ProductsComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteProduct({ id: 'p1' } as Product);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -176,7 +203,8 @@ describe('ProductsComponent', () => {
       );
     });
 
-    it('does not purge the cache when the delete reports an error', () => {
+    it('should not purge the cache when the delete reports an error', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -184,17 +212,23 @@ describe('ProductsComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' }),
       );
 
+      // Act
       component.deleteProduct({ id: 'p1' } as Product);
 
+      // Assert
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
     });
   });
 
   describe('refreshProducts', () => {
-    it('refreshes the shared cache and shows a notification', () => {
+    it('should refresh the shared cache and show a notification when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.refreshProducts();
 
+      // Assert
       expect(productServiceMock.refresh).toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -204,99 +238,136 @@ describe('ProductsComponent', () => {
   });
 
   describe('column cell renderers', () => {
-    it('renders the sku and name as links, falling back to empty when the value is missing', () => {
+    it('should render the sku and name as links, falling back to empty when the value is missing', () => {
+      // Arrange
       const component = createComponent();
       const skuColumn = component.columnDefs.find((c) => c.field === 'sku')!;
       const nameColumn = component.columnDefs.find((c) => c.field === 'name')!;
 
-      expect((skuColumn.cellRenderer as (params: any) => string)({ value: 'SKU1' })).toContain('SKU1');
-      expect((skuColumn.cellRenderer as (params: any) => string)({ value: null })).toContain('ag-link');
-      expect((nameColumn.cellRenderer as (params: any) => string)({ value: 'Produto 1' })).toContain('Produto 1');
-      expect((nameColumn.cellRenderer as (params: any) => string)({ value: null })).toContain('ag-link');
+      // Act / Assert
+      expect((skuColumn.cellRenderer as (params: any) => string)({ value: 'SKU1' })).toContain(
+        'SKU1',
+      );
+      expect((skuColumn.cellRenderer as (params: any) => string)({ value: null })).toContain(
+        'ag-link',
+      );
+      expect(
+        (nameColumn.cellRenderer as (params: any) => string)({ value: 'Produto 1' }),
+      ).toContain('Produto 1');
+      expect((nameColumn.cellRenderer as (params: any) => string)({ value: null })).toContain(
+        'ag-link',
+      );
     });
 
-    it('shows an "available" badge for an in-stock, non-service product', () => {
+    it('should show an "available" badge for an in-stock, non-service product', () => {
+      // Arrange
       const component = createComponent();
       const statusColumn = component.columnDefs.find((c) => c.headerName === 'COMMON.STATUS')!;
 
+      // Act
       const html = (statusColumn.cellRenderer as (params: any) => string)({
         value: 5,
         data: { type: 'Sale' },
       });
 
+      // Assert
       expect(html).toContain('bg-success');
     });
 
-    it('formats the price column with formatCurrencyBRL', () => {
+    it('should format the price column with formatCurrencyBRL when rendered', () => {
+      // Arrange
       const component = createComponent();
       const priceColumn = component.columnDefs.find((c) => c.field === 'price')!;
 
-      const formatted = (priceColumn.valueFormatter as (params: any) => string)({ value: 1234.5 });
+      // Act
+      const formatted = (priceColumn.valueFormatter as (params: any) => string)({
+        value: 1234.5,
+      });
 
+      // Assert
       expect(typeof formatted).toBe('string');
     });
 
-    it('renders the action buttons column', () => {
+    it('should render the action buttons column when rendered', () => {
+      // Arrange
       const component = createComponent();
       const actionsColumn = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (actionsColumn.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="view"');
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
     });
 
-    it('exposes filterValueGetter for unit and type, matching the cell renderer output', () => {
+    it('should expose filterValueGetter for unit and type matching the cell renderer output', () => {
+      // Arrange
       const component = createComponent();
       const unitColumn = component.columnDefs.find((c) => c.field === 'unit')!;
       const typeColumn = component.columnDefs.find((c) => c.field === 'type')!;
 
-      expect((unitColumn.filterValueGetter as (params: any) => string)({ data: { unit: 'Unit' } })).toBe(
-        'PRODUCTS.UNIT_UNIT',
-      );
-      expect((typeColumn.filterValueGetter as (params: any) => string)({ data: { type: 'Sale' } })).toBe(
-        'PRODUCTS.TYPE_SALE',
-      );
+      // Act / Assert
+      expect(
+        (unitColumn.filterValueGetter as (params: any) => string)({ data: { unit: 'Unit' } }),
+      ).toBe('PRODUCTS.UNIT_UNIT');
+      expect(
+        (typeColumn.filterValueGetter as (params: any) => string)({ data: { type: 'Sale' } }),
+      ).toBe('PRODUCTS.TYPE_SALE');
     });
 
-    it('falls back to an empty string when the unit/type is nullish', () => {
+    it('should fall back to an empty string when the unit/type is nullish', () => {
+      // Arrange
       const component = createComponent();
       const unitColumn = component.columnDefs.find((c) => c.field === 'unit')!;
       const typeColumn = component.columnDefs.find((c) => c.field === 'type')!;
 
-      expect((unitColumn.cellRenderer as (params: any) => string)({ data: { unit: undefined } })).toBe('');
-      expect((typeColumn.cellRenderer as (params: any) => string)({ data: { type: undefined } })).toBe('');
+      // Act / Assert
+      expect(
+        (unitColumn.cellRenderer as (params: any) => string)({ data: { unit: undefined } }),
+      ).toBe('');
+      expect(
+        (typeColumn.cellRenderer as (params: any) => string)({ data: { type: undefined } }),
+      ).toBe('');
     });
 
-    it('shows an "available" badge for a service regardless of stock', () => {
+    it('should show an "available" badge for a service regardless of stock', () => {
+      // Arrange
       const component = createComponent();
       const statusColumn = component.columnDefs.find((c) => c.headerName === 'COMMON.STATUS')!;
 
+      // Act
       const html = (statusColumn.cellRenderer as (params: any) => string)({
         value: 0,
         data: { type: 'Service' },
       });
 
+      // Assert
       expect(html).toContain('bg-success');
     });
 
-    it('shows an "unavailable" badge when a non-service product is out of stock', () => {
+    it('should show an "unavailable" badge when a non-service product is out of stock', () => {
+      // Arrange
       const component = createComponent();
       const statusColumn = component.columnDefs.find((c) => c.headerName === 'COMMON.STATUS')!;
 
+      // Act
       const html = (statusColumn.cellRenderer as (params: any) => string)({
         value: 0,
         data: { type: 'Sale' },
       });
 
+      // Assert
       expect(html).toContain('bg-danger');
     });
 
-    it('translates a known unit and falls back to the raw value otherwise', () => {
+    it('should translate a known unit and fall back to the raw value otherwise', () => {
+      // Arrange
       const component = createComponent();
       const unitColumn = component.columnDefs.find((c) => c.field === 'unit')!;
 
+      // Act / Assert
       expect(
         (unitColumn.cellRenderer as (params: any) => string)({ data: { unit: 'Unit' } }),
       ).toBe('PRODUCTS.UNIT_UNIT');
@@ -305,10 +376,12 @@ describe('ProductsComponent', () => {
       ).toBe('Weird');
     });
 
-    it('translates a known type and falls back to the raw value otherwise', () => {
+    it('should translate a known type and fall back to the raw value otherwise', () => {
+      // Arrange
       const component = createComponent();
       const typeColumn = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Act / Assert
       expect(
         (typeColumn.cellRenderer as (params: any) => string)({ data: { type: 'Sale' } }),
       ).toBe('PRODUCTS.TYPE_SALE');

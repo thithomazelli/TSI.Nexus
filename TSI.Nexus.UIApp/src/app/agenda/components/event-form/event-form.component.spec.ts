@@ -114,32 +114,42 @@ describe('EventFormComponent', () => {
     vi.useRealTimers();
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the form, link configs and loads event types/users', () => {
+    it('should build the form, link configs, and load event types and users when ngOnInit runs', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.linkConfigs.length).toBe(11);
       expect(selectableOptionServiceMock.getByGroup).toHaveBeenCalled();
       expect(userServiceMock.getAll).toHaveBeenCalled();
     });
 
-    it('falls back to an empty array when eventTypes/users responses have no data', () => {
+    it('should fall back to empty arrays for event types and users when their responses have no data', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(of({}));
       userServiceMock.getAll.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.eventTypeOptions).toEqual([]);
       expect(component.users).toEqual([]);
     });
 
-    it('patches the form and link values from the provided data', () => {
+    it('should patch the form and link values when data is provided', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         title: 'Evento existente',
@@ -149,82 +159,106 @@ describe('EventFormComponent', () => {
         participants: [{ id: 'p1', displayName: 'Ana' } as EventParticipant],
       } as unknown as AgendaEvent;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('title')!.value).toBe('Evento existente');
       expect(component.form.get('startTime')!.value).toBe('09:30');
       expect(component.participants).toEqual([{ id: 'p1', displayName: 'Ana' }]);
     });
 
-    it('leaves link values untouched for ids the data does not carry', () => {
+    it('should leave link values untouched when the data does not carry matching ids', () => {
+      // Arrange
       const component = createComponent();
       component.data = { title: 'x' } as AgendaEvent;
 
+      // Act
+      // Assert
       expect(() => component.ngOnInit()).not.toThrow();
     });
 
-    it('prefills start/end/locked link when creating a fresh event', () => {
+    it('should prefill start, end, and the locked link when creating a fresh event', () => {
+      // Arrange
       const component = createComponent();
       component.prefillStart = new Date(2024, 0, 1, 14, 0);
       component.prefillEnd = new Date(2024, 0, 1, 15, 0);
       component.lockedLinkField = 'tripId';
       component.lockedLinkId = 't1';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('startDate')!.value).toEqual(component.prefillStart);
       expect(component.form.get('startTime')!.value).toBe('14:00');
       expect(component.form.get('endTime')!.value).toBe('15:00');
     });
 
-    it('does not prefill anything when there is no data and no prefill/lock inputs', () => {
+    it('should not prefill anything when there is no data and no prefill or lock inputs', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnInit()).not.toThrow();
       expect(component.form.get('startDate')!.value).toBe('');
     });
   });
 
   describe('ngOnChanges', () => {
-    it('re-patches the form when data changes after init', () => {
+    it('should re-patch the form when data changes after init', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { title: 'Novo título' } as AgendaEvent;
 
+      // Act
       component.ngOnChanges({ data: {} as any });
 
+      // Assert
       expect(component.form.get('title')!.value).toBe('Novo título');
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: {} as any });
 
+      // Assert
       expect(component.form.get('title')!.value).toBe('');
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { title: 'x' } as AgendaEvent;
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ data: {} as any })).not.toThrow();
     });
   });
 
   describe('link fields', () => {
-    it('selectLink stores the id and sets the label without emitting a change event', () => {
+    it('should store the id and set the label without emitting a change event when selectLink is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const config = component.linkConfigs[0];
 
+      // Act
       component.selectLink(config, { id: 'bp1', label: 'Cliente X' });
 
+      // Assert
       expect(component.form.get(config.labelField)!.value).toBe('Cliente X');
     });
 
-    it('onLinkBlur clears the link value when the typed label is blank', () => {
+    it('should clear the link value when the typed label is blank on blur', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -232,26 +266,32 @@ describe('EventFormComponent', () => {
       component.selectLink(config, { id: 'bp1', label: 'Cliente X' });
       component.form.get(config.labelField)!.setValue('   ');
 
+      // Act
       component.onLinkBlur(config);
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect((component as any).buildLinkPayload()[config.idField]).toBeNull();
     });
 
-    it('onLinkBlur keeps the link value when the typed label is not blank', () => {
+    it('should keep the link value when the typed label is not blank on blur', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       const config = component.linkConfigs[0];
       component.selectLink(config, { id: 'bp1', label: 'Cliente X' });
 
+      // Act
       component.onLinkBlur(config);
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect((component as any).buildLinkPayload()[config.idField]).toBe('bp1');
     });
 
-    it('onLinkBlur clears the link value when the label control value is null', () => {
+    it('should clear the link value when the label control value is null on blur', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -259,32 +299,42 @@ describe('EventFormComponent', () => {
       component.selectLink(config, { id: 'bp1', label: 'Cliente X' });
       component.form.get(config.labelField)!.setValue(null);
 
+      // Act
       component.onLinkBlur(config);
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect((component as any).buildLinkPayload()[config.idField]).toBeNull();
     });
 
-    it('clearLink resets both the stored id and the label control', () => {
+    it('should reset both the stored id and the label control when clearLink is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const config = component.linkConfigs[0];
       component.selectLink(config, { id: 'bp1', label: 'Cliente X' });
 
+      // Act
       component.clearLink(config);
 
+      // Assert
       expect(component.form.get(config.labelField)!.value).toBe('');
       expect((component as any).buildLinkPayload()[config.idField]).toBeNull();
     });
 
-    it('toggleLinkSection flips linkSectionOpen', () => {
+    it('should flip linkSectionOpen when toggleLinkSection is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.linkSectionOpen).toBe(true);
       component.toggleLinkSection();
       expect(component.linkSectionOpen).toBe(false);
     });
 
-    it('filters link options by the typed label', () => {
+    it('should filter link options when a label is typed', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getClients.mockReturnValue(
         of({ data: [{ id: 'bp1', name: 'Cliente Um' }] }),
@@ -292,67 +342,82 @@ describe('EventFormComponent', () => {
       component.ngOnInit();
       const linkConfig = component.linkConfigs[0];
 
+      // Act
       let result: unknown[] = [];
       linkConfig.filtered$!.subscribe((r) => (result = r));
       linkConfig.activate();
       component.form.get(linkConfig.labelField)!.setValue('cliente');
 
+      // Assert
       expect(result).toEqual([{ id: 'bp1', label: 'Cliente Um' }]);
     });
 
-    it('emits an empty list when the link filter value is blank', () => {
+    it('should emit an empty list when the link filter value is blank', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const config = component.linkConfigs[0];
       config.activate();
 
+      // Act
       let result: unknown[] = [];
       config.filtered$!.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('activate() only fetches once even if called multiple times', () => {
+    it('should fetch only once when activate is called multiple times', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const config = component.linkConfigs[0];
 
+      // Act
       config.items$.subscribe();
       config.items$.subscribe();
       config.activate();
       config.activate();
 
+      // Assert
       expect(businessPartnerServiceMock.getClients).toHaveBeenCalledTimes(1);
     });
 
-    it('filtered$ treats a non-string label value as empty', () => {
+    it('should treat a non-string label value as empty in filtered$', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const config = component.linkConfigs[0];
 
+      // Act
       let result: unknown[] = [];
       config.filtered$!.subscribe((r) => (result = r));
       config.activate();
       component.form.get(config.labelField)!.setValue(123 as unknown as string);
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('mergeResponses falls back to an empty array when clients/suppliers responses have no data', () => {
+    it('should fall back to an empty array when clients and suppliers responses have no data', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getClients.mockReturnValue(of({}));
       businessPartnerServiceMock.getSuppliers.mockReturnValue(of({}));
       component.ngOnInit();
       const config = component.linkConfigs[0];
 
+      // Act
       let result: unknown[] = [];
       config.items$.subscribe((items) => (result = items));
       config.activate();
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('activates every non-business-partner link and maps its items via mapList', () => {
+    it('should activate every non-business-partner link and map its items via mapList', () => {
+      // Arrange
       const component = createComponent();
       const sampleData: Record<string, unknown> = {
         quote: { data: [{ id: 'q1', quoteNumber: 'Q-1' }] },
@@ -371,12 +436,14 @@ describe('EventFormComponent', () => {
       });
       component.ngOnInit();
 
+      // Act
       const results: Record<string, unknown[]> = {};
       component.linkConfigs.slice(1).forEach((config) => {
         config.items$.subscribe((items) => (results[config.key] = items));
         config.activate();
       });
 
+      // Assert
       expect(results['quote']).toEqual([{ id: 'q1', label: 'Q-1' }]);
       expect(results['order']).toEqual([{ id: 'o1', label: 'O-1' }]);
       expect(results['purchaseOrder']).toEqual([{ id: 'po1', label: 'PO-1' }]);
@@ -389,82 +456,103 @@ describe('EventFormComponent', () => {
       expect(results['fuelLog']).toEqual([{ id: 'fl1', label: 'Posto 1' }]);
     });
 
-    it('mapList falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array in mapList when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       listServiceMocks['quote'].getAll.mockReturnValue(of({}));
       component.ngOnInit();
       const config = component.linkConfigs[1];
 
+      // Act
       let result: unknown[] = [];
       config.items$.subscribe((items) => (result = items));
       config.activate();
 
+      // Assert
       expect(result).toEqual([]);
     });
   });
 
   describe('participants', () => {
-    it('selectUser adds a participant and clears the search field', () => {
+    it('should add a participant and clear the search field when selectUser is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('participantSearch')!.setValue('ana');
 
+      // Act
       component.selectUser(users[0]);
 
+      // Assert
       expect(component.participants).toEqual([{ id: '', userId: 'u1', displayName: 'Ana Silva' }]);
       expect(component.form.get('participantSearch')!.value).toBe('');
     });
 
-    it('selectUser does nothing when the user is already a participant', () => {
+    it('should do nothing when the user is already a participant', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.participants = [{ id: '', userId: 'u1', displayName: 'Ana Silva' } as EventParticipant];
 
+      // Act
       component.selectUser(users[0]);
 
+      // Assert
       expect(component.participants.length).toBe(1);
     });
 
-    it('filters users by name for the participant search field', () => {
+    it('should filter users by name when the participant search field changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: User[] = [];
       component.filteredUsers$.subscribe((r) => (result = r));
       component.form.get('participantSearch')!.setValue('bruno');
 
+      // Assert
       expect(result).toEqual([users[1]]);
     });
 
-    it('filteredUsers$ treats a non-string search value as empty', () => {
+    it('should treat a non-string search value as empty in filteredUsers$', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: User[] = [];
       component.filteredUsers$.subscribe((r) => (result = r));
       component.form.get('participantSearch')!.setValue(123 as unknown as string);
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('emits an empty list when the participant search value is blank', () => {
+    it('should emit an empty list when the participant search value is blank', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: User[] = [];
       component.filteredUsers$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('addFreeformParticipant adds by name and/or email and clears the fields', () => {
+    it('should add by name and email and clear the fields when addFreeformParticipant is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('participantName')!.setValue('Carla');
       component.form.get('participantEmail')!.setValue('carla@x.com');
 
+      // Act
       component.addFreeformParticipant();
 
+      // Assert
       expect(component.participants).toEqual([
         { id: '', name: 'Carla', email: 'carla@x.com', displayName: 'Carla' },
       ]);
@@ -472,80 +560,101 @@ describe('EventFormComponent', () => {
       expect(component.form.get('participantEmail')!.value).toBe('');
     });
 
-    it('addFreeformParticipant falls back to name-only when no email is given', () => {
+    it('should fall back to name-only when no email is given in addFreeformParticipant', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('participantName')!.setValue('Carla');
 
+      // Act
       component.addFreeformParticipant();
 
+      // Assert
       expect(component.participants).toEqual([
         { id: '', name: 'Carla', email: null, displayName: 'Carla' },
       ]);
     });
 
-    it('addFreeformParticipant falls back to email-only when no name is given', () => {
+    it('should fall back to email-only when no name is given in addFreeformParticipant', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('participantEmail')!.setValue('carla@x.com');
 
+      // Act
       component.addFreeformParticipant();
 
+      // Assert
       expect(component.participants).toEqual([
         { id: '', name: null, email: 'carla@x.com', displayName: 'carla@x.com' },
       ]);
     });
 
-    it('addFreeformParticipant does nothing when both name and email are blank', () => {
+    it('should do nothing when both name and email are blank in addFreeformParticipant', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.addFreeformParticipant();
 
+      // Assert
       expect(component.participants).toEqual([]);
     });
 
-    it('removeParticipant tracks the id of an already-persisted participant for later sync', () => {
+    it('should track the id of an already-persisted participant when removeParticipant is called', () => {
+      // Arrange
       const component = createComponent();
       component.participants = [
         { id: 'p1', displayName: 'Ana' } as EventParticipant,
         { id: '', displayName: 'Carla' } as EventParticipant,
       ];
 
+      // Act
       component.removeParticipant(0);
 
+      // Assert
       expect(component.participants).toEqual([{ id: '', displayName: 'Carla' }]);
     });
 
-    it('removeParticipant does not track an id for a not-yet-persisted participant', () => {
+    it('should not track an id when removeParticipant is called for a not-yet-persisted participant', () => {
+      // Arrange
       const component = createComponent();
       component.participants = [{ id: '', displayName: 'Carla' } as EventParticipant];
 
+      // Act
+      // Assert
       expect(() => component.removeParticipant(0)).not.toThrow();
       expect(component.participants).toEqual([]);
     });
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: unknown;
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.submitted).toBe(true);
     });
 
-    it('notifies and returns null without saving when there is no link at all', () => {
+    it('should notify and return null without saving when there is no link at all', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
 
+      // Act
       let result: unknown;
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
@@ -553,7 +662,8 @@ describe('EventFormComponent', () => {
       );
     });
 
-    it('saves successfully when a locked link is present, syncing new participants', () => {
+    it('should save successfully and sync new participants when a locked link is present', () => {
+      // Arrange
       const component = createComponent();
       component.lockedLinkField = 'tripId';
       component.lockedLinkId = 't1';
@@ -563,8 +673,10 @@ describe('EventFormComponent', () => {
       const response = { status: ResponseStatus.Success, data: { id: 'e1' }, message: 'OK' } as unknown as WebApiResponse<AgendaEvent>;
       eventServiceMock.add.mockReturnValue(of(response));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(eventServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ tripId: 't1' }),
       );
@@ -573,7 +685,8 @@ describe('EventFormComponent', () => {
       );
     });
 
-    it('saves successfully via link values when no field is locked', () => {
+    it('should save successfully via link values when no field is locked', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -583,14 +696,17 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'e1' }, message: 'OK' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(eventServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ [config.idField]: 'bp1' }),
       );
     });
 
-    it('updates instead of adding, and includes the id, when editing', () => {
+    it('should update instead of add and include the id when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'e1' } as AgendaEvent;
@@ -602,12 +718,15 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'e1' }, message: 'OK' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(eventServiceMock.update).toHaveBeenCalledWith(expect.objectContaining({ id: 'e1' }));
     });
 
-    it('notifies without syncing participants when the backend reports a failure status', () => {
+    it('should notify without syncing participants when the backend reports a failure status', () => {
+      // Arrange
       const component = createComponent();
       component.lockedLinkField = 'tripId';
       component.lockedLinkId = 't1';
@@ -617,13 +736,16 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Error, data: null, message: 'Falhou' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'Falhou');
       expect(eventParticipantServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('notifies an error when the save request errors', () => {
+    it('should notify an error when the save request errors', () => {
+      // Arrange
       const component = createComponent();
       component.lockedLinkField = 'tripId';
       component.lockedLinkId = 't1';
@@ -631,15 +753,18 @@ describe('EventFormComponent', () => {
       fillValidForm(component);
       eventServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'AGENDA.SAVE_ERROR',
       );
     });
 
-    it('saves via the modal path when isModal is true', () => {
+    it('should save via the modal path when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = { close: vi.fn() };
@@ -652,12 +777,15 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'e1' }, message: 'OK' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
     });
 
-    it('saves via the page path (navigating away) when creating outside a modal', () => {
+    it('should save via the page path and navigate away when creating outside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.lockedLinkField = 'tripId';
@@ -668,12 +796,15 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'e1' }, message: 'OK' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/agenda');
     });
 
-    it('updates local data (without navigating) when editing outside a modal', () => {
+    it('should update local data without navigating when editing outside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.isEdit = true;
@@ -687,13 +818,16 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, data: updated, message: 'OK' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data).toBe(updated);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalledWith('/agenda');
     });
 
-    it('removes participants marked for deletion during sync', () => {
+    it('should remove participants marked for deletion during sync', () => {
+      // Arrange
       const component = createComponent();
       component.lockedLinkField = 'tripId';
       component.lockedLinkId = 't1';
@@ -708,46 +842,58 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'e1' }, message: 'OK' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(eventParticipantServiceMock.delete).toHaveBeenCalledWith(expect.objectContaining({ id: 'p1' }));
       expect(eventParticipantServiceMock.add).not.toHaveBeenCalled();
     });
   });
 
   describe('cancel', () => {
-    it('hides the modal when isModal is true', () => {
+    it('should hide the modal when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the agenda when isModal is false', () => {
+    it('should navigate back to the agenda when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/agenda');
     });
   });
 
   describe('remove', () => {
-    it('does nothing without data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
       component.remove();
 
+      // Assert
       expect(eventServiceMock.delete).not.toHaveBeenCalled();
     });
 
-    it('deletes and navigates on success outside a modal', () => {
+    it('should delete and navigate when the delete succeeds outside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'e1' } as AgendaEvent;
@@ -755,14 +901,17 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(modalServiceMock.hideModal).not.toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'Removido');
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/agenda');
     });
 
-    it('hides the modal and does not navigate on success inside a modal', () => {
+    it('should hide the modal and not navigate when the delete succeeds inside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
@@ -772,13 +921,16 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('does not navigate when the delete reports an error status', () => {
+    it('should not navigate when the delete reports an error status', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'e1' } as AgendaEvent;
@@ -786,12 +938,15 @@ describe('EventFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as unknown as WebApiResponse<AgendaEvent>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('notifies an error when the delete request errors', async () => {
+    it('should notify an error when the delete request errors', async () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'e1' } as AgendaEvent;
       eventServiceMock.delete.mockReturnValue(throwError(() => new Error('boom')));
@@ -799,9 +954,11 @@ describe('EventFormComponent', () => {
       config.onUnhandledError = () => {};
 
       try {
+        // Act
         component.remove();
         await new Promise((resolve) => setTimeout(resolve, 0));
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           ResponseStatus.Error,
           'AGENDA.SAVE_ERROR',
@@ -835,60 +992,87 @@ describe('EventFormComponent', () => {
       return payload;
     }
 
-    it('parses a Date instance', () => {
+    it('should parse the date when given a Date instance', () => {
+      // Act
       const payload = submitWithDates(new Date(2099, 0, 1));
+
+      // Assert
       expect(payload.startDate.getFullYear()).toBe(2099);
     });
 
-    it('parses an object with its own toDate() method', () => {
+    it('should parse the date when given an object with its own toDate method', () => {
+      // Arrange
       const fakeMoment = { toDate: () => new Date(2099, 0, 2) };
+
+      // Act
       const payload = submitWithDates(fakeMoment);
+
+      // Assert
       expect(payload.startDate.getDate()).toBe(2);
     });
 
-    it('parses a dd/mm/yyyy string', () => {
+    it('should parse the date when given a dd/mm/yyyy string', () => {
+      // Act
       const payload = submitWithDates('15/03/2099');
+
+      // Assert
       expect(payload.startDate.getFullYear()).toBe(2099);
       expect(payload.startDate.getMonth()).toBe(2);
       expect(payload.startDate.getDate()).toBe(15);
     });
 
-    it('parses an ISO-like string with no slashes', () => {
+    it('should parse the date when given an ISO-like string with no slashes', () => {
+      // Act
       const payload = submitWithDates('2099-03-15');
+
+      // Assert
       expect(payload.startDate.getFullYear()).toBe(2099);
     });
 
-    it('falls back to the current date/time when no date is given at all', () => {
+    it('should fall back to the current date and time when no date is given at all', () => {
       // startDate/endDate are required fields, so submit() can never reach toDate() with an
       // empty value through the public flow - exercised directly to cover the defensive branch.
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect((component as any).toDate('')).toBeInstanceOf(Date);
       expect((component as any).toDate(null)).toBeInstanceOf(Date);
       expect((component as any).toDate(undefined)).toBeInstanceOf(Date);
     });
 
-    it('toDate falls back to day=1/month=1 when the dd/mm/yyyy parts are zero', () => {
+    it('should fall back to day 1 and month 1 when the dd/mm/yyyy parts are zero', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       const result = (component as any).toDate('0/0/2099');
 
+      // Assert
       expect(result.getFullYear()).toBe(2099);
       expect(result.getMonth()).toBe(0);
       expect(result.getDate()).toBe(1);
     });
 
-    it('combineDateTime falls back to midnight when no time is given', () => {
+    it('should fall back to midnight when combineDateTime is called with no time', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       const result = (component as any).combineDateTime(new Date(2024, 0, 1), '');
 
+      // Assert
       expect(result.getHours()).toBe(0);
       expect(result.getMinutes()).toBe(0);
     });
 
-    it('patchFormWithData does nothing when the form has not been built yet', () => {
+    it('should do nothing when patchFormWithData is called before the form has been built', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => (component as any).patchFormWithData()).not.toThrow();
     });
   });
