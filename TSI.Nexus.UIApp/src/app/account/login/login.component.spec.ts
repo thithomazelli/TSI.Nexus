@@ -35,128 +35,167 @@ describe('LoginComponent', () => {
     return { get: (key: string) => entries[key] ?? null };
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('redirects home immediately when already logged in', () => {
-    const component = createComponent();
+  it('should redirect home immediately when already logged in', () => {
+    // Arrange
+    createComponent();
+
+    // Act
     accountServiceMock.user$.next({ id: 'u1' });
 
+    // Assert
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/');
   });
 
-  it('picks up the returnUrl query param when logged out', () => {
+  it('should pick up the returnUrl query param when logged out', () => {
+    // Arrange
     const component = createComponent();
     accountServiceMock.user$.next(null);
+
+    // Act
     queryParamMap$.next(paramMap({ returnUrl: '/orders' }));
 
+    // Assert
     expect(component.returnUrl).toBe('/orders');
   });
 
-  it('does not touch returnUrl when the query param map itself is falsy', () => {
+  it('should not touch returnUrl when the query param map itself is falsy', () => {
+    // Arrange
     const component = createComponent();
     accountServiceMock.user$.next(null);
+
+    // Act
     queryParamMap$.next(null as unknown as { get: (key: string) => string | null });
 
+    // Assert
     expect(component.returnUrl).toBeNull();
   });
 
   describe('login', () => {
-    it('does not submit an invalid form', () => {
+    it('should not submit when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       const result$ = component.login();
-
       let value: unknown;
       result$.subscribe((v) => (value = v));
+
+      // Assert
       expect(value).toBeNull();
       expect(component.submitted).toBe(true);
       expect(accountServiceMock.login).not.toHaveBeenCalled();
     });
 
-    it('navigates to returnUrl on successful login', () => {
+    it('should navigate to returnUrl when the login succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.user$.next(null);
       queryParamMap$.next(paramMap({ returnUrl: '/orders' }));
       accountServiceMock.login.mockReturnValue(of({ data: { id: 'u1' } }));
-
       component.form.setValue({ userName: 'admin', password: 'x' });
+
+      // Act
       component.login().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/orders');
     });
 
-    it('navigates to the home route when there is no returnUrl', () => {
+    it('should navigate to the home route when there is no returnUrl', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.login.mockReturnValue(of({ data: { id: 'u1' } }));
-
       component.form.setValue({ userName: 'admin', password: 'x' });
+
+      // Act
       component.login().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('');
     });
 
-    it('surfaces server validation errors', () => {
+    it('should surface server validation errors when the login fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.login.mockReturnValue(
         throwError(() => ({ error: { errors: ['Invalid credentials'] } })),
       );
-
       component.form.setValue({ userName: 'admin', password: 'wrong' });
+
+      // Act
       component.login().subscribe({ error: () => {} });
 
+      // Assert
       expect(component.errorMessages).toEqual(['Invalid credentials']);
     });
 
-    it('appends a plain string server error to errorMessages', () => {
+    it('should append a plain string server error to errorMessages', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.login.mockReturnValue(throwError(() => ({ error: 'Conta bloqueada' })));
-
       component.form.setValue({ userName: 'admin', password: 'wrong' });
+
+      // Act
       component.login().subscribe({ error: () => {} });
 
+      // Assert
       expect(component.errorMessages).toEqual(['Conta bloqueada']);
     });
 
-    it('falls back to a translated generic error message', () => {
+    it('should fall back to a translated generic error message when the response has no details', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.login.mockReturnValue(throwError(() => ({ error: {} })));
-
       component.form.setValue({ userName: 'admin', password: 'wrong' });
+
+      // Act
       component.login().subscribe({ error: () => {} });
 
+      // Assert
       expect(component.errorMessages).toEqual(['ACCOUNT.SERVER_ERROR']);
     });
 
-    it('falls back to the generic message without throwing when response.error itself is null', () => {
+    it('should fall back to the generic message without throwing when response.error itself is null', () => {
       // Regression test: a failure that never reaches the API with a JSON body - a dead
       // upstream/dev-proxy 500, a timeout - carries response.error === null, not an object with
       // no .errors. `response.error.errors` used to throw reading .errors off null right there in
       // tap()'s error handler, which aborted before errorMessages/markForCheck() ever ran and left
       // the login page blank with no feedback at all, instead of falling through to this message.
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       accountServiceMock.login.mockReturnValue(throwError(() => ({ status: 500, error: null })));
-
       component.form.setValue({ userName: 'admin', password: 'wrong' });
 
+      // Act / Assert
       expect(() => component.login().subscribe({ error: () => {} })).not.toThrow();
       expect(component.errorMessages).toEqual(['ACCOUNT.SERVER_ERROR']);
     });
   });
 
   describe('resendEmailConfirmation', () => {
-    it('navigates to the resend-confirmation route', () => {
+    it('should navigate to the resend-confirmation route when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.resendEmailConfirmation();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith(
         '/account/send-email/resend-email-confirmation',
       );
@@ -164,8 +203,11 @@ describe('LoginComponent', () => {
   });
 
   describe('togglePasswordVisibility', () => {
-    it('flips passwordVisible', () => {
+    it('should flip passwordVisible when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.passwordVisible).toBe(false);
       component.togglePasswordVisibility();
       expect(component.passwordVisible).toBe(true);

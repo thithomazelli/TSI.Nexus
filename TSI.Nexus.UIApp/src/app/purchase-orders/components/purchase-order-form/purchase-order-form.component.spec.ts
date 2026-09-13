@@ -104,58 +104,84 @@ describe('PurchaseOrderFormComponent', () => {
     vi.useRealTimers();
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('exposes translated order status options', () => {
+  it('should expose translated order status options when the component is created', () => {
+    // Act
     const component = createComponent();
+
+    // Assert
     expect(component.orderStatusOptions.length).toBe(3);
   });
 
-  it('trackByOptionValue returns the option value', () => {
+  it('should return the option value when trackByOptionValue is called', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
+    // Assert
     expect(component.trackByOptionValue(0, { value: 'Open', label: 'x' })).toBe('Open');
   });
 
   describe('ngOnInit', () => {
-    it('builds a create-mode form and auto-resolves businessPartnerId from businessPartnerName', () => {
+    it('should build a create-mode form and auto-resolve businessPartnerId when businessPartnerName matches a supplier', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeNull();
 
       component.form.get('businessPartnerName')!.setValue('Fornecedor Um');
       expect(component.form.get('businessPartnerId')!.value).toBe('bp1');
     });
 
-    it('leaves businessPartnerId untouched when the name matches no supplier', () => {
+    it('should leave businessPartnerId untouched when the typed name matches no supplier', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('businessPartnerName')!.setValue('Ninguém');
+
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBeNull();
     });
 
-    it('builds an edit-mode form with an id control and disables edit-locked fields', () => {
+    it('should build an edit-mode form with an id control and disable edit-locked fields when isEdit is true', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
       expect(component.form.get('businessPartnerName')!.disabled).toBe(true);
       expect(component.form.get('purchaseOrderNumber')!.disabled).toBe(true);
     });
 
-    it('leaves edit-locked fields enabled when adding', () => {
+    it('should leave edit-locked fields enabled when adding a new purchase order', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('businessPartnerName')!.disabled).toBe(false);
       expect(component.form.get('purchaseOrderNumber')!.disabled).toBe(false);
     });
 
-    it('patches the form, computing expenseTotalPrice by dividing totalPrice by totalOfExpenses when adding', () => {
+    it('should compute expenseTotalPrice by dividing totalPrice by totalOfExpenses when adding', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         totalPrice: 100,
@@ -163,12 +189,15 @@ describe('PurchaseOrderFormComponent', () => {
         transaction: { totalOfExpenses: 4 },
       } as unknown as PurchaseOrder;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transaction.expenseTotalPrice')!.value).toBe(25);
     });
 
-    it('defaults totalOfExpenses to 1 when computing expenseTotalPrice while adding', () => {
+    it('should default totalOfExpenses to 1 when computing expenseTotalPrice while adding', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         totalPrice: 100,
@@ -176,12 +205,15 @@ describe('PurchaseOrderFormComponent', () => {
         transaction: {},
       } as unknown as PurchaseOrder;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transaction.expenseTotalPrice')!.value).toBe(100);
     });
 
-    it('uses the existing expenseTotalPrice from data when editing', () => {
+    it('should use the existing expenseTotalPrice from data when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = {
@@ -190,35 +222,46 @@ describe('PurchaseOrderFormComponent', () => {
         transaction: { totalOfExpenses: 4, expenseTotalPrice: 42 },
       } as unknown as PurchaseOrder;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('transaction.expenseTotalPrice')!.value).toBe(42);
     });
 
-    it('does not throw and skips patching when there is no data', () => {
+    it('should not throw and skip patching when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
+      // Assert
       expect(() => component.ngOnInit()).not.toThrow();
     });
 
-    it('adds a product from purchaseOrderProductAdded$ to a previously empty product list', () => {
+    it('should add a product from purchaseOrderProductAdded$ when the product list was previously empty', () => {
+      // Arrange
       const component = createComponent();
       component.data = {} as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       purchaseOrderProductAdded$.next({ totalPrice: 50 } as PurchaseOrderProduct);
 
+      // Assert
       expect(component.data!.purchaseOrderProducts).toEqual([{ totalPrice: 50 }]);
     });
 
-    it('adds a product from purchaseOrderProductAdded$ and recalculates prices', () => {
+    it('should add a product from purchaseOrderProductAdded$ and recalculate prices when it emits', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       purchaseOrderProductAdded$.next({ totalPrice: 50 } as PurchaseOrderProduct);
 
+      // Assert
       expect(component.data!.purchaseOrderProducts).toEqual([{ totalPrice: 50 }]);
       expect(component.form.get('price')!.value).toBe(50);
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
@@ -228,141 +271,181 @@ describe('PurchaseOrderFormComponent', () => {
       );
     });
 
-    it('ignores purchaseOrderProductAdded$ emissions when there is no data', () => {
+    it('should ignore purchaseOrderProductAdded$ emissions when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => purchaseOrderProductAdded$.next({ totalPrice: 50 } as PurchaseOrderProduct)).not.toThrow();
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
     });
 
-    it('recomputes totalPrice whenever the discount changes', () => {
+    it('should recompute totalPrice when the discount changes', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       component.form.get('price')!.setValue(100);
 
+      // Act
       component.form.get('discount')!.setValue(10);
 
+      // Assert
       expect(component.form.get('totalPrice')!.value).toBe(90);
     });
 
-    it('recomputes totalPrice whenever transaction.totalOfExpenses changes', () => {
+    it('should recompute expenseTotalPrice when transaction.totalOfExpenses changes', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       component.form.get('price')!.setValue(100);
 
+      // Act
       component.form.get('transaction.totalOfExpenses')!.setValue(2);
 
+      // Assert
       expect(component.form.get('transaction.expenseTotalPrice')!.value).toBe(100);
     });
 
     describe('applyPreselectedProduct', () => {
-      it('does nothing without a preselectedProductId', () => {
+      it('should do nothing when there is no preselectedProductId', () => {
+        // Arrange
         const component = createComponent();
         component.preselectedProductId = null;
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(productServiceMock.getById).not.toHaveBeenCalled();
       });
 
-      it('does nothing while editing, even with a preselectedProductId', () => {
+      it('should do nothing when editing even with a preselectedProductId set', () => {
+        // Arrange
         const component = createComponent();
         component.isEdit = true;
         component.preselectedProductId = 'p1';
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(productServiceMock.getById).not.toHaveBeenCalled();
       });
 
-      it('adds the preselected product as a temporary purchase order product', () => {
+      it('should add the preselected product as a temporary purchase order product when found', () => {
+        // Arrange
         const component = createComponent();
         component.preselectedProductId = 'p1';
         const product = { id: 'p1', sku: 'SKU1', name: 'Produto 1', type: 'Sale', price: 10 } as Product;
         productServiceMock.getById.mockReturnValue(of({ data: product } as WebApiResponse<Product>));
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(purchaseOrderProductServiceMock.addTemporary).toHaveBeenCalledWith(
           expect.objectContaining({ productId: 'p1', productSku: 'SKU1', price: 10, totalPrice: 10 }),
         );
       });
 
-      it('does nothing when the preselected product is not found', () => {
+      it('should do nothing when the preselected product is not found', () => {
+        // Arrange
         const component = createComponent();
         component.preselectedProductId = 'p1';
         productServiceMock.getById.mockReturnValue(of({} as WebApiResponse<Product>));
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(purchaseOrderProductServiceMock.addTemporary).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('ngOnChanges', () => {
-    it('re-patches the form and rewatches totalOfExpenses when data changes after init', () => {
+    it('should re-patch the form and rewatch totalOfExpenses when data changes after init', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       component.data = { totalPrice: 200, purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnChanges({ data: {} as any });
 
+      // Assert
       expect(component.form.get('totalPrice')!.value).toBe(200);
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ isEdit: {} as any })).not.toThrow();
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ data: {} as any })).not.toThrow();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes the totalOfExpenses watcher and other tracked subscriptions', () => {
+    it('should unsubscribe the totalOfExpenses watcher and other tracked subscriptions when destroyed', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
-    it('does not throw when called before ngOnInit ever subscribed', () => {
+    it('should not throw when ngOnDestroy is called before ngOnInit ever subscribed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       let result: unknown;
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.submitted).toBe(true);
       expect(component.form.get('businessPartnerId')!.touched).toBe(true);
     });
 
-    it('creates a new purchase order, syncing transaction business partner fields and dropping a null transaction id', () => {
+    it('should create a new purchase order syncing transaction business partner fields and dropping a null transaction id when submitted', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
@@ -371,8 +454,10 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(purchaseOrderServiceMock.add).toHaveBeenCalled();
       const saved = purchaseOrderServiceMock.add.mock.calls[0][0] as PurchaseOrder;
       expect(saved.transaction!.businessPartnerId).toBe('bp1');
@@ -380,7 +465,8 @@ describe('PurchaseOrderFormComponent', () => {
       expect(saved.transaction).not.toHaveProperty('id');
     });
 
-    it('preserves the existing transaction id when editing an order that already has one', () => {
+    it('should preserve the existing transaction id when editing an order that already has one', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = {
@@ -394,13 +480,16 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       const saved = purchaseOrderServiceMock.update.mock.calls[0][0] as PurchaseOrder;
       expect(saved.transaction!.id).toBe('tr1');
     });
 
-    it('does not sync transaction business partner fields when the transaction section is hidden', () => {
+    it('should not sync transaction business partner fields when the transaction section is hidden', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
@@ -410,13 +499,16 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       const saved = purchaseOrderServiceMock.add.mock.calls[0][0] as PurchaseOrder;
       expect(saved.transaction!.businessPartnerId).toBeUndefined();
     });
 
-    it('does not throw when the form has no transaction control at all', () => {
+    it('should not throw when the form has no transaction control at all', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
@@ -426,10 +518,13 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
+      // Assert
       expect(() => component.submit().subscribe()).not.toThrow();
     });
 
-    it('does not throw and skips assigning into data when there is no data', () => {
+    it('should not throw and skip assigning into data when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
@@ -439,10 +534,13 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
+      // Assert
       expect(() => component.submit().subscribe()).not.toThrow();
     });
 
-    it('notifies without saving when the backend reports a business-rule failure', () => {
+    it('should notify without saving when the backend reports a business-rule failure', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
@@ -451,12 +549,15 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'Falhou');
     });
 
-    it('saves via the modal path when isModal is true', () => {
+    it('should save via the modal path when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = { close: vi.fn() };
@@ -468,12 +569,15 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'po1' }, message: 'OK' } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
     });
 
-    it('saves via the page path when isModal is false', () => {
+    it('should save via the page path when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
@@ -483,48 +587,60 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'po1' } } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/purchaseorders/po1');
     });
 
-    it('notifies an error when the save request errors', () => {
+    it('should notify an error when the save request errors', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       fillValidForm(component);
       purchaseOrderServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'COMMON.SAVE_ERROR');
     });
   });
 
   describe('cancel', () => {
-    it('hides the modal when isModal is true', () => {
+    it('should hide the modal when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the list when isModal is false', () => {
+    it('should navigate back to the list when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/purchaseorders');
     });
   });
 
   describe('remove', () => {
-    it('deletes and notifies success outside a modal when confirmed', async () => {
+    it('should delete and notify success outside a modal when confirmed', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'po1' } as PurchaseOrder;
@@ -533,16 +649,19 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Removido', ResponseStatus.Success);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/purchaseorders');
     });
 
-    it('hides the modal and does not navigate on success inside a modal', async () => {
+    it('should hide the modal and not navigate when the deletion succeeds inside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
@@ -553,15 +672,18 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('does not navigate when the delete reports an error status', async () => {
+    it('should not navigate when the delete reports an error status', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'po1' } as PurchaseOrder;
@@ -570,14 +692,17 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('notifies an error when the delete request fails', async () => {
+    it('should notify an error when the delete request fails', async () => {
+      // Arrange
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
@@ -586,10 +711,12 @@ describe('PurchaseOrderFormComponent', () => {
         modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
         purchaseOrderServiceMock.delete.mockReturnValue(throwError(() => new Error('boom')));
 
+        // Act
         component.remove();
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           'error',
           'PURCHASE_ORDERS.REMOVE_ERROR',
@@ -601,16 +728,19 @@ describe('PurchaseOrderFormComponent', () => {
       }
     });
 
-    it('does nothing further when the deletion is cancelled outside a modal', async () => {
+    it('should do nothing further when the deletion is cancelled outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'po1' } as PurchaseOrder;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
       expect(purchaseOrderServiceMock.delete).not.toHaveBeenCalled();
     });
@@ -625,47 +755,59 @@ describe('PurchaseOrderFormComponent', () => {
   });
 
   describe('removeProduct', () => {
-    it('does nothing when there are no purchase order products', () => {
+    it('should do nothing when there are no purchase order products', () => {
+      // Arrange
       const component = createComponent();
       component.data = {} as PurchaseOrder;
 
+      // Act
+      // Assert
       expect(() => component.removeProduct(0)).not.toThrow();
     });
 
-    it('removes the product at the given index and recalculates price fields', () => {
+    it('should remove the product at the given index and recalculate price fields when removeProduct is called', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         purchaseOrderProducts: [{ totalPrice: 10 } as PurchaseOrderProduct, { totalPrice: 20 } as PurchaseOrderProduct],
       } as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       component.removeProduct(0);
 
+      // Assert
       expect(component.data!.purchaseOrderProducts).toEqual([{ totalPrice: 20 }]);
       expect(component.form.get('price')!.value).toBe(20);
     });
 
-    it('treats a product with no totalPrice as zero when summing', () => {
+    it('should treat a product with no totalPrice as zero when summing after removal', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         purchaseOrderProducts: [{} as PurchaseOrderProduct, { totalPrice: 10 } as PurchaseOrderProduct],
       } as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       component.removeProduct(1);
 
+      // Assert
       expect(component.form.get('price')!.value).toBe(0);
     });
   });
 
   describe('openPurchaseOrderProductsModal', () => {
-    it('opens the modal with the merged data and current raw form value', () => {
+    it('should open the modal with the merged data and current raw form value when called', () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 'po1', purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       component.openPurchaseOrderProductsModal();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ isEdit: false, id: null, parentId: null }),
@@ -674,74 +816,93 @@ describe('PurchaseOrderFormComponent', () => {
   });
 
   describe('onProductPickerItemAdded', () => {
-    it('does nothing when there is no data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
+      // Assert
       expect(() => component.onProductPickerItemAdded({} as PurchaseOrderProduct)).not.toThrow();
     });
 
-    it('appends the item to a previously empty product list', () => {
+    it('should append the item to a previously empty product list when onProductPickerItemAdded is called', () => {
+      // Arrange
       const component = createComponent();
       component.data = {} as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       component.onProductPickerItemAdded({ totalPrice: 15 } as PurchaseOrderProduct);
 
+      // Assert
       expect(component.data!.purchaseOrderProducts).toEqual([{ totalPrice: 15 }]);
     });
 
-    it('appends the item and recalculates price fields', () => {
+    it('should append the item and recalculate price fields when onProductPickerItemAdded is called', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       component.onProductPickerItemAdded({ totalPrice: 15 } as PurchaseOrderProduct);
 
+      // Assert
       expect(component.data!.purchaseOrderProducts).toEqual([{ totalPrice: 15 }]);
       expect(component.form.get('price')!.value).toBe(15);
     });
   });
 
   describe('transactionFormGroup', () => {
-    it('returns the transaction form group', () => {
+    it('should return the transaction form group when accessed', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(component.transactionFormGroup.get('method')).toBeTruthy();
     });
   });
 
   describe('onSupplierBlur', () => {
-    it('cleans the selection when the typed name is blank', () => {
+    it('should clean the selection when the typed name is blank', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('   ');
 
+      // Act
       component.onSupplierBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBe('');
       expect(component.form.get('businessPartnerId')!.hasError('required')).toBe(true);
     });
 
-    it('does nothing further when the typed name matches an existing supplier', () => {
+    it('should do nothing further when the typed name matches an existing supplier', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('Fornecedor Um');
 
+      // Act
       component.onSupplierBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).not.toHaveBeenCalled();
     });
 
-    it('offers to create a new supplier, then applies it once created', () => {
+    it('should offer to create a new supplier and apply it when the user confirms creation', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
@@ -752,15 +913,18 @@ describe('PurchaseOrderFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(newSupplier) });
 
+      // Act
       component.onSupplierBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(businessPartnerServiceMock.addOrUpdateBusinessPartner).toHaveBeenCalledWith(newSupplier);
       expect(component.form.get('businessPartnerId')!.value).toBe('bp9');
       expect(component.form.get('businessPartnerName')!.value).toBe('Fornecedor Novo');
     });
 
-    it('cleans the selection when the new-supplier modal closes without a result', () => {
+    it('should clean the selection when the new-supplier modal closes without a result', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
@@ -770,13 +934,16 @@ describe('PurchaseOrderFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.onSupplierBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBe('');
     });
 
-    it('cleans the selection when the user declines creating a new supplier', () => {
+    it('should clean the selection when the user declines creating a new supplier', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
@@ -785,39 +952,48 @@ describe('PurchaseOrderFormComponent', () => {
 
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onSupplierBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
       expect(component.form.get('businessPartnerId')!.value).toBe('');
     });
   });
 
   describe('filteredBusinessPartners$', () => {
-    it('emits an empty list when there is no filter value', () => {
+    it('should emit an empty list when there is no filter value', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('filters suppliers by name (case-insensitive)', () => {
+    it('should filter suppliers by name case-insensitively when businessPartnerName changes', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
       component.form.get('businessPartnerName')!.setValue('fornecedor um');
 
+      // Assert
       expect(result).toEqual([suppliers[0]]);
     });
 
-    it('treats a supplier with no name as an empty string when filtering', () => {
+    it('should treat a supplier with no name as an empty string when filtering', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getSuppliers.mockReturnValue(
         of({ data: [{ id: 'bp9', name: undefined } as unknown as BusinessPartner] }),
@@ -825,61 +1001,75 @@ describe('PurchaseOrderFormComponent', () => {
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
       component.form.get('businessPartnerName')!.setValue('anything');
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('falls back to an empty array of suppliers when the response has no data', () => {
+    it('should fall back to an empty array of suppliers when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getSuppliers.mockReturnValue(of({}));
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
 
+      // Act
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
       component.form.get('businessPartnerName')!.setValue('fornecedor');
 
+      // Assert
       expect(result).toEqual([]);
     });
   });
 
   describe('updateTotalPriceFields', () => {
-    it('does not touch the transaction expenseTotalPrice while editing', () => {
+    it('should not touch the transaction expenseTotalPrice when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       const before = component.form.get('transaction.expenseTotalPrice')!.value;
 
+      // Act
       component.form.get('price')!.setValue(500);
       (component as any).updateTotalPriceFields();
 
+      // Assert
       expect(component.form.get('transaction.expenseTotalPrice')!.value).toBe(before);
     });
 
-    it('treats a non-numeric price/discount as zero', () => {
+    it('should treat a non-numeric price and discount as zero when computing totalPrice', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       component.form.get('price')!.setValue('' as any);
       component.form.get('discount')!.setValue('' as any);
 
+      // Act
       (component as any).updateTotalPriceFields();
 
+      // Assert
       expect(component.form.get('totalPrice')!.value).toBe(0);
     });
   });
 
   describe('addTransactionForm (direct call)', () => {
-    it('does not re-add the transaction group when one already exists', () => {
+    it('should not re-add the transaction group when one already exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       const existingGroup = component.form.get('transaction');
 
+      // Act
+      // Assert
       expect(() => (component as any).addTransactionForm()).not.toThrow();
 
       expect(component.form.get('transaction')).toBe(existingGroup);
@@ -887,36 +1077,45 @@ describe('PurchaseOrderFormComponent', () => {
   });
 
   describe('setupTotalOfExpensesWatcher (direct call)', () => {
-    it('does not throw when the form has no transaction group', () => {
+    it('should not throw when the form has no transaction group', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       component.form.removeControl('transaction');
 
+      // Act
+      // Assert
       expect(() => (component as any).setupTotalOfExpensesWatcher()).not.toThrow();
     });
 
-    it('does not throw when the transaction group has no totalOfExpenses control', () => {
+    it('should not throw when the transaction group has no totalOfExpenses control', () => {
+      // Arrange
       const component = createComponent();
       component.data = { purchaseOrderProducts: [] } as unknown as PurchaseOrder;
       component.ngOnInit();
       component.transactionFormGroup.removeControl('totalOfExpenses');
 
+      // Act
+      // Assert
       expect(() => (component as any).setupTotalOfExpensesWatcher()).not.toThrow();
     });
   });
 
   describe('saveModal / savePage (defensive branches)', () => {
-    it('saveModal shows a failure notification when the status is not Success', () => {
+    it('should show a failure notification when saveModal receives a non-success status', () => {
+      // Arrange
       const component = createComponent();
       const dialogRefMock = { close: vi.fn() };
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       (component as any).saveModal({
         status: ResponseStatus.Error,
         message: 'Falhou',
       } as WebApiResponse<PurchaseOrder>);
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         false,
@@ -925,7 +1124,8 @@ describe('PurchaseOrderFormComponent', () => {
       );
     });
 
-    it('savePage notifies and updates local data when editing (via submit)', () => {
+    it('should notify and update local data when savePage handles an edit via submit', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = {
@@ -940,8 +1140,10 @@ describe('PurchaseOrderFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: updated } as WebApiResponse<PurchaseOrder>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'OK');
       expect(component.data).toBe(updated);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();

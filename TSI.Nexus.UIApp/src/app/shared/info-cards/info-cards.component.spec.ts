@@ -25,45 +25,60 @@ describe('InfoCardsComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('loads the cards for the default period', () => {
+    it('should load the cards for the default period when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith('dashboard/getInfoCards/30');
     });
   });
 
   describe('onPeriodChange', () => {
-    it('reloads the cards when the period actually changes', () => {
+    it('should reload the cards when the period actually changes', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onPeriodChange({ target: { value: '60' } } as unknown as Event);
 
+      // Assert
       expect(component.selectedPeriod).toBe(60);
       expect(cdrMock.detectChanges).toHaveBeenCalled();
       expect(apiServiceMock.get).toHaveBeenCalledWith('dashboard/getInfoCards/60');
     });
 
-    it('does nothing when the period is unchanged', () => {
+    it('should do nothing when the period is unchanged', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onPeriodChange({ target: { value: '30' } } as unknown as Event);
 
+      // Assert
       expect(cdrMock.detectChanges).not.toHaveBeenCalled();
       expect(apiServiceMock.get).not.toHaveBeenCalled();
     });
   });
 
   describe('toggleFilters', () => {
-    it('flips showFilters', () => {
+    it('should flip showFilters when toggleFilters is called', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       component.toggleFilters();
       expect(component.showFilters).toBe(true);
 
@@ -82,89 +97,113 @@ describe('InfoCardsComponent', () => {
       vi.useRealTimers();
     });
 
-    it('links "Novos Pedidos" to /orders with the date range', () => {
+    it('should link "Novos Pedidos" to /orders with the date range', () => {
+      // Arrange
       const component = createComponent();
       component.selectedPeriod = 30;
 
+      // Act
       const link = component.getCardLink({ title: 'Novos Pedidos' } as DashboardCard);
 
+      // Assert
       expect(link.route).toEqual(['/orders']);
       expect(link.queryParams).toEqual({ startDate: '2024-03-01', endDate: '2024-03-31' });
     });
 
-    it('links "Recebidos (%)" to /payments filtered by approved incoming', () => {
+    it('should link "Recebidos (%)" to /payments filtered by approved incoming', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       const link = component.getCardLink({ title: 'Recebidos (%)' } as DashboardCard);
 
+      // Assert
       expect(link.route).toEqual(['/payments']);
       expect(link.queryParams).toEqual(
         expect.objectContaining({ status: 'Approved', type: 'Incoming' }),
       );
     });
 
-    it('links "Aguardando (%)" to /payments filtered by pending/delayed', () => {
+    it('should link "Aguardando (%)" to /payments filtered by pending/delayed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       const link = component.getCardLink({ title: 'Aguardando (%)' } as DashboardCard);
 
+      // Assert
       expect(link.route).toEqual(['/payments']);
-      expect(link.queryParams).toEqual(
-        expect.objectContaining({ status: 'Pending,Delayed' }),
-      );
+      expect(link.queryParams).toEqual(expect.objectContaining({ status: 'Pending,Delayed' }));
     });
 
-    it('links "Em Breve" to the home route with no query params', () => {
+    it('should link "Em Breve" to the home route with no query params', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       const link = component.getCardLink({ title: 'Em Breve' } as DashboardCard);
 
+      // Assert
       expect(link.route).toEqual(['/']);
       expect(link.queryParams).toBeUndefined();
     });
 
-    it('falls back to the home route for an unknown title', () => {
+    it('should fall back to the home route when the title is unknown', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       const link = component.getCardLink({ title: 'Something Else' } as DashboardCard);
 
+      // Assert
       expect(link.route).toEqual(['/']);
     });
   });
 
   describe('loadCards', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of({}));
 
+      // Act
       component.loadCards();
 
+      // Assert
       expect(component.cards).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('clears the cards and marks for check when the request errors', () => {
+    it('should clear the cards and mark for check when the request errors', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.loadCards();
 
+      // Assert
       expect(component.cards).toEqual([]);
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
   describe('trackByInfoCard', () => {
-    it('returns the card title', () => {
+    it('should return the card title when trackByInfoCard is called', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(component.trackByInfoCard(0, { title: 'X' } as DashboardCard)).toBe('X');
     });
   });
 
   describe('getCardColor', () => {
-    it('colors a "pedido" card as primary', () => {
+    it('should color a "pedido" card as primary', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getCardColor({ title: 'Novos Pedidos' } as DashboardCard)).toBe(
         'text-bg-primary',
       );
@@ -174,22 +213,31 @@ describe('InfoCardsComponent', () => {
       [90, 'text-bg-success'],
       [60, 'text-bg-warning'],
       [10, 'text-bg-danger'],
-    ])('colors a "recebido" card at %i%% as %s', (percent, expected) => {
+    ])('should color a "recebido" card as %s when the percentage is %i%%', (percent, expected) => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(
         component.getCardColor({ title: 'Recebidos (%)', value: `${percent}%` } as DashboardCard),
       ).toBe(expected);
     });
 
-    it('colors an "aguardando" card as warning', () => {
+    it('should color an "aguardando" card as warning', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getCardColor({ title: 'Aguardando (%)' } as DashboardCard)).toBe(
         'text-bg-warning',
       );
     });
 
-    it('colors an "atraso" card with zero as success, and non-zero as danger', () => {
+    it('should color an "atraso" card as success when zero and as danger when non-zero', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getCardColor({ title: 'Em Atraso', value: '0' } as DashboardCard)).toBe(
         'text-bg-success',
       );
@@ -198,67 +246,88 @@ describe('InfoCardsComponent', () => {
       );
     });
 
-    it('treats a missing value as zero for a "recebido" card', () => {
+    it('should treat a missing value as zero for a "recebido" card', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getCardColor({ title: 'Recebidos (%)' } as DashboardCard)).toBe(
         'text-bg-danger',
       );
     });
 
-    it('treats a missing value as zero (success) for an "atraso" card', () => {
+    it('should treat a missing value as zero (success) for an "atraso" card', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getCardColor({ title: 'Em Atraso' } as DashboardCard)).toBe(
         'text-bg-success',
       );
     });
 
-    it('falls back to primary for an unrecognized title', () => {
+    it('should fall back to primary when the title is unrecognized', () => {
+      // Arrange
       const component = createComponent();
-      expect(component.getCardColor({ title: 'Outro' } as DashboardCard)).toBe(
-        'text-bg-primary',
-      );
+
+      // Act / Assert
+      expect(component.getCardColor({ title: 'Outro' } as DashboardCard)).toBe('text-bg-primary');
     });
 
-    it('treats a missing title/value as empty when computing the color', () => {
+    it('should treat a missing title/value as empty when computing the color', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(component.getCardColor({} as DashboardCard)).toBe('text-bg-primary');
     });
   });
 
   describe('getCardIcon', () => {
-    it('resolves a known icon by exact title', () => {
+    it('should resolve a known icon when the title matches exactly', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.getCardIcon({ title: 'Novos Pedidos' } as DashboardCard);
 
+      // Assert
       expect(sanitizerMock.bypassSecurityTrustHtml).toHaveBeenCalledWith(
         expect.stringContaining('<svg'),
       );
     });
 
-    it('falls back to a generic icon for an unknown title', () => {
+    it('should fall back to a generic icon when the title is unknown', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.getCardIcon({ title: 'Unknown' } as DashboardCard);
 
+      // Assert
       expect(sanitizerMock.bypassSecurityTrustHtml).toHaveBeenCalledWith(
         expect.stringContaining('<circle cx="12" cy="12" r="10"/>'),
       );
     });
 
-    it('treats a missing title as empty when resolving the icon', () => {
+    it('should treat a missing title as empty when resolving the icon', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(() => component.getCardIcon({} as DashboardCard)).not.toThrow();
     });
   });
 
   describe('onViewDetails', () => {
-    it('navigates using the resolved card link', () => {
+    it('should navigate using the resolved card link when onViewDetails is called', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onViewDetails({ title: 'Em Breve' } as DashboardCard);
 
+      // Assert
       expect(routerMock.navigate).toHaveBeenCalledWith(['/'], { queryParams: undefined });
     });
   });

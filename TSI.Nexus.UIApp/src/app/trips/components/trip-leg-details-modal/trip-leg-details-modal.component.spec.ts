@@ -36,32 +36,41 @@ describe('TripLegDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent(null)).toBeTruthy();
   });
 
   describe('constructor / mode setup', () => {
-    it('starts in add mode with one empty stop when no dialogData is provided', () => {
+    it('should start in add mode with one empty stop when no dialogData is provided', () => {
+      // Act
       const component = createComponent(null);
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.tripId).toBe('');
       expect(component.stops.length).toBe(1);
     });
 
-    it('reads tripId from parentId when tripId is absent', () => {
+    it('should read tripId from parentId when tripId is absent', () => {
+      // Act
       const component = createComponent({ parentId: 't1' });
 
+      // Assert
       expect(component.tripId).toBe('t1');
     });
 
-    it('infers isEdit from the presence of an existing id when isEdit is not explicit', () => {
+    it('should infer isEdit from the presence of an existing id when isEdit is not explicit', () => {
+      // Act
       const component = createComponent({ data: { id: 'l1' } });
 
+      // Assert
       expect(component.isEdit).toBe(true);
     });
 
-    it('starts in edit mode pre-filled from an existing leg, with same-day arrival detected', () => {
+    it('should start in edit mode pre-filled from an existing leg and detect same-day arrival', () => {
+      // Arrange
       const existing: TripLeg = {
         id: 'l1',
         origin: 'A',
@@ -72,15 +81,18 @@ describe('TripLegDetailsModalComponent', () => {
         notes: 'obs',
       } as unknown as TripLeg;
 
+      // Act
       const component = createComponent({ isEdit: true, tripId: 't1', data: existing });
 
+      // Assert
       expect(component.form.value.origin).toBe('A');
       expect(component.form.value.destination).toBe('B');
       expect(component.form.value.sameDayArrival).toBe(true);
       expect(component.form.get('arrivalDateOnly')!.disabled).toBe(true);
     });
 
-    it('starts in edit mode with arrival on a different day (not disabled)', () => {
+    it('should start in edit mode with arrivalDateOnly enabled when arrival is on a different day', () => {
+      // Arrange
       const existing: TripLeg = {
         id: 'l1',
         origin: 'A',
@@ -89,13 +101,16 @@ describe('TripLegDetailsModalComponent', () => {
         arrivalDate: new Date(2024, 0, 12) as any,
       } as unknown as TripLeg;
 
+      // Act
       const component = createComponent({ isEdit: true, data: existing });
 
+      // Assert
       expect(component.form.value.sameDayArrival).toBe(false);
       expect(component.form.get('arrivalDateOnly')!.disabled).toBe(false);
     });
 
-    it('starts in edit mode with no arrival recorded, defaulting to same-day', () => {
+    it('should default to same-day arrival when starting in edit mode with no arrival recorded', () => {
+      // Arrange
       const existing: TripLeg = {
         id: 'l1',
         origin: 'A',
@@ -103,70 +118,91 @@ describe('TripLegDetailsModalComponent', () => {
         departureDate: new Date(2024, 0, 10) as any,
       } as unknown as TripLeg;
 
+      // Act
       const component = createComponent({ isEdit: true, data: existing });
 
+      // Assert
       expect(component.form.value.sameDayArrival).toBe(true);
     });
   });
 
   describe('addStop / removeStop', () => {
-    it('adds a new stop', () => {
+    it('should add a new stop when addStop is called', () => {
+      // Arrange
       const component = createComponent(null);
 
+      // Act
       component.addStop();
 
+      // Assert
       expect(component.stops.length).toBe(2);
     });
 
-    it('removes a stop when there is more than one', () => {
+    it('should remove a stop when there is more than one', () => {
+      // Arrange
       const component = createComponent(null);
       component.addStop();
 
+      // Act
       component.removeStop(0);
 
+      // Assert
       expect(component.stops.length).toBe(1);
     });
 
-    it('does not remove the last remaining stop', () => {
+    it('should not remove the last remaining stop', () => {
+      // Arrange
       const component = createComponent(null);
 
+      // Act
       component.removeStop(0);
 
+      // Assert
       expect(component.stops.length).toBe(1);
     });
   });
 
   describe('close', () => {
-    it('closes the dialog with null', () => {
+    it('should close the dialog with null when close is called', () => {
+      // Arrange
       const component = createComponent(null);
 
+      // Act
       component.close();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalledWith(null);
     });
   });
 
   describe('submit', () => {
-    it('marks all as touched and does not save when the form is invalid', () => {
+    it('should mark all as touched and not save when the form is invalid', () => {
+      // Arrange
       const component = createComponent(null);
 
+      // Act
       component.submit();
 
+      // Assert
       expect(component.form.get('origin')!.touched).toBe(true);
       expect(tripLegServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('does not save while already saving', () => {
+    it('should not save when already saving', () => {
+      // Arrange
       const component = createComponent({ isEdit: true, data: { id: 'l1', origin: 'A', destination: 'B', dateOnly: new Date() } });
       component.form.patchValue({ origin: 'A', destination: 'B', dateOnly: new Date() });
       component.saving = true;
 
+      // Act
       component.submit();
 
+      // Assert
       expect(tripLegServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('calls submitEdit when isEdit is true and the form is valid', () => {
+    it('should call submitEdit when isEdit is true and the form is valid', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         data: { id: 'l1', origin: 'A', destination: 'B', departureDate: new Date() },
@@ -175,12 +211,15 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(tripLegServiceMock.update).toHaveBeenCalled();
     });
 
-    it('calls submitAdd when isEdit is false and the form is valid', () => {
+    it('should call submitAdd when isEdit is false and the form is valid', () => {
+      // Arrange
       const component = createComponent({ tripId: 't1' });
       component.form.patchValue({ origin: 'A' });
       component.stops.at(0).patchValue({ destination: 'B', dateOnly: new Date() });
@@ -188,8 +227,10 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(tripLegServiceMock.add).toHaveBeenCalled();
     });
   });
@@ -203,14 +244,17 @@ describe('TripLegDetailsModalComponent', () => {
       });
     }
 
-    it('closes the dialog on a successful update', () => {
+    it('should close the dialog when the update succeeds', () => {
+      // Arrange
       const component = setupValidEditForm();
       tripLegServiceMock.update.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'Salvo' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(component.saving).toBe(false);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -219,23 +263,29 @@ describe('TripLegDetailsModalComponent', () => {
       expect(dialogRefMock.close).toHaveBeenCalled();
     });
 
-    it('does not close the dialog when the update response is not a success', () => {
+    it('should not close the dialog when the update response is not a success', () => {
+      // Arrange
       const component = setupValidEditForm();
       tripLegServiceMock.update.mockReturnValue(
         of({ status: ResponseStatus.Error, message: 'Falha' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(dialogRefMock.close).not.toHaveBeenCalled();
     });
 
-    it('shows a translated error notification when the update request errors', () => {
+    it('should show a translated error notification when the update request errors', () => {
+      // Arrange
       const component = setupValidEditForm();
       tripLegServiceMock.update.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.submit();
 
+      // Assert
       expect(component.saving).toBe(false);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
@@ -252,14 +302,17 @@ describe('TripLegDetailsModalComponent', () => {
       return component;
     }
 
-    it('adds a single leg and shows the singular success message', () => {
+    it('should add a single leg and show the singular success message when there is one stop', () => {
+      // Arrange
       const component = setupValidAddForm();
       tripLegServiceMock.add.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         'TRIPS.LEG_ADDED_SINGLE',
@@ -267,7 +320,8 @@ describe('TripLegDetailsModalComponent', () => {
       expect(dialogRefMock.close).toHaveBeenCalled();
     });
 
-    it('adds multiple legs and shows the plural success message', () => {
+    it('should add multiple legs and show the plural success message when there are multiple stops', () => {
+      // Arrange
       const component = createComponent({ tripId: 't1' });
       component.form.patchValue({ origin: 'A' });
       component.stops.at(0).patchValue({ destination: 'B', dateOnly: new Date(2024, 0, 1) });
@@ -277,8 +331,10 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(translationServiceMock.instant).toHaveBeenCalledWith('TRIPS.LEG_ADDED_PLURAL', {
         count: '2',
       });
@@ -288,14 +344,17 @@ describe('TripLegDetailsModalComponent', () => {
       );
     });
 
-    it('shows the failed leg message and does not close the dialog when one request fails', () => {
+    it('should show the failed leg message and not close the dialog when one request fails', () => {
+      // Arrange
       const component = setupValidAddForm();
       tripLegServiceMock.add.mockReturnValue(
         of({ status: ResponseStatus.Error, message: 'Falha ao salvar' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'Falha ao salvar',
@@ -303,12 +362,15 @@ describe('TripLegDetailsModalComponent', () => {
       expect(dialogRefMock.close).not.toHaveBeenCalled();
     });
 
-    it('shows a translated error notification when the add request errors', () => {
+    it('should show a translated error notification when the add request errors', () => {
+      // Arrange
       const component = setupValidAddForm();
       tripLegServiceMock.add.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.submit();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'TRIPS.SAVE_LEGS_ERROR',
@@ -317,47 +379,60 @@ describe('TripLegDetailsModalComponent', () => {
   });
 
   describe('wireSameDayArrival (private, via the edit/add forms)', () => {
-    it('mirrors and disables arrivalDateOnly while sameDayArrival is checked', () => {
+    it('should mirror and disable arrivalDateOnly when sameDayArrival is checked', () => {
+      // Arrange
       const component = createComponent(null);
       const group = component.stops.at(0);
 
+      // Act
       group.get('dateOnly')!.setValue(new Date(2024, 0, 5));
 
+      // Assert
       expect(group.get('arrivalDateOnly')!.value).toEqual(new Date(2024, 0, 5));
       expect(group.get('arrivalDateOnly')!.disabled).toBe(true);
     });
 
-    it('enables arrivalDateOnly for manual entry when sameDayArrival is unchecked', () => {
+    it('should enable arrivalDateOnly for manual entry when sameDayArrival is unchecked', () => {
+      // Arrange
       const component = createComponent(null);
       const group = component.stops.at(0);
 
+      // Act
       group.get('sameDayArrival')!.setValue(false);
 
+      // Assert
       expect(group.get('arrivalDateOnly')!.disabled).toBe(false);
     });
 
-    it('does not touch arrivalDateOnly on a departure change once sameDayArrival is off', () => {
+    it('should not touch arrivalDateOnly on a departure change when sameDayArrival is off', () => {
+      // Arrange
       const component = createComponent(null);
       const group = component.stops.at(0);
       group.get('sameDayArrival')!.setValue(false);
       group.get('arrivalDateOnly')!.setValue(new Date(2024, 0, 9));
 
+      // Act
       group.get('dateOnly')!.setValue(new Date(2024, 0, 20));
 
+      // Assert
       expect(group.get('arrivalDateOnly')!.value).toEqual(new Date(2024, 0, 9));
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes all internal subscriptions without throwing', () => {
+    it('should unsubscribe all internal subscriptions without throwing when destroyed', () => {
+      // Arrange
       const component = createComponent(null);
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('date helpers (private, exercised via the edit form / submit)', () => {
-    it('parses a "DD/MM/YYYY" string date with a time into a Date', () => {
+    it('should parse a DD/MM/YYYY string date with a time into a Date when submitted', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -368,8 +443,10 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.update.mock.calls[0][0];
       expect(sentLeg.departureDate.getFullYear()).toBe(2024);
       expect(sentLeg.departureDate.getMonth()).toBe(2);
@@ -378,7 +455,8 @@ describe('TripLegDetailsModalComponent', () => {
       expect(sentLeg.departureDate.getMinutes()).toBe(30);
     });
 
-    it('parses a moment-like object (with toDate()) as the departure date', () => {
+    it('should parse a moment-like object as the departure date when submitted', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -390,15 +468,18 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.update.mock.calls[0][0];
       expect(sentLeg.departureDate.getMonth()).toBe(4);
       expect(sentLeg.departureDate.getDate()).toBe(20);
       expect(sentLeg.departureDate.getHours()).toBe(0);
     });
 
-    it('defaults to now when dateOnly is empty on submit (defensive - required validator normally blocks this)', () => {
+    it('should default to now when dateOnly is empty on submit (defensive - required validator normally blocks this)', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -410,12 +491,15 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(tripLegServiceMock.update).toHaveBeenCalled();
     });
 
-    it('sends a null arrivalDate when arrivalDateOnly is empty', () => {
+    it('should send a null arrivalDate when arrivalDateOnly is empty', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -427,13 +511,16 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.update.mock.calls[0][0];
       expect(sentLeg.arrivalDate).toBeNull();
     });
 
-    it('resolves arrivalDate when arrivalDateOnly is a real Date', () => {
+    it('should resolve arrivalDate when arrivalDateOnly is a real Date', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -445,13 +532,16 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.update.mock.calls[0][0];
       expect(sentLeg.arrivalDate.getDate()).toBe(3);
     });
 
-    it('treats an invalid arrival date string as null (splitDateAndTime on construction)', () => {
+    it('should treat an invalid arrival date string as null on construction (splitDateAndTime)', () => {
+      // Arrange
       const existing: TripLeg = {
         id: 'l1',
         origin: 'A',
@@ -460,38 +550,46 @@ describe('TripLegDetailsModalComponent', () => {
         arrivalDate: 'not-a-date' as any,
       } as unknown as TripLeg;
 
+      // Act
       const component = createComponent({ isEdit: true, data: existing });
 
+      // Assert
       expect(component.form.value.sameDayArrival).toBe(true);
     });
 
-    it('treats a missing departure date as null on construction (falls back to now on submit)', () => {
+    it('should treat a missing departure date as null on construction (falls back to now on submit)', () => {
+      // Arrange
       const existing: TripLeg = {
         id: 'l1',
         origin: 'A',
         destination: 'B',
       } as unknown as TripLeg;
 
+      // Act
       const component = createComponent({ isEdit: true, data: existing });
 
+      // Assert
       expect(component.form.value.dateOnly).toBeNull();
     });
 
-    it('falls back to null when the existing leg has no id', () => {
+    it('should fall back to a null id when the existing leg has no id', () => {
+      // Arrange
       const existing = { origin: 'A', destination: 'B' } as unknown as TripLeg;
-
       const component = createComponent({ isEdit: true, data: existing });
       component.form.patchValue({ dateOnly: new Date(2024, 0, 1) });
       tripLegServiceMock.update.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       expect(tripLegServiceMock.update.mock.calls[0][0].id).toBeNull();
     });
 
-    it('falls back distanceKm/notes to 0/"" when explicitly cleared to null', () => {
+    it('should fall back distanceKm and notes to 0 and empty string when explicitly cleared to null', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -502,14 +600,17 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.update.mock.calls[0][0];
       expect(sentLeg.distanceKm).toBe(0);
       expect(sentLeg.notes).toBe('');
     });
 
-    it('falls back a stop distanceKm/notes to 0/"" when explicitly cleared to null (add mode)', () => {
+    it('should fall back a stop distanceKm and notes to 0 and empty string when explicitly cleared to null in add mode', () => {
+      // Arrange
       const component = createComponent({ tripId: 't1' });
       component.form.patchValue({ origin: 'A' });
       component.stops.at(0).patchValue({
@@ -522,24 +623,30 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.add.mock.calls[0][0];
       expect(sentLeg.distanceKm).toBe(0);
       expect(sentLeg.notes).toBe('');
     });
 
-    it('does not add any legs when the stops array is empty (defensive, called directly)', () => {
+    it('should not add any legs when the stops array is empty (defensive, called directly)', () => {
+      // Arrange
       const component = createComponent({ tripId: 't1' });
       component.form.patchValue({ origin: 'A' });
       component.form.removeControl('stops');
 
+      // Act
       (component as any).submitAdd();
 
+      // Assert
       expect(tripLegServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('defaults hours/minutes to 0 when the time string is empty', () => {
+    it('should default hours and minutes to 0 when the time string is empty', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -550,14 +657,17 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.update.mock.calls[0][0];
       expect(sentLeg.departureDate.getHours()).toBe(0);
       expect(sentLeg.departureDate.getMinutes()).toBe(0);
     });
 
-    it('defaults month/day to 1 when a malformed date string parses to 0', () => {
+    it('should default month and day to 1 when a malformed date string parses to 0', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         tripId: 't1',
@@ -568,8 +678,10 @@ describe('TripLegDetailsModalComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok' }),
       );
 
+      // Act
       component.submit();
 
+      // Assert
       const sentLeg = tripLegServiceMock.update.mock.calls[0][0];
       expect(sentLeg.departureDate.getMonth()).toBe(0);
       expect(sentLeg.departureDate.getDate()).toBe(1);
@@ -577,9 +689,12 @@ describe('TripLegDetailsModalComponent', () => {
   });
 
   describe('isSameCalendarDay (private, direct)', () => {
-    it('returns false when there is an arrival date but no departure date', () => {
+    it('should return false when there is an arrival date but no departure date', () => {
+      // Arrange
       const component = createComponent(null);
 
+      // Act
+      // Assert
       expect((component as any).isSameCalendarDay(null, new Date(2024, 0, 1))).toBe(false);
     });
   });

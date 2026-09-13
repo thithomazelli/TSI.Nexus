@@ -15,11 +15,16 @@ describe('VehicleBlockedNotificationComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('filters to only blocked vehicles on init', () => {
+  it('should filter to only blocked vehicles when ngOnInit is called', () => {
+    // Arrange
     const vehicles = [
       { id: 'v1', status: VehicleStatus.Blocked },
       { id: 'v2', status: VehicleStatus.Available },
@@ -28,39 +33,51 @@ describe('VehicleBlockedNotificationComponent', () => {
     const component = createComponent();
     vehicleServiceMock.getAll.mockReturnValue(of({ data: vehicles }));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.vehicles.map((v) => v.id)).toEqual(['v1', 'v3']);
     expect(component.total).toBe(2);
   });
 
-  it('defaults to an empty list when the response has no data', () => {
+  it('should default to an empty list when the response has no data', () => {
+    // Arrange
     const component = createComponent();
     vehicleServiceMock.getAll.mockReturnValue(of({ data: null }));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.vehicles).toEqual([]);
     expect(component.total).toBe(0);
   });
 
-  it('shows the badge only when there is at least one blocked vehicle', () => {
+  it('should show the badge only when there is at least one blocked vehicle', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act / Assert
     expect(component.showBadge).toBe(false);
 
     component.total = 1;
     expect(component.showBadge).toBe(true);
   });
 
-  it('opens the vehicle details modal in edit mode', () => {
+  it('should open the vehicle details modal in edit mode when openVehicle is called', () => {
+    // Arrange
     const component = createComponent();
     const vehicle = { id: 'v1' } as Vehicle;
 
+    // Act
     component.openVehicle(vehicle);
 
-    expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
-      expect.anything(),
-      { isEdit: true, id: 'v1', data: vehicle },
-    );
+    // Assert
+    expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(expect.anything(), {
+      isEdit: true,
+      id: 'v1',
+      data: vehicle,
+    });
   });
 });
