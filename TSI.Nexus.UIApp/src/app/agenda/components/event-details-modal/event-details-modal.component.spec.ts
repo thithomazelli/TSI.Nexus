@@ -16,13 +16,17 @@ describe('EventDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent(null)).toBeTruthy();
   });
 
-  it('defaults every field to null/false when no dialogData is provided', () => {
+  it('should default every field to null or false when no dialogData is provided', () => {
+    // Act
     const component = createComponent(null);
 
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toBeNull();
     expect(component.prefillStart).toBeNull();
@@ -32,10 +36,13 @@ describe('EventDetailsModalComponent', () => {
     expect(component.lockedLinkLabel).toBeNull();
   });
 
-  it('populates edit state and prefill/lock fields from dialogData', () => {
+  it('should populate edit state and prefill/lock fields when dialogData is provided', () => {
+    // Arrange
     const event = { id: 'e1' } as AgendaEvent;
     const prefillStart = new Date(2024, 0, 1);
     const prefillEnd = new Date(2024, 0, 2);
+
+    // Act
     const component = createComponent({
       isEdit: true,
       data: event,
@@ -46,6 +53,7 @@ describe('EventDetailsModalComponent', () => {
       lockedLinkLabel: 'Trip 1',
     });
 
+    // Assert
     expect(component.isEdit).toBe(true);
     expect(component.data).toBe(event);
     expect(component.prefillStart).toBe(prefillStart);
@@ -55,9 +63,11 @@ describe('EventDetailsModalComponent', () => {
     expect(component.lockedLinkLabel).toBe('Trip 1');
   });
 
-  it('falls back to defaults when dialog data omits fields', () => {
+  it('should fall back to defaults when dialog data omits fields', () => {
+    // Act
     const component = createComponent({});
 
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toBeNull();
     expect(component.prefillStart).toBeNull();
@@ -67,10 +77,14 @@ describe('EventDetailsModalComponent', () => {
     expect(component.lockedLinkLabel).toBeNull();
   });
 
-  it('closes the dialog with null when close() is called', () => {
+  it('should close the dialog with null when close is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
     component.close();
 
+    // Assert
     expect(dialogRefMock.close).toHaveBeenCalledWith(null);
   });
 });

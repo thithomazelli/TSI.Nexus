@@ -23,13 +23,17 @@ describe('PassengerDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent(null)).toBeTruthy();
   });
 
-  it('starts in add mode with an empty form when no dialogData is provided', () => {
+  it('should start in add mode with an empty form when no dialogData is provided', () => {
+    // Act
     const component = createComponent(null);
 
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.tripId).toBe('');
     expect(component.form.value).toEqual({
@@ -40,7 +44,8 @@ describe('PassengerDetailsModalComponent', () => {
     });
   });
 
-  it('starts in edit mode pre-filled from existing passenger data', () => {
+  it('should start in edit mode pre-filled when existing passenger data is provided', () => {
+    // Arrange
     const passenger: Passenger = {
       id: 'p1',
       name: 'Ana',
@@ -49,8 +54,11 @@ describe('PassengerDetailsModalComponent', () => {
       phone: '999',
       tripId: 't1',
     } as Passenger;
+
+    // Act
     const component = createComponent({ data: passenger, tripId: 't1' });
 
+    // Assert
     expect(component.isEdit).toBe(true);
     expect(component.tripId).toBe('t1');
     expect(component.form.value).toEqual({
@@ -61,29 +69,40 @@ describe('PassengerDetailsModalComponent', () => {
     });
   });
 
-  it('closes the dialog with null when close() is called', () => {
+  it('should close the dialog with null when close is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
     component.close();
 
+    // Assert
     expect(dialogRefMock.close).toHaveBeenCalledWith(null);
   });
 
-  it('does not submit and marks the form as touched when it is invalid', () => {
+  it('should not submit and should mark the form as touched when the form is invalid', () => {
+    // Arrange
     const component = createComponent({ tripId: 't1' });
+
+    // Act
     component.submit();
 
+    // Assert
     expect(component.form.touched).toBe(true);
     expect(passengerServiceMock.add).not.toHaveBeenCalled();
   });
 
-  it('adds a new passenger and closes the dialog on success', () => {
+  it('should add a new passenger and close the dialog when submit succeeds', () => {
+    // Arrange
     const response = { status: ResponseStatus.Success, message: 'ok', data: {} as Passenger };
     const component = createComponent({ tripId: 't1' });
     passengerServiceMock.add.mockReturnValue(of(response));
     component.form.setValue({ name: 'Ana', documentNumber: '123', seat: '10', phone: '999' });
 
+    // Act
     component.submit();
 
+    // Assert
     expect(passengerServiceMock.add).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'Ana', tripId: 't1' }),
     );
@@ -92,40 +111,49 @@ describe('PassengerDetailsModalComponent', () => {
     expect(component.saving).toBe(false);
   });
 
-  it('updates an existing passenger, including its id in the payload', () => {
+  it('should update an existing passenger including its id in the payload when editing', () => {
+    // Arrange
     const passenger: Passenger = { id: 'p1', name: 'Ana', tripId: 't1' } as Passenger;
     const response = { status: ResponseStatus.Success, message: 'ok', data: passenger };
     const component = createComponent({ data: passenger, tripId: 't1' });
     passengerServiceMock.update.mockReturnValue(of(response));
 
+    // Act
     component.submit();
 
+    // Assert
     expect(passengerServiceMock.update).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'p1', tripId: 't1' }),
     );
     expect(dialogRefMock.close).toHaveBeenCalledWith(response);
   });
 
-  it('does not close the dialog when the backend reports a non-success status', () => {
+  it('should not close the dialog when the backend reports a non-success status', () => {
+    // Arrange
     const response = { status: ResponseStatus.Error, message: 'falhou', data: null };
     const component = createComponent({ tripId: 't1' });
     passengerServiceMock.add.mockReturnValue(of(response));
     component.form.setValue({ name: 'Ana', documentNumber: '', seat: '', phone: '' });
 
+    // Act
     component.submit();
 
+    // Assert
     expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
     expect(dialogRefMock.close).not.toHaveBeenCalled();
     expect(component.saving).toBe(false);
   });
 
-  it('shows a generic error notification and stops saving when the request errors out', () => {
+  it('should show a generic error notification and stop saving when the request errors out', () => {
+    // Arrange
     const component = createComponent({ tripId: 't1' });
     passengerServiceMock.add.mockReturnValue(throwError(() => new Error('network error')));
     component.form.setValue({ name: 'Ana', documentNumber: '', seat: '', phone: '' });
 
+    // Act
     component.submit();
 
+    // Assert
     expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
       ResponseStatus.Error,
       'Erro ao salvar o passageiro.',
@@ -133,13 +161,16 @@ describe('PassengerDetailsModalComponent', () => {
     expect(component.saving).toBe(false);
   });
 
-  it('does not submit again while a save is already in flight', () => {
+  it('should not submit again when a save is already in flight', () => {
+    // Arrange
     const component = createComponent({ tripId: 't1' });
     component.form.setValue({ name: 'Ana', documentNumber: '', seat: '', phone: '' });
     component.saving = true;
 
+    // Act
     component.submit();
 
+    // Assert
     expect(passengerServiceMock.add).not.toHaveBeenCalled();
   });
 });
