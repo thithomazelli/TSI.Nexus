@@ -19,29 +19,41 @@ describe('QuoteTripLegService', () => {
     return TestBed.inject(QuoteTripLegService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getByQuoteTrip hits the expected endpoint', () => {
+  it('should hit the expected endpoint when getByQuoteTrip is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getByQuoteTrip('qt1');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotetriplegs/getByQuoteTrip/qt1');
   });
 
-  it('quoteTripLegChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately when a new subscriber subscribes to quoteTripLegChanged$', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.quoteTripLegChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each notify quoteTripLegChanged$ after the request completes', () => {
+  it('should notify quoteTripLegChanged$ when add, update, or delete requests complete', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<QuoteTripLeg>>();
     const updateResponse$ = new Subject<WebApiResponse<QuoteTripLeg>>();
@@ -55,19 +67,28 @@ describe('QuoteTripLegService', () => {
     TestBed.flushEffects();
     expect(emissions).toBe(1);
 
+    // Act
     service.add({} as QuoteTripLeg).subscribe();
     addResponse$.next({} as WebApiResponse<QuoteTripLeg>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(2);
 
+    // Act
     service.update({} as QuoteTripLeg).subscribe();
     updateResponse$.next({} as WebApiResponse<QuoteTripLeg>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(3);
 
+    // Act
     service.delete({} as QuoteTripLeg).subscribe();
     deleteResponse$.next({} as WebApiResponse<QuoteTripLeg>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(4);
   });
 });

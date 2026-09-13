@@ -16,46 +16,61 @@ describe('BusinessPartnerDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
-  });
-
-  it('defaults to add mode with no data when there is no dialog data', () => {
+  it('should create the component when instantiated', () => {
+    // Act
     const component = createComponent();
 
+    // Assert
+    expect(component).toBeTruthy();
+  });
+
+  it('should default to add mode with no data when there is no dialog data', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toEqual({});
     expect(component.id).toBeNull();
   });
 
-  it('initializes from dialog data in edit mode', () => {
+  it('should initialize in edit mode when dialog data is provided', () => {
+    // Arrange
     const businessPartner = {
       id: 'bp1',
       type: BusinessPartnerType.Client,
     } as BusinessPartner;
+
+    // Act
     const component = createComponent({ isEdit: true, data: businessPartner, id: 'bp1' });
 
+    // Assert
     expect(component.isEdit).toBe(true);
     expect(component.data).toBe(businessPartner);
     expect(component.id).toBe('bp1');
   });
 
-  it('falls back to defaults when dialog data omits data/id', () => {
+  it('should fall back to defaults when dialog data omits data/id', () => {
+    // Act
     const component = createComponent({ isEdit: true });
 
+    // Assert
     expect(component.data).toEqual({});
     expect(component.id).toBeNull();
   });
 
   describe('ngOnInit / initializeTitle', () => {
-    it('builds an "add client" title when adding a client', () => {
+    it('should build an "add client" title when adding a client', () => {
+      // Arrange
       const component = createComponent({
         isEdit: false,
         data: { type: BusinessPartnerType.Client },
       });
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(translationServiceMock.instant).toHaveBeenCalledWith('SIDEBAR.CLIENTS');
       expect(translationServiceMock.instant).toHaveBeenCalledWith('COMMON.ADD_ENTITY', {
         entity: 'SIDEBAR.CLIENTS',
@@ -63,14 +78,17 @@ describe('BusinessPartnerDetailsModalComponent', () => {
       expect(component.title).toBe('COMMON.ADD_ENTITY');
     });
 
-    it('builds an "edit supplier" title when editing a supplier', () => {
+    it('should build an "edit supplier" title when editing a supplier', () => {
+      // Arrange
       const component = createComponent({
         isEdit: true,
         data: { type: BusinessPartnerType.Supplier },
       });
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(translationServiceMock.instant).toHaveBeenCalledWith('SIDEBAR.SUPPLIERS');
       expect(translationServiceMock.instant).toHaveBeenCalledWith('COMMON.EDIT_ENTITY', {
         entity: 'SIDEBAR.SUPPLIERS',
@@ -79,10 +97,14 @@ describe('BusinessPartnerDetailsModalComponent', () => {
   });
 
   describe('close', () => {
-    it('closes the dialog with no result', () => {
+    it('should close the dialog with no result when close is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.close();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalledWith(null);
     });
   });
