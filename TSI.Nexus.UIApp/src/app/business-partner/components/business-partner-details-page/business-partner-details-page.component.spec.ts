@@ -38,18 +38,26 @@ describe('BusinessPartnerDetailsPageComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent(null)).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent(null);
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('isAgendaEnabled combines the group and entity flags', () => {
+  it('should combine the group and entity flags when isAgendaEnabled is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act / Assert
     expect(component.isAgendaEnabled()).toBe(true);
     expect(featureFlagServiceMock.isEnabled).toHaveBeenCalledWith('AgendaModule');
     expect(featureFlagServiceMock.isEnabled).toHaveBeenCalledWith('Event');
   });
 
-  it('isAgendaEnabled is false when either flag is disabled', () => {
+  it('should return false from isAgendaEnabled when either flag is disabled', () => {
+    // Arrange
     featureFlagServiceMock = { isEnabled: vi.fn((key: string) => of(key === 'AgendaModule')) };
     activatedRouteMock = { snapshot: { paramMap: { get: vi.fn().mockReturnValue(null) } } };
     businessPartnerServiceMock = { getById: vi.fn().mockReturnValue(new Subject()) };
@@ -67,93 +75,117 @@ describe('BusinessPartnerDetailsPageComponent', () => {
         ),
     );
 
+    // Act / Assert
     expect(component.isAgendaEnabled()).toBe(false);
   });
 
   describe('ngOnInit', () => {
-    it('sets up for a new business partner (no id param)', () => {
+    it('should set up for a new business partner when there is no id param', () => {
+      // Arrange
       const component = createComponent(null);
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.data).toEqual({ type: 'Client' });
     });
 
-    it('loads an existing business partner by id', () => {
+    it('should load an existing business partner when an id is provided', () => {
+      // Arrange
       const component = createComponent('bp1');
       const response$ = new Subject<WebApiResponse<Company | Individual>>();
       businessPartnerServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       expect(component.loading).toBe(true);
       expect(businessPartnerServiceMock.getById).toHaveBeenCalledWith('bp1');
-
       const data = { id: 'bp1' } as Individual;
       response$.next({ data } as WebApiResponse<Individual>);
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
     });
 
-    it('navigates to not-found when the business partner does not exist', () => {
+    it('should navigate to not-found when the business partner does not exist', () => {
+      // Arrange
       const component = createComponent('missing');
       const response$ = new Subject<WebApiResponse<Company | Individual>>();
       businessPartnerServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       response$.next({ data: null } as unknown as WebApiResponse<Individual>);
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('navigates to not-found and stops loading when the request errors', () => {
+    it('should navigate to not-found and stop loading when the request errors', () => {
+      // Arrange
       const component = createComponent('bp1');
       const response$ = new Subject<WebApiResponse<Company | Individual>>();
       businessPartnerServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       response$.error(new Error('fail'));
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('re-initializes when the active language changes', () => {
+    it('should re-initialize when the active language changes', () => {
+      // Arrange
       const component = createComponent(null);
       component.ngOnInit();
 
+      // Act
       routerMock.url = '/suppliers';
       translationServiceMock.language$.next('en');
 
+      // Assert
       expect(component.baseEndPoint).toBe('suppliers');
       expect(component.canDisplayOrdersTab).toBe(false);
     });
 
-    it('sets up for a new supplier when the route is under /suppliers', () => {
+    it('should set up for a new supplier when the route is under /suppliers', () => {
+      // Arrange
       const component = createComponent(null);
       routerMock.url = '/suppliers';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.baseEndPoint).toBe('suppliers');
       expect(component.canDisplayOrdersTab).toBe(false);
       expect(component.data).toEqual({ type: 'Supplier' });
     });
 
-    it('leaves baseEndPoint/title empty for a route that is neither clients nor suppliers', () => {
+    it('should leave baseEndPoint/title empty when the route is neither clients nor suppliers', () => {
+      // Arrange
       const component = createComponent(null);
       routerMock.url = '/other';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.baseEndPoint).toBe('');
       expect(component.title).toBe('');
     });
   });
 
-  it('ngOnDestroy does not throw', () => {
+  it('should not throw when ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act / Assert
     expect(() => component.ngOnDestroy()).not.toThrow();
   });
 });

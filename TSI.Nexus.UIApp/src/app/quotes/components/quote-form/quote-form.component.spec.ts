@@ -120,55 +120,81 @@ describe('QuoteFormComponent', () => {
     vi.useRealTimers();
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('quoteStatusOptions / methodOptions / conditionOptions / trackByOptionValue', () => {
-    it('exposes translated status options', () => {
+    it('should expose translated status options when the component is instantiated', () => {
+      // Act
       const component = createComponent();
+
+      // Assert
       expect(component.quoteStatusOptions.length).toBe(4);
     });
 
-    it('exposes translated method options', () => {
+    it('should expose translated method options when the component is instantiated', () => {
+      // Act
       const component = createComponent();
+
+      // Assert
       expect(component.methodOptions.length).toBe(3);
     });
 
-    it('exposes translated condition options', () => {
+    it('should expose translated condition options when the component is instantiated', () => {
+      // Act
       const component = createComponent();
+
+      // Assert
       expect(component.conditionOptions.length).toBe(2);
     });
 
-    it('returns the option value', () => {
+    it('should return the option value when trackByOptionValue is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.trackByOptionValue(0, { value: QuoteStatus.Open, label: 'x' })).toBe(QuoteStatus.Open);
     });
   });
 
   describe('ngOnInit', () => {
-    it('builds the form and loads business partners', () => {
+    it('should build the form and load business partners when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('businessPartnerId')).toBeTruthy();
       expect(businessPartnerServiceMock.getClients).toHaveBeenCalled();
     });
 
-    it('does not load vehicles/drivers for a non-trip quote', () => {
+    it('should not load vehicles or drivers when the quote is not a trip', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(vehicleServiceMock.getAll).not.toHaveBeenCalled();
       expect(driverServiceMock.getAll).not.toHaveBeenCalled();
     });
 
-    it('loads vehicles/drivers and adds the quoteTrip group for a trip quote', () => {
+    it('should load vehicles and drivers and add the quoteTrip group when the quote is a trip', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], type: QuoteType.Trip } as unknown as Quote;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(vehicleServiceMock.getAll).toHaveBeenCalled();
       expect(driverServiceMock.getAll).toHaveBeenCalled();
       expect(component.form.get('quoteTrip')).toBeTruthy();
@@ -176,14 +202,17 @@ describe('QuoteFormComponent', () => {
       expect(component.drivers).toEqual(drivers);
     });
 
-    it('falls back to empty arrays when vehicle/driver responses have no data', () => {
+    it('should fall back to empty arrays when vehicle and driver responses have no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], type: QuoteType.Trip } as unknown as Quote;
       vehicleServiceMock.getAll.mockReturnValue(of({} as WebApiResponse<Vehicle[]>));
       driverServiceMock.getAll.mockReturnValue(of({} as WebApiResponse<Driver[]>));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.vehicles).toEqual([]);
       expect(component.drivers).toEqual([]);
     });
@@ -198,128 +227,165 @@ describe('QuoteFormComponent', () => {
     // disabled, but the group's own aggregate `disabled` getter reports false. Documented as a
     // genuine (if inert - form.invalid/getRawValue() still behave, and no visible field is
     // actually editable) pre-existing quirk, not fixed here.
-    it('disables every individual control when the quote is already converted, even though the group-level disabled flag is clobbered by a watcher side effect', () => {
+    it('should disable every individual control when the quote is already converted even though the group-level disabled flag is clobbered by a watcher side effect', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { quoteProducts: [], status: QuoteStatus.Converted } as unknown as Quote;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.disabled).toBe(false);
       expect(component.form.get('businessPartnerId')!.disabled).toBe(true);
       expect(component.form.get('totalPrice')!.disabled).toBe(true);
     });
 
-    it('appends a product, recomputes totals, and notifies on quoteProductAdded$', () => {
+    it('should append a product, recompute totals, and notify when quoteProductAdded$ emits a product', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const product = { totalPrice: 50 } as QuoteProduct;
 
+      // Act
       quoteProductAdded$.next(product);
 
+      // Assert
       expect(component.data!.quoteProducts).toEqual([product]);
       expect(component.form.get('price')!.value).toBe(50);
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(true, '', 'QUOTES.PRODUCT_ADDED_SUCCESS');
     });
 
-    it('falls back to an empty array when data has no quoteProducts yet', () => {
+    it('should fall back to an empty array when data has no quoteProducts yet and a product is added', () => {
+      // Arrange
       const component = createComponent();
       component.data = {} as unknown as Quote;
       component.ngOnInit();
       const product = { totalPrice: 0 } as QuoteProduct;
 
+      // Act
       quoteProductAdded$.next(product);
 
+      // Assert
       expect(component.data!.quoteProducts).toEqual([product]);
     });
 
-    it('ignores quoteProductAdded$ when there is no product or no data', () => {
+    it('should ignore quoteProductAdded$ emissions when there is no product or no data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       quoteProductAdded$.next(null);
       component.data = null;
       quoteProductAdded$.next({ totalPrice: 10 } as QuoteProduct);
 
+      // Assert
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
     });
   });
 
   describe('ngOnChanges', () => {
-    it('re-patches the form when data changes', () => {
+    it('should re-patch the form when data changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { quoteProducts: [], description: 'Nova' } as unknown as Quote;
 
+      // Act
       component.ngOnChanges({ data: {} as never });
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('Nova');
     });
 
-    it('adds the quoteTrip group and loads vehicles/drivers the first time data becomes a trip quote', () => {
+    it('should add the quoteTrip group and load vehicles and drivers the first time data becomes a trip quote', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       expect(component.form.get('quoteTrip')).toBeNull();
 
+      // Act
       component.data = { quoteProducts: [], type: QuoteType.Trip } as unknown as Quote;
       component.ngOnChanges({ data: {} as never });
 
+      // Assert
       expect(component.form.get('quoteTrip')).toBeTruthy();
       expect(vehicleServiceMock.getAll).toHaveBeenCalled();
     });
 
-    it('does not re-add the quoteTrip group when it already exists', () => {
+    it('should not re-add the quoteTrip group when it already exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], type: QuoteType.Trip } as unknown as Quote;
       component.ngOnInit();
       vehicleServiceMock.getAll.mockClear();
 
+      // Act
       component.data = { quoteProducts: [], type: QuoteType.Trip, description: 'Outra' } as unknown as Quote;
       component.ngOnChanges({ data: {} as never });
 
+      // Assert
       expect(vehicleServiceMock.getAll).not.toHaveBeenCalled();
       expect(component.form.get('description')!.value).toBe('Outra');
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ isEdit: {} as never })).not.toThrow();
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [] } as unknown as Quote;
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ data: {} as never })).not.toThrow();
     });
 
     // See the equivalent ngOnInit test above for why the group-level `disabled` flag ends up
     // false even though every individual control is disabled.
-    it('disables every individual control when data changes into a converted status', () => {
+    it('should disable every individual control when data changes into a converted status', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
 
+      // Act
       component.data = { quoteProducts: [], status: QuoteStatus.Converted } as unknown as Quote;
       component.ngOnChanges({ data: {} as never });
 
+      // Assert
       expect(component.form.disabled).toBe(false);
       expect(component.form.get('businessPartnerId')!.disabled).toBe(true);
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes tracked subscriptions', () => {
+    it('should unsubscribe tracked subscriptions when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
-    it('does not throw when there are no subscriptions yet', () => {
+    it('should not throw when ngOnDestroy is called with no subscriptions yet', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
@@ -334,18 +400,22 @@ describe('QuoteFormComponent', () => {
       });
     }
 
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
-
       let result: unknown;
+
+      // Act
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(quoteServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('assigns the raw form value onto data before saving', () => {
+    it('should assign the raw form value onto data before saving when submit succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -353,12 +423,15 @@ describe('QuoteFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'q1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data).toMatchObject({ businessPartnerId: 'bp1' });
     });
 
-    it('does not throw when there is no data to assign the raw form value onto', () => {
+    it('should not throw when there is no data to assign the raw form value onto', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
       component.ngOnInit();
@@ -367,10 +440,13 @@ describe('QuoteFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'q1' } }),
       );
 
+      // Act
+      // Assert
       expect(() => component.submit().subscribe()).not.toThrow();
     });
 
-    it('updates when editing an existing quote', () => {
+    it('should call update instead of add when editing an existing quote', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'q1', quoteProducts: [] } as unknown as Quote;
@@ -380,13 +456,16 @@ describe('QuoteFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Salvo', data: { id: 'q1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(quoteServiceMock.update).toHaveBeenCalled();
       expect(quoteServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('notifies without saving when the backend reports a business error', () => {
+    it('should notify without saving when the backend reports a business error', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -394,12 +473,15 @@ describe('QuoteFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou', data: null }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'Falhou');
     });
 
-    it('closes the dialog and notifies on success (modal mode)', () => {
+    it('should close the dialog and notify on success when in modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
@@ -408,13 +490,16 @@ describe('QuoteFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'q1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(true, 'QUOTES.QUOTE_ADDED', 'OK');
     });
 
-    it('navigates to the new quote page on success (page mode)', () => {
+    it('should navigate to the new quote page on success when in page mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -423,12 +508,15 @@ describe('QuoteFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 'q1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/quotes/q1');
     });
 
-    it('shows the message and refreshes data when editing (page mode)', () => {
+    it('should show the message and refresh data when editing in page mode', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.isModal = false;
@@ -439,214 +527,271 @@ describe('QuoteFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Salvo', data: { id: 'q1', description: 'Nova' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'Salvo');
       expect(component.data).toEqual({ id: 'q1', description: 'Nova' });
     });
 
-    it('notifies an error when saving fails', () => {
+    it('should notify an error when saving fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       quoteServiceMock.add.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'COMMON.SAVE_ERROR');
     });
   });
 
   describe('cancel', () => {
-    it('hides the modal when in modal mode', () => {
+    it('should hide the modal when in modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the list page when not in modal mode', () => {
+    it('should navigate back to the list page when not in modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/quotes');
     });
   });
 
   describe('isTripQuote', () => {
-    it('returns true when the data type is Trip', () => {
+    it('should return true when the data type is Trip', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], type: QuoteType.Trip } as unknown as Quote;
 
+      // Act
+      // Assert
       expect(component.isTripQuote()).toBe(true);
     });
 
-    it('returns false otherwise', () => {
+    it('should return false when the data type is not Trip', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(component.isTripQuote()).toBe(false);
     });
   });
 
   describe('convert', () => {
-    it('notifies an error and returns when there is no data', () => {
+    it('should notify an error and return when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'QUOTES.NOT_FOUND');
       expect(quoteServiceMock.convertToOrder).not.toHaveBeenCalled();
     });
 
-    it('calls convertToTrip for a trip quote', () => {
+    it('should call convertToTrip when the quote is a trip', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], type: QuoteType.Trip } as unknown as Quote;
       quoteServiceMock.convertToTrip.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'OK' }),
       );
 
+      // Act
       component.convert();
 
+      // Assert
       expect(quoteServiceMock.convertToTrip).toHaveBeenCalledWith(component.data);
     });
 
-    it('calls convertToOrder for a non-trip quote and notifies on success', () => {
+    it('should call convertToOrder and notify on success when the quote is not a trip', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'Convertido' }),
       );
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'Convertido');
     });
 
-    it('notifies a failure message when the conversion does not succeed', () => {
+    it('should notify a failure message when the conversion does not succeed', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder.mockReturnValue(
         of({ status: ResponseStatus.Error, message: 'Deu ruim' }),
       );
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'Deu ruim');
     });
 
-    it('falls back to a translated message when the failure has no message', () => {
+    it('should fall back to a translated message when the conversion failure has no message', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder.mockReturnValue(
         of({ status: ResponseStatus.Error, message: '' }),
       );
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'QUOTES.CONVERT_FAILED');
     });
 
-    it('notifies an error when the conversion request fails', () => {
+    it('should notify an error when the conversion request fails', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'QUOTES.CONVERT_ERROR');
     });
 
-    it('shows a confirmation on a Warning response and retries convertToOrder when confirmed', () => {
+    it('should show a confirmation and retry convertToOrder when the response is a Warning and the user confirms', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder
         .mockReturnValueOnce(of({ status: 'Warning', message: 'Confirma?', data: { id: 'q1' } }))
         .mockReturnValueOnce(of({ status: ResponseStatus.Success, message: 'Convertido' }));
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
 
+      // Act
       component.convert();
 
+      // Assert
       expect(modalServiceMock.showConfirmation).toHaveBeenCalled();
       expect(quoteServiceMock.convertToOrder).toHaveBeenCalledTimes(2);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'Convertido');
     });
 
-    it('notifies a failure on the retried convertToOrder when it does not succeed', () => {
+    it('should notify a failure when the retried convertToOrder does not succeed', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder
         .mockReturnValueOnce(of({ status: 'Warning', message: 'Confirma?', data: { id: 'q1' } }))
         .mockReturnValueOnce(of({ status: ResponseStatus.Error, message: 'Falhou de novo' }));
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'Falhou de novo');
     });
 
-    it('falls back to a translated message when the retried convertToOrder failure has no message', () => {
+    it('should fall back to a translated message when the retried convertToOrder failure has no message', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder
         .mockReturnValueOnce(of({ status: 'Warning', message: 'Confirma?', data: { id: 'q1' } }))
         .mockReturnValueOnce(of({ status: ResponseStatus.Error, message: '' }));
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'QUOTES.CONVERT_FAILED');
     });
 
-    it('notifies an error when the retried convertToOrder request fails', () => {
+    it('should notify an error when the retried convertToOrder request fails', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder
         .mockReturnValueOnce(of({ status: 'Warning', message: 'Confirma?', data: { id: 'q1' } }))
         .mockReturnValueOnce(throwError(() => new Error('boom')));
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
 
+      // Act
       component.convert();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'QUOTES.CONVERT_ERROR');
     });
 
-    it('does nothing further when the Warning confirmation is declined', () => {
+    it('should do nothing further when the Warning confirmation is declined', () => {
+      // Arrange
       const component = createComponent();
       quoteServiceMock.convertToOrder.mockReturnValue(
         of({ status: 'Warning', message: 'Confirma?', data: { id: 'q1' } }),
       );
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.convert();
 
+      // Assert
       expect(quoteServiceMock.convertToOrder).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('onClientBlur', () => {
-    it('cleans the selection when the typed name is blank', async () => {
+    it('should clean the selection when the typed business partner name is blank', async () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('   ');
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBe('');
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('does nothing further when the typed name matches an existing business partner', async () => {
+    it('should do nothing further when the typed name matches an existing business partner', async () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('Cliente A');
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).not.toHaveBeenCalled();
     });
 
-    it('offers to create a new client when the name matches nothing', async () => {
+    it('should offer to create a new client when the typed name matches nothing', async () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -654,27 +799,33 @@ describe('QuoteFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).toHaveBeenCalled();
     });
 
-    it('cleans the selection when the user declines creating a new business partner', async () => {
+    it('should clean the selection when the user declines creating a new business partner', async () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('Novo Cliente');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
       expect(component.form.get('businessPartnerId')!.value).toBe('');
     });
 
-    it('creates and selects the new business partner once confirmed', async () => {
+    it('should create and select the new business partner once confirmed', async () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -683,15 +834,18 @@ describe('QuoteFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(created) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(businessPartnerServiceMock.addOrUpdateBusinessPartner).toHaveBeenCalledWith(created);
       expect(component.form.get('businessPartnerId')!.value).toBe('bp9');
       expect(component.form.get('businessPartnerName')!.value).toBe('Novo Cliente');
     });
 
-    it('cleans the selection when the new-partner modal closes without a result', async () => {
+    it('should clean the selection when the new-partner modal closes without a result', async () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -699,41 +853,52 @@ describe('QuoteFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBe('');
     });
   });
 
   describe('removeProduct', () => {
-    it('does nothing when there are no quoteProducts', () => {
+    it('should do nothing when there are no quoteProducts', () => {
+      // Arrange
       const component = createComponent();
       component.data = {} as unknown as Quote;
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.removeProduct(0)).not.toThrow();
     });
 
-    it('removes the product at the given index and recomputes totals', () => {
+    it('should remove the product at the given index and recompute totals', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [{ totalPrice: 10 }, { totalPrice: 20 }] } as unknown as Quote;
       component.ngOnInit();
 
+      // Act
       component.removeProduct(0);
 
+      // Assert
       expect(component.data!.quoteProducts).toEqual([{ totalPrice: 20 }]);
       expect(component.form.get('price')!.value).toBe(20);
     });
   });
 
   describe('openQuoteProductsModal', () => {
-    it('opens the products modal with merged data and form values', () => {
+    it('should open the products modal with merged data and form values', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.openQuoteProductsModal();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         QuoteProductDetailsModalComponent,
         expect.objectContaining({ isEdit: false, id: null, parentId: null }),
@@ -742,84 +907,117 @@ describe('QuoteFormComponent', () => {
   });
 
   describe('canDisplayConvertButton / isQuoteConverted', () => {
-    it('returns true only when editing an Open quote', () => {
+    it('should return true when editing an Open quote', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { quoteProducts: [], status: QuoteStatus.Open } as unknown as Quote;
 
+      // Act
+      // Assert
       expect(component.canDisplayConvertButton()).toBe(true);
     });
 
-    it('returns false when not editing', () => {
+    it('should return false when not editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = false;
       component.data = { quoteProducts: [], status: QuoteStatus.Open } as unknown as Quote;
 
+      // Act
+      // Assert
       expect(component.canDisplayConvertButton()).toBe(false);
     });
 
-    it('returns false when the status is not Open', () => {
+    it('should return false when the status is not Open', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { quoteProducts: [], status: QuoteStatus.Canceled } as unknown as Quote;
 
+      // Act
+      // Assert
       expect(component.canDisplayConvertButton()).toBe(false);
     });
 
-    it('isQuoteConverted returns true only when status is Converted', () => {
+    it('should return true when isQuoteConverted is called and the status is Converted', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], status: QuoteStatus.Converted } as unknown as Quote;
 
+      // Act
+      // Assert
       expect(component.isQuoteConverted()).toBe(true);
     });
 
-    it('isQuoteConverted returns false otherwise', () => {
+    it('should return false when isQuoteConverted is called and the status is not Converted', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], status: QuoteStatus.Open } as unknown as Quote;
 
+      // Act
+      // Assert
       expect(component.isQuoteConverted()).toBe(false);
     });
   });
 
   describe('initForm (private, via ngOnInit)', () => {
-    it('builds an add-mode form without an id control', () => {
+    it('should build an add-mode form without an id control', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeNull();
     });
 
-    it('builds an edit-mode form with an id control', () => {
+    it('should build an edit-mode form with an id control when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('disables businessPartnerName when data already has a businessPartnerId', () => {
+    it('should disable businessPartnerName when data already has a businessPartnerId', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [], businessPartnerId: 'bp1' } as unknown as Quote;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('businessPartnerName')!.disabled).toBe(true);
     });
 
-    it('auto-resolves businessPartnerId from the typed name in add mode', () => {
+    it('should auto-resolve businessPartnerId from the typed name in add mode', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('businessPartnerName')!.setValue('Cliente B');
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBe('bp2');
     });
 
-    it('leaves businessPartnerId untouched when the typed name matches nothing', () => {
+    it('should leave businessPartnerId untouched when the typed name matches nothing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('businessPartnerName')!.setValue('Ninguém');
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBeNull();
     });
   });
@@ -832,92 +1030,119 @@ describe('QuoteFormComponent', () => {
       return component;
     }
 
-    it('does not re-add the quoteTrip group when it already exists', () => {
+    it('should not re-add the quoteTrip group when it already exists', () => {
+      // Arrange
       const component = tripComponent();
       const originalGroup = component.form.get('quoteTrip');
 
+      // Act
       (component as any).addQuoteTripForm();
 
+      // Assert
       expect(component.form.get('quoteTrip')).toBe(originalGroup);
     });
 
-    it('filters vehicles by plate/brand/model (case-insensitive)', () => {
+    it('should filter vehicles by plate, brand, or model case-insensitively', () => {
+      // Arrange
       const component = tripComponent();
-
       let result: Vehicle[] = [];
       component.filteredQuoteTripVehicles$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('quoteTrip')!.get('vehiclePlate')!.setValue('abc');
 
+      // Assert
       expect(result).toEqual([expect.objectContaining({ id: 'v1' })]);
     });
 
-    it('emits an empty vehicle list when there is no filter value', () => {
+    it('should emit an empty vehicle list when there is no filter value', () => {
+      // Arrange
       const component = tripComponent();
-
       let result: Vehicle[] = [];
+
+      // Act
       component.filteredQuoteTripVehicles$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('treats a non-string vehiclePlate emission as an empty filter', () => {
+    it('should treat a non-string vehiclePlate emission as an empty filter', () => {
+      // Arrange
       const component = tripComponent();
-
       let result: Vehicle[] = [];
       component.filteredQuoteTripVehicles$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('quoteTrip')!.get('vehiclePlate')!.setValue(null);
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('treats a vehicle with missing plate/brand/model as an empty string when filtering', () => {
+    it('should treat a vehicle with missing plate, brand, or model as an empty string when filtering', () => {
+      // Arrange
       const component = tripComponent();
       component.vehicles = [{ id: 'v3' } as Vehicle];
-
       let result: Vehicle[] = [];
       component.filteredQuoteTripVehicles$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('quoteTrip')!.get('vehiclePlate')!.setValue('modelo');
 
+      // Assert
       expect(result.find((v) => v.id === 'v3')).toBeUndefined();
     });
 
-    it('filters drivers by name (case-insensitive)', () => {
+    it('should filter drivers by name case-insensitively', () => {
+      // Arrange
       const component = tripComponent();
-
       let result: Driver[] = [];
       component.filteredQuoteTripDrivers$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('quoteTrip')!.get('driverName')!.setValue('joão');
 
+      // Assert
       expect(result).toEqual([expect.objectContaining({ id: 'd1' })]);
     });
 
-    it('treats a non-string driverName emission as an empty filter', () => {
+    it('should treat a non-string driverName emission as an empty filter', () => {
+      // Arrange
       const component = tripComponent();
-
       let result: Driver[] = [];
       component.filteredQuoteTripDrivers$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('quoteTrip')!.get('driverName')!.setValue(null);
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('emits an empty driver list when there is no filter value', () => {
+    it('should emit an empty driver list when there is no filter value', () => {
+      // Arrange
       const component = tripComponent();
-
       let result: Driver[] = [];
+
+      // Act
       component.filteredQuoteTripDrivers$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('treats a driver with no name as an empty string when filtering', () => {
+    it('should treat a driver with no name as an empty string when filtering', () => {
+      // Arrange
       const component = tripComponent();
       component.drivers = [{ id: 'd3' } as Driver];
-
       let result: Driver[] = [];
       component.filteredQuoteTripDrivers$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('quoteTrip')!.get('driverName')!.setValue('maria');
 
+      // Assert
       expect(result.find((d) => d.id === 'd3')).toBeUndefined();
     });
   });
@@ -930,34 +1155,46 @@ describe('QuoteFormComponent', () => {
       return component;
     }
 
-    it('does nothing when no vehicle is given', () => {
+    it('should do nothing when no vehicle is given', () => {
+      // Arrange
       const component = tripComponent();
 
+      // Act
+      // Assert
       expect(() => component.selectQuoteTripVehicle(null as unknown as Vehicle)).not.toThrow();
       expect(component.form.get('quoteTrip')!.get('vehicleId')!.value).toBeNull();
     });
 
-    it('patches the quoteTrip group with the selected vehicle', () => {
+    it('should patch the quoteTrip group with the selected vehicle', () => {
+      // Arrange
       const component = tripComponent();
 
+      // Act
       component.selectQuoteTripVehicle(vehicles[0]);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('vehicleId')!.value).toBe('v1');
       expect(component.form.get('quoteTrip')!.get('vehiclePlate')!.value).toBe('ABC1234');
     });
 
-    it('does nothing when no driver is given', () => {
+    it('should do nothing when no driver is given', () => {
+      // Arrange
       const component = tripComponent();
 
+      // Act
+      // Assert
       expect(() => component.selectQuoteTripDriver(null as unknown as Driver)).not.toThrow();
       expect(component.form.get('quoteTrip')!.get('driverId')!.value).toBeNull();
     });
 
-    it('patches the quoteTrip group with the selected driver', () => {
+    it('should patch the quoteTrip group with the selected driver', () => {
+      // Arrange
       const component = tripComponent();
 
+      // Act
       component.selectQuoteTripDriver(drivers[0]);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('driverId')!.value).toBe('d1');
       expect(component.form.get('quoteTrip')!.get('driverName')!.value).toBe('João');
     });
@@ -971,37 +1208,46 @@ describe('QuoteFormComponent', () => {
       return component;
     }
 
-    it('cleans the selection when the typed plate is blank', () => {
+    it('should clean the selection when the typed vehicle plate is blank', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = tripComponent();
       component.form.get('quoteTrip')!.get('vehiclePlate')!.setValue('   ');
 
+      // Act
       component.onQuoteTripVehiclePlateBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('vehicleId')!.value).toBeNull();
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('selects the vehicle when the typed plate matches', () => {
+    it('should select the vehicle when the typed plate matches', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = tripComponent();
       component.form.get('quoteTrip')!.get('vehiclePlate')!.setValue('ABC1234');
 
+      // Act
       component.onQuoteTripVehiclePlateBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('vehicleId')!.value).toBe('v1');
     });
 
-    it('cleans the selection when the typed plate matches nothing', () => {
+    it('should clean the selection when the typed plate matches nothing', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = tripComponent();
       component.form.get('quoteTrip')!.get('vehiclePlate')!.setValue('DESCONHECIDA');
 
+      // Act
       component.onQuoteTripVehiclePlateBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('vehicleId')!.value).toBeNull();
     });
   });
@@ -1014,43 +1260,53 @@ describe('QuoteFormComponent', () => {
       return component;
     }
 
-    it('cleans the selection when the typed name is blank', () => {
+    it('should clean the selection when the typed driver name is blank', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = tripComponent();
       component.form.get('quoteTrip')!.get('driverName')!.setValue('   ');
 
+      // Act
       component.onQuoteTripDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('driverId')!.value).toBeNull();
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('selects the driver when the typed name matches', () => {
+    it('should select the driver when the typed name matches', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = tripComponent();
       component.form.get('quoteTrip')!.get('driverName')!.setValue('João');
 
+      // Act
       component.onQuoteTripDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('driverId')!.value).toBe('d1');
     });
 
-    it('cleans the selection when the typed name matches nothing', () => {
+    it('should clean the selection when the typed driver name matches nothing', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = tripComponent();
       component.form.get('quoteTrip')!.get('driverName')!.setValue('Desconhecido');
 
+      // Act
       component.onQuoteTripDriverNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('quoteTrip')!.get('driverId')!.value).toBeNull();
     });
   });
 
   describe('patchFormWithData (private, via ngOnInit)', () => {
-    it('computes payment defaults from the provided data', () => {
+    it('should compute payment defaults from the provided data', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         quoteProducts: [],
@@ -1060,162 +1316,209 @@ describe('QuoteFormComponent', () => {
         expenseTotalPrice: 50,
       } as unknown as Quote;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('totalOfPayments')!.value).toBe(3);
       expect(component.form.get('paymentTotalPrice')!.value).toBe(300);
       expect(component.form.get('totalOfExpenses')!.value).toBe(5);
       expect(component.form.get('expenseTotalPrice')!.value).toBe(50);
     });
 
-    it('defaults totalOfPayments to 1 and paymentTotalPrice/expenses to 0 when missing', () => {
+    it('should default totalOfPayments to 1 and paymentTotalPrice/expenses to 0 when they are missing', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('totalOfPayments')!.value).toBe(1);
       expect(component.form.get('paymentTotalPrice')!.value).toBe(0);
       expect(component.form.get('totalOfExpenses')!.value).toBe(0);
       expect(component.form.get('expenseTotalPrice')!.value).toBe(0);
     });
 
-    it('does not throw without data', () => {
+    it('should not throw when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
+      // Assert
       expect(() => component.ngOnInit()).not.toThrow();
     });
   });
 
   describe('setupAutoComplete / filteredBusinessPartners$', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the business partners response has no data', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getClients.mockReturnValue(of({} as WebApiResponse<BusinessPartner[]>));
       component.ngOnInit();
-
       let result: BusinessPartner[] = [];
+
+      // Act
       component.businessPartnersArray$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('emits an empty list when there is no filter value', () => {
+    it('should emit an empty list when there is no filter value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
-
       let result: BusinessPartner[] = [];
+
+      // Act
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('filters by name (case-insensitive)', () => {
+    it('should filter business partners by name case-insensitively', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
-
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('businessPartnerName')!.setValue('cliente a');
 
+      // Assert
       expect(result).toEqual([expect.objectContaining({ id: 'bp1' })]);
     });
 
-    it('treats a business partner with no name as an empty string when filtering', () => {
+    it('should treat a business partner with no name as an empty string when filtering', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getClients.mockReturnValue(
         of({ data: [{ id: 'bp3' } as BusinessPartner] } as WebApiResponse<BusinessPartner[]>),
       );
       component.ngOnInit();
-
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
+
+      // Act
       component.form.get('businessPartnerName')!.setValue('cliente');
 
+      // Assert
       expect(result.find((bp) => bp.id === 'bp3')).toBeUndefined();
     });
   });
 
   describe('disableEditFields (private, via ngOnInit)', () => {
-    it('disables businessPartnerName and quoteNumber when editing', () => {
+    it('should disable businessPartnerName and quoteNumber when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('businessPartnerName')!.disabled).toBe(true);
       expect(component.form.get('quoteNumber')!.disabled).toBe(true);
     });
 
-    it('leaves fields enabled when not editing', () => {
+    it('should leave fields enabled when not editing', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('quoteNumber')!.disabled).toBe(false);
     });
   });
 
   describe('setupPaymentPriceWatcher (private, via ngOnInit)', () => {
-    it('recomputes paymentTotalPrice per installment when totalPrice changes', () => {
+    it('should recompute paymentTotalPrice per installment when totalPrice changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('totalOfPayments')!.setValue(2);
 
+      // Act
       component.form.get('totalPrice')!.setValue(100);
 
+      // Assert
       expect(component.form.get('paymentTotalPrice')!.value).toBe(50);
     });
 
-    it('defaults totalOfPayments to 1 when its value is falsy', () => {
+    it('should default totalOfPayments to 1 when its value is falsy', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('totalOfPayments')!.setValue(0);
 
+      // Act
       component.form.get('totalPrice')!.setValue(100);
 
+      // Assert
       expect(component.form.get('paymentTotalPrice')!.value).toBe(100);
     });
 
-    it('falls back to 1 payment when totalOfPayments is negative', () => {
+    it('should fall back to 1 payment when totalOfPayments is negative', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('totalOfPayments')!.setValue(-3);
 
+      // Act
       component.form.get('totalPrice')!.setValue(100);
 
+      // Assert
       expect(component.form.get('paymentTotalPrice')!.value).toBe(100);
     });
   });
 
   describe('totalPriceChange (private, via ngOnInit)', () => {
-    it('recomputes totalPrice when discount changes', () => {
+    it('should recompute totalPrice when discount changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.get('price')!.setValue(100);
 
+      // Act
       component.form.get('discount')!.setValue(10);
 
+      // Assert
       expect(component.form.get('totalPrice')!.value).toBe(90);
     });
   });
 
   describe('updatePriceFields / updateTotalPriceFields (private, via removeProduct)', () => {
-    it('treats a falsy product totalPrice as zero when summing', () => {
+    it('should treat a falsy product totalPrice as zero when summing', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [{ totalPrice: 0 }, { totalPrice: 30 }] } as unknown as Quote;
       component.ngOnInit();
 
+      // Act
       component.removeProduct(0);
 
+      // Assert
       expect(component.form.get('price')!.value).toBe(30);
     });
 
-    it('treats a non-numeric price/discount as zero', () => {
+    it('should treat a non-numeric price or discount as zero', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quoteProducts: [] } as unknown as Quote;
       component.ngOnInit();
       component.form.get('price')!.setValue('');
       component.form.get('discount')!.setValue('');
 
+      // Act
       (component as any).updateTotalPriceFields();
 
+      // Assert
       expect(component.form.get('totalPrice')!.value).toBe(0);
     });
   });
