@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of } from 'rxjs';
 import {
   Commission,
@@ -19,6 +20,7 @@ describe('FleetReportComponent', () => {
   let serviceOrderServiceMock: { getByDriver: ReturnType<typeof vi.fn> };
   let vehicleMaintenanceServiceMock: { getAll: ReturnType<typeof vi.fn> };
   let vehicleServiceMock: { getAll: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   let vehicles$: Subject<WebApiResponse<Vehicle[]>>;
   let drivers$: Subject<WebApiResponse<Driver[]>>;
@@ -34,6 +36,7 @@ describe('FleetReportComponent', () => {
       getAll: vi.fn().mockReturnValue(of({ data: [] } as unknown as WebApiResponse<VehicleMaintenance[]>)),
     };
     vehicleServiceMock = { getAll: vi.fn().mockReturnValue(vehicles$) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new FleetReportComponent(
       driverServiceMock as never,
@@ -41,6 +44,7 @@ describe('FleetReportComponent', () => {
       serviceOrderServiceMock as never,
       vehicleMaintenanceServiceMock as never,
       vehicleServiceMock as never,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -50,7 +54,7 @@ describe('FleetReportComponent', () => {
     expect(createComponent()).toBeTruthy();
   });
 
-  it('should load the summary when vehicles$/drivers$ streams that never complete both emit', () => {
+  it('should load the summary and mark for check when vehicles$/drivers$ streams that never complete both emit', () => {
     // Arrange
     const component = createComponent();
     component.ngOnInit();
@@ -72,6 +76,7 @@ describe('FleetReportComponent', () => {
       { plate: 'ABC1234', brandModel: 'Ford Ka', status: VehicleStatus.Available, tripCount: 0, revenue: 0, maintenanceCost: 0 },
     ]);
     expect(serviceOrderServiceMock.getByDriver).toHaveBeenCalledWith('d1');
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should not react to a second emission on vehicles$/drivers$ when take(1) already unsubscribed after the first combination', () => {

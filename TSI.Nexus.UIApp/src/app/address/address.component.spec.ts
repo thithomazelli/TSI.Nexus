@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import {
   Address,
   AddressService,
@@ -30,6 +31,7 @@ describe('AddressComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): AddressComponent {
     addressChanged$ = new Subject();
@@ -48,12 +50,14 @@ describe('AddressComponent', () => {
     notificationServiceMock = { showMessage: vi.fn() };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new AddressComponent(
       addressServiceMock as unknown as AddressService,
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -65,7 +69,7 @@ describe('AddressComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should rebuild the column definitions when the language changes', () => {
+  it('should rebuild the column definitions and mark for check when the language changes', () => {
     // Arrange
     const component = createComponent();
     const before = component.columnDefs;
@@ -75,10 +79,11 @@ describe('AddressComponent', () => {
 
     // Assert
     expect(component.columnDefs).not.toBe(before);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   describe('ngOnInit / addressChanged$', () => {
-    it('should reload the addresses when addressChanged$ emits', () => {
+    it('should reload the addresses and mark for check when addressChanged$ emits', () => {
       // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
@@ -93,6 +98,7 @@ describe('AddressComponent', () => {
       // Assert
       expect(addressServiceMock.getAllByBusinessPartnerId).toHaveBeenCalledWith('bp1');
       expect(component.rowData).toEqual([{ id: 'a1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should stop reloading after ngOnDestroy is called', () => {
@@ -152,7 +158,7 @@ describe('AddressComponent', () => {
       );
     });
 
-    it('should remove a non-default address from the grid when the deletion succeeds', () => {
+    it('should remove a non-default address from the grid and mark for check when the deletion succeeds', () => {
       // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'a1' } as Address, { id: 'a2' } as Address];
@@ -164,11 +170,12 @@ describe('AddressComponent', () => {
       // Assert
       expect(component.rowData).toEqual([{ id: 'a2' }]);
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
   describe('refreshAddresses', () => {
-    it('should reload the row data and notify when the refresh succeeds', () => {
+    it('should reload the row data, notify, and mark for check when the refresh succeeds', () => {
       // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
@@ -184,9 +191,10 @@ describe('AddressComponent', () => {
         ResponseStatus.Success,
         'ADDRESS.ADDRESSES_REFRESHED',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading and notify an error when the refresh fails', () => {
+    it('should stop loading, notify an error, and mark for check when the refresh fails', () => {
       // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
@@ -201,6 +209,7 @@ describe('AddressComponent', () => {
         ResponseStatus.Error,
         'ADDRESS.ADDRESSES_REFRESH_ERROR',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should fall back to an empty string id when there is no parentData yet', () => {
@@ -250,7 +259,7 @@ describe('AddressComponent', () => {
   });
 
   describe('getAddresses (via ngOnInit trigger)', () => {
-    it('should clear the row data when there is no parent id yet', () => {
+    it('should clear the row data and mark for check when there is no parent id yet', () => {
       // Arrange
       const component = createComponent();
       component.parentData = null;
@@ -262,9 +271,10 @@ describe('AddressComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(addressServiceMock.getAllByBusinessPartnerId).not.toHaveBeenCalled();
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should fall back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array and mark for check when the response has no data', () => {
       // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
@@ -277,9 +287,10 @@ describe('AddressComponent', () => {
       // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
@@ -291,6 +302,7 @@ describe('AddressComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

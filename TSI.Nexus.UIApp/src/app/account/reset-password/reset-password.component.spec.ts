@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AccountService } from '@nexus/core';
@@ -11,6 +12,7 @@ describe('ResetPasswordComponent', () => {
   };
   let queryParamMap$: Subject<{ get: (key: string) => string | null }>;
   let activatedRouteMock: { queryParamMap: Subject<{ get: (key: string) => string | null }> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): ResetPasswordComponent {
     accountServiceMock = {
@@ -19,11 +21,13 @@ describe('ResetPasswordComponent', () => {
     };
     queryParamMap$ = new Subject();
     activatedRouteMock = { queryParamMap: queryParamMap$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new ResetPasswordComponent(
       accountServiceMock as unknown as AccountService,
       new FormBuilder(),
       activatedRouteMock as unknown as ActivatedRoute,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -82,7 +86,7 @@ describe('ResetPasswordComponent', () => {
       expect(accountServiceMock.forgotUsernameOrPassword).not.toHaveBeenCalled();
     });
 
-    it('should move to the "sent" step when the request succeeds', () => {
+    it('should move to the "sent" step and mark for check when the request succeeds', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -96,9 +100,10 @@ describe('ResetPasswordComponent', () => {
       // Assert
       expect(accountServiceMock.forgotUsernameOrPassword).toHaveBeenCalledWith('a@b.com');
       expect(component.step).toBe('sent');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should surface an error message when the request fails', () => {
+    it('should surface an error message and mark for check when the request fails', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -113,6 +118,7 @@ describe('ResetPasswordComponent', () => {
 
       // Assert
       expect(component.errorMessages).toEqual(['E-mail não encontrado']);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should fall back to the plain response.error string when there is no errors array', () => {
@@ -162,7 +168,7 @@ describe('ResetPasswordComponent', () => {
       expect(accountServiceMock.resetPassword).not.toHaveBeenCalled();
     });
 
-    it('should reset the password and move to the "done" step when the request succeeds', () => {
+    it('should reset the password, move to the "done" step and mark for check when the request succeeds', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -180,9 +186,10 @@ describe('ResetPasswordComponent', () => {
         newPassword: '123456',
       });
       expect(component.step).toBe('done');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should surface an error message when the request fails', () => {
+    it('should surface an error message and mark for check when the request fails', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -197,6 +204,7 @@ describe('ResetPasswordComponent', () => {
 
       // Assert
       expect(component.errorMessages).toEqual(['Token expirado']);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should fall back to the plain response.error string when there is no errors array', () => {

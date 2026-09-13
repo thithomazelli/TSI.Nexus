@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   DocumentTemplate,
   DocumentTemplateService,
@@ -34,6 +34,7 @@ export class DocumentTemplatesComponent implements OnInit {
     private documentTemplateService: DocumentTemplateService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -90,7 +91,12 @@ export class DocumentTemplatesComponent implements OnInit {
     this.uploadingType = template.type;
     this.documentTemplateService
       .upload(template.type, file)
-      .pipe(finalize(() => (this.uploadingType = null)))
+      .pipe(
+        finalize(() => {
+          this.uploadingType = null;
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         next: (response) => {
           if (response.status === ResponseStatus.Success && response.data) {
@@ -100,12 +106,14 @@ export class DocumentTemplatesComponent implements OnInit {
             response.status,
             response.message,
           );
+          this.cdr.markForCheck();
         },
         error: () => {
           this.notificationService.showMessage(
             'Error',
             this.translationService.instant('DOCUMENT_TEMPLATES.UPDATE_ERROR'),
           );
+          this.cdr.markForCheck();
         },
       });
   }
@@ -116,9 +124,11 @@ export class DocumentTemplatesComponent implements OnInit {
       next: (response) => {
         this.templates = response.data ?? [];
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

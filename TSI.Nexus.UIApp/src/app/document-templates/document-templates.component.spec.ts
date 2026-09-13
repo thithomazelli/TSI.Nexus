@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import {
   DocumentTemplate,
@@ -17,6 +18,7 @@ describe('DocumentTemplatesComponent', () => {
   };
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent() {
     documentTemplateServiceMock = {
@@ -26,11 +28,13 @@ describe('DocumentTemplatesComponent', () => {
     };
     notificationServiceMock = { showMessage: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new DocumentTemplatesComponent(
       documentTemplateServiceMock as unknown as DocumentTemplateService,
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -54,7 +58,7 @@ describe('DocumentTemplatesComponent', () => {
     expect(createComponent()).toBeTruthy();
   });
 
-  it('should load all templates when ngOnInit is called', () => {
+  it('should load all templates and mark for check when ngOnInit is called', () => {
     // Arrange
     const templates = [{ type: DocumentTemplateType.Quote }] as DocumentTemplate[];
     const component = createComponent();
@@ -66,9 +70,10 @@ describe('DocumentTemplatesComponent', () => {
     // Assert
     expect(component.templates).toBe(templates);
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
-  it('should stop loading when the load request errors out', () => {
+  it('should stop loading and mark for check when the load request errors out', () => {
     // Arrange
     const component = createComponent();
     documentTemplateServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
@@ -78,6 +83,7 @@ describe('DocumentTemplatesComponent', () => {
 
     // Assert
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should default to an empty list when the response has no data', () => {
@@ -216,7 +222,7 @@ describe('DocumentTemplatesComponent', () => {
       expect(documentTemplateServiceMock.upload).not.toHaveBeenCalled();
     });
 
-    it('should upload the file and apply the returned fileName when the upload succeeds', () => {
+    it('should upload the file, apply the returned fileName, and mark for check when the upload succeeds', () => {
       // Arrange
       const file = new File(['x'], 'a.docx');
       const response = { status: ResponseStatus.Success, message: 'ok', data: { fileName: 'novo.docx' } };
@@ -232,6 +238,7 @@ describe('DocumentTemplatesComponent', () => {
       expect(template.fileName).toBe('novo.docx');
       expect(component.uploadingType).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not apply fileName when the backend reports a non-success status', () => {
@@ -249,7 +256,7 @@ describe('DocumentTemplatesComponent', () => {
       expect(template.fileName).toBe('antigo.docx');
     });
 
-    it('should show a translated error notification and clear uploadingType when the request errors out', () => {
+    it('should show a translated error notification, clear uploadingType, and mark for check when the request errors out', () => {
       // Arrange
       const file = new File(['x'], 'a.docx');
       const component = createComponent();
@@ -261,6 +268,7 @@ describe('DocumentTemplatesComponent', () => {
       // Assert
       expect(component.uploadingType).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'DOCUMENT_TEMPLATES.UPDATE_ERROR');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 });

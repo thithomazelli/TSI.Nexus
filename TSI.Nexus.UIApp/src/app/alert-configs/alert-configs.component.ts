@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   AlertConfig,
   AlertConfigService,
@@ -35,6 +35,7 @@ export class AlertConfigsComponent implements OnInit {
     private alertConfigService: AlertConfigService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -50,7 +51,12 @@ export class AlertConfigsComponent implements OnInit {
 
     this.alertConfigService
       .setEnabled(alertConfig.key, nextEnabled)
-      .pipe(finalize(() => (this.savingKey = null)))
+      .pipe(
+        finalize(() => {
+          this.savingKey = null;
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         next: (response) => {
           if (response.status === ResponseStatus.Success && response.data) {
@@ -60,12 +66,14 @@ export class AlertConfigsComponent implements OnInit {
             response.status,
             response.message,
           );
+          this.cdr.markForCheck();
         },
         error: () => {
           this.notificationService.showMessage(
             'Error',
             this.translationService.instant('ALERT_CONFIGS.UPDATE_ERROR'),
           );
+          this.cdr.markForCheck();
         },
       });
   }
@@ -83,7 +91,12 @@ export class AlertConfigsComponent implements OnInit {
 
     this.alertConfigService
       .setThresholdDays(alertConfig.key, alertConfig.thresholdDays)
-      .pipe(finalize(() => (this.savingKey = null)))
+      .pipe(
+        finalize(() => {
+          this.savingKey = null;
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         next: (response) => {
           if (response.status === ResponseStatus.Success && response.data) {
@@ -93,12 +106,14 @@ export class AlertConfigsComponent implements OnInit {
             response.status,
             response.message,
           );
+          this.cdr.markForCheck();
         },
         error: () => {
           this.notificationService.showMessage(
             'Error',
             this.translationService.instant('ALERT_CONFIGS.UPDATE_THRESHOLD_ERROR'),
           );
+          this.cdr.markForCheck();
         },
       });
   }
@@ -109,9 +124,11 @@ export class AlertConfigsComponent implements OnInit {
       next: (response) => {
         this.alerts = response.data ?? [];
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

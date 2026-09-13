@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import {
   ApiService,
@@ -76,6 +76,7 @@ export class ReportsComponent implements OnInit {
     private apiService: ApiService,
     private modalService: ModalService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -297,6 +298,7 @@ export class ReportsComponent implements OnInit {
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.data = response.data ?? [];
         if (callback) callback();
+        this.cdr.markForCheck();
       });
   }
 }

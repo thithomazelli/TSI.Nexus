@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   ModalService,
   NotificationService,
@@ -67,6 +67,7 @@ export class SelectableOptionsComponent implements OnInit {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -103,6 +104,7 @@ export class SelectableOptionsComponent implements OnInit {
             this.load();
           }
           this.notificationService.showMessage(response.status, response.message);
+          this.cdr.markForCheck();
         },
         error: () => {
           this.saving = false;
@@ -110,6 +112,7 @@ export class SelectableOptionsComponent implements OnInit {
             'Error',
             this.translationService.instant('COMMON.SAVE_ERROR'),
           );
+          this.cdr.markForCheck();
         },
       });
   }
@@ -121,12 +124,14 @@ export class SelectableOptionsComponent implements OnInit {
           option.color = color;
         }
         this.notificationService.showMessage(response.status, response.message);
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.showMessage(
           'Error',
           this.translationService.instant('COMMON.SAVE_ERROR'),
         );
+        this.cdr.markForCheck();
       },
     });
   }
@@ -152,6 +157,7 @@ export class SelectableOptionsComponent implements OnInit {
               'Error',
               this.translationService.instant('COMMON.SAVE_ERROR'),
             );
+            this.cdr.markForCheck();
           },
         });
       });
@@ -163,9 +169,11 @@ export class SelectableOptionsComponent implements OnInit {
       next: (response) => {
         this.options = response.data ?? [];
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

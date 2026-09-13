@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   Commission,
   CommissionStatus,
@@ -91,6 +91,7 @@ export class FleetReportComponent implements OnInit {
     private serviceOrderService: ServiceOrderService,
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private vehicleService: VehicleService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -217,6 +218,7 @@ export class FleetReportComponent implements OnInit {
         this.allDriverCommissions = driverCommissions;
         this.applyFilters();
         this.loading = false;
+        this.cdr.markForCheck();
       });
   }
 

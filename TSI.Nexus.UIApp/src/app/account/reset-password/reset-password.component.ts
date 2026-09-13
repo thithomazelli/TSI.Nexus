@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgClass, NgIf, NgSwitch, NgSwitchCase } from '@angular/common';
@@ -42,6 +42,7 @@ export class ResetPasswordComponent extends FormBaseComponent implements OnInit 
     private accountService: AccountService,
     private formBuilder: FormBuilder,
     private activatedRoute: ActivatedRoute,
+    private cdr: ChangeDetectorRef,
   ) {
     super();
   }
@@ -81,9 +82,11 @@ export class ResetPasswordComponent extends FormBaseComponent implements OnInit 
     this.accountService.forgotUsernameOrPassword(this.form.get('email')?.value).subscribe({
       next: () => {
         this.step = 'sent';
+        this.cdr.markForCheck();
       },
       error: (response: any) => {
         this.errorMessages = response?.error?.errors ?? [response?.error ?? 'Erro ao enviar o e-mail.'];
+        this.cdr.markForCheck();
       },
     });
   }
@@ -104,11 +107,13 @@ export class ResetPasswordComponent extends FormBaseComponent implements OnInit 
       .subscribe({
         next: () => {
           this.step = 'done';
+          this.cdr.markForCheck();
         },
         error: (response: any) => {
           this.errorMessages = response?.error?.errors ?? [
             response?.error ?? 'Erro ao redefinir a senha.',
           ];
+          this.cdr.markForCheck();
         },
       });
   }

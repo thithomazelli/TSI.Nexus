@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { FeatureFlagService, FeatureToggle, NotificationService, ResponseStatus, TranslationService } from '@nexus/core';
 import { FeatureTogglesComponent } from './feature-toggles.component';
@@ -6,16 +7,19 @@ describe('FeatureTogglesComponent', () => {
   let featureFlagServiceMock: { getAll: ReturnType<typeof vi.fn>; setEnabled: ReturnType<typeof vi.fn> };
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent() {
     featureFlagServiceMock = { getAll: vi.fn().mockReturnValue(of({ data: [] })), setEnabled: vi.fn() };
     notificationServiceMock = { showMessage: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new FeatureTogglesComponent(
       featureFlagServiceMock as unknown as FeatureFlagService,
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -25,7 +29,7 @@ describe('FeatureTogglesComponent', () => {
     expect(createComponent()).toBeTruthy();
   });
 
-  it('should load all toggles when ngOnInit is called', () => {
+  it('should load all toggles and mark for check when ngOnInit is called', () => {
     // Arrange
     const toggles = [{ key: 'FleetModule' }] as FeatureToggle[];
     const component = createComponent();
@@ -37,6 +41,7 @@ describe('FeatureTogglesComponent', () => {
     // Assert
     expect(component.toggles).toBe(toggles);
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should default to an empty list when the response has no data', () => {
@@ -51,7 +56,7 @@ describe('FeatureTogglesComponent', () => {
     expect(component.toggles).toEqual([]);
   });
 
-  it('should stop loading when the load request errors out', () => {
+  it('should stop loading and mark for check when the load request errors out', () => {
     // Arrange
     const component = createComponent();
     featureFlagServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
@@ -61,6 +66,7 @@ describe('FeatureTogglesComponent', () => {
 
     // Assert
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   describe('groupToggles / detailedGroups', () => {
@@ -152,7 +158,7 @@ describe('FeatureTogglesComponent', () => {
       expect(featureFlagServiceMock.setEnabled).not.toHaveBeenCalled();
     });
 
-    it('should flip enabled, call the service, and apply the confirmed value when the update succeeds', () => {
+    it('should flip enabled, call the service, apply the confirmed value, and mark for check when the update succeeds', () => {
       // Arrange
       const toggle = { key: 'FleetModule', enabled: false } as FeatureToggle;
       const response = { status: ResponseStatus.Success, message: 'ok', data: { enabled: true } };
@@ -167,6 +173,7 @@ describe('FeatureTogglesComponent', () => {
       expect(toggle.enabled).toBe(true);
       expect(component.savingKey).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not apply the response value when the backend reports a non-success status', () => {
@@ -183,7 +190,7 @@ describe('FeatureTogglesComponent', () => {
       expect(toggle.enabled).toBe(false);
     });
 
-    it('should show a translated error notification and clear savingKey when the request errors out', () => {
+    it('should show a translated error notification, clear savingKey, and mark for check when the request errors out', () => {
       // Arrange
       const toggle = { key: 'FleetModule', enabled: false } as FeatureToggle;
       const component = createComponent();
@@ -195,6 +202,7 @@ describe('FeatureTogglesComponent', () => {
       // Assert
       expect(component.savingKey).toBeNull();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'FEATURE_TOGGLES.UPDATE_ERROR');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 });

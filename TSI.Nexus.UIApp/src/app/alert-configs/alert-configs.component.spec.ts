@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import {
   AlertConfig,
@@ -16,6 +17,7 @@ describe('AlertConfigsComponent', () => {
   };
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent() {
     alertConfigServiceMock = {
@@ -25,11 +27,13 @@ describe('AlertConfigsComponent', () => {
     };
     notificationServiceMock = { showMessage: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new AlertConfigsComponent(
       alertConfigServiceMock as unknown as AlertConfigService,
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -41,7 +45,7 @@ describe('AlertConfigsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load all alert configs when ngOnInit is called', () => {
+  it('should load all alert configs and mark for check when ngOnInit is called', () => {
     // Arrange
     const alerts = [{ key: 'a1' }] as AlertConfig[];
     const component = createComponent();
@@ -53,6 +57,7 @@ describe('AlertConfigsComponent', () => {
     // Assert
     expect(component.alerts).toBe(alerts);
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should default to an empty list and stop loading when the response has no data', () => {
@@ -68,7 +73,7 @@ describe('AlertConfigsComponent', () => {
     expect(component.loading).toBe(false);
   });
 
-  it('should stop loading when the load request errors out', () => {
+  it('should stop loading and mark for check when the load request errors out', () => {
     // Arrange
     const component = createComponent();
     alertConfigServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
@@ -78,6 +83,7 @@ describe('AlertConfigsComponent', () => {
 
     // Assert
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   describe('toggle', () => {
@@ -104,7 +110,7 @@ describe('AlertConfigsComponent', () => {
       expect(alertConfigServiceMock.setEnabled).not.toHaveBeenCalled();
     });
 
-    it('should flip enabled, call the service, and apply the confirmed value when the request succeeds', () => {
+    it('should flip enabled, call the service, apply the confirmed value, and mark for check when the request succeeds', () => {
       // Arrange
       const alert = { key: 'a1', enabled: false } as AlertConfig;
       const response = { status: ResponseStatus.Success, message: 'ok', data: { enabled: true } };
@@ -122,6 +128,7 @@ describe('AlertConfigsComponent', () => {
         response.status,
         response.message,
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not apply the response value when the backend reports a non-success status', () => {
@@ -138,7 +145,7 @@ describe('AlertConfigsComponent', () => {
       expect(alert.enabled).toBe(false);
     });
 
-    it('should show a translated error notification and clear savingKey when the request errors out', () => {
+    it('should show a translated error notification, clear savingKey, and mark for check when the request errors out', () => {
       // Arrange
       const alert = { key: 'a1', enabled: false } as AlertConfig;
       const component = createComponent();
@@ -153,6 +160,7 @@ describe('AlertConfigsComponent', () => {
         'Error',
         'ALERT_CONFIGS.UPDATE_ERROR',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -192,7 +200,7 @@ describe('AlertConfigsComponent', () => {
       expect(alertConfigServiceMock.setThresholdDays).not.toHaveBeenCalled();
     });
 
-    it('should save the threshold and apply the confirmed value when the request succeeds', () => {
+    it('should save the threshold, apply the confirmed value, and mark for check when the request succeeds', () => {
       // Arrange
       const alert = { key: 'a1', thresholdDays: 5 } as AlertConfig;
       const response = {
@@ -210,9 +218,10 @@ describe('AlertConfigsComponent', () => {
       expect(alertConfigServiceMock.setThresholdDays).toHaveBeenCalledWith('a1', 5);
       expect(alert.thresholdDays).toBe(7);
       expect(component.savingKey).toBeNull();
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should show a translated error notification when the request errors out', () => {
+    it('should show a translated error notification and mark for check when the request errors out', () => {
       // Arrange
       const alert = { key: 'a1', thresholdDays: 5 } as AlertConfig;
       const component = createComponent();
@@ -226,6 +235,7 @@ describe('AlertConfigsComponent', () => {
         'Error',
         'ALERT_CONFIGS.UPDATE_THRESHOLD_ERROR',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not apply the response value when the backend reports a non-success status', () => {

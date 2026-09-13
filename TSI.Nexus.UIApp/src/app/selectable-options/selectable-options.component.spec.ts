@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import {
   ModalService,
@@ -20,6 +21,7 @@ describe('SelectableOptionsComponent', () => {
   let modalServiceMock: { showSweetConfirmation: ReturnType<typeof vi.fn> };
   let notificationServiceMock: { showMessage: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent() {
     selectableOptionServiceMock = {
@@ -31,12 +33,14 @@ describe('SelectableOptionsComponent', () => {
     modalServiceMock = { showSweetConfirmation: vi.fn() };
     notificationServiceMock = { showMessage: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new SelectableOptionsComponent(
       selectableOptionServiceMock as unknown as SelectableOptionService,
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -48,7 +52,7 @@ describe('SelectableOptionsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load options for the active group when ngOnInit is called', () => {
+  it('should load options for the active group and mark for check when ngOnInit is called', () => {
     // Arrange
     const options = [{ id: 'o1' }] as SelectableOption[];
     const component = createComponent();
@@ -63,6 +67,7 @@ describe('SelectableOptionsComponent', () => {
     );
     expect(component.options).toBe(options);
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should default to an empty list when the response has no data', () => {
@@ -77,7 +82,7 @@ describe('SelectableOptionsComponent', () => {
     expect(component.options).toEqual([]);
   });
 
-  it('should stop loading and keep options empty when the load request errors out', () => {
+  it('should stop loading, keep options empty, and mark for check when the load request errors out', () => {
     // Arrange
     const component = createComponent();
     selectableOptionServiceMock.getByGroup.mockReturnValue(throwError(() => new Error('boom')));
@@ -87,6 +92,7 @@ describe('SelectableOptionsComponent', () => {
 
     // Assert
     expect(component.loading).toBe(false);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should reflect whether the active group is EventType when isEventTypeGroup is read', () => {
@@ -156,7 +162,7 @@ describe('SelectableOptionsComponent', () => {
       expect(selectableOptionServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('should add the trimmed value without a color when the group is not event-type', () => {
+    it('should add the trimmed value without a color and mark for check when the group is not event-type', () => {
       // Arrange
       const response = { status: ResponseStatus.Success, message: 'ok' };
       const component = createComponent();
@@ -178,6 +184,7 @@ describe('SelectableOptionsComponent', () => {
         response.status,
         response.message,
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should include the color when the active group is EventType', () => {
@@ -214,7 +221,7 @@ describe('SelectableOptionsComponent', () => {
       expect(component.newValue).toBe('Novo');
     });
 
-    it('should show a translated error notification and stop saving when the request errors out', () => {
+    it('should show a translated error notification, stop saving, and mark for check when the request errors out', () => {
       // Arrange
       const component = createComponent();
       selectableOptionServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
@@ -230,11 +237,12 @@ describe('SelectableOptionsComponent', () => {
         'Error',
         'COMMON.SAVE_ERROR',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
   describe('updateColor', () => {
-    it('should update the option color locally when the backend reports success', () => {
+    it('should update the option color locally and mark for check when the backend reports success', () => {
       // Arrange
       const option = { id: 'o1', color: '#000000' } as SelectableOption;
       const response = { status: ResponseStatus.Success, message: 'ok' };
@@ -250,6 +258,7 @@ describe('SelectableOptionsComponent', () => {
         color: '#ffffff',
       });
       expect(option.color).toBe('#ffffff');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not update the local color when the backend reports a non-success status', () => {
@@ -266,7 +275,7 @@ describe('SelectableOptionsComponent', () => {
       expect(option.color).toBe('#000000');
     });
 
-    it('should show a translated error notification when the request errors out', () => {
+    it('should show a translated error notification and mark for check when the request errors out', () => {
       // Arrange
       const option = { id: 'o1' } as SelectableOption;
       const component = createComponent();
@@ -280,6 +289,7 @@ describe('SelectableOptionsComponent', () => {
         'Error',
         'COMMON.SAVE_ERROR',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -319,7 +329,7 @@ describe('SelectableOptionsComponent', () => {
       expect(selectableOptionServiceMock.remove).not.toHaveBeenCalled();
     });
 
-    it('should show a translated error notification when the remove request errors out', async () => {
+    it('should show a translated error notification and mark for check when the remove request errors out', async () => {
       // Arrange
       const option = { id: 'o1' } as SelectableOption;
       const component = createComponent();
@@ -336,6 +346,7 @@ describe('SelectableOptionsComponent', () => {
         'Error',
         'COMMON.SAVE_ERROR',
       );
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 });

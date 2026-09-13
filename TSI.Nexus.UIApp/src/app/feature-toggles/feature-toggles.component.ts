@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   FeatureFlagService,
   FeatureToggle,
@@ -38,6 +38,7 @@ export class FeatureTogglesComponent implements OnInit {
     private featureFlagService: FeatureFlagService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -77,7 +78,12 @@ export class FeatureTogglesComponent implements OnInit {
 
     this.featureFlagService
       .setEnabled(featureToggle.key, nextEnabled)
-      .pipe(finalize(() => (this.savingKey = null)))
+      .pipe(
+        finalize(() => {
+          this.savingKey = null;
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         next: (response) => {
           if (response.status === ResponseStatus.Success && response.data) {
@@ -87,12 +93,14 @@ export class FeatureTogglesComponent implements OnInit {
             response.status,
             response.message,
           );
+          this.cdr.markForCheck();
         },
         error: () => {
           this.notificationService.showMessage(
             'Error',
             this.translationService.instant('FEATURE_TOGGLES.UPDATE_ERROR'),
           );
+          this.cdr.markForCheck();
         },
       });
   }
@@ -103,9 +111,11 @@ export class FeatureTogglesComponent implements OnInit {
       next: (response) => {
         this.toggles = response.data ?? [];
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import {
   ApiService,
   ModalService,
@@ -16,16 +17,19 @@ describe('ReportsComponent', () => {
     showPdfProgress: ReturnType<typeof vi.fn>;
   };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): ReportsComponent {
     apiServiceMock = { get: vi.fn().mockReturnValue(of({ data: [] })) };
     modalServiceMock = { showTemplateModal: vi.fn(), showPdfProgress: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new ReportsComponent(
       apiServiceMock as unknown as ApiService,
       modalServiceMock as unknown as ModalService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -38,7 +42,7 @@ describe('ReportsComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should fetch payments and apply filters when ngOnInit is called', () => {
+    it('should fetch payments, apply filters, and mark for check when ngOnInit is called', () => {
       // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(
@@ -51,6 +55,7 @@ describe('ReportsComponent', () => {
       // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith('payments/getAll');
       expect(component.filteredData).toEqual(component.data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -73,7 +78,7 @@ describe('ReportsComponent', () => {
       );
     });
 
-    it('should reload the payments and close the modal when the form emits saved', () => {
+    it('should reload the payments, close the modal, and mark for check when the form emits saved', () => {
       // Arrange
       const component = createComponent();
       const saved$ = new Subject<void>();
@@ -90,6 +95,7 @@ describe('ReportsComponent', () => {
       // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith('payments/getAll');
       expect(closeMock).toHaveBeenCalled();
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

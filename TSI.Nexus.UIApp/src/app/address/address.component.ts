@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import {
   Address,
   ModalService,
@@ -149,9 +149,13 @@ export class AddressComponent {
     private modalService: ModalService,
     private notificationService: NotificationService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.buildColumnDefs();
-    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+    this.translationService.language$.subscribe(() => {
+      this.buildColumnDefs();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit(): void {
@@ -198,6 +202,7 @@ export class AddressComponent {
           response.message,
           'success',
         );
+        this.cdr.markForCheck();
       });
   }
 
@@ -224,9 +229,11 @@ export class AddressComponent {
         next: (response: WebApiResponse<Address[]>) => {
           this.rowData = response.data ?? [];
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       });
   }
@@ -252,6 +259,7 @@ export class AddressComponent {
     // nothing to fetch, and calling the API with an empty id 404s.
     if (!this.parentData?.id) {
       this.rowData = [];
+      this.cdr.markForCheck();
       return;
     }
 
@@ -263,9 +271,11 @@ export class AddressComponent {
         next: (response: WebApiResponse<Address[]>) => {
           this.rowData = response.data ?? [];
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         },
       });
   }
