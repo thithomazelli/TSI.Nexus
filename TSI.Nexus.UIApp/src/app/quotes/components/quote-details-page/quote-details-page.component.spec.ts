@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -31,6 +32,7 @@ describe('QuoteDetailsPageComponent', () => {
     success: ReturnType<typeof vi.fn>;
     error: ReturnType<typeof vi.fn>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(id: string | null): QuoteDetailsPageComponent {
     activatedRouteMock = { snapshot: { paramMap: { get: vi.fn().mockReturnValue(id) } } };
@@ -46,6 +48,7 @@ describe('QuoteDetailsPageComponent', () => {
     progressHandle = { setIndeterminate: vi.fn(), success: vi.fn(), error: vi.fn() };
     modalServiceMock = { showPdfProgress: vi.fn().mockReturnValue(progressHandle) };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -58,6 +61,7 @@ describe('QuoteDetailsPageComponent', () => {
           featureFlagServiceMock as unknown as FeatureFlagService,
           modalServiceMock as unknown as ModalService,
           translationServiceMock as unknown as TranslationService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -91,7 +95,7 @@ describe('QuoteDetailsPageComponent', () => {
       expect(component.data).toBeNull();
     });
 
-    it('should load an existing quote when the id is a GUID', () => {
+    it('should load an existing quote and mark for check when the id is a GUID', () => {
       // Arrange
       const guid = '11111111-1111-1111-1111-111111111111';
       const component = createComponent(guid);
@@ -107,6 +111,7 @@ describe('QuoteDetailsPageComponent', () => {
 
       // Assert
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should load an existing quote by quote number when the id param is not a GUID', () => {
@@ -137,7 +142,7 @@ describe('QuoteDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const guid = '11111111-1111-1111-1111-111111111111';
       const component = createComponent(guid);
@@ -151,6 +156,7 @@ describe('QuoteDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should re-fetch using the same fetch method on a real quoteProductChanged$ event but not on the skip(1)-dropped first one', () => {
@@ -254,9 +260,10 @@ describe('QuoteDetailsPageComponent', () => {
       expect(progressHandle.setIndeterminate).toHaveBeenCalled();
       expect(progressHandle.success).toHaveBeenCalled();
       expect(component.emittingQuote).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should report an error when PDF generation fails', () => {
+    it('should report an error and mark for check when PDF generation fails', () => {
       // Arrange
       const component = createComponent(null);
       component.data = { id: 'q1', quoteNumber: 'Q-1000' } as Quote;
@@ -270,6 +277,7 @@ describe('QuoteDetailsPageComponent', () => {
       // Assert
       expect(progressHandle.error).toHaveBeenCalled();
       expect(component.emittingQuote).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should do nothing while a previous emission is still in flight', () => {

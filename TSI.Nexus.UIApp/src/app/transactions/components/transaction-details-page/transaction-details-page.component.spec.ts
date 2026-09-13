@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -23,6 +24,7 @@ describe('TransactionDetailsPageComponent', () => {
   };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(id: string | null): TransactionDetailsPageComponent {
     activatedRouteMock = { snapshot: { paramMap: { get: vi.fn().mockReturnValue(id) } } };
@@ -34,6 +36,7 @@ describe('TransactionDetailsPageComponent', () => {
     };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -45,6 +48,7 @@ describe('TransactionDetailsPageComponent', () => {
           transactionServiceMock as unknown as TransactionService,
           translationServiceMock as unknown as TranslationService,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -78,7 +82,7 @@ describe('TransactionDetailsPageComponent', () => {
       expect(component.data).toBeNull();
     });
 
-    it('should load an existing transaction when an id is provided', () => {
+    it('should load an existing transaction and mark for check when an id is provided', () => {
       // Arrange
       const component = createComponent('t1');
       const response$ = new Subject<WebApiResponse<Transaction>>();
@@ -94,6 +98,7 @@ describe('TransactionDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the transaction does not exist', () => {
@@ -110,7 +115,7 @@ describe('TransactionDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent('t1');
       const response$ = new Subject<WebApiResponse<Transaction>>();
@@ -123,6 +128,7 @@ describe('TransactionDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should re-fetch on a real paymentChanged$ event but not on the skip(1)-dropped first one', () => {

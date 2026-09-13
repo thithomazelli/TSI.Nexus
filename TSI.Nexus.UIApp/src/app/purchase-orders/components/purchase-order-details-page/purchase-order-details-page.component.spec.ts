@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -21,6 +22,7 @@ describe('PurchaseOrderDetailsPageComponent', () => {
   let paymentServiceMock: { paymentChanged$: Subject<void> };
   let routerMock: { navigateByUrl: ReturnType<typeof vi.fn> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(id: string | null): PurchaseOrderDetailsPageComponent {
     activatedRouteMock = { snapshot: { paramMap: { get: vi.fn().mockReturnValue(id) } } };
@@ -32,6 +34,7 @@ describe('PurchaseOrderDetailsPageComponent', () => {
     paymentServiceMock = { paymentChanged$: new Subject() };
     routerMock = { navigateByUrl: vi.fn() };
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -43,6 +46,7 @@ describe('PurchaseOrderDetailsPageComponent', () => {
           paymentServiceMock as unknown as PaymentService,
           routerMock as unknown as Router,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -75,7 +79,7 @@ describe('PurchaseOrderDetailsPageComponent', () => {
       expect(component.data).toBeNull();
     });
 
-    it('should load an existing purchase order when a real id is provided', () => {
+    it('should load an existing purchase order and mark for check when a real id is provided', () => {
       // Arrange
       const component = createComponent('po1');
       const response$ = new Subject<WebApiResponse<PurchaseOrder>>();
@@ -93,6 +97,7 @@ describe('PurchaseOrderDetailsPageComponent', () => {
 
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the purchase order does not exist', () => {
@@ -109,7 +114,7 @@ describe('PurchaseOrderDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent('po1');
       const response$ = new Subject<WebApiResponse<PurchaseOrder>>();
@@ -122,6 +127,7 @@ describe('PurchaseOrderDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should re-fetch on a real purchaseOrderProductChanged$ event but not on the skip(1)-dropped first one', () => {

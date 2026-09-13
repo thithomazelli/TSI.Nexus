@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, OnDestroy, OnInit, Signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  computed,
+  OnDestroy,
+  OnInit,
+  Signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -61,6 +69,7 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private routerService: Router,
     private featureFlagService: FeatureFlagService,
+    private cdr: ChangeDetectorRef,
   ) {
     const isAgendaModuleEnabled = toSignal(
       this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
@@ -110,13 +119,16 @@ export class VehicleMaintenanceDetailsPageComponent implements OnInit, OnDestroy
           this.loading = false;
           if (response.data == null) {
             this.routerService.navigateByUrl('/not-found');
+            this.cdr.markForCheck();
             return;
           }
           this.data = response.data;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
           this.routerService.navigateByUrl('/not-found');
+          this.cdr.markForCheck();
         },
       });
   }

@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -27,6 +28,7 @@ describe('OrderDetailsPageComponent', () => {
   let modalServiceMock: { showPdfProgress: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
   let progressHandle: { setIndeterminate: ReturnType<typeof vi.fn>; success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(id: string | null): OrderDetailsPageComponent {
     activatedRouteMock = { snapshot: { paramMap: { get: vi.fn().mockReturnValue(id) } } };
@@ -42,6 +44,7 @@ describe('OrderDetailsPageComponent', () => {
     progressHandle = { setIndeterminate: vi.fn(), success: vi.fn(), error: vi.fn() };
     modalServiceMock = { showPdfProgress: vi.fn().mockReturnValue(progressHandle) };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -55,6 +58,7 @@ describe('OrderDetailsPageComponent', () => {
           featureFlagServiceMock as unknown as FeatureFlagService,
           modalServiceMock as unknown as ModalService,
           translationServiceMock as unknown as TranslationService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -91,7 +95,7 @@ describe('OrderDetailsPageComponent', () => {
       expect(component.data).toBeNull();
     });
 
-    it('should load an existing order by id', () => {
+    it('should load an existing order and mark for check when loaded by id', () => {
       // Arrange
       const component = createComponent('o1');
       const response$ = new Subject<WebApiResponse<Order>>();
@@ -111,6 +115,7 @@ describe('OrderDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the order does not exist', () => {
@@ -127,7 +132,7 @@ describe('OrderDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent('o1');
       const response$ = new Subject<WebApiResponse<Order>>();
@@ -140,6 +145,7 @@ describe('OrderDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should re-fetch on a real orderProductChanged$ event but not on the skip(1)-dropped first one', () => {
@@ -257,9 +263,10 @@ describe('OrderDetailsPageComponent', () => {
       expect(progressHandle.setIndeterminate).toHaveBeenCalled();
       expect(progressHandle.success).toHaveBeenCalled();
       expect(component.emittingSalesOrder).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should report an error when PDF generation fails', () => {
+    it('should report an error and mark for check when PDF generation fails', () => {
       // Arrange
       const component = createComponent(null);
       component.data = { id: 'o1', orderNumber: '123' } as Order;
@@ -273,6 +280,7 @@ describe('OrderDetailsPageComponent', () => {
       // Assert
       expect(progressHandle.error).toHaveBeenCalled();
       expect(component.emittingSalesOrder).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should do nothing while a previous emission is still in flight', () => {

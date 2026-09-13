@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -26,6 +27,7 @@ describe('TripDetailsPageComponent', () => {
   let modalServiceMock: { showPdfProgress: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
   let progressHandle: { setIndeterminate: ReturnType<typeof vi.fn>; success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(id: string | null): TripDetailsPageComponent {
     activatedRouteMock = { snapshot: { paramMap: { get: vi.fn().mockReturnValue(id) } } };
@@ -41,6 +43,7 @@ describe('TripDetailsPageComponent', () => {
     progressHandle = { setIndeterminate: vi.fn(), success: vi.fn(), error: vi.fn() };
     modalServiceMock = { showPdfProgress: vi.fn().mockReturnValue(progressHandle) };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -53,6 +56,7 @@ describe('TripDetailsPageComponent', () => {
           featureFlagServiceMock as unknown as FeatureFlagService,
           modalServiceMock as unknown as ModalService,
           translationServiceMock as unknown as TranslationService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -85,7 +89,7 @@ describe('TripDetailsPageComponent', () => {
       expect(component.data).toEqual({});
     });
 
-    it('should load an existing trip by id when ngOnInit runs', () => {
+    it('should load an existing trip and mark for check when ngOnInit runs', () => {
       // Arrange
       const component = createComponent('t1');
       const response$ = new Subject<WebApiResponse<Trip>>();
@@ -102,6 +106,7 @@ describe('TripDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the trip does not exist', () => {
@@ -118,7 +123,7 @@ describe('TripDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent('t1');
       const response$ = new Subject<WebApiResponse<Trip>>();
@@ -131,6 +136,7 @@ describe('TripDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should re-fetch on a real paymentChanged$ event but not on the skip(1)-dropped first one', () => {
@@ -225,9 +231,10 @@ describe('TripDetailsPageComponent', () => {
       // Assert
       expect(progressHandle.success).toHaveBeenCalled();
       expect(component.emittingContract).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should report an error when PDF generation fails', () => {
+    it('should report an error and mark for check when PDF generation fails', () => {
       // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', tripNumber: 'V-1000' } as Trip;
@@ -241,6 +248,7 @@ describe('TripDetailsPageComponent', () => {
       // Assert
       expect(progressHandle.error).toHaveBeenCalled();
       expect(component.emittingContract).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -268,9 +276,10 @@ describe('TripDetailsPageComponent', () => {
       // Assert
       expect(progressHandle.success).toHaveBeenCalled();
       expect(component.emittingServiceOrder).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should report an error when PDF generation fails', () => {
+    it('should report an error and mark for check when PDF generation fails', () => {
       // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', tripNumber: 'V-1000' } as Trip;
@@ -284,6 +293,7 @@ describe('TripDetailsPageComponent', () => {
       // Assert
       expect(progressHandle.error).toHaveBeenCalled();
       expect(component.emittingServiceOrder).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

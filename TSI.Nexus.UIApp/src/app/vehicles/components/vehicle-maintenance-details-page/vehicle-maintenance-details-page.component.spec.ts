@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -17,6 +18,7 @@ describe('VehicleMaintenanceDetailsPageComponent', () => {
   let vehicleMaintenanceServiceMock: { getById: ReturnType<typeof vi.fn> };
   let routerMock: { navigateByUrl: ReturnType<typeof vi.fn> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): VehicleMaintenanceDetailsPageComponent {
     paramMap$ = new Subject();
@@ -25,6 +27,7 @@ describe('VehicleMaintenanceDetailsPageComponent', () => {
     vehicleMaintenanceServiceMock = { getById: vi.fn().mockReturnValue(new Subject()) };
     routerMock = { navigateByUrl: vi.fn() };
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -35,6 +38,7 @@ describe('VehicleMaintenanceDetailsPageComponent', () => {
           vehicleMaintenanceServiceMock as unknown as VehicleMaintenanceService,
           routerMock as unknown as Router,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -72,7 +76,7 @@ describe('VehicleMaintenanceDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should load an existing maintenance when an id is provided', () => {
+    it('should load an existing maintenance and mark for check when an id is provided', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<VehicleMaintenance>>();
@@ -89,6 +93,7 @@ describe('VehicleMaintenanceDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the maintenance does not exist', () => {
@@ -106,7 +111,7 @@ describe('VehicleMaintenanceDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<VehicleMaintenance>>();
@@ -120,6 +125,7 @@ describe('VehicleMaintenanceDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

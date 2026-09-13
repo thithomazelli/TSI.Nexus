@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, OnDestroy, OnInit, Signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  computed,
+  OnDestroy,
+  OnInit,
+  Signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -88,6 +96,7 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
     private featureFlagService: FeatureFlagService,
     private modalService: ModalService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {
     const isAgendaModuleEnabled = toSignal(
       this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
@@ -153,10 +162,12 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
         const url = triggerBlobDownload(blob, fileName);
         progress.success(this.translationService.instant('PDF_EXPORT.SUCCESS'), { url, name: fileName });
         this.emittingContract = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         progress.error(this.translationService.instant('PDF_EXPORT.ERROR'));
         this.emittingContract = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -179,10 +190,12 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
         const url = triggerBlobDownload(blob, fileName);
         progress.success(this.translationService.instant('PDF_EXPORT.SUCCESS'), { url, name: fileName });
         this.emittingServiceOrder = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         progress.error(this.translationService.instant('PDF_EXPORT.ERROR'));
         this.emittingServiceOrder = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -194,13 +207,16 @@ export class TripDetailsPageComponent implements OnInit, OnDestroy {
       this.loading = false;
       if (response.data == null) {
         this.routerService.navigateByUrl('/not-found');
+        this.cdr.markForCheck();
         return;
       }
       this.data = response.data;
+      this.cdr.markForCheck();
     };
     const handleError = (): void => {
       this.loading = false;
       this.routerService.navigateByUrl('/not-found');
+      this.cdr.markForCheck();
     };
 
     this.tripService

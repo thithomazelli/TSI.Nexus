@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -13,6 +14,7 @@ describe('UserDetailsPageComponent', () => {
   let userServiceMock: { getById: ReturnType<typeof vi.fn> };
   let accountServiceMock: { user$: Subject<User | null> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): UserDetailsPageComponent {
     paramMap$ = new Subject();
@@ -22,6 +24,7 @@ describe('UserDetailsPageComponent', () => {
     userServiceMock = { getById: vi.fn().mockReturnValue(new Subject()) };
     accountServiceMock = { user$: new Subject() };
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -33,6 +36,7 @@ describe('UserDetailsPageComponent', () => {
           userServiceMock as unknown as UserService,
           accountServiceMock as unknown as AccountService,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -70,7 +74,7 @@ describe('UserDetailsPageComponent', () => {
       expect(component.data).toBeNull();
     });
 
-    it('should load an existing user by id when ngOnInit runs', () => {
+    it('should load an existing user and mark for check when ngOnInit runs', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
@@ -90,6 +94,7 @@ describe('UserDetailsPageComponent', () => {
 
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the user does not exist', () => {
@@ -107,7 +112,7 @@ describe('UserDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should update the loaded user photo when photo$ emits', () => {
+    it('should update the loaded user photo and mark for check when photo$ emits', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
@@ -116,12 +121,14 @@ describe('UserDetailsPageComponent', () => {
       component.ngOnInit();
       paramMap$.next(paramMap('u1'));
       response$.next({ data: { id: 'u1' } as User } as WebApiResponse<User>);
+      cdrMock.markForCheck.mockClear();
 
       // Act
       photoServiceMock.photo$.next({ photoPath: 'photos/u1.jpg', userId: 'u1' });
 
       // Assert
       expect(component.data?.photo).toBe('photos/u1.jpg');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should ignore a photo$ emission when it has no photoPath', () => {
@@ -141,7 +148,7 @@ describe('UserDetailsPageComponent', () => {
       expect(component.data?.photo).toBeUndefined();
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
@@ -155,9 +162,10 @@ describe('UserDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should set isOwnProfile when the current account matches the viewed user', () => {
+    it('should set isOwnProfile and mark for check when the current account matches the viewed user', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
@@ -166,6 +174,7 @@ describe('UserDetailsPageComponent', () => {
       // Act
       accountServiceMock.user$.next({ id: 'u1' } as User);
       expect(component.isOwnProfile).toBe(true);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
 
       accountServiceMock.user$.next({ id: 'other' } as User);
 

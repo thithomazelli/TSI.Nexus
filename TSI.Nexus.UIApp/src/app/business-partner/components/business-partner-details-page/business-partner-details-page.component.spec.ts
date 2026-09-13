@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -17,6 +18,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
   let routerMock: { url: string; navigateByUrl: ReturnType<typeof vi.fn> };
   let translationServiceMock: { language$: Subject<string>; instant: ReturnType<typeof vi.fn> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(id: string | null): BusinessPartnerDetailsPageComponent {
     activatedRouteMock = { snapshot: { paramMap: { get: vi.fn().mockReturnValue(id) } } };
@@ -24,6 +26,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
     routerMock = { url: '/clients', navigateByUrl: vi.fn() };
     translationServiceMock = { language$: new Subject(), instant: vi.fn((key: string) => key) };
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -34,6 +37,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
           routerMock as unknown as Router,
           translationServiceMock as unknown as TranslationService,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -63,6 +67,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
     businessPartnerServiceMock = { getById: vi.fn().mockReturnValue(new Subject()) };
     routerMock = { url: '/clients', navigateByUrl: vi.fn() };
     translationServiceMock = { language$: new Subject(), instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
     TestBed.configureTestingModule({});
     const component = TestBed.runInInjectionContext(
       () =>
@@ -72,6 +77,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
           routerMock as unknown as Router,
           translationServiceMock as unknown as TranslationService,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
 
@@ -92,7 +98,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
       expect(component.data).toEqual({ type: 'Client' });
     });
 
-    it('should load an existing business partner when an id is provided', () => {
+    it('should load an existing business partner and mark for check when an id is provided', () => {
       // Arrange
       const component = createComponent('bp1');
       const response$ = new Subject<WebApiResponse<Company | Individual>>();
@@ -108,6 +114,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the business partner does not exist', () => {
@@ -124,7 +131,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent('bp1');
       const response$ = new Subject<WebApiResponse<Company | Individual>>();
@@ -137,6 +144,7 @@ describe('BusinessPartnerDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should re-initialize when the active language changes', () => {

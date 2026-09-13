@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -24,6 +25,7 @@ describe('VehicleDetailsPageComponent', () => {
   let tripLegServiceMock: { getByTrip: ReturnType<typeof vi.fn> };
   let routerMock: { navigateByUrl: ReturnType<typeof vi.fn> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): VehicleDetailsPageComponent {
     paramMap$ = new Subject();
@@ -38,6 +40,7 @@ describe('VehicleDetailsPageComponent', () => {
     tripLegServiceMock = { getByTrip: vi.fn() };
     routerMock = { navigateByUrl: vi.fn() };
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -51,6 +54,7 @@ describe('VehicleDetailsPageComponent', () => {
           tripLegServiceMock as unknown as TripLegService,
           routerMock as unknown as Router,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -88,7 +92,7 @@ describe('VehicleDetailsPageComponent', () => {
       expect(component.data).toBeNull();
     });
 
-    it('should load an existing vehicle by id and its trip agenda events', () => {
+    it('should load an existing vehicle, its trip agenda events, and mark for check', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Vehicle>>();
@@ -114,6 +118,7 @@ describe('VehicleDetailsPageComponent', () => {
       expect(component.data).toBe(data);
       expect(tripServiceMock.getByVehicleId).toHaveBeenCalledWith('v1');
       expect(component.tripAgendaEvents).toEqual([{ id: 'agenda1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the vehicle does not exist', () => {
@@ -131,7 +136,7 @@ describe('VehicleDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Vehicle>>();
@@ -145,6 +150,7 @@ describe('VehicleDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should fall back to an empty trip list when the response has no data', () => {

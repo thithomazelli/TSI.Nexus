@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, of } from 'rxjs';
@@ -12,6 +13,7 @@ describe('DriverDetailsPageComponent', () => {
   let routerMock: { navigateByUrl: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): DriverDetailsPageComponent {
     paramMap$ = new Subject();
@@ -20,6 +22,7 @@ describe('DriverDetailsPageComponent', () => {
     routerMock = { navigateByUrl: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
+    cdrMock = { markForCheck: vi.fn() };
 
     TestBed.configureTestingModule({});
     return TestBed.runInInjectionContext(
@@ -30,6 +33,7 @@ describe('DriverDetailsPageComponent', () => {
           driverServiceMock as unknown as DriverService,
           routerMock as unknown as Router,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
   }
@@ -62,6 +66,7 @@ describe('DriverDetailsPageComponent', () => {
     routerMock = { navigateByUrl: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
     featureFlagServiceMock = { isEnabled: vi.fn((key: string) => of(key === 'AgendaModule')) };
+    cdrMock = { markForCheck: vi.fn() };
     TestBed.configureTestingModule({});
     const component = TestBed.runInInjectionContext(
       () =>
@@ -71,6 +76,7 @@ describe('DriverDetailsPageComponent', () => {
           driverServiceMock as unknown as DriverService,
           routerMock as unknown as Router,
           featureFlagServiceMock as unknown as FeatureFlagService,
+          cdrMock as unknown as ChangeDetectorRef,
         ),
     );
 
@@ -92,7 +98,7 @@ describe('DriverDetailsPageComponent', () => {
       expect(component.data).toBeNull();
     });
 
-    it('should load an existing driver when an id is provided', () => {
+    it('should load an existing driver and mark for check when an id is provided', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Driver>>();
@@ -110,6 +116,7 @@ describe('DriverDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should navigate to not-found when the driver does not exist', () => {
@@ -127,7 +134,7 @@ describe('DriverDetailsPageComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('should navigate to not-found and stop loading when the request errors', () => {
+    it('should navigate to not-found, stop loading and mark for check when the request errors', () => {
       // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<Driver>>();
@@ -141,6 +148,7 @@ describe('DriverDetailsPageComponent', () => {
       // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

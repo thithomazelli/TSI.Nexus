@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, OnDestroy, OnInit, Signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  computed,
+  OnDestroy,
+  OnInit,
+  Signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AccountService, PhotoService, User, UserService } from '@nexus/core';
@@ -55,6 +63,7 @@ export class UserDetailsPageComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private accountService: AccountService,
     private featureFlagService: FeatureFlagService,
+    private cdr: ChangeDetectorRef,
   ) {
     const isAgendaModuleEnabled = toSignal(
       this.featureFlagService.isEnabled(FeatureToggleKeys.AgendaModule),
@@ -84,11 +93,13 @@ export class UserDetailsPageComponent implements OnInit, OnDestroy {
     this.photoService.photo$.pipe(takeUntil(this._destroy$)).subscribe((response) => {
       if (response.photoPath) {
         this.data!.photo = response.photoPath;
+        this.cdr.markForCheck();
       }
     });
 
     this.accountService.user$.pipe(takeUntil(this._destroy$)).subscribe((currentUser) => {
       this.isOwnProfile = !!currentUser && currentUser.id === this.id;
+      this.cdr.markForCheck();
     });
   }
 
@@ -107,13 +118,16 @@ export class UserDetailsPageComponent implements OnInit, OnDestroy {
           this.loading = false;
           if (response.data == null) {
             this.routerService.navigateByUrl('/not-found');
+            this.cdr.markForCheck();
             return;
           }
           this.data = response.data;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
           this.routerService.navigateByUrl('/not-found');
+          this.cdr.markForCheck();
         },
       });
   }
