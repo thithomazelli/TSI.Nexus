@@ -76,44 +76,59 @@ describe('AddressFormComponent', () => {
     return component;
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds its own form, loads states, and loads address type options', () => {
+    it('should build its own form and load states and address type options when initialized', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('name')).toBeTruthy();
       expect(httpMock.get).toHaveBeenCalled();
       expect(selectableOptionServiceMock.getByGroup).toHaveBeenCalled();
     });
 
-    it('reuses an externally provided form group instead of building its own', () => {
+    it('should reuse an externally provided form group when one is set before ngOnInit', () => {
+      // Arrange
       const component = createComponent();
       const externalForm = new FormBuilder().group({ name: [''] });
       component.formGroup = externalForm;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form).toBe(externalForm);
     });
   });
 
   describe('submit', () => {
-    it('marks the form touched and emits null when invalid', () => {
+    it('should mark the form touched and emit null when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let value: unknown;
       component.submit().subscribe((v) => (value = v));
 
+      // Assert
       expect(value).toBeNull();
       expect(addressServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('adds a new address and closes the dialog on success', () => {
+    it('should add a new address and close the dialog when saving succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       addressServiceMock.add.mockReturnValue(
@@ -133,8 +148,11 @@ describe('AddressFormComponent', () => {
         country: 'BR',
         isDefault: false,
       });
+
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(addressServiceMock.add).toHaveBeenCalled();
       expect(dialogRefMock.close).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -144,7 +162,8 @@ describe('AddressFormComponent', () => {
       );
     });
 
-    it('shows an error notification when saving fails', () => {
+    it('should show an error notification when saving fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       addressServiceMock.add.mockReturnValue(throwError(() => new Error('fail')));
@@ -162,8 +181,11 @@ describe('AddressFormComponent', () => {
         country: 'BR',
         isDefault: false,
       });
+
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'error',
         'Erro ao salvar',
@@ -172,16 +194,21 @@ describe('AddressFormComponent', () => {
   });
 
   describe('cancel', () => {
-    it('hides the modal', () => {
+    it('should hide the modal when cancel is called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
   });
 
   describe('remove', () => {
-    it('deletes the address and notifies when the user confirms', async () => {
+    it('should delete the address and notify when the user confirms', async () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { id: 'a1' } as Address;
@@ -190,9 +217,11 @@ describe('AddressFormComponent', () => {
         of({ value: {}, message: 'Removido', status: ResponseStatus.Success }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(addressServiceMock.delete).toHaveBeenCalledWith(component.data);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -201,16 +230,19 @@ describe('AddressFormComponent', () => {
       );
     });
 
-    it('shows an error notification when the delete fails', async () => {
+    it('should show an error notification when the delete fails', async () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { id: 'a1' } as Address;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
       addressServiceMock.delete.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'error',
         'Erro ao remover',
@@ -219,110 +251,151 @@ describe('AddressFormComponent', () => {
   });
 
   describe('trackBy helpers', () => {
-    it('trackByEstadoId falls back to index when there is no id', () => {
+    it('should fall back to index when trackByEstadoId is called with no id', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.trackByEstadoId(2, { sigla: 'SP', nome: 'São Paulo' })).toBe(2);
       expect(component.trackByEstadoId(2, { id: 5, sigla: 'SP', nome: 'São Paulo' })).toBe(5);
     });
 
-    it('trackByCidadeId falls back to index when there is no id', () => {
+    it('should fall back to index when trackByCidadeId is called with no id', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.trackByCidadeId(1, { nome: 'São Paulo' })).toBe(1);
       expect(component.trackByCidadeId(1, { id: 7, nome: 'São Paulo' })).toBe(7);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('patches the form (without emitting events) when data changes to a new value', () => {
+    it('should patch the form without emitting events when data changes to a new value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { name: 'Nova Casa' } as Address;
       let valueChangesFired = false;
       component.form.get('name')!.valueChanges.subscribe(() => (valueChangesFired = true));
 
+      // Act
       component.ngOnChanges({ data: { currentValue: component.data } as never });
 
+      // Assert
       expect(component.form.get('name')!.value).toBe('Nova Casa');
       expect(valueChangesFired).toBe(false);
     });
 
-    it('does nothing when data has no currentValue', () => {
+    it('should do nothing when data has no currentValue', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ data: { currentValue: null } as never })).not.toThrow();
       expect(component.form.get('name')!.value).toBe('');
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { name: 'X' } as Address;
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ data: { currentValue: component.data } as never })).not.toThrow();
     });
 
-    it('disables id and businessPartnerId when isEdit turns true after the first change', () => {
+    it('should disable id and businessPartnerId when isEdit turns true after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: true, firstChange: false } as never });
 
+      // Assert
       expect(component.form.get('id')!.disabled).toBe(true);
       expect(component.form.get('businessPartnerId')!.disabled).toBe(true);
     });
 
-    it('does not disable fields on the first isEdit change', () => {
+    it('should not disable fields when isEdit changes for the first time', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: false, firstChange: true } as never });
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.disabled).toBe(false);
     });
 
-    it('does not disable fields when isEdit changes to false', () => {
+    it('should not disable fields when isEdit changes to false', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: false, firstChange: false } as never });
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.disabled).toBe(false);
     });
 
-    it('always re-runs setupAutoComplete', () => {
+    it('should always re-run setupAutoComplete when ngOnChanges fires', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const spy = vi.spyOn(component as any, 'setupAutoComplete');
 
+      // Act
       component.ngOnChanges({});
 
+      // Assert
       expect(spy).toHaveBeenCalled();
     });
   });
 
   describe('initForm (private, via ngOnInit)', () => {
-    it('builds an edit-mode form with a disabled id control', () => {
+    it('should build an edit-mode form with a disabled id control when isEdit is true', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
       expect(component.form.get('id')!.disabled).toBe(true);
     });
 
-    it('defaults isDefault to false when there is no data', () => {
+    it('should default isDefault to false when there is no data', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('isDefault')!.value).toBe(false);
     });
 
-    it('seeds isDefault from the provided data', () => {
+    it('should seed isDefault from the provided data when data is set', () => {
+      // Arrange
       const component = createComponent();
       component.data = { isDefault: true } as Address;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('isDefault')!.value).toBe(true);
     });
   });
@@ -344,35 +417,42 @@ describe('AddressFormComponent', () => {
       });
     }
 
-    it('sets businessPartnerId from parentId when present', () => {
+    it('should set businessPartnerId from parentId when parentId is present', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'bp1';
       component.ngOnInit();
       fillValidForm(component);
       addressServiceMock.add.mockReturnValue(of({ message: 'OK', status: 'success' }));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(addressServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ businessPartnerId: 'bp1' }),
       );
     });
 
-    it('falls back to an empty businessPartnerId when there is no parentId', () => {
+    it('should fall back to an empty businessPartnerId when there is no parentId', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = null;
       component.ngOnInit();
       fillValidForm(component);
       addressServiceMock.add.mockReturnValue(of({ message: 'OK', status: 'success' }));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(addressServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ businessPartnerId: '' }),
       );
     });
 
-    it('updates when editing an existing address', () => {
+    it('should call update when editing an existing address', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'a1' } as Address;
@@ -380,28 +460,34 @@ describe('AddressFormComponent', () => {
       fillValidForm(component);
       addressServiceMock.update.mockReturnValue(of({ message: 'Salvo', status: 'success' }));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(addressServiceMock.update).toHaveBeenCalled();
       expect(addressServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('adds instead of updating when isEdit is true but there is no existing data', () => {
+    it('should call add instead of update when isEdit is true but there is no existing data', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
       fillValidForm(component);
       addressServiceMock.add.mockReturnValue(of({ message: 'OK', status: 'success' }));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(addressServiceMock.add).toHaveBeenCalled();
       expect(addressServiceMock.update).not.toHaveBeenCalled();
     });
   });
 
   describe('remove - additional branches', () => {
-    it('hides the dialogRef and notifies when deletion succeeds inside a modal', async () => {
+    it('should hide the dialogRef and notify when deletion succeeds inside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
@@ -411,9 +497,11 @@ describe('AddressFormComponent', () => {
         of({ message: 'Removido', status: ResponseStatus.Success }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -422,16 +510,19 @@ describe('AddressFormComponent', () => {
       );
     });
 
-    it('does nothing further when the deletion is cancelled outside a modal', async () => {
+    it('should do nothing further when the deletion is cancelled outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
       component.data = { id: 'a1' } as Address;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(addressServiceMock.delete).not.toHaveBeenCalled();
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });
@@ -446,59 +537,76 @@ describe('AddressFormComponent', () => {
   });
 
   describe('setupAutoComplete (private, via ngOnInit/ngOnChanges)', () => {
-    it('does nothing when there is no form yet', () => {
+    it('should do nothing when there is no form yet', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => (component as any).setupAutoComplete()).not.toThrow();
       expect(httpMock.get).not.toHaveBeenCalled();
     });
 
-    it('binds the zipCode lookup only once across multiple setupAutoComplete runs', () => {
+    it('should bind the zipCode lookup only once across multiple setupAutoComplete runs', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const spy = vi.spyOn(component as any, 'buscarEnderecoPorCep').mockImplementation(() => {});
 
+      // Act
       component.ngOnChanges({});
       component.ngOnChanges({});
       component.form.get('zipCode')!.setValue('12345678');
 
+      // Assert
       expect(spy).toHaveBeenCalledTimes(1);
     });
 
-    it('does not look up the CEP for a short or empty value', () => {
+    it('should not look up the CEP when the value is short or empty', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const spy = vi.spyOn(component as any, 'buscarEnderecoPorCep').mockImplementation(() => {});
 
+      // Act
       component.form.get('zipCode')!.setValue('123');
       component.form.get('zipCode')!.setValue('');
 
+      // Assert
       expect(spy).not.toHaveBeenCalled();
     });
 
     describe('state -> city cascade', () => {
-      it('clears cidades and city when the state is cleared', () => {
+      it('should clear cidades and city when the state is cleared', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         component.cidades = [{ id: 1, nome: 'São Paulo' }];
 
+        // Act
         component.form.get('state')!.setValue('');
 
+        // Assert
         expect(component.cidades).toEqual([]);
         expect(component.form.get('city')!.value).toBeNull();
       });
 
-      it('clears cidades and city when the selected state is not among the loaded estados', () => {
+      it('should clear cidades and city when the selected state is not among the loaded estados', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         component.estados = [{ id: 1, sigla: 'RJ', nome: 'Rio de Janeiro' }];
 
+        // Act
         component.form.get('state')!.setValue('SP');
 
+        // Assert
         expect(component.cidades).toEqual([]);
         expect(component.form.get('city')!.value).toBeNull();
       });
 
-      it('loads cidades for the selected state and keeps a matching city value', () => {
+      it('should load cidades for the selected state and keep a matching city value', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         component.estados = [{ id: 35, sigla: 'SP', nome: 'São Paulo' }];
@@ -507,25 +615,31 @@ describe('AddressFormComponent', () => {
         );
         component.form.get('city')!.setValue('sao paulo');
 
+        // Act
         component.form.get('state')!.setValue('SP');
 
+        // Assert
         expect(component.cidades).toEqual([{ id: 1, nome: 'São Paulo' }, { id: 2, nome: 'Campinas' }]);
         expect(component.form.get('city')!.value).toBe('sao paulo');
       });
 
-      it('resets the city to a placeholder when it does not match any loaded cidade', () => {
+      it('should reset the city to a placeholder when it does not match any loaded cidade', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         component.estados = [{ id: 35, sigla: 'SP', nome: 'São Paulo' }];
         httpMock.get.mockReturnValue(of([{ id: 1, nome: 'Campinas' }]));
         component.form.get('city')!.setValue('Cidade Inexistente');
 
+        // Act
         component.form.get('state')!.setValue('SP');
 
+        // Assert
         expect(component.form.get('city')!.value).toBeNull();
       });
 
-      it('treats a null municipios response as an empty cidades list', () => {
+      it('should treat a null municipios response as an empty cidades list', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         component.estados = [{ id: 35, sigla: 'SP', nome: 'São Paulo' }];
@@ -533,23 +647,29 @@ describe('AddressFormComponent', () => {
           url.includes('municipios') ? of(null) : of([]),
         );
 
+        // Act
+        // Assert
         expect(() => component.form.get('state')!.setValue('SP')).not.toThrow();
 
         expect(component.cidades).toEqual([]);
       });
 
-      it('sets city as required when there is no external formGroup', () => {
+      it('should set city as required when there is no external formGroup', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         component.estados = [{ id: 35, sigla: 'SP', nome: 'São Paulo' }];
         httpMock.get.mockReturnValue(of([]));
 
+        // Act
         component.form.get('state')!.setValue('SP');
 
+        // Assert
         expect(component.form.get('city')!.hasError('required')).toBe(true);
       });
 
-      it('does not require city when bound to an external formGroup', () => {
+      it('should not require city when bound to an external formGroup', () => {
+        // Arrange
         const component = createComponent();
         const externalForm = new FormBuilder().group({
           state: [''],
@@ -560,14 +680,16 @@ describe('AddressFormComponent', () => {
         component.estados = [{ id: 35, sigla: 'SP', nome: 'São Paulo' }];
         httpMock.get.mockReturnValue(of([]));
 
+        // Act
         component.form.get('state')!.setValue('SP');
 
+        // Assert
         expect(component.form.get('city')!.hasError('required')).toBe(false);
       });
     });
 
     describe('patching an existing address (this.data set)', () => {
-      it('loads estados first when none are loaded yet, then patches and loads cidades', async () => {
+      it('should load estados first when none are loaded yet, then patch and load cidades', async () => {
         // A real HttpClient resolves asynchronously, so by the time setupAutoComplete() runs
         // right after getEstados() in ngOnInit, this.estados can still be empty - that race is
         // what the "else" branch in setupAutoComplete (loading estados a second time) handles.
@@ -575,6 +697,7 @@ describe('AddressFormComponent', () => {
         // `of(...)` would) or the component's own `const estadosSub = ...subscribe(cb)` - where
         // cb calls `estadosSub.unsubscribe()` - fires synchronously inside the same subscribe()
         // call and throws a TDZ ReferenceError; a real HttpClient never resolves that fast.
+        // Arrange
         const component = createComponent();
         httpMock.get.mockImplementation((url: string) => {
           if (url.includes('municipios')) {
@@ -587,11 +710,13 @@ describe('AddressFormComponent', () => {
         });
         component.data = { state: 'SP', city: 'São Paulo' } as Address;
 
+        // Act
         component.ngOnInit();
         expect(component.estados).toEqual([]);
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(component.estados).toEqual([{ id: 35, sigla: 'SP', nome: 'São Paulo' }]);
         expect(component.form.get('city')!.value).toBe('São Paulo');
       });
@@ -604,7 +729,8 @@ describe('AddressFormComponent', () => {
       // crashes with a TDZ error in the component's own `estadosSub` cleanup).
       const spEstado = [{ id: 35, sigla: 'SP', nome: 'São Paulo' }];
 
-      it('patches immediately when estados are already loaded', () => {
+      it('should patch immediately when estados are already loaded', () => {
+        // Arrange
         const component = createComponent();
         component.estados = spEstado;
         httpMock.get.mockImplementation((url: string) => {
@@ -614,13 +740,16 @@ describe('AddressFormComponent', () => {
         });
         component.data = { state: 'SP', city: 'São Paulo' } as Address;
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(component.form.get('name')).toBeTruthy();
         expect(component.form.get('city')!.value).toBe('São Paulo');
       });
 
-      it('forces a placeholder city when the matched cidade cannot be found', () => {
+      it('should force a placeholder city when the matched cidade cannot be found', () => {
+        // Arrange
         const component = createComponent();
         component.estados = spEstado;
         httpMock.get.mockImplementation((url: string) => {
@@ -630,12 +759,15 @@ describe('AddressFormComponent', () => {
         });
         component.data = { state: 'SP', city: 'Cidade Inexistente' } as Address;
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(component.form.get('city')!.value).toBeNull();
       });
 
-      it('forces a null city when the address state is not among the loaded estados', () => {
+      it('should force a null city when the address state is not among the loaded estados', () => {
+        // Arrange
         const component = createComponent();
         const rjEstado = [{ id: 1, sigla: 'RJ', nome: 'Rio de Janeiro' }];
         component.estados = rjEstado;
@@ -644,12 +776,15 @@ describe('AddressFormComponent', () => {
         );
         component.data = { state: 'SP', city: 'São Paulo' } as Address;
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(component.form.get('city')!.value).toBeNull();
       });
 
-      it('forces a null city when the address has no state at all', () => {
+      it('should force a null city when the address has no state at all', () => {
+        // Arrange
         const component = createComponent();
         component.estados = spEstado;
         httpMock.get.mockImplementation((url: string) =>
@@ -657,12 +792,15 @@ describe('AddressFormComponent', () => {
         );
         component.data = { state: '', city: 'São Paulo' } as unknown as Address;
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(component.form.get('city')!.value).toBeNull();
       });
 
-      it('patches immediately when bound to an external formGroup with estados already loaded', () => {
+      it('should patch immediately when bound to an external formGroup with estados already loaded', () => {
+        // Arrange
         const component = createComponent();
         const externalForm = new FormBuilder().group({
           name: [''],
@@ -678,12 +816,15 @@ describe('AddressFormComponent', () => {
         });
         component.data = { name: 'Casa', state: 'SP', city: 'São Paulo' } as Address;
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(externalForm.get('city')!.value).toBe('São Paulo');
       });
 
-      it('loads estados first when bound to an external formGroup with none loaded yet', async () => {
+      it('should load estados first when bound to an external formGroup with none loaded yet', async () => {
+        // Arrange
         const component = createComponent();
         const externalForm = new FormBuilder().group({
           name: [''],
@@ -702,16 +843,19 @@ describe('AddressFormComponent', () => {
         });
         component.data = { name: 'Casa', state: 'SP', city: 'São Paulo' } as Address;
 
+        // Act
         component.ngOnInit();
         expect(component.estados).toEqual([]);
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(component.estados).toEqual([{ id: 35, sigla: 'SP', nome: 'São Paulo' }]);
         expect(externalForm.get('city')!.value).toBe('São Paulo');
       });
 
-      it('treats a null municipios response as an empty cidades list when patching', () => {
+      it('should treat a null municipios response as an empty cidades list when patching', () => {
+        // Arrange
         const component = createComponent();
         component.estados = spEstado;
         httpMock.get.mockImplementation((url: string) => {
@@ -721,12 +865,15 @@ describe('AddressFormComponent', () => {
         });
         component.data = { state: 'SP', city: 'São Paulo' } as Address;
 
+        // Act
+        // Assert
         expect(() => component.ngOnInit()).not.toThrow();
 
         expect(component.cidades).toEqual([]);
       });
 
-      it('drops cidades with a null id and deduplicates the rest, defaulting a missing city to an empty filter value', () => {
+      it('should drop cidades with a null id and deduplicate the rest, defaulting a missing city to an empty filter value', () => {
+        // Arrange
         const component = createComponent();
         component.estados = spEstado;
         httpMock.get.mockImplementation((url: string) => {
@@ -743,8 +890,10 @@ describe('AddressFormComponent', () => {
         // No `city` field at all, exercising the `patch.city ?? ''` fallback.
         component.data = { state: 'SP' } as Address;
 
+        // Act
         component.ngOnInit();
 
+        // Assert
         expect(component.cidades).toEqual([{ id: 1, nome: 'São Paulo' }]);
         expect(component.form.get('city')!.value).toBeNull();
       });
@@ -752,43 +901,56 @@ describe('AddressFormComponent', () => {
   });
 
   describe('loadAddressTypeOptions (private, via ngOnInit)', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.addressTypeOptions).toEqual([]);
     });
 
-    it('loads the address type options from the response data', () => {
+    it('should load the address type options when the response has data', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(
         of({ data: [{ value: 'Home', label: 'Casa' }] }),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.addressTypeOptions).toEqual([{ value: 'Home', label: 'Casa' }]);
     });
   });
 
   describe('getEstados (private, via ngOnInit)', () => {
-    it('deduplicates estados by id and forces state/city to placeholders', () => {
+    it('should deduplicate estados by id and force state/city to placeholders', () => {
+      // Arrange
       const component = createComponent();
       httpMock.get.mockReturnValue(
         of([{ id: 1, sigla: 'SP', nome: 'São Paulo' }, { id: 1, sigla: 'SP', nome: 'São Paulo' }]),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.estados).toEqual([{ id: 1, sigla: 'SP', nome: 'São Paulo' }]);
       expect(component.form.get('state')!.value).toBeNull();
       expect(component.form.get('city')!.value).toBeNull();
     });
 
-    it('does not throw when there is no form yet', () => {
+    it('should not throw when there is no form yet', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => (component as any).getEstados()).not.toThrow();
     });
   });
@@ -798,26 +960,32 @@ describe('AddressFormComponent', () => {
       vi.useRealTimers();
     });
 
-    it('does nothing for an incomplete CEP', () => {
+    it('should do nothing when the CEP is incomplete', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       httpMock.get.mockClear();
 
+      // Act
       component.form.get('zipCode')!.setValue('123');
 
+      // Assert
       expect(httpMock.get).not.toHaveBeenCalled();
       expect(component.loadingCep).toBe(false);
     });
 
-    it('does nothing when the raw value is long enough but has fewer than 8 digits', () => {
+    it('should do nothing when the raw value is long enough but has fewer than 8 digits', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       httpMock.get.mockClear();
 
       // Passes the zipCode subscription's own `cep.length >= 8` guard (8 raw characters), but
       // digits-only length is 7 - exercises buscarEnderecoPorCep's own internal guard.
+      // Act
       (component as any).buscarEnderecoPorCep('1234-567');
 
+      // Assert
       expect(httpMock.get).not.toHaveBeenCalled();
       expect(component.loadingCep).toBe(false);
     });
@@ -827,7 +995,8 @@ describe('AddressFormComponent', () => {
     // emitEvent:true) to populate `this.cidades` via the mocked municipios endpoint, rather than
     // assigning component.cidades directly - a direct assignment would just be overwritten by
     // that same cascade the moment `state` is patched.
-    it('fills street/state and matches an existing cidade from the response', () => {
+    it('should fill street/state and match an existing cidade from the response', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -842,16 +1011,19 @@ describe('AddressFormComponent', () => {
         return of([]);
       });
 
+      // Act
       component.form.get('zipCode')!.setValue('01310-100');
       vi.advanceTimersByTime(150);
 
+      // Assert
       expect(component.form.get('street')!.value).toBe('Av. Paulista');
       expect(component.form.get('state')!.value).toBe('SP');
       expect(component.form.get('city')!.value).toBe('São Paulo');
       expect(component.loadingCep).toBe(false);
     });
 
-    it('falls back to the first cidade when localidade does not match any loaded cidade', () => {
+    it('should fall back to the first cidade when localidade does not match any loaded cidade', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -866,13 +1038,16 @@ describe('AddressFormComponent', () => {
         return of([]);
       });
 
+      // Act
       component.form.get('zipCode')!.setValue('13000000');
       vi.advanceTimersByTime(150);
 
+      // Assert
       expect(component.form.get('city')!.value).toBe('Campinas');
     });
 
-    it('falls back to the first cidade when the response has no localidade at all', () => {
+    it('should fall back to the first cidade when the response has no localidade at all', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -887,13 +1062,16 @@ describe('AddressFormComponent', () => {
         return of([]);
       });
 
+      // Act
       component.form.get('zipCode')!.setValue('13000000');
       vi.advanceTimersByTime(150);
 
+      // Assert
       expect(component.form.get('city')!.value).toBe('Campinas');
     });
 
-    it('leaves the city blank when there are no cidades loaded at all', () => {
+    it('should leave the city blank when there are no cidades loaded at all', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -902,19 +1080,24 @@ describe('AddressFormComponent', () => {
         url.includes('viacep') ? of({ logradouro: 'Rua X', uf: 'SP', erro: false }) : of([]),
       );
 
+      // Act
       component.form.get('zipCode')!.setValue('13000000');
       vi.advanceTimersByTime(150);
 
+      // Assert
       expect(component.form.get('city')!.value).toBe('');
     });
 
-    it('shows a not-found notification when the CEP service reports erro', () => {
+    it('should show a not-found notification when the CEP service reports erro', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       httpMock.get.mockReturnValue(of({ erro: true }));
 
+      // Act
       component.form.get('zipCode')!.setValue('00000000');
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'ADDRESS.CEP_NOT_FOUND',
@@ -922,13 +1105,16 @@ describe('AddressFormComponent', () => {
       expect(component.loadingCep).toBe(false);
     });
 
-    it('shows a lookup-error notification when the request fails', () => {
+    it('should show a lookup-error notification when the request fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       httpMock.get.mockReturnValue(throwError(() => new Error('network down')));
 
+      // Act
       component.form.get('zipCode')!.setValue('00000000');
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'ADDRESS.CEP_LOOKUP_ERROR',
