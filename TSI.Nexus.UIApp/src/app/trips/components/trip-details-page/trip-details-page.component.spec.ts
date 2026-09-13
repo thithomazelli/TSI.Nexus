@@ -57,29 +57,41 @@ describe('TripDetailsPageComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent(null)).toBeTruthy();
   });
 
-  it('isAgendaEnabled combines the group and entity flags', () => {
+  it('should combine the group and entity flags when isAgendaEnabled is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
+    // Assert
     expect(component.isAgendaEnabled()).toBe(true);
   });
 
   describe('ngOnInit', () => {
-    it('sets isEdit=false and defaults data to {} for a new trip', () => {
+    it('should set isEdit to false and default data to an empty object when creating a new trip', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.data).toEqual({});
     });
 
-    it('loads an existing trip by id', () => {
+    it('should load an existing trip by id when ngOnInit runs', () => {
+      // Arrange
       const component = createComponent('t1');
       const response$ = new Subject<WebApiResponse<Trip>>();
       tripServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       expect(component.loading).toBe(true);
       expect(tripServiceMock.getById).toHaveBeenCalledWith('t1');
@@ -87,34 +99,42 @@ describe('TripDetailsPageComponent', () => {
       const data = { id: 't1' } as Trip;
       response$.next({ data } as WebApiResponse<Trip>);
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(component.data).toBe(data);
     });
 
-    it('navigates to not-found when the trip does not exist', () => {
+    it('should navigate to not-found when the trip does not exist', () => {
+      // Arrange
       const component = createComponent('missing');
       const response$ = new Subject<WebApiResponse<Trip>>();
       tripServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       response$.next({ data: null } as unknown as WebApiResponse<Trip>);
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('navigates to not-found and stops loading when the request errors', () => {
+    it('should navigate to not-found and stop loading when the request errors', () => {
+      // Arrange
       const component = createComponent('t1');
       const response$ = new Subject<WebApiResponse<Trip>>();
       tripServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       response$.error(new Error('fail'));
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('re-fetches on a real paymentChanged$ event, but not on the skip(1)-dropped first one', () => {
+    it('should re-fetch on a real paymentChanged$ event but not on the skip(1)-dropped first one', () => {
+      // Arrange
       const component = createComponent('t1');
       const firstResponse$ = new Subject<WebApiResponse<Trip>>();
       const secondResponse$ = new Subject<WebApiResponse<Trip>>();
@@ -122,6 +142,7 @@ describe('TripDetailsPageComponent', () => {
         .mockReturnValueOnce(firstResponse$)
         .mockReturnValueOnce(secondResponse$);
 
+      // Act
       component.ngOnInit();
       firstResponse$.next({ data: { id: 't1' } } as WebApiResponse<Trip>);
       expect(tripServiceMock.getById).toHaveBeenCalledTimes(1);
@@ -130,6 +151,8 @@ describe('TripDetailsPageComponent', () => {
       expect(tripServiceMock.getById).toHaveBeenCalledTimes(1);
 
       paymentServiceMock.paymentChanged$.next();
+
+      // Assert
       expect(tripServiceMock.getById).toHaveBeenCalledTimes(2);
 
       secondResponse$.next({ data: { id: 't1' } } as WebApiResponse<Trip>);
@@ -138,110 +161,155 @@ describe('TripDetailsPageComponent', () => {
   });
 
   describe('getStatusLabel', () => {
-    it('returns an empty string when there is no data', () => {
+    it('should return an empty string when there is no data', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
 
-    it('returns an empty string when data has no status', () => {
+    it('should return an empty string when data has no status', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 't1' } as Trip;
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
 
-    it('resolves the mapped status label', () => {
+    it('should resolve the mapped status label when status is Open', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', status: 'Open' } as unknown as Trip;
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('Em aberto');
     });
 
-    it('falls back to an empty string for a status with no mapped label', () => {
+    it('should fall back to an empty string when the status has no mapped label', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', status: 'Unknown' } as unknown as Trip;
+
+      // Act
+      // Assert
       expect(component.getStatusLabel()).toBe('');
     });
   });
 
   describe('emitContract', () => {
-    it('does nothing without data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
       component.emitContract();
+
+      // Assert
       expect(modalServiceMock.showPdfProgress).not.toHaveBeenCalled();
     });
 
-    it('shows progress and reports success on a resolved PDF', () => {
+    it('should show progress and report success when the PDF resolves', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', tripNumber: 'V-1000' } as Trip;
       tripServiceMock.getContractPdf.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       component.emitContract();
 
+      // Assert
       expect(progressHandle.success).toHaveBeenCalled();
       expect(component.emittingContract).toBe(false);
     });
 
-    it('reports an error when PDF generation fails', () => {
+    it('should report an error when PDF generation fails', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', tripNumber: 'V-1000' } as Trip;
       const error$ = new Subject<Blob>();
       tripServiceMock.getContractPdf.mockReturnValue(error$);
 
+      // Act
       component.emitContract();
       error$.error(new Error('boom'));
 
+      // Assert
       expect(progressHandle.error).toHaveBeenCalled();
       expect(component.emittingContract).toBe(false);
     });
   });
 
   describe('emitServiceOrder', () => {
-    it('does nothing without data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
       component.emitServiceOrder();
+
+      // Assert
       expect(modalServiceMock.showPdfProgress).not.toHaveBeenCalled();
     });
 
-    it('shows progress and reports success on a resolved PDF', () => {
+    it('should show progress and report success when the PDF resolves', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', tripNumber: 'V-1000' } as Trip;
       tripServiceMock.getServiceOrderPdf.mockReturnValue(of(new Blob(['x'])));
 
+      // Act
       component.emitServiceOrder();
 
+      // Assert
       expect(progressHandle.success).toHaveBeenCalled();
       expect(component.emittingServiceOrder).toBe(false);
     });
 
-    it('reports an error when PDF generation fails', () => {
+    it('should report an error when PDF generation fails', () => {
+      // Arrange
       const component = createComponent(null);
       component.data = { id: 't1', tripNumber: 'V-1000' } as Trip;
       const error$ = new Subject<Blob>();
       tripServiceMock.getServiceOrderPdf.mockReturnValue(error$);
 
+      // Act
       component.emitServiceOrder();
       error$.error(new Error('boom'));
 
+      // Assert
       expect(progressHandle.error).toHaveBeenCalled();
       expect(component.emittingServiceOrder).toBe(false);
     });
   });
 
-  it('ngOnDestroy does not throw', () => {
+  it('should not throw when ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent(null);
     component.ngOnInit();
+
+    // Act
+    // Assert
     expect(() => component.ngOnDestroy()).not.toThrow();
   });
 
-  it('ngOnDestroy also unsubscribes from tripChanged$/paymentChanged$ when editing an existing trip', () => {
+  it('should unsubscribe from tripChanged$ and paymentChanged$ when ngOnDestroy is called while editing an existing trip', () => {
+    // Arrange
     const component = createComponent('t1');
     tripServiceMock.getById.mockReturnValue(new Subject());
     component.ngOnInit();
 
+    // Act
     component.ngOnDestroy();
     tripServiceMock.getById.mockClear();
     tripServiceMock.tripChanged$.next();
     tripServiceMock.tripChanged$.next();
 
+    // Assert
     expect(tripServiceMock.getById).not.toHaveBeenCalled();
   });
 });

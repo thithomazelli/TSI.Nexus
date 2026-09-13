@@ -56,62 +56,81 @@ describe('QuoteProductsComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the grid and reacts to language changes', () => {
+    it('should build the grid and react when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(before.length).toBeGreaterThan(0);
       expect(component.columnDefs).not.toBe(before);
     });
 
-    it('reloads the full list on quoteProductChanged$', () => {
+    it('should reload the full list when quoteProductChanged$ emits', () => {
+      // Arrange
       const component = createComponent();
       quoteProductServiceMock.getAll.mockReturnValue(of({ data: [{ id: 'qp1' }] }));
       component.ngOnInit();
 
+      // Act
       quoteProductChanged$.next();
 
+      // Assert
       expect(quoteProductServiceMock.getAll).toHaveBeenCalled();
       expect(component.rowData).toEqual([{ id: 'qp1' }]);
     });
 
-    it('stops reloading after ngOnDestroy', () => {
+    it('should stop reloading when ngOnDestroy has been called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.ngOnDestroy();
 
+      // Act
       quoteProductChanged$.next();
 
+      // Assert
       expect(quoteProductServiceMock.getAll).not.toHaveBeenCalled();
     });
 
-    it('ngOnDestroy does not throw when called before ngOnInit', () => {
+    it('should not throw when ngOnDestroy is called before ngOnInit', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('getQuoteProducts (via ngOnInit trigger)', () => {
-    it('does nothing without a parentId when not the full list', () => {
+    it('should do nothing when there is no parentId and it is not the full list', () => {
+      // Arrange
       const component = createComponent();
       component.isFullList = false;
       component.parentId = null;
       component.ngOnInit();
 
+      // Act
       quoteProductChanged$.next();
 
+      // Assert
       expect(quoteProductServiceMock.getByEntityId).not.toHaveBeenCalled();
     });
 
-    it('fetches by entity id (Order) when scoped and not from the products view', () => {
+    it('should fetch by entity id as Order when scoped and not from the products view', () => {
+      // Arrange
       const component = createComponent();
       component.isFullList = false;
       component.parentId = 'o1';
@@ -119,12 +138,15 @@ describe('QuoteProductsComponent', () => {
       quoteProductServiceMock.getByEntityId.mockReturnValue(of({ data: [] }));
       component.ngOnInit();
 
+      // Act
       quoteProductChanged$.next();
 
+      // Assert
       expect(quoteProductServiceMock.getByEntityId).toHaveBeenCalledWith('o1', 'Order');
     });
 
-    it('fetches by entity id (Product) when scoped from the products view', () => {
+    it('should fetch by entity id as Product when scoped from the products view', () => {
+      // Arrange
       const component = createComponent();
       component.isFullList = false;
       component.parentId = 'p1';
@@ -132,26 +154,34 @@ describe('QuoteProductsComponent', () => {
       quoteProductServiceMock.getByEntityId.mockReturnValue(of({ data: [] }));
       component.ngOnInit();
 
+      // Act
       quoteProductChanged$.next();
 
+      // Assert
       expect(quoteProductServiceMock.getByEntityId).toHaveBeenCalledWith('p1', 'Product');
     });
 
-    it('falls back to an empty array when the response carries no data', () => {
+    it('should fall back to an empty array when the response carries no data', () => {
+      // Arrange
       const component = createComponent();
       quoteProductServiceMock.getAll.mockReturnValue(of({}));
       component.ngOnInit();
 
+      // Act
       quoteProductChanged$.next();
 
+      // Assert
       expect(component.rowData).toEqual([]);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       quoteProductServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => quoteProductChanged$.next()).not.toThrow();
 
       expect(component.loading).toBe(false);
@@ -159,24 +189,30 @@ describe('QuoteProductsComponent', () => {
   });
 
   describe('openModal', () => {
-    it('uses the order id from the row data when present', () => {
+    it('should use the order id from the row data when present', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'fallback';
 
+      // Act
       component.openModal({ isEdit: true, data: { orderId: 'o1' } });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ parentId: 'o1' }),
       );
     });
 
-    it('falls back to the component parentId otherwise', () => {
+    it('should fall back to the component parentId when the row data has no order id', () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'fallback';
 
+      // Act
       component.openModal({ isEdit: false, data: {} });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ parentId: 'fallback' }),
@@ -185,13 +221,16 @@ describe('QuoteProductsComponent', () => {
   });
 
   describe('deleteQuoteProduct', () => {
-    it('removes the item from the filtered rows and notifies', () => {
+    it('should remove the item from the filtered rows and notify when deleteQuoteProduct succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.filteredRowData = [{ id: 'qp1' } as QuoteProduct, { id: 'qp2' } as QuoteProduct];
       quoteProductServiceMock.delete.mockReturnValue(of({ message: 'Removido' }));
 
+      // Act
       component.deleteQuoteProduct({ id: 'qp1' } as QuoteProduct);
 
+      // Assert
       expect(component.filteredRowData).toEqual([{ id: 'qp2' }]);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         'QUOTES.ITEM_DELETED',
@@ -202,13 +241,16 @@ describe('QuoteProductsComponent', () => {
   });
 
   describe('refreshQuoteProducts', () => {
-    it('reloads and notifies on success', () => {
+    it('should reload and notify when refreshQuoteProducts succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.isFullList = true;
       quoteProductServiceMock.getAll.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.refreshQuoteProducts();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         'QUOTES.QUOTE_PRODUCTS_REFRESHED',
@@ -217,32 +259,41 @@ describe('QuoteProductsComponent', () => {
   });
 
   describe('total price column formatter', () => {
-    it('formats a value in BRL', () => {
+    it('should format a value in BRL when the totalPrice formatter runs', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'totalPrice')!;
 
+      // Act
+      // Assert
       expect((column.valueFormatter as (params: any) => string)({ value: 12.5 })).toBe(
         'R$ 12.50',
       );
     });
 
-    it('falls back to R$ 0,00 for a falsy value', () => {
+    it('should fall back to R$ 0,00 when the value is falsy', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'totalPrice')!;
 
+      // Act
+      // Assert
       expect((column.valueFormatter as (params: any) => string)({ value: 0 })).toBe('R$ 0,00');
     });
   });
 
   describe('productSku/productName cell renderers', () => {
-    it('renders the value as an edit link', () => {
+    it('should render the value as an edit link when the cell renderer runs', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const sku = component.columnDefs.find((c) => c.field === 'productSku')!;
       const name = component.columnDefs.find((c) => c.field === 'productName')!;
 
+      // Act
+      // Assert
       expect((sku.cellRenderer as (params: any) => string)({ value: 'SKU-1' })).toBe(
         '<a data-action="edit" class="ag-link">SKU-1</a>',
       );
@@ -251,12 +302,15 @@ describe('QuoteProductsComponent', () => {
       );
     });
 
-    it('falls back to an empty string for a falsy value', () => {
+    it('should fall back to an empty string when the value is falsy', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const sku = component.columnDefs.find((c) => c.field === 'productSku')!;
       const name = component.columnDefs.find((c) => c.field === 'productName')!;
 
+      // Act
+      // Assert
       expect((sku.cellRenderer as (params: any) => string)({ value: null })).toBe(
         '<a data-action="edit" class="ag-link"></a>',
       );
@@ -267,26 +321,32 @@ describe('QuoteProductsComponent', () => {
   });
 
   describe('actions column cell renderer', () => {
-    it('includes the delete button when not viewed from the products screen', () => {
+    it('should include the delete button when not viewed from the products screen', () => {
+      // Arrange
       const component = createComponent();
       component.isFromProductsView = false;
       component.ngOnInit();
       const actions = component.columnDefs.find((c) => c.headerName === 'COMMON.ACTIONS')!;
 
+      // Act
       const html = (actions.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
     });
 
-    it('omits the delete button when viewed from the products screen', () => {
+    it('should omit the delete button when viewed from the products screen', () => {
+      // Arrange
       const component = createComponent();
       component.isFromProductsView = true;
       component.ngOnInit();
       const actions = component.columnDefs.find((c) => c.headerName === 'COMMON.ACTIONS')!;
 
+      // Act
       const html = (actions.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="edit"');
       expect(html).not.toContain('data-action="delete"');
     });

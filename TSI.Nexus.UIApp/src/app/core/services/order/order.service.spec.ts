@@ -20,15 +20,21 @@ describe('OrderService', () => {
     return TestBed.inject(OrderService);
   }
 
-  it('should create', () => {
+  it('should create the service when instantiated', () => {
+    // Act
+    // Assert
     expect(createService()).toBeTruthy();
   });
 
-  it('getAll/getById/getByBusinessPartnerId hit the expected endpoints', () => {
+  it('should hit the expected endpoints when getAll, getById and getByBusinessPartnerId are called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAll();
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('orders/getAll');
 
     service.getById('o1');
@@ -38,47 +44,61 @@ describe('OrderService', () => {
     expect(apiServiceMock.get).toHaveBeenCalledWith('orders/getByBusinessPartnerId/bp1');
   });
 
-  it('getAllPaged builds the query string and unwraps response.data', () => {
+  it('should build the query string and unwrap response.data when getAllPaged is called', () => {
+    // Arrange
     const service = createService();
     const paged$ = new Subject<WebApiResponse<{ items: Order[] }>>();
     apiServiceMock.get.mockReturnValue(paged$);
 
+    // Act
     let result: unknown;
     service.getAllPaged({ page: 1, pageSize: 20 }).subscribe((v) => (result = v));
     paged$.next({ data: { items: [] } } as unknown as WebApiResponse<{ items: Order[] }>);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('orders/getAllPaged?page=1&pageSize=20');
     expect(result).toEqual({ items: [] });
   });
 
-  it('getPdf fetches a blob from the expected endpoint', () => {
+  it('should fetch a blob from the expected endpoint when getPdf is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.getBlob.mockReturnValue(new Subject());
 
+    // Act
     service.getPdf('o1');
 
+    // Assert
     expect(apiServiceMock.getBlob).toHaveBeenCalledWith('orders/o1/Pdf');
   });
 
-  it('refreshOrders delegates to getAll', () => {
+  it('should delegate to getAll when refreshOrders is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.refreshOrders();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('orders/getAll');
   });
 
-  it('orderChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when orderChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.orderChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each notify orderChanged$ after the request completes', () => {
+  it('should notify orderChanged$ after each of add, update and delete completes', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<Order>>();
     const updateResponse$ = new Subject<WebApiResponse<Order>>();
@@ -92,6 +112,7 @@ describe('OrderService', () => {
     TestBed.flushEffects();
     expect(emissions).toBe(1);
 
+    // Act
     service.add({} as Order).subscribe();
     addResponse$.next({} as WebApiResponse<Order>);
     TestBed.flushEffects();
@@ -105,6 +126,8 @@ describe('OrderService', () => {
     service.delete({} as Order).subscribe();
     deleteResponse$.next({} as WebApiResponse<Order>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(4);
   });
 });

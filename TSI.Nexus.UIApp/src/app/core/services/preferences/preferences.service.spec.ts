@@ -14,17 +14,24 @@ describe('PreferencesService', () => {
     return TestBed.inject(PreferencesService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('update hits the expected endpoint with the preferences payload', () => {
+  it('should hit the expected endpoint with the preferences payload when update is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.put.mockReturnValue(new Subject());
     const model: UpdatePreferences = { theme: 'dark', language: 'pt-BR' };
 
+    // Act
     service.update(model);
 
+    // Assert
     expect(apiServiceMock.put).toHaveBeenCalledWith('account/preferences', model);
   });
 });

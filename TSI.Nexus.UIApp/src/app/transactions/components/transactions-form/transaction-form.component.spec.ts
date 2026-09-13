@@ -91,13 +91,18 @@ describe('TransactionFormComponent', () => {
     vi.useRealTimers();
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('option getters', () => {
-    it('exposes translated status/type/method/condition options', () => {
+    it('should expose translated status, type, method and condition options when the component is created', () => {
+      // Act
       const component = createComponent();
+
+      // Assert
       expect(component.statusOptions).toHaveLength(3);
       expect(component.typeOptions).toEqual([
         { label: 'BUSINESS_PARTNER.CLIENT_SINGULAR', value: PaymentType.Incoming },
@@ -109,25 +114,31 @@ describe('TransactionFormComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('builds its own form, patches data, and sets up autocomplete/categories', () => {
+    it('should build its own form, patch data, and set up autocomplete and categories when ngOnInit runs', () => {
+      // Arrange
       const component = createComponent();
       component.data = { description: 'Desc existente' } as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('Desc existente');
       expect(businessPartnerServiceMock.getClients).toHaveBeenCalled();
       expect(selectableOptionServiceMock.getByGroup).toHaveBeenCalled();
     });
 
-    it('reuses an externally provided form group instead of building its own', () => {
+    it('should reuse an externally provided form group instead of building its own when formGroup is set', () => {
+      // Arrange
       const component = createComponent();
       const externalForm = new FormBuilder().group({ type: [PaymentType.Incoming], businessPartnerName: [''] });
       component.formGroup = externalForm;
       component.compact = true;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form).toBe(externalForm);
     });
 
@@ -145,167 +156,215 @@ describe('TransactionFormComponent', () => {
       });
     }
 
-    it('recomputes paymentTotalPrice from price and totalOfPayments', () => {
+    it('should recompute paymentTotalPrice when price and totalOfPayments change', () => {
+      // Arrange
       const component = createComponent();
       component.formGroup = externalFormWithPrice();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.form.get('totalOfPayments')!.setValue(4);
       component.form.get('price')!.setValue(100);
 
+      // Assert
       expect(component.form.get('paymentTotalPrice')!.value).toBe(25);
     });
 
-    it('falls back to a single payment when totalOfPayments is zero or negative', () => {
+    it('should fall back to a single payment when totalOfPayments is zero or negative', () => {
+      // Arrange
       const component = createComponent();
       component.formGroup = externalFormWithPrice();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.form.get('totalOfPayments')!.setValue(0);
       component.form.get('price')!.setValue(50);
 
+      // Assert
       expect(component.form.get('paymentTotalPrice')!.value).toBe(50);
     });
 
-    it('falls back to a single payment when totalOfPayments is a negative number', () => {
+    it('should fall back to a single payment when totalOfPayments is a negative number', () => {
       // 0 is falsy and already gets caught by the `?.value || 1` fallback above the ternary, so
       // this needs a genuinely negative (truthy) value to reach the ternary's own false branch.
+      // Arrange
       const component = createComponent();
       component.formGroup = externalFormWithPrice();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.form.get('totalOfPayments')!.setValue(-3);
       component.form.get('price')!.setValue(60);
 
+      // Assert
       expect(component.form.get('paymentTotalPrice')!.value).toBe(60);
     });
 
-    it('falls back to a single payment when totalOfPayments is falsy', () => {
+    it('should fall back to a single payment when totalOfPayments is falsy', () => {
+      // Arrange
       const component = createComponent();
       component.formGroup = externalFormWithPrice();
       component.compact = true;
       component.ngOnInit();
 
+      // Act
       component.form.get('price')!.setValue(30);
 
+      // Assert
       expect(component.form.get('paymentTotalPrice')!.value).toBe(30);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('patches the form when data changes to a new value', () => {
+    it('should patch the form when data changes to a new value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { description: 'Nova' } as Transaction;
 
+      // Act
       component.ngOnChanges({ data: { currentValue: component.data } as never });
 
+      // Assert
       expect(component.form.get('description')!.value).toBe('Nova');
     });
 
-    it('does nothing when data has no currentValue', () => {
+    it('should do nothing when data has no currentValue', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
+      // Assert
       expect(() => component.ngOnChanges({ data: { currentValue: null } as never })).not.toThrow();
       expect(component.form.get('description')!.value).toBe('');
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { description: 'X' } as Transaction;
 
+      // Act
+      // Assert
       expect(() =>
         component.ngOnChanges({ data: { currentValue: component.data } as never }),
       ).not.toThrow();
     });
 
-    it('re-initializes the form when isEdit changes after the first change', () => {
+    it('should re-initialize the form when isEdit changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       expect(component.form.get('id')).toBeNull();
       component.isEdit = true;
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: true, firstChange: false } as never });
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('does not re-initialize the form on the first isEdit change', () => {
+    it('should not re-initialize the form when it is the first isEdit change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.form;
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: false, firstChange: true } as never });
 
+      // Assert
       expect(component.form).toBe(before);
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes all tracked subscriptions', () => {
+    it('should unsubscribe all tracked subscriptions when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       const unsubscribe = vi.fn();
       (component as any)._subscriptions = [{ unsubscribe }];
 
+      // Act
       component.ngOnDestroy();
 
+      // Assert
       expect(unsubscribe).toHaveBeenCalled();
     });
 
-    it('does not throw when there are no subscriptions', () => {
+    it('should not throw when there are no subscriptions', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('onTypeChanges', () => {
-    it('requires businessPartnerName and shows client/order fields for Incoming', () => {
+    it('should require businessPartnerName and show client and order fields when type is Incoming', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showClientAndOrder).toBe(true);
       expect(component.form.get('businessPartnerName')!.hasError('required')).toBe(true);
     });
 
-    it('clears the requirement and hides client/order fields for Outgoing', () => {
+    it('should clear the requirement and hide client and order fields when type changes to Outgoing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('type')!.setValue(PaymentType.Outgoing);
 
+      // Assert
       expect(component.showClientAndOrder).toBe(false);
       component.form.get('businessPartnerName')!.setValue('');
       expect(component.form.get('businessPartnerName')!.hasError('required')).toBe(false);
     });
 
-    it('starts with the requirement already cleared when the initial type is Outgoing', () => {
+    it('should start with the requirement already cleared when the initial type is Outgoing', () => {
+      // Arrange
       const component = createComponent();
       component.data = { type: PaymentType.Outgoing, description: 'x' } as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.showClientAndOrder).toBe(false);
       component.form.get('businessPartnerName')!.setValue('');
       expect(component.form.get('businessPartnerName')!.hasError('required')).toBe(false);
     });
 
-    it('re-requires businessPartnerName when switching back to Incoming', () => {
+    it('should re-require businessPartnerName when switching back to Incoming', () => {
+      // Arrange
       const component = createComponent();
       component.data = { type: PaymentType.Outgoing, description: 'x' } as Transaction;
       component.ngOnInit();
 
+      // Act
       component.form.get('type')!.setValue(PaymentType.Incoming);
 
+      // Assert
       expect(component.showClientAndOrder).toBe(true);
       component.form.get('businessPartnerName')!.setValue('');
       expect(component.form.get('businessPartnerName')!.hasError('required')).toBe(true);
     });
 
-    it('does nothing when the form has no type or businessPartnerName control', () => {
+    it('should do nothing when the form has no type or businessPartnerName control', () => {
+      // Arrange
       const component = createComponent();
       // setupAutoComplete() (always called at the end of onTypeChanges) itself requires a
       // businessPartnerName control unless compact - set compact so only the guarded block
@@ -313,6 +372,8 @@ describe('TransactionFormComponent', () => {
       component.compact = true;
       component.form = new FormBuilder().group({ other: [''] }) as any;
 
+      // Act
+      // Assert
       expect(() => component.onTypeChanges()).not.toThrow();
     });
   });
@@ -330,18 +391,22 @@ describe('TransactionFormComponent', () => {
       });
     }
 
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: unknown;
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(transactionServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('adds a new transaction when not editing', () => {
+    it('should add a new transaction when not editing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -349,12 +414,15 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 't1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(transactionServiceMock.add).toHaveBeenCalled();
     });
 
-    it('merges the raw value into data and updates when editing', () => {
+    it('should merge the raw value into data and update when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 't1' } as Transaction;
@@ -364,14 +432,17 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Salvo', data: { id: 't1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(transactionServiceMock.update).toHaveBeenCalledWith(
         expect.objectContaining({ id: 't1', description: 'Desc' }),
       );
     });
 
-    it('adds instead of updating when isEdit is true but there is no existing data', () => {
+    it('should add instead of update when isEdit is true but there is no existing data', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.ngOnInit();
@@ -380,13 +451,16 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 't1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(transactionServiceMock.add).toHaveBeenCalled();
       expect(transactionServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('notifies without saving when the backend reports a business error', () => {
+    it('should notify without saving when the backend reports a business error', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -394,12 +468,15 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou', data: null }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Error, 'Falhou');
     });
 
-    it('closes the dialog and notifies on success (modal mode)', () => {
+    it('should close the dialog and notify on success when in modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
@@ -408,13 +485,16 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 't1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'OK', ResponseStatus.Success);
     });
 
-    it('navigates to the new transaction page on success (page mode)', () => {
+    it('should navigate to the new transaction page on success when in page mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -423,12 +503,15 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK', data: { id: 't1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/transactions/t1');
     });
 
-    it('shows the formatted message and refreshes data when editing (page mode)', () => {
+    it('should show the formatted message and refresh data when editing in page mode', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.isModal = false;
@@ -439,46 +522,58 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Salvo', data: { id: 't1', description: 'Nova' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'Salvo');
       expect(component.data).toEqual({ id: 't1', description: 'Nova' });
     });
 
-    it('notifies an error when saving fails', () => {
+    it('should notify an error when saving fails', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       transactionServiceMock.add.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'COMMON.SAVE_ERROR');
     });
   });
 
   describe('cancel', () => {
-    it('hides the modal when in modal mode', () => {
+    it('should hide the modal when in modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the list page when not in modal mode', () => {
+    it('should navigate back to the list page when not in modal mode', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/transactions');
     });
   });
 
   describe('remove', () => {
-    it('purges via notification on success (page mode) and navigates back', async () => {
+    it('should purge via notification and navigate back on success when in page mode', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 't1' } as Transaction;
@@ -487,14 +582,17 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(transactionServiceMock.delete).toHaveBeenCalledWith(component.data);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/transactions');
     });
 
-    it('hides the dialog and notifies without navigating on success (modal mode)', async () => {
+    it('should hide the dialog and notify without navigating on success when in modal mode', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.data = { id: 't1' } as Transaction;
@@ -503,14 +601,17 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalledWith('/transactions');
     });
 
-    it('does not navigate when the delete reports a non-success status (page mode)', async () => {
+    it('should not navigate when the delete reports a non-success status in page mode', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 't1' } as Transaction;
@@ -519,13 +620,16 @@ describe('TransactionFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' }),
       );
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('shows an error notification when the delete request fails', async () => {
+    it('should show an error notification when the delete request fails', async () => {
+      // Arrange
       const component = createComponent();
       component.data = { id: 't1' } as Transaction;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
@@ -534,9 +638,11 @@ describe('TransactionFormComponent', () => {
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
+        // Act
         component.remove();
         await new Promise((resolve) => setTimeout(resolve, 0));
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('error', 'ORDERS.REMOVE_ERROR');
         await new Promise((resolve) => setTimeout(resolve, 0));
       } finally {
@@ -544,29 +650,35 @@ describe('TransactionFormComponent', () => {
       }
     });
 
-    it('does nothing further when cancelled outside a modal', async () => {
+    it('should do nothing further when cancelled outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 't1' } as Transaction;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(transactionServiceMock.delete).not.toHaveBeenCalled();
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });
 
-    it('reopens the details modal when cancelled inside a modal', async () => {
+    it('should reopen the details modal when cancelled inside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.isEdit = true;
       component.data = { id: 't1' } as Transaction;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await new Promise((resolve) => setTimeout(resolve, 0));
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ isEdit: true, data: component.data, id: 't1' }),
@@ -575,69 +687,89 @@ describe('TransactionFormComponent', () => {
   });
 
   describe('missingPayments', () => {
-    it('is true when parentData total exceeds the payment total already made', () => {
+    it('should return true when parentData total exceeds the payment total already made', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { totalPrice: 100 } as Order;
       component.data = { paymentTotalPrice: 50 } as Transaction;
 
+      // Act
+      // Assert
       expect(component.missingPayments()).toBe(true);
     });
 
-    it('is false when the payment total covers the parentData total', () => {
+    it('should return false when the payment total covers the parentData total', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { totalPrice: 100 } as Order;
       component.data = { paymentTotalPrice: 100 } as Transaction;
 
+      // Act
+      // Assert
       expect(component.missingPayments()).toBe(false);
     });
 
-    it('falls back to zero for missing parentData/data values', () => {
+    it('should fall back to zero when parentData and data values are missing', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(component.missingPayments()).toBe(false);
     });
   });
 
   describe('onClientBlur', () => {
-    it('cleans the selection when the typed name is blank', () => {
+    it('should clean the selection when the typed name is blank', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('   ');
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBeNull();
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('does nothing further when the typed name matches an existing business partner', () => {
+    it('should do nothing further when the typed name matches an existing business partner', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('Cliente A');
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).not.toHaveBeenCalled();
     });
 
-    it('offers to create a new client for an Incoming transaction when the name matches nothing', () => {
+    it('should offer to create a new client for an Incoming transaction when the name matches nothing', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('Novo Cliente');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(translationServiceMock.instant).toHaveBeenCalledWith('BUSINESS_PARTNER.CLIENT_SINGULAR');
       expect(modalServiceMock.showConfirmation).toHaveBeenCalled();
     });
 
-    it('offers to create a new supplier for an Outgoing transaction when the name matches nothing', () => {
+    it('should offer to create a new supplier for an Outgoing transaction when the name matches nothing', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -645,27 +777,33 @@ describe('TransactionFormComponent', () => {
       component.form.get('businessPartnerName')!.setValue('Novo Fornecedor');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(translationServiceMock.instant).toHaveBeenCalledWith('BUSINESS_PARTNER.SUPPLIER_SINGULAR');
     });
 
-    it('cleans the selection when the user declines creating a new business partner', () => {
+    it('should clean the selection when the user declines creating a new business partner', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.form.get('businessPartnerName')!.setValue('Novo Cliente');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
       expect(component.form.get('businessPartnerId')!.value).toBeNull();
     });
 
-    it('creates and selects the new business partner once confirmed', () => {
+    it('should create and select the new business partner when creation is confirmed', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -674,15 +812,18 @@ describe('TransactionFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(newPartner) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(businessPartnerServiceMock.addOrUpdateBusinessPartner).toHaveBeenCalledWith(newPartner);
       expect(component.form.get('businessPartnerName')!.value).toBe('Novo Cliente');
       expect(component.form.get('businessPartnerId')!.value).toBe('bp9');
     });
 
-    it('cleans the selection when the new-partner modal closes without a result', () => {
+    it('should clean the selection when the new-partner modal closes without a result', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -690,48 +831,64 @@ describe('TransactionFormComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.onClientBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBeNull();
     });
   });
 
   describe('loadCategories (private, via ngOnInit)', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.categories).toEqual([]);
     });
 
-    it('loads categories from the response data', () => {
+    it('should load categories from the response data when ngOnInit runs', () => {
+      // Arrange
       const component = createComponent();
       selectableOptionServiceMock.getByGroup.mockReturnValue(
         of({ data: [{ value: 'cat1', label: 'Categoria 1' }] }),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.categories).toEqual([{ value: 'cat1', label: 'Categoria 1' }]);
     });
   });
 
   describe('initForm (private, via ngOnInit)', () => {
-    it('builds an add-mode form without an id control', () => {
+    it('should build an add-mode form without an id control', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeNull();
     });
 
-    it('builds an edit-mode form with a disabled id-adjacent set of fields', () => {
+    it('should build an edit-mode form with a disabled id-adjacent set of fields when isEdit is true', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
       expect(component.form.get('businessPartnerName')!.disabled).toBe(true);
       expect(component.form.get('totalOfPayments')!.disabled).toBe(true);
@@ -739,59 +896,75 @@ describe('TransactionFormComponent', () => {
       expect(component.form.get('type')!.disabled).toBe(true);
     });
 
-    it('disables the status control when there are no opened payments while editing', () => {
+    it('should disable the status control when there are no opened payments while editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { hasOpenedPayments: false } as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('status')!.disabled).toBe(true);
     });
 
-    it('keeps status enabled when there are opened payments while editing', () => {
+    it('should keep status enabled when there are opened payments while editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { hasOpenedPayments: true } as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('status')!.disabled).toBe(false);
     });
 
-    it('auto-resolves businessPartnerId from the typed businessPartnerName in add mode', () => {
+    it('should auto-resolve businessPartnerId from the typed businessPartnerName in add mode', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('businessPartnerName')!.setValue('Cliente B');
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBe('bp2');
     });
 
-    it('leaves businessPartnerId untouched when the typed name matches nothing', () => {
+    it('should leave businessPartnerId untouched when the typed name matches nothing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.form.get('businessPartnerName')!.setValue('Ninguém');
 
+      // Assert
       expect(component.form.get('businessPartnerId')!.value).toBeNull();
     });
   });
 
   describe('patchFormWithData (private, via ngOnInit)', () => {
-    it('falls back totalOfPayments/expenses and their price fields when missing', () => {
+    it('should fall back totalOfPayments, totalOfExpenses and their price fields when they are missing', () => {
+      // Arrange
       const component = createComponent();
       component.data = { description: 'Desc' } as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('totalOfPayments')!.value).toBe(1);
       expect(component.form.get('paymentTotalPrice')!.value).toBe(0);
       expect(component.form.get('totalOfExpenses')!.value).toBe(0);
       expect(component.form.get('expenseTotalPrice')!.value).toBe(0);
     });
 
-    it('uses the provided totals when present', () => {
+    it('should use the provided totals when they are present', () => {
+      // Arrange
       const component = createComponent();
       component.data = {
         description: 'Desc',
@@ -801,146 +974,186 @@ describe('TransactionFormComponent', () => {
         expenseTotalPrice: 22,
       } as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('totalOfPayments')!.value).toBe(3);
       expect(component.form.get('paymentTotalPrice')!.value).toBe(33);
       expect(component.form.get('totalOfExpenses')!.value).toBe(2);
       expect(component.form.get('expenseTotalPrice')!.value).toBe(22);
     });
 
-    it('does not throw without data', () => {
+    it('should not throw when there is no data', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
+      // Assert
       expect(() => component.ngOnInit()).not.toThrow();
     });
   });
 
   describe('setupAutoComplete (private, via ngOnInit/onTypeChanges)', () => {
-    it('does nothing when compact is true', () => {
+    it('should do nothing when compact is true', () => {
+      // Arrange
       const component = createComponent();
       component.compact = true;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(businessPartnerServiceMock.getClients).not.toHaveBeenCalled();
     });
 
-    it('fetches suppliers for an Outgoing type', () => {
+    it('should fetch suppliers when type is Outgoing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
+
+      // Act
       component.form.get('type')!.setValue(PaymentType.Outgoing);
 
+      // Assert
       expect(businessPartnerServiceMock.getSuppliers).toHaveBeenCalled();
     });
 
-    it('defaults to Incoming when the form has no type control', () => {
+    it('should default to Incoming when the form has no type control', () => {
+      // Arrange
       const component = createComponent();
       component.formGroup = new FormBuilder().group({ businessPartnerName: [''] });
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(businessPartnerServiceMock.getClients).toHaveBeenCalled();
       expect(businessPartnerServiceMock.getSuppliers).not.toHaveBeenCalled();
     });
 
-    it('falls back to an empty array when the business partners response has no data', () => {
+    it('should fall back to an empty array when the business partners response has no data', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getClients.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
       let result: BusinessPartner[] = [];
       component.businessPartnersArray$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
   });
 
   describe('filteredBusinessPartners$', () => {
-    it('emits an empty list when there is no filter value', () => {
+    it('should emit an empty list when there is no filter value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toEqual([]);
     });
 
-    it('filters by name (case-insensitive)', () => {
+    it('should filter by name case-insensitively when a matching business partner exists', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
       component.form.get('businessPartnerName')!.setValue('cliente a');
 
+      // Assert
       expect(result).toEqual([expect.objectContaining({ id: 'bp1' })]);
     });
 
-    it('treats a business partner with no name as an empty string when filtering', () => {
+    it('should treat a business partner with no name as an empty string when filtering', () => {
+      // Arrange
       const component = createComponent();
       businessPartnerServiceMock.getClients.mockReturnValue(
         of({ data: [{ id: 'bp3', name: undefined } as unknown as BusinessPartner] }),
       );
       component.ngOnInit();
 
+      // Act
       let result: BusinessPartner[] = [];
       component.filteredBusinessPartners$.subscribe((r) => (result = r));
       component.form.get('businessPartnerName')!.setValue('cliente');
 
+      // Assert
       expect(result).toEqual([]);
     });
   });
 
   describe('setupStatusWatcher (private, via ngOnInit)', () => {
-    it('does nothing when not editing', () => {
+    it('should do nothing when not editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = false;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.contains('markAllPaymentsAsApproved')).toBe(false);
     });
 
-    it('adds the markAllPaymentsAsApproved control when editing', () => {
+    it('should add the markAllPaymentsAsApproved control when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { status: PaymentStatus.Pending } as Transaction;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.contains('markAllPaymentsAsApproved')).toBe(true);
     });
 
-    it('does not re-add the control when it already exists', () => {
+    it('should not re-add the control when it already exists', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { status: PaymentStatus.Pending } as Transaction;
-
       component.ngOnInit();
       const control = component.form.get('markAllPaymentsAsApproved');
 
+      // Act
       // Simulate a second run (e.g. via ngOnChanges re-init) to exercise the "already exists"
       // branch instead of adding a duplicate control reference.
       (component as any).setupStatusWatcher();
 
+      // Assert
       expect(component.form.get('markAllPaymentsAsApproved')).toBe(control);
     });
 
-    it('sets markAllPaymentsAsApproved false and clears the flag when there are no opened payments', () => {
+    it('should set markAllPaymentsAsApproved to false and clear the flag when there are no opened payments', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { status: PaymentStatus.Pending, hasOpenedPayments: false } as Transaction;
       component.ngOnInit();
 
+      // Act
       component.form.get('status')!.setValue(PaymentStatus.Delayed);
 
+      // Assert
       expect(component.form.get('markAllPaymentsAsApproved')!.value).toBe(false);
       expect((component.data as any).markAllPaymentsAsApproved).toBe(false);
     });
 
-    it('confirms and marks all payments approved when moving to Approved with opened payments', async () => {
+    it('should confirm and mark all payments approved when moving to Approved with opened payments', async () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { status: PaymentStatus.Pending, hasOpenedPayments: true } as Transaction;
@@ -949,15 +1162,18 @@ describe('TransactionFormComponent', () => {
         afterClosed: () => ({ toPromise: () => Promise.resolve(true) }),
       });
 
+      // Act
       component.form.get('status')!.setValue(PaymentStatus.Approved);
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(component.form.get('markAllPaymentsAsApproved')!.value).toBe(true);
       expect((component.data as any).markAllPaymentsAsApproved).toBe(true);
     });
 
-    it('reverts the status when the confirmation is declined', async () => {
+    it('should revert the status when the confirmation is declined', async () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { status: PaymentStatus.Pending, hasOpenedPayments: true } as Transaction;
@@ -966,15 +1182,18 @@ describe('TransactionFormComponent', () => {
         afterClosed: () => ({ toPromise: () => Promise.resolve(false) }),
       });
 
+      // Act
       component.form.get('status')!.setValue(PaymentStatus.Approved);
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(component.form.get('status')!.value).toBe(PaymentStatus.Pending);
       expect(component.form.get('markAllPaymentsAsApproved')!.value).toBe(false);
     });
 
-    it('falls back to an empty status when reverting without a data status', async () => {
+    it('should fall back to an empty status when reverting without a data status', async () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { hasOpenedPayments: true } as Transaction;
@@ -983,14 +1202,17 @@ describe('TransactionFormComponent', () => {
         afterClosed: () => ({ toPromise: () => Promise.resolve(false) }),
       });
 
+      // Act
       component.form.get('status')!.setValue(PaymentStatus.Approved);
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(component.form.get('status')!.value).toBe('');
     });
 
-    it('does not throw when data becomes unavailable while the confirmation is pending', async () => {
+    it('should not throw when data becomes unavailable while the confirmation is pending', async () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { status: PaymentStatus.Pending, hasOpenedPayments: true } as Transaction;
@@ -999,6 +1221,7 @@ describe('TransactionFormComponent', () => {
         afterClosed: () => ({ toPromise: () => Promise.resolve(true) }),
       });
 
+      // Act
       // hasOpenedPayments is read synchronously as the subscribe callback starts, so setting
       // data to null right after triggering it (but before the confirmation promise resolves)
       // exercises the `if (this.data) {...}` guard's false branch further down, without ever
@@ -1008,6 +1231,7 @@ describe('TransactionFormComponent', () => {
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(component.form.get('markAllPaymentsAsApproved')!.value).toBe(true);
     });
   });
