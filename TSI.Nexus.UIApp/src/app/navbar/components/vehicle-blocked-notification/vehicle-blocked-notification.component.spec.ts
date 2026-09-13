@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { of } from 'rxjs';
 import { ModalService, Vehicle, VehicleService, VehicleStatus } from '@nexus/core';
 import { VehicleBlockedNotificationComponent } from './vehicle-blocked-notification.component';
@@ -5,13 +6,16 @@ import { VehicleBlockedNotificationComponent } from './vehicle-blocked-notificat
 describe('VehicleBlockedNotificationComponent', () => {
   let vehicleServiceMock: { getAll: ReturnType<typeof vi.fn> };
   let modalServiceMock: { showTemplateModal: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent() {
     vehicleServiceMock = { getAll: vi.fn().mockReturnValue(of({ data: [] })) };
     modalServiceMock = { showTemplateModal: vi.fn() };
+    cdrMock = { markForCheck: vi.fn() };
     return new VehicleBlockedNotificationComponent(
       vehicleServiceMock as unknown as VehicleService,
       modalServiceMock as unknown as ModalService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -23,7 +27,7 @@ describe('VehicleBlockedNotificationComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should filter to only blocked vehicles when ngOnInit is called', () => {
+  it('should filter to only blocked vehicles and mark for check when ngOnInit is called', () => {
     // Arrange
     const vehicles = [
       { id: 'v1', status: VehicleStatus.Blocked },
@@ -39,6 +43,7 @@ describe('VehicleBlockedNotificationComponent', () => {
     // Assert
     expect(component.vehicles.map((v) => v.id)).toEqual(['v1', 'v3']);
     expect(component.total).toBe(2);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should default to an empty list when the response has no data', () => {

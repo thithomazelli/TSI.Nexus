@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
   ModalService,
@@ -33,6 +39,7 @@ export class StockAlertNotificationComponent implements OnInit, OnDestroy {
     private productService: ProductService,
     private modalService: ModalService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -74,6 +81,7 @@ export class StockAlertNotificationComponent implements OnInit, OnDestroy {
           (p) => (p.quantityInStock ?? 0) > 0 && (p.quantityInStock ?? 0) <= 3,
         );
         this.total = this.outOfStockProducts.length + this.lowStockProducts.length;
+        this.cdr.markForCheck();
       });
   }
 }

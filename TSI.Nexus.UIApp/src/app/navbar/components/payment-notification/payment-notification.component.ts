@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Subscription, Subject, takeUntil, switchMap } from 'rxjs';
 import { Router } from '@angular/router';
 import { ModalService, PaymentService, TranslationService } from '@nexus/core';
@@ -46,6 +52,7 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
     private paymentService: PaymentService,
     private router: Router,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -57,6 +64,7 @@ export class PaymentNotificationComponent implements OnInit, OnDestroy {
       .subscribe((response: WebApiResponse<Payment[]>) => {
         this.payments = response?.data || [];
         this.total = this.payments.length;
+        this.cdr.markForCheck();
       });
   }
 

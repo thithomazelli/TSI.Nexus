@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { ModalService, Payment, PaymentService, PaymentStatus, TranslationService } from '@nexus/core';
 import { Subject, of, throwError } from 'rxjs';
 import { PaymentNotificationComponent } from './payment-notification.component';
@@ -11,6 +12,7 @@ describe('PaymentNotificationComponent', () => {
   let modalServiceMock: { showTemplateModal: ReturnType<typeof vi.fn> };
   let routerMock: { navigate: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): PaymentNotificationComponent {
     paymentChanged$ = new Subject();
@@ -21,12 +23,14 @@ describe('PaymentNotificationComponent', () => {
     modalServiceMock = { showTemplateModal: vi.fn() };
     routerMock = { navigate: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new PaymentNotificationComponent(
       modalServiceMock as unknown as ModalService,
       paymentServiceMock as unknown as PaymentService,
       routerMock as unknown as any,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -39,7 +43,7 @@ describe('PaymentNotificationComponent', () => {
   });
 
   describe('ngOnInit / paymentChanged$', () => {
-    it('should load the delayed payments when paymentChanged$ emits', () => {
+    it('should load the delayed payments and mark for check when paymentChanged$ emits', () => {
       // Arrange
       const component = createComponent();
       paymentServiceMock.getDelayed.mockReturnValue(
@@ -54,6 +58,7 @@ describe('PaymentNotificationComponent', () => {
       expect(paymentServiceMock.getDelayed).toHaveBeenCalled();
       expect(component.payments).toEqual([{ id: 'p1' }, { id: 'p2' }]);
       expect(component.total).toBe(2);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should fall back to an empty array when the response has no data', () => {

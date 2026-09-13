@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Driver, DriverService, ModalService, WebApiResponse } from '@nexus/core';
 import { NgIf, NgFor, DatePipe } from '@angular/common';
@@ -25,6 +25,7 @@ export class DriverLicenseNotificationComponent implements OnInit {
   constructor(
     private driverService: DriverService,
     private modalService: ModalService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -33,6 +34,7 @@ export class DriverLicenseNotificationComponent implements OnInit {
       .subscribe((response: WebApiResponse<Driver[]>) => {
         this.drivers = response?.data || [];
         this.total = this.drivers.length;
+        this.cdr.markForCheck();
       });
   }
 

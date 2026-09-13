@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { of } from 'rxjs';
 import { Driver, DriverService, ModalService } from '@nexus/core';
 import { DriverLicenseNotificationComponent } from './driver-license-notification.component';
@@ -5,13 +6,16 @@ import { DriverLicenseNotificationComponent } from './driver-license-notificatio
 describe('DriverLicenseNotificationComponent', () => {
   let driverServiceMock: { getExpiringLicenses: ReturnType<typeof vi.fn> };
   let modalServiceMock: { showTemplateModal: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent() {
     driverServiceMock = { getExpiringLicenses: vi.fn().mockReturnValue(of({ data: [] })) };
     modalServiceMock = { showTemplateModal: vi.fn() };
+    cdrMock = { markForCheck: vi.fn() };
     return new DriverLicenseNotificationComponent(
       driverServiceMock as unknown as DriverService,
       modalServiceMock as unknown as ModalService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -23,7 +27,7 @@ describe('DriverLicenseNotificationComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load expiring licenses and update total/drivers when ngOnInit is called', () => {
+  it('should load expiring licenses, update total/drivers and mark for check when ngOnInit is called', () => {
     // Arrange
     const drivers = [{ id: 'd1' }, { id: 'd2' }] as Driver[];
     const component = createComponent();
@@ -35,6 +39,7 @@ describe('DriverLicenseNotificationComponent', () => {
     // Assert
     expect(component.drivers).toBe(drivers);
     expect(component.total).toBe(2);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   it('should default to an empty list when the response has no data', () => {

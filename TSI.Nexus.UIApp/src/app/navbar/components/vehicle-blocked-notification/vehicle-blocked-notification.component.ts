@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ModalService, Vehicle, VehicleService, VehicleStatus, WebApiResponse } from '@nexus/core';
 import { NgIf, NgFor } from '@angular/common';
@@ -24,6 +24,7 @@ export class VehicleBlockedNotificationComponent implements OnInit {
   constructor(
     private vehicleService: VehicleService,
     private modalService: ModalService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -32,6 +33,7 @@ export class VehicleBlockedNotificationComponent implements OnInit {
         (v) => v.status === VehicleStatus.Blocked,
       );
       this.total = this.vehicles.length;
+      this.cdr.markForCheck();
     });
   }
 

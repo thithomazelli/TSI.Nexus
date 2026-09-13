@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
   AccountService,
@@ -38,6 +44,7 @@ export class UpcomingEventNotificationComponent implements OnInit, OnDestroy {
     private accountService: AccountService,
     private modalService: ModalService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -87,6 +94,7 @@ export class UpcomingEventNotificationComponent implements OnInit, OnDestroy {
             if (config && config.enabled === false) {
               this.upcomingEvents = [];
               this.total = 0;
+              this.cdr.markForCheck();
               return;
             }
             const thresholdDays = config?.thresholdDays ?? 1;
@@ -104,6 +112,7 @@ export class UpcomingEventNotificationComponent implements OnInit, OnDestroy {
                 (a, b) => new Date(a.startDate!).getTime() - new Date(b.startDate!).getTime(),
               );
             this.total = this.upcomingEvents.length;
+            this.cdr.markForCheck();
           });
       });
   }
