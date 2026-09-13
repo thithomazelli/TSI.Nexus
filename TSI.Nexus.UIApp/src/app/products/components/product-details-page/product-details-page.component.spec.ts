@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product, ProductService, ProductType, TranslationService } from '@nexus/core';
 import { Subject, of, throwError } from 'rxjs';
@@ -9,6 +10,7 @@ describe('ProductDetailsPageComponent', () => {
   let productServiceMock: { getById: ReturnType<typeof vi.fn> };
   let routerMock: { navigateByUrl: ReturnType<typeof vi.fn> };
   let translationServiceMock: { instant: ReturnType<typeof vi.fn> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): ProductDetailsPageComponent {
     paramMap$ = new Subject();
@@ -16,12 +18,14 @@ describe('ProductDetailsPageComponent', () => {
     productServiceMock = { getById: vi.fn() };
     routerMock = { navigateByUrl: vi.fn() };
     translationServiceMock = { instant: vi.fn((key: string) => key) };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new ProductDetailsPageComponent(
       activatedRouteMock as unknown as ActivatedRoute,
       productServiceMock as unknown as ProductService,
       routerMock as unknown as Router,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -50,7 +54,7 @@ describe('ProductDetailsPageComponent', () => {
       expect(productServiceMock.getById).not.toHaveBeenCalled();
     });
 
-    it('should load the product when a real id is provided', () => {
+    it('should load the product and mark for check when a real id is provided', () => {
       // Arrange
       const component = createComponent();
       productServiceMock.getById.mockReturnValue(
@@ -66,9 +70,10 @@ describe('ProductDetailsPageComponent', () => {
       expect(component.id).toBe('p1');
       expect(component.data).toEqual({ id: 'p1', type: ProductType.Sale });
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should redirect to not-found when the product does not exist', () => {
+    it('should redirect to not-found and mark for check when the product does not exist', () => {
       // Arrange
       const component = createComponent();
       productServiceMock.getById.mockReturnValue(of({ data: null }));
@@ -79,9 +84,10 @@ describe('ProductDetailsPageComponent', () => {
 
       // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('should redirect to not-found when the fetch fails', () => {
+    it('should redirect to not-found, stop loading and mark for check when the fetch fails', () => {
       // Arrange
       const component = createComponent();
       productServiceMock.getById.mockReturnValue(throwError(() => new Error('fail')));
@@ -93,6 +99,7 @@ describe('ProductDetailsPageComponent', () => {
       // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should stop reacting to route changes when ngOnDestroy was called', () => {

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product, ProductService, ProductType, TranslationService } from '@nexus/core';
 import { Subject, takeUntil } from 'rxjs';
@@ -52,6 +58,7 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
     private productService: ProductService,
     private routerService: Router,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -93,13 +100,16 @@ export class ProductDetailsPageComponent implements OnInit, OnDestroy {
           this.loading = false;
           if (response.data == null) {
             this.routerService.navigateByUrl('/not-found');
+            this.cdr.markForCheck();
             return;
           }
           this.data = response.data;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
           this.routerService.navigateByUrl('/not-found');
+          this.cdr.markForCheck();
         },
       });
   }
