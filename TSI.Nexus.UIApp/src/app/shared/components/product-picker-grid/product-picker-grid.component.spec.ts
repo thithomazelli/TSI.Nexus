@@ -58,70 +58,94 @@ describe('ProductPickerGridComponent', () => {
     vi.useRealTimers();
   });
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the inline form and loads products', () => {
+    it('should build the inline form and load products when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.inlineProductForm.get('productId')).toBeTruthy();
       expect(productServiceMock.getAll).toHaveBeenCalled();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('stops the products subscription', () => {
+    it('should stop the products subscription when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnDestroy();
       component.inlineProductForm.get('productSku')!.setValue('SKU1');
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
     });
   });
 
   describe('selectProduct', () => {
-    it('does nothing when no product is given', () => {
+    it('should do nothing when no product is given', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
-      expect(() => component.selectProduct(null as unknown as Product)).not.toThrow();
+      // Act
+      const act = () => component.selectProduct(null as unknown as Product);
+
+      // Assert
+      expect(act).not.toThrow();
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
     });
 
-    it('patches the form with the selected product', () => {
+    it('should patch the form with the selected product', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.selectProduct(products[0]);
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('p1');
       expect(component.inlineProductForm.get('productSku')!.value).toBe('SKU1');
     });
 
-    it('allows a Service product with no stock when filterOutOfStock is true', () => {
+    it('should allow a Service product with no stock when filterOutOfStock is true', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = true;
       component.ngOnInit();
 
+      // Act
       component.selectProduct(products[3]);
 
+      // Assert
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
       expect(component.inlineProductForm.get('productId')!.value).toBe('p4');
     });
 
-    it('blocks a zero-stock Sale product when filterOutOfStock is true', () => {
+    it('should block a zero-stock Sale product when filterOutOfStock is true', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = true;
       component.ngOnInit();
 
+      // Act
       component.selectProduct(products[4]);
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         false,
         'PRODUCTS.OUT_OF_STOCK_TITLE',
@@ -130,135 +154,166 @@ describe('ProductPickerGridComponent', () => {
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
     });
 
-    it('blocks selection when quantityInStock is undefined', () => {
+    it('should block selection when quantityInStock is undefined', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = true;
       component.ngOnInit();
       const noStock = { id: 'p6', sku: 'SKU6', name: 'Sem estoque', type: ProductType.Sale } as Product;
 
+      // Act
       component.selectProduct(noStock);
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalled();
     });
 
-    it('blocks selection when quantityInStock is null', () => {
+    it('should block selection when quantityInStock is null', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = true;
       component.ngOnInit();
       const noStock = { id: 'p6', sku: 'SKU6', name: 'Sem estoque', type: ProductType.Sale, quantityInStock: null } as unknown as Product;
 
+      // Act
       component.selectProduct(noStock);
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalled();
     });
 
-    it('allows a zero-stock product when filterOutOfStock is false (purchase order flow)', () => {
+    it('should allow a zero-stock product when filterOutOfStock is false (purchase order flow)', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = false;
       component.ngOnInit();
 
+      // Act
       component.selectProduct(products[4]);
 
+      // Assert
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
       expect(component.inlineProductForm.get('productId')!.value).toBe('p5');
     });
   });
 
   describe('onProductSkuBlur', () => {
-    it('cleans the selection when the typed sku is blank', () => {
+    it('should clean the selection when the typed sku is blank', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('   ');
 
+      // Act
       component.onProductSkuBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('selects the product when the typed sku matches an existing product', () => {
+    it('should select the product when the typed sku matches an existing product', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU1');
 
+      // Act
       component.onProductSkuBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('p1');
     });
 
-    it('offers to create a new product when the sku matches nothing', () => {
+    it('should offer to create a new product when the sku matches nothing', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU-NEW');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onProductSkuBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).toHaveBeenCalled();
     });
   });
 
   describe('onProductNameBlur', () => {
-    it('cleans the selection when the typed name is blank', () => {
+    it('should clean the selection when the typed name is blank', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productName')!.setValue('   ');
 
+      // Act
       component.onProductNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
     });
 
-    it('selects the product when the typed name matches an existing product', () => {
+    it('should select the product when the typed name matches an existing product', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productName')!.setValue('Produto 1');
 
+      // Act
       component.onProductNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('p1');
     });
 
-    it('offers to create a new product when the name matches nothing', () => {
+    it('should offer to create a new product when the name matches nothing', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productName')!.setValue('Produto Novo');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onProductNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showConfirmation).toHaveBeenCalled();
     });
   });
 
   describe('confirmAndCreateProduct (private, via onProductSkuBlur/onProductNameBlur)', () => {
-    it('cleans the selection when the user declines creating a new product', () => {
+    it('should clean the selection when the user declines creating a new product', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU-NEW');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onProductSkuBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
     });
 
-    it('creates and selects the new product once confirmed', () => {
+    it('should create and select the new product once confirmed', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -269,13 +324,16 @@ describe('ProductPickerGridComponent', () => {
         afterClosed: () => of({ data: newProduct } as WebApiResponse<Product>),
       });
 
+      // Act
       component.onProductSkuBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('p9');
     });
 
-    it('cleans the selection when the new-product modal closes without a result', () => {
+    it('should clean the selection when the new-product modal closes without a result', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -283,35 +341,43 @@ describe('ProductPickerGridComponent', () => {
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(true) });
       modalServiceMock.showTemplateModal.mockReturnValue({ afterClosed: () => of(undefined) });
 
+      // Act
       component.onProductNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
     });
 
-    it('falls back to an empty name when called with neither sku nor name', () => {
+    it('should fall back to an empty name when called with neither sku nor name', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       (component as any).confirmAndCreateProduct({});
 
+      // Assert
       expect(translationServiceMock.instant).toHaveBeenCalledWith(
         'COMMON.CONFIRM_ADD_ENTITY',
         expect.objectContaining({ name: '' }),
       );
     });
 
-    it('uses the name when there is no sku to compute the confirmation message', () => {
+    it('should use the name when there is no sku to compute the confirmation message', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productName')!.setValue('Produto Sem Sku');
       modalServiceMock.showConfirmation.mockReturnValue({ afterClosed: () => of(false) });
 
+      // Act
       component.onProductNameBlur();
       vi.advanceTimersByTime(200);
 
+      // Assert
       expect(translationServiceMock.instant).toHaveBeenCalledWith(
         'COMMON.CONFIRM_ADD_ENTITY',
         expect.objectContaining({ name: 'Produto Sem Sku' }),
@@ -320,75 +386,100 @@ describe('ProductPickerGridComponent', () => {
   });
 
   describe('onQuantityBlur', () => {
-    it('does nothing when filterOutOfStock is false', () => {
+    it('should do nothing when filterOutOfStock is false', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = false;
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU1');
       component.inlineProductForm.get('quantity')!.setValue(100);
 
+      // Act
       component.onQuantityBlur();
 
+      // Assert
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
     });
 
-    it('does nothing when there is no quantity control', () => {
+    it('should do nothing when there is no quantity control', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.removeControl('quantity');
       component.inlineProductForm.get('productSku')!.setValue('SKU1');
 
-      expect(() => component.onQuantityBlur()).not.toThrow();
+      // Act
+      const act = () => component.onQuantityBlur();
+
+      // Assert
+      expect(act).not.toThrow();
     });
 
-    it('does nothing when there is no productSku value', () => {
+    it('should do nothing when there is no productSku value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.onQuantityBlur();
 
+      // Assert
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the product cannot be found', () => {
+    it('should do nothing when the product cannot be found', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('UNKNOWN');
 
-      expect(() => component.onQuantityBlur()).not.toThrow();
+      // Act
+      const act = () => component.onQuantityBlur();
+
+      // Assert
+      expect(act).not.toThrow();
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the found product has no quantityInStock', () => {
+    it('should do nothing when the found product has no quantityInStock', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU4');
 
+      // Act
       component.onQuantityBlur();
 
+      // Assert
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the requested quantity is within stock', () => {
+    it('should do nothing when the requested quantity is within stock', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU1');
       component.inlineProductForm.get('quantity')!.setValue(3);
 
+      // Act
       component.onQuantityBlur();
 
+      // Assert
       expect(modalServiceMock.showNotification).not.toHaveBeenCalled();
       expect(component.inlineProductForm.get('quantity')!.value).toBe(3);
     });
 
-    it('notifies and resets to 1 when exceeding stock', () => {
+    it('should notify and reset to 1 when the requested quantity exceeds stock', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU1');
       component.inlineProductForm.get('quantity')!.setValue(10);
 
+      // Act
       component.onQuantityBlur();
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         false,
         'PRODUCTS.STOCK_EXCEEDED_TITLE',
@@ -399,18 +490,22 @@ describe('ProductPickerGridComponent', () => {
   });
 
   describe('addProduct', () => {
-    it('does nothing without a selected product', () => {
+    it('should do nothing when there is no selected product', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       let emitted = false;
       component.itemAdded.subscribe(() => (emitted = true));
 
+      // Act
       component.addProduct();
 
+      // Assert
       expect(emitted).toBe(false);
     });
 
-    it('emits the staged item and cleans the selection', () => {
+    it('should emit the staged item and clean the selection', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.selectProduct(products[0]);
@@ -418,8 +513,10 @@ describe('ProductPickerGridComponent', () => {
       let emitted: any;
       component.itemAdded.subscribe((v) => (emitted = v));
 
+      // Act
       component.addProduct();
 
+      // Assert
       expect(emitted).toMatchObject({
         productId: 'p1',
         productSku: 'SKU1',
@@ -433,7 +530,8 @@ describe('ProductPickerGridComponent', () => {
       expect(component.inlineProductForm.get('productId')!.value).toBe('');
     });
 
-    it('defaults quantity to 1 and price to 0 when they are not numeric', () => {
+    it('should default quantity to 1 and price to 0 when they are not numeric', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.selectProduct(products[0]);
@@ -442,97 +540,133 @@ describe('ProductPickerGridComponent', () => {
       let emitted: any;
       component.itemAdded.subscribe((v) => (emitted = v));
 
+      // Act
       component.addProduct();
 
+      // Assert
       expect(emitted).toMatchObject({ quantity: 1, price: 0, totalPrice: 0 });
     });
 
-    it('does nothing without a productId even if productSku is set', () => {
+    it('should do nothing when there is no productId even if productSku is set', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.inlineProductForm.get('productSku')!.setValue('SKU1');
       let emitted = false;
       component.itemAdded.subscribe(() => (emitted = true));
 
+      // Act
       component.addProduct();
 
+      // Assert
       expect(emitted).toBe(false);
     });
   });
 
   describe('removeItem / openModal', () => {
-    it('emits the removed index', () => {
+    it('should emit the removed index when removeItem is called', () => {
+      // Arrange
       const component = createComponent();
       let removedIndex: number | undefined;
       component.itemRemoved.subscribe((i) => (removedIndex = i));
 
+      // Act
       component.removeItem(3);
 
+      // Assert
       expect(removedIndex).toBe(3);
     });
 
-    it('emits openManualModal', () => {
+    it('should emit openManualModal when openModal is called', () => {
+      // Arrange
       const component = createComponent();
       let opened = false;
       component.openManualModal.subscribe(() => (opened = true));
 
+      // Act
       component.openModal();
 
+      // Assert
       expect(opened).toBe(true);
     });
   });
 
   describe('trackBy helpers', () => {
-    it('trackByProductId returns the product id', () => {
+    it('should return the product id when trackByProductId is called', () => {
+      // Arrange
       const component = createComponent();
-      expect(component.trackByProductId(0, { id: 'p1' } as Product)).toBe('p1');
+
+      // Act
+      const result = component.trackByProductId(0, { id: 'p1' } as Product);
+
+      // Assert
+      expect(result).toBe('p1');
     });
 
-    it('trackByIndex returns the index', () => {
+    it('should return the index when trackByIndex is called', () => {
+      // Arrange
       const component = createComponent();
-      expect(component.trackByIndex(4)).toBe(4);
+
+      // Act
+      const result = component.trackByIndex(4);
+
+      // Assert
+      expect(result).toBe(4);
     });
   });
 
   describe('filteredProductsSku$ / filteredProductsName$', () => {
-    it('emits an empty list when there is no filter value', () => {
+    it('should emit an empty list when there is no filter value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
       let sku: Product[] = [];
       let name: Product[] = [];
+
+      // Act
       component.filteredProductsSku$.subscribe((r) => (sku = r));
       component.filteredProductsName$.subscribe((r) => (name = r));
 
+      // Assert
       expect(sku).toEqual([]);
       expect(name).toEqual([]);
     });
 
-    it('filters by sku (case-insensitive) and flags alreadyUsed', () => {
+    it('should filter by sku case-insensitively and flag alreadyUsed when a matching product exists', () => {
+      // Arrange
       const component = createComponent();
       component.items = [{ productId: 'p1' }];
       component.ngOnInit();
 
       let result: Product[] = [];
       component.filteredProductsSku$.subscribe((r) => (result = r));
+
+      // Act
       component.inlineProductForm.get('productSku')!.setValue('sku1');
 
+      // Assert
       expect(result).toEqual([expect.objectContaining({ id: 'p1', alreadyUsed: true })]);
     });
 
-    it('filters by name (case-insensitive) and flags alreadyUsed', () => {
+    it('should filter by name case-insensitively and flag alreadyUsed when a matching product exists', () => {
+      // Arrange
       const component = createComponent();
       component.items = [{ productId: 'p2' }];
       component.ngOnInit();
 
       let result: Product[] = [];
       component.filteredProductsName$.subscribe((r) => (result = r));
+
+      // Act
       component.inlineProductForm.get('productName')!.setValue('produto 2');
 
+      // Assert
       expect(result).toEqual([expect.objectContaining({ id: 'p2', alreadyUsed: true })]);
     });
 
-    it('treats a non-string filter value as an empty filter', () => {
+    it('should treat a non-string filter value as an empty filter', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
@@ -541,14 +675,17 @@ describe('ProductPickerGridComponent', () => {
       component.filteredProductsSku$.subscribe((r) => (sku = r));
       component.filteredProductsName$.subscribe((r) => (name = r));
 
+      // Act
       component.inlineProductForm.get('productSku')!.setValue({ sku: 'SKU1' } as unknown as string);
       component.inlineProductForm.get('productName')!.setValue(null);
 
+      // Assert
       expect(sku).toEqual([]);
       expect(name).toEqual([]);
     });
 
-    it('treats a product with no sku/name as an empty string when filtering', () => {
+    it('should treat a product with no sku/name as an empty string when filtering', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
@@ -557,62 +694,79 @@ describe('ProductPickerGridComponent', () => {
       component.filteredProductsSku$.subscribe((r) => (sku = r));
       component.filteredProductsName$.subscribe((r) => (name = r));
 
+      // Act
       component.inlineProductForm.get('productSku')!.setValue('sku1');
       component.inlineProductForm.get('productName')!.setValue('produto 2');
 
+      // Assert
       expect(sku.find((p) => p.id === 'p3')).toBeUndefined();
       expect(name.find((p) => p.id === 'p3')).toBeUndefined();
     });
 
-    it('flags disabled only when filterOutOfStock is true and stock is zero or less', () => {
+    it('should flag disabled only when filterOutOfStock is true and stock is zero or less', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = true;
       component.ngOnInit();
 
       let sku: Product[] = [];
       component.filteredProductsSku$.subscribe((r) => (sku = r));
+
+      // Act
       component.inlineProductForm.get('productSku')!.setValue('sku');
 
+      // Assert
       expect(sku.find((p) => p.id === 'p5')).toMatchObject({ disabled: true });
       expect(sku.find((p) => p.id === 'p1')).toMatchObject({ disabled: false });
     });
 
-    it('never disables options when filterOutOfStock is false', () => {
+    it('should never disable options when filterOutOfStock is false', () => {
+      // Arrange
       const component = createComponent();
       component.filterOutOfStock = false;
       component.ngOnInit();
 
       let sku: Product[] = [];
       component.filteredProductsSku$.subscribe((r) => (sku = r));
+
+      // Act
       component.inlineProductForm.get('productSku')!.setValue('sku');
 
+      // Assert
       expect(sku.find((p) => p.id === 'p5')).toMatchObject({ disabled: false });
     });
 
-    it('treats missing items as not already used', () => {
+    it('should treat missing items as not already used', () => {
+      // Arrange
       const component = createComponent();
       component.items = null;
       component.ngOnInit();
 
       let sku: Product[] = [];
       component.filteredProductsSku$.subscribe((r) => (sku = r));
+
+      // Act
       component.inlineProductForm.get('productSku')!.setValue('sku1');
 
+      // Assert
       expect(sku.find((p) => p.id === 'p1')).toMatchObject({ alreadyUsed: undefined });
     });
   });
 
   describe('setupAutoComplete', () => {
-    it('falls back to an empty array when the product response has no data', () => {
+    it('should fall back to an empty array when the product response has no data', () => {
+      // Arrange
       const component = createComponent();
       productServiceMock.getAll.mockReturnValue(of({} as WebApiResponse<Product[]>));
-
       component.ngOnInit();
 
       let result: Product[] = [];
       component.filteredProductsSku$.subscribe((r) => (result = r));
+
+      // Act
       component.inlineProductForm.get('productSku')!.setValue('a');
 
+      // Assert
       expect(result).toEqual([]);
     });
   });

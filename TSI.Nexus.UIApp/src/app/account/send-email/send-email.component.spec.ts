@@ -40,152 +40,195 @@ describe('SendEmailComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent(null)).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent(null);
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('redirects home immediately when already logged in', () => {
+  it('should redirect home immediately when the user is already logged in', () => {
+    // Arrange
     const component = createComponent('resend-email-confirmation');
     component.ngOnInit();
 
+    // Act
     accountServiceMock.user$.next({ id: 'u1' });
 
+    // Assert
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/');
   });
 
-  it('reads the mode from the route and initializes the form when logged out', () => {
+  it('should read the mode from the route and initialize the form when the user is logged out', () => {
+    // Arrange
     const component = createComponent('resend-email-confirmation');
     component.ngOnInit();
 
+    // Act
     accountServiceMock.user$.next(null);
 
+    // Assert
     expect(component.mode).toBe('resend-email-confirmation');
     expect(component.form.get('email')).toBeTruthy();
   });
 
-  it('falls back to an empty mode when the route has none', () => {
+  it('should fall back to an empty mode when the route has none', () => {
+    // Arrange
     const component = createComponent(null);
     component.ngOnInit();
 
+    // Act
     accountServiceMock.user$.next(null);
 
+    // Assert
     expect(component.mode).toBe('');
   });
 
   describe('sendEmail', () => {
-    it('does nothing without a valid form', () => {
+    it('should do nothing when the form is invalid', () => {
+      // Arrange
       const component = createComponent('resend-email-confirmation');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
 
+      // Act
       component.sendEmail();
 
+      // Assert
       expect(accountServiceMock.resendEmailConfirmation).not.toHaveBeenCalled();
     });
 
-    it('resends the email confirmation and navigates to login on success', () => {
+    it('should resend the email confirmation and navigate to login when saving succeeds', () => {
+      // Arrange
       const component = createComponent('resend-email-confirmation');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
       accountServiceMock.resendEmailConfirmation.mockReturnValue(
         of({ value: { title: 'OK', message: 'Sent' } }),
       );
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.sendEmail();
 
+      // Assert
       expect(accountServiceMock.resendEmailConfirmation).toHaveBeenCalledWith('a@b.com');
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/account/login');
     });
 
-    it('sends a forgot-password email when in that mode', () => {
+    it('should send a forgot-password email when the mode is forgot-username-or-password', () => {
+      // Arrange
       const component = createComponent('forgot-username-or-password');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(
         of({ value: { title: 'OK', message: 'Sent' } }),
       );
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.sendEmail();
 
+      // Assert
       expect(accountServiceMock.forgotUsernameOrPassword).toHaveBeenCalledWith('a@b.com');
     });
 
-    it('does nothing when the mode matches neither known flow', () => {
+    it('should do nothing when the mode matches neither known flow', () => {
+      // Arrange
       const component = createComponent('some-other-mode');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.sendEmail();
 
+      // Assert
       expect(accountServiceMock.resendEmailConfirmation).not.toHaveBeenCalled();
       expect(accountServiceMock.forgotUsernameOrPassword).not.toHaveBeenCalled();
     });
 
-    it('surfaces server validation errors', () => {
+    it('should surface server validation errors when the resend request fails', () => {
+      // Arrange
       const component = createComponent('resend-email-confirmation');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
       accountServiceMock.resendEmailConfirmation.mockReturnValue(
         throwError(() => ({ error: { errors: ['E-mail inválido'] } })),
       );
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.sendEmail();
 
+      // Assert
       expect(component.errorMessages).toEqual(['E-mail inválido']);
     });
 
-    it('falls back to the generic message without throwing when response.error is null (resend flow)', () => {
+    it('should fall back to the generic message without throwing when the resend response.error is null', () => {
+      // Arrange
       const component = createComponent('resend-email-confirmation');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
       accountServiceMock.resendEmailConfirmation.mockReturnValue(
         throwError(() => ({ status: 500, error: null })),
       );
-
       component.form.setValue({ email: 'a@b.com' });
 
-      expect(() => component.sendEmail()).not.toThrow();
+      // Act
+      const act = () => component.sendEmail();
+
+      // Assert
+      expect(act).not.toThrow();
       expect(component.errorMessages).toEqual(['ACCOUNT.SERVER_ERROR']);
     });
 
-    it('surfaces server validation errors for the forgot-password flow', () => {
+    it('should surface server validation errors when the forgot-password request fails', () => {
+      // Arrange
       const component = createComponent('forgot-username-or-password');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(
         throwError(() => ({ error: { errors: ['E-mail não encontrado'] } })),
       );
-
       component.form.setValue({ email: 'a@b.com' });
+
+      // Act
       component.sendEmail();
 
+      // Assert
       expect(component.errorMessages).toEqual(['E-mail não encontrado']);
     });
 
-    it('falls back to the generic message without throwing when response.error is null (forgot-password flow)', () => {
+    it('should fall back to the generic message without throwing when the forgot-password response.error is null', () => {
+      // Arrange
       const component = createComponent('forgot-username-or-password');
       component.ngOnInit();
       accountServiceMock.user$.next(null);
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(
         throwError(() => ({ status: 500, error: null })),
       );
-
       component.form.setValue({ email: 'a@b.com' });
 
-      expect(() => component.sendEmail()).not.toThrow();
+      // Act
+      const act = () => component.sendEmail();
+
+      // Assert
+      expect(act).not.toThrow();
       expect(component.errorMessages).toEqual(['ACCOUNT.SERVER_ERROR']);
     });
   });
 
   describe('cancel', () => {
-    it('navigates back to login', () => {
+    it('should navigate back to login when cancel is called', () => {
+      // Arrange
       const component = createComponent(null);
+
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/account/login');
     });
   });

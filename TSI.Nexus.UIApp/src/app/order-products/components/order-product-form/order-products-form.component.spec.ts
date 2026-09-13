@@ -80,90 +80,140 @@ describe('OrderProductsFormComponent', () => {
     vi.useRealTimers();
   });
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('exposes translated product type options', () => {
+  it('should expose translated product type options', () => {
+    // Act
     const component = createComponent();
+
+    // Assert
     expect(component.productTypeOptions.length).toBe(3);
   });
 
-  it('trackByOptionValue returns the option value', () => {
+  it('should return the option value when trackByOptionValue is called', () => {
+    // Arrange
     const component = createComponent();
-    expect(component.trackByOptionValue(0, { value: 'Sale', label: 'x' })).toBe('Sale');
+
+    // Act
+    const result = component.trackByOptionValue(0, { value: 'Sale', label: 'x' });
+
+    // Assert
+    expect(result).toBe('Sale');
   });
 
   describe('ngOnInit', () => {
-    it('initializes a create-mode form and auto-resolves productId from productName', async () => {
+    it('should initialize a create-mode form and auto-resolve productId from productName', async () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       await component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeNull();
 
+      // Act
       component.form.get('productName')!.setValue('Produto 1');
+
+      // Assert
       expect(component.form.get('productId')!.value).toBe('p1');
     });
 
-    it('leaves productId untouched when productName matches no product', async () => {
+    it('should leave productId untouched when productName matches no product', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
 
+      // Act
       component.form.get('productName')!.setValue('Ninguém');
+
+      // Assert
       expect(component.form.get('productId')!.value).toBe('');
     });
 
-    it('initializes an edit-mode form with an id control and disables sku/name', async () => {
+    it('should initialize an edit-mode form with an id control and disable sku/name when isEdit is true', async () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       await component.ngOnInit();
 
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
       expect(component.form.get('productSku')!.disabled).toBe(true);
       expect(component.form.get('productName')!.disabled).toBe(true);
     });
 
-    it('patches the form with the provided data', async () => {
+    it('should patch the form with the provided data', async () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { productName: 'Produto 1', quantity: 5 } as OrderProduct;
+
+      // Act
       await component.ngOnInit();
 
+      // Assert
       expect(component.form.get('quantity')!.value).toBe(5);
     });
 
-    it('does not throw without data', async () => {
+    it('should not throw when there is no data', async () => {
+      // Arrange
       const component = createComponent();
-      await expect(component.ngOnInit()).resolves.not.toThrow();
+
+      // Act
+      const act = component.ngOnInit();
+
+      // Assert
+      await expect(act).resolves.not.toThrow();
     });
 
-    it('recomputes totalPrice on init and whenever price/quantity/discount change', async () => {
+    it('should recompute totalPrice on init and whenever price/quantity/discount change', async () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       await component.ngOnInit();
       vi.advanceTimersByTime(0);
 
+      // Act
       component.form.get('price')!.setValue(100);
       component.form.get('quantity')!.setValue(2);
       component.form.get('discount')!.setValue(10);
 
+      // Assert
       expect(component.form.get('totalPrice')!.value).toBeCloseTo(180);
     });
 
-    it('disables the quantity field by default and enables it when productType is Sale', async () => {
+    it('should disable the quantity field by default and enable it when productType is Sale', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
 
+      // Assert
       expect(component.form.get('quantity')!.disabled).toBe(true);
 
+      // Act
       component.form.get('productType')!.setValue(ProductType.Sale);
+
+      // Assert
       expect(component.form.get('quantity')!.disabled).toBe(false);
 
+      // Act
       component.form.get('productType')!.setValue(ProductType.Rental);
+
+      // Assert
       expect(component.form.get('quantity')!.disabled).toBe(true);
     });
 
-    it('does not toggle the quantity field when the form has no productType control', async () => {
+    it('should not toggle the quantity field when the form has no productType control', async () => {
+      // Arrange
       const component = createComponent();
       vi.spyOn(component as any, 'initForm').mockImplementation(() => {
         component.form = new FormBuilder().group({
@@ -178,65 +228,87 @@ describe('OrderProductsFormComponent', () => {
         });
       });
 
-      await expect(component.ngOnInit()).resolves.not.toThrow();
+      // Act
+      const act = component.ngOnInit();
 
+      // Assert
+      await expect(act).resolves.not.toThrow();
       expect(component.form.get('quantity')!.disabled).toBe(false);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('re-patches the form when data changes after init', async () => {
+    it('should re-patch the form when data changes after init', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
-
       component.data = { quantity: 9 } as OrderProduct;
+
+      // Act
       component.ngOnChanges({ data: {} as any });
 
+      // Assert
       expect(component.form.get('quantity')!.value).toBe(9);
     });
 
-    it('does nothing when the changed input is not data', async () => {
+    it('should do nothing when the changed input is not data', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: {} as any });
 
+      // Assert
       expect(component.form.get('quantity')!.value).toBe(1);
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
       component.data = { quantity: 9 } as OrderProduct;
 
-      expect(() => component.ngOnChanges({ data: {} as any })).not.toThrow();
+      // Act
+      const act = () => component.ngOnChanges({ data: {} as any });
+
+      // Assert
+      expect(act).not.toThrow();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('unsubscribes the productName auto-resolve subscription', async () => {
+    it('should unsubscribe the productName auto-resolve subscription when ngOnDestroy is called', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
 
+      // Act
       component.ngOnDestroy();
       component.form.get('productName')!.setValue('Produto 1');
 
+      // Assert
       expect(component.form.get('productId')!.value).toBe('');
     });
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', async () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
 
       let result: unknown;
+
+      // Act
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.submitted).toBe(true);
     });
 
-    it('creates a temporary product when there is no parentId', async () => {
+    it('should create a temporary product when there is no parentId', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
       component.form.patchValue({
@@ -248,13 +320,16 @@ describe('OrderProductsFormComponent', () => {
       const response = { message: 'OK', status: 'success' } as unknown as WebApiResponse<OrderProduct>;
       orderProductServiceMock.addTemporary.mockReturnValue(of(response));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(orderProductServiceMock.addTemporary).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).not.toHaveBeenCalled();
     });
 
-    it('notifies when parentId is present and merges rawValue into data when editing', async () => {
+    it('should notify and merge rawValue into data when parentId is present while editing', async () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'o1';
       component.isEdit = true;
@@ -265,14 +340,17 @@ describe('OrderProductsFormComponent', () => {
       const response = { message: 'Salvo', status: 'success' } as unknown as WebApiResponse<OrderProduct>;
       orderProductServiceMock.update.mockReturnValue(of(response));
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.data).toMatchObject({ id: 'op1', productId: 'p1' });
       expect(orderProductServiceMock.update).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Salvo', 'success');
     });
 
-    it('adds instead of updating when creating with a parentId', async () => {
+    it('should add instead of updating when creating with a parentId', async () => {
+      // Arrange
       const component = createComponent();
       component.parentId = 'o1';
       await component.ngOnInit();
@@ -282,14 +360,17 @@ describe('OrderProductsFormComponent', () => {
         of({ message: 'OK', status: 'success' } as unknown as WebApiResponse<OrderProduct>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(orderProductServiceMock.add).toHaveBeenCalledWith(
         expect.objectContaining({ orderId: 'o1' }),
       );
     });
 
-    it('closes the dialog when saving succeeds and a dialogRef is present', async () => {
+    it('should close the dialog when saving succeeds and a dialogRef is present', async () => {
+      // Arrange
       const component = createComponent();
       const dialogRefMock = { close: vi.fn() };
       component.dialogRef = dialogRefMock as any;
@@ -300,12 +381,15 @@ describe('OrderProductsFormComponent', () => {
         of({ message: 'OK', status: 'success' } as unknown as WebApiResponse<OrderProduct>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
     });
 
-    it('notifies an error when saving fails', async () => {
+    it('should notify an error when saving fails', async () => {
+      // Arrange
       const component = createComponent();
       await component.ngOnInit();
       component.form.get('productId')!.setValue('p1');
@@ -314,19 +398,24 @@ describe('OrderProductsFormComponent', () => {
         throwError(() => new Error('boom')),
       );
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'COMMON.SAVE_ERROR');
     });
   });
 
-  it('cancel hides the modal via the dialogRef', () => {
+  it('should hide the modal via the dialogRef when cancel is called', () => {
+    // Arrange
     const component = createComponent();
     const dialogRefMock = {};
     component.dialogRef = dialogRefMock as any;
 
+    // Act
     component.cancel();
 
+    // Assert
     expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
   });
 
@@ -334,7 +423,8 @@ describe('OrderProductsFormComponent', () => {
   // `if (!this.parentId)` early-return above it, so at that point parentId is always truthy -
   // the `?? undefined` fallback is dead code, unreachable without altering the guard itself.
   describe('remove', () => {
-    it('deletes and notifies success outside a modal when confirmed', async () => {
+    it('should delete and notify success outside a modal when the deletion is confirmed', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'op1' } as OrderProduct;
@@ -343,15 +433,18 @@ describe('OrderProductsFormComponent', () => {
         of({ message: 'Removido', status: 'success' } as unknown as WebApiResponse<OrderProduct>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Removido', 'success');
     });
 
-    it('hides the modal and notifies success inside a modal when confirmed', async () => {
+    it('should hide the modal and notify success inside a modal when the deletion is confirmed', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
@@ -362,15 +455,18 @@ describe('OrderProductsFormComponent', () => {
         of({ message: 'Removido', status: 'success' } as unknown as WebApiResponse<OrderProduct>),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Removido', 'success');
     });
 
-    it('notifies an error when the delete request fails', async () => {
+    it('should notify an error when the delete request fails', async () => {
+      // Arrange
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
@@ -379,10 +475,12 @@ describe('OrderProductsFormComponent', () => {
         modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
         orderProductServiceMock.delete.mockReturnValue(throwError(() => new Error('boom')));
 
+        // Act
         component.remove();
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           'error',
           'ORDERS.REMOVE_ERROR',
@@ -394,30 +492,36 @@ describe('OrderProductsFormComponent', () => {
       }
     });
 
-    it('does nothing further when the deletion is cancelled outside a modal', async () => {
+    it('should do nothing further when the deletion is cancelled outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'op1' } as OrderProduct;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });
 
-    it('reopens the details modal when the deletion is cancelled inside a modal', async () => {
+    it('should reopen the details modal when the deletion is cancelled inside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.isEdit = true;
       component.data = { id: 'op1' } as OrderProduct;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         OrderProductsDetailsModalComponent,
         expect.objectContaining({ isEdit: true, data: component.data, id: 'op1' }),

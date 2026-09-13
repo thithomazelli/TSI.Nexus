@@ -20,71 +20,106 @@ describe('QuoteService', () => {
     return TestBed.inject(QuoteService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getAll/getById/getByQuoteNumber/getByBusinessPartnerId/getByProductId hit the expected endpoints', () => {
+  it('should call the expected endpoints when getAll, getById, getByQuoteNumber, getByBusinessPartnerId and getByProductId are called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getAll();
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotes/getAll');
 
+    // Act
     service.getById('q1');
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotes/getById/q1');
 
+    // Act
     service.getByQuoteNumber('Q-001');
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotes/getByQuoteNumber/Q-001');
 
+    // Act
     service.getByBusinessPartnerId('bp1');
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotes/getByBusinessPartnerId/bp1');
 
+    // Act
     service.getByProductId('p1');
+
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotes/getByProductId/p1');
   });
 
-  it('getAllPaged builds the query string and unwraps response.data', () => {
+  it('should build the query string and unwrap response.data when getAllPaged is called', () => {
+    // Arrange
     const service = createService();
     const paged$ = new Subject<WebApiResponse<{ items: Quote[] }>>();
     apiServiceMock.get.mockReturnValue(paged$);
 
     let result: unknown;
+
+    // Act
     service.getAllPaged({ page: 1, pageSize: 20 }).subscribe((v) => (result = v));
     paged$.next({ data: { items: [] } } as unknown as WebApiResponse<{ items: Quote[] }>);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotes/getAllPaged?page=1&pageSize=20');
     expect(result).toEqual({ items: [] });
   });
 
-  it('getPdf fetches a blob from the expected endpoint', () => {
+  it('should fetch a blob from the expected endpoint when getPdf is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.getBlob.mockReturnValue(new Subject());
 
+    // Act
     service.getPdf('q1');
 
+    // Assert
     expect(apiServiceMock.getBlob).toHaveBeenCalledWith('quotes/q1/Pdf');
   });
 
-  it('refreshQuotes delegates to getAll', () => {
+  it('should delegate to getAll when refreshQuotes is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.refreshQuotes();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('quotes/getAll');
   });
 
-  it('quoteChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately when a new subscriber subscribes to quoteChanged$', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.quoteChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete/convertToOrder/convertToTrip each notify quoteChanged$ after the request completes', () => {
+  it('should notify quoteChanged$ when add, update, delete, convertToOrder or convertToTrip completes', () => {
+    // Arrange
     const service = createService();
     const responses = Array.from({ length: 5 }, () => new Subject<WebApiResponse<Quote>>());
     apiServiceMock.post.mockReturnValueOnce(responses[0]).mockReturnValueOnce(responses[3]).mockReturnValueOnce(responses[4]);
@@ -96,29 +131,44 @@ describe('QuoteService', () => {
     TestBed.flushEffects();
     expect(emissions).toBe(1);
 
+    // Act
     service.add({} as Quote).subscribe();
     responses[0].next({} as WebApiResponse<Quote>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(2);
 
+    // Act
     service.update({} as Quote).subscribe();
     responses[1].next({} as WebApiResponse<Quote>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(3);
 
+    // Act
     service.delete({} as Quote).subscribe();
     responses[2].next({} as WebApiResponse<Quote>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(4);
 
+    // Act
     service.convertToOrder({} as Quote).subscribe();
     responses[3].next({} as WebApiResponse<Quote>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(5);
 
+    // Act
     service.convertToTrip({} as Quote).subscribe();
     responses[4].next({} as WebApiResponse<Quote>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(6);
   });
 });
