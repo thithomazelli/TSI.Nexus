@@ -10,7 +10,10 @@ describe('AuthorizationGuard', () => {
   let guard: AuthorizationGuard;
   let accountServiceMock: { user$: Observable<User | null> };
   let featureFlagServiceMock: { isEnabled: ReturnType<typeof vi.fn> };
-  let modalServiceMock: { hideModal: ReturnType<typeof vi.fn>; showNotification: ReturnType<typeof vi.fn> };
+  let modalServiceMock: {
+    hideModal: ReturnType<typeof vi.fn>;
+    showNotification: ReturnType<typeof vi.fn>;
+  };
   let routerMock: { navigate: ReturnType<typeof vi.fn> };
 
   function makeGuard(user: User | null) {
@@ -48,16 +51,22 @@ describe('AuthorizationGuard', () => {
     return result!;
   }
 
-  it('should be created', () => {
+  it('should create the guard when instantiated', () => {
+    // Act
     guard = makeGuard(null);
+
+    // Assert
     expect(guard).toBeTruthy();
   });
 
-  it('redirects to login and denies access when there is no logged-in user', () => {
+  it('should redirect to login and deny access when there is no logged-in user', () => {
+    // Arrange
     guard = makeGuard(null);
 
+    // Act
     const allowed = activate(route(), state('/vehicles'));
 
+    // Assert
     expect(allowed).toBe(false);
     expect(routerMock.navigate).toHaveBeenCalledWith(['account/login'], {
       queryParams: { returnUrl: '/vehicles' },
@@ -65,19 +74,25 @@ describe('AuthorizationGuard', () => {
     expect(modalServiceMock.hideModal).toHaveBeenCalled();
   });
 
-  it('does not hide the modal when redirecting from an /account route', () => {
+  it('should not hide the modal when redirecting from an /account route', () => {
+    // Arrange
     guard = makeGuard(null);
 
+    // Act
     activate(route(), state('/account/login'));
 
+    // Assert
     expect(modalServiceMock.hideModal).not.toHaveBeenCalled();
   });
 
-  it('denies access and shows a notification when the user lacks a required role', () => {
+  it('should deny access and show a notification when the user lacks a required role', () => {
+    // Arrange
     guard = makeGuard({ roles: ['User'] } as User);
 
+    // Act
     const allowed = activate(route({ roles: ['Admin'] }), state());
 
+    // Assert
     expect(allowed).toBe(false);
     expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
       false,
@@ -87,55 +102,71 @@ describe('AuthorizationGuard', () => {
     expect(routerMock.navigate).toHaveBeenCalledWith(['']);
   });
 
-  it('allows access when the user has one of the required roles', () => {
+  it('should allow access when the user has one of the required roles', () => {
+    // Arrange
     guard = makeGuard({ roles: ['Admin'] } as User);
 
+    // Act / Assert
     expect(activate(route({ roles: ['Admin', 'Master'] }), state())).toBe(true);
   });
 
-  it('redirects to not-found when a required feature flag is disabled', () => {
+  it('should redirect to not-found when a required feature flag is disabled', () => {
+    // Arrange
     guard = makeGuard({ roles: ['Admin'] } as User);
     featureFlagServiceMock.isEnabled.mockReturnValue(of(false));
 
+    // Act
     const allowed = activate(route({ featureFlag: 'FleetModule' }), state());
 
+    // Assert
     expect(allowed).toBe(false);
     expect(routerMock.navigate).toHaveBeenCalledWith(['not-found']);
   });
 
-  it('requires every flag in an array to be enabled', () => {
+  it('should require every flag in an array to be enabled', () => {
+    // Arrange
     guard = makeGuard({ roles: ['Admin'] } as User);
     featureFlagServiceMock.isEnabled.mockImplementation((flag: string) =>
       of(flag === 'FleetModule'),
     );
 
+    // Act
     const allowed = activate(route({ featureFlag: ['FleetModule', 'Vehicles'] }), state());
 
+    // Assert
     expect(allowed).toBe(false);
   });
 
-  it('allows access when every flag in an array is enabled', () => {
+  it('should allow access when every flag in an array is enabled', () => {
+    // Arrange
     guard = makeGuard({ roles: ['Admin'] } as User);
     featureFlagServiceMock.isEnabled.mockReturnValue(of(true));
 
+    // Act
     const allowed = activate(route({ featureFlag: ['FleetModule', 'Vehicles'] }), state());
 
+    // Assert
     expect(allowed).toBe(true);
     expect(routerMock.navigate).not.toHaveBeenCalledWith(['not-found']);
   });
 
-  it('allows access when there are no role or feature flag restrictions', () => {
+  it('should allow access when there are no role or feature flag restrictions', () => {
+    // Arrange
     guard = makeGuard({ roles: [] } as unknown as User);
 
+    // Act / Assert
     expect(activate(route(), state())).toBe(true);
   });
 
-  it('canActivateChild delegates to canActivate', () => {
+  it('should delegate to canActivate when canActivateChild is called', () => {
+    // Arrange
     guard = makeGuard({ roles: ['Admin'] } as User);
 
+    // Act
     let result: boolean | undefined;
     guard.canActivateChild(route(), state()).subscribe((allowed) => (result = allowed));
 
+    // Assert
     expect(result).toBe(true);
   });
 });

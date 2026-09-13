@@ -19,53 +19,77 @@ describe('DriverDetailsModalComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent(null)).toBeTruthy();
-  });
-
-  it('defaults to add mode with an empty driver when no dialogData is provided', () => {
+  it('should create the component when instantiated', () => {
+    // Act
     const component = createComponent(null);
 
+    // Assert
+    expect(component).toBeTruthy();
+  });
+
+  it('should default to add mode with an empty driver when no dialogData is provided', () => {
+    // Act
+    const component = createComponent(null);
+
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toEqual({});
     expect(component.id).toBeNull();
   });
 
-  it('populates edit state from dialogData', () => {
+  it('should populate edit state when dialogData is provided', () => {
+    // Arrange
     const driver = { id: 'd1', name: 'Ana' } as Driver;
+
+    // Act
     const component = createComponent({ isEdit: true, data: driver, id: 'd1' });
 
+    // Assert
     expect(component.isEdit).toBe(true);
     expect(component.data).toBe(driver);
     expect(component.id).toBe('d1');
   });
 
-  it('falls back to defaults when dialog data omits fields', () => {
+  it('should fall back to defaults when dialog data omits fields', () => {
+    // Act
     const component = createComponent({});
 
+    // Assert
     expect(component.isEdit).toBe(false);
     expect(component.data).toEqual({});
     expect(component.id).toBeNull();
   });
 
-  it('sets the add title on init when not editing', () => {
+  it('should set the add title when ngOnInit is called while not editing', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.title).toBe('Adicionar Motorista');
   });
 
-  it('sets the edit title on init when editing', () => {
+  it('should set the edit title when ngOnInit is called while editing', () => {
+    // Arrange
     const component = createComponent({ isEdit: true, data: {}, id: 'd1' });
+
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.title).toBe('Editar Motorista');
   });
 
-  it('closes the dialog with null when close() is called', () => {
+  it('should close the dialog with null when close is called', () => {
+    // Arrange
     const component = createComponent(null);
+
+    // Act
     component.close();
 
+    // Assert
     expect(dialogRefMock.close).toHaveBeenCalledWith(null);
   });
 });

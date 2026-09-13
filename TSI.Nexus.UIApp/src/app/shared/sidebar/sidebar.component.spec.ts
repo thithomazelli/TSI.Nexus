@@ -58,47 +58,66 @@ describe('SidebarComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('resolves simple module flags directly from FeatureFlagService.isEnabled()', () => {
+  it('should resolve simple module flags directly from FeatureFlagService.isEnabled()', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act / Assert
     expect(component.isFleetModuleEnabled()).toBe(true);
     expect(component.isQuotesModuleEnabled()).toBe(true);
     expect(component.isSalesOrdersModuleEnabled()).toBe(true);
     expect(component.isPurchaseOrdersModuleEnabled()).toBe(true);
   });
 
-  it('combines group + entity flags for VehicleMaintenance/FuelLog/Agenda', () => {
+  it('should combine group + entity flags for VehicleMaintenance/FuelLog/Agenda', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act / Assert
     expect(component.isVehicleMaintenanceEnabled()).toBe(true);
     expect(component.isFuelLogEnabled()).toBe(true);
     expect(component.isAgendaModuleEnabled()).toBe(true);
   });
 
-  it('disables VehicleMaintenance/FuelLog when the Fleet group is off, even if the entity is on', () => {
+  it('should disable VehicleMaintenance/FuelLog when the Fleet group is off even if the entity is on', () => {
+    // Arrange
     const component = createComponent(
       new Set([FeatureToggleKeys.VehicleMaintenance, FeatureToggleKeys.FuelLog]),
     );
+
+    // Act / Assert
     expect(component.isVehicleMaintenanceEnabled()).toBe(false);
     expect(component.isFuelLogEnabled()).toBe(false);
   });
 
-  it('disables Agenda when only one of the group/entity flags is on', () => {
+  it('should disable Agenda when only one of the group/entity flags is on', () => {
+    // Arrange
     const groupOnly = createComponent(new Set([FeatureToggleKeys.AgendaModule]));
-    expect(groupOnly.isAgendaModuleEnabled()).toBe(false);
-
     const entityOnly = createComponent(new Set([FeatureToggleKeys.Event]));
+
+    // Act / Assert
+    expect(groupOnly.isAgendaModuleEnabled()).toBe(false);
     expect(entityOnly.isAgendaModuleEnabled()).toBe(false);
   });
 
-  it('isAdmin/isMaster reflect the current user roles once user$ emits', () => {
+  it('should reflect the current user roles when user$ emits', () => {
+    // Arrange
     const component = createComponent();
     expect(component.isAdmin()).toBe(false);
     expect(component.isMaster()).toBe(false);
 
+    // Act
     user$.next({ roles: ['Admin'] } as unknown as User);
+
+    // Assert
     expect(component.isAdmin()).toBe(true);
     expect(component.isMaster()).toBe(false);
 
@@ -107,24 +126,33 @@ describe('SidebarComponent', () => {
     expect(component.isMaster()).toBe(true);
   });
 
-  it('isAdmin/isMaster are false when there is no user', () => {
+  it('should return false from isAdmin/isMaster when there is no user', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
     user$.next(null);
 
+    // Assert
     expect(component.isAdmin()).toBe(false);
     expect(component.isMaster()).toBe(false);
   });
 
-  it('isAdmin/isMaster are false when the user has no roles array', () => {
+  it('should return false from isAdmin/isMaster when the user has no roles array', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
     user$.next({} as User);
 
+    // Assert
     expect(component.isAdmin()).toBe(false);
     expect(component.isMaster()).toBe(false);
   });
 
   describe('onSidebarMenuClick', () => {
-    it('closes the mobile sidebar when a nav-link is clicked', () => {
+    it('should close the mobile sidebar when a nav-link is clicked', () => {
+      // Arrange
       const component = createComponent();
       Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });
       document.body.classList.add('sidebar-open');
@@ -132,13 +160,16 @@ describe('SidebarComponent', () => {
       link.classList.add('nav-link');
       document.body.appendChild(link);
 
+      // Act
       component.onSidebarMenuClick({ target: link } as unknown as MouseEvent);
 
+      // Assert
       expect(document.body.classList.contains('sidebar-open')).toBe(false);
       document.body.removeChild(link);
     });
 
-    it('does nothing on desktop widths', () => {
+    it('should do nothing on desktop widths', () => {
+      // Arrange
       const component = createComponent();
       Object.defineProperty(window, 'innerWidth', { value: 1200, configurable: true });
       document.body.classList.add('sidebar-open');
@@ -146,22 +177,27 @@ describe('SidebarComponent', () => {
       link.classList.add('nav-link');
       document.body.appendChild(link);
 
+      // Act
       component.onSidebarMenuClick({ target: link } as unknown as MouseEvent);
 
+      // Assert
       expect(document.body.classList.contains('sidebar-open')).toBe(true);
       document.body.removeChild(link);
       document.body.classList.remove('sidebar-open');
     });
 
-    it('does nothing when the click target is not inside a nav-link', () => {
+    it('should do nothing when the click target is not inside a nav-link', () => {
+      // Arrange
       const component = createComponent();
       Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });
       document.body.classList.add('sidebar-open');
       const span = document.createElement('span');
       document.body.appendChild(span);
 
+      // Act
       component.onSidebarMenuClick({ target: span } as unknown as MouseEvent);
 
+      // Assert
       expect(document.body.classList.contains('sidebar-open')).toBe(true);
       document.body.removeChild(span);
       document.body.classList.remove('sidebar-open');
@@ -169,7 +205,10 @@ describe('SidebarComponent', () => {
   });
 
   describe('ngAfterViewInit', () => {
-    function buildNavItem(withTreeview: boolean, menuOpen: boolean): { root: HTMLElement; link: HTMLElement; submenu: HTMLElement | null } {
+    function buildNavItem(
+      withTreeview: boolean,
+      menuOpen: boolean,
+    ): { root: HTMLElement; link: HTMLElement; submenu: HTMLElement | null } {
       const root = document.createElement('div');
       const navItem = document.createElement('li');
       navItem.classList.add('nav-item');
@@ -189,7 +228,8 @@ describe('SidebarComponent', () => {
       return { root, link, submenu };
     }
 
-    it('does nothing when a nav-item link has no sibling element at all', () => {
+    it('should do nothing when a nav-item link has no sibling element at all', () => {
+      // Arrange
       const root = document.createElement('div');
       const navItem = document.createElement('li');
       navItem.classList.add('nav-item');
@@ -198,45 +238,58 @@ describe('SidebarComponent', () => {
       root.appendChild(navItem);
       const component = createComponent(undefined, root);
 
+      // Act / Assert
       expect(() => component.ngAfterViewInit()).not.toThrow();
       expect(rendererMock.listen).not.toHaveBeenCalled();
     });
 
-    it('does nothing when the sibling element is not a nav-treeview', () => {
+    it('should do nothing when the sibling element is not a nav-treeview', () => {
+      // Arrange
       const { root } = buildNavItem(false, false);
       const component = createComponent(undefined, root);
 
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       expect(rendererMock.listen).not.toHaveBeenCalled();
     });
 
-    it('sets the initial expanded style when the parent already has menu-open', () => {
+    it('should set the initial expanded style when the parent already has menu-open', () => {
+      // Arrange
       const { root, submenu } = buildNavItem(true, true);
       const component = createComponent(undefined, root);
 
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'display', 'block');
       expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'opacity', '1');
     });
 
-    it('sets the initial collapsed style when the parent has no menu-open', () => {
+    it('should set the initial collapsed style when the parent has no menu-open', () => {
+      // Arrange
       const { root, submenu } = buildNavItem(true, false);
       const component = createComponent(undefined, root);
 
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'display', 'none');
       expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'opacity', '0');
     });
 
-    it('registers a click listener on the link and tracks it for cleanup', () => {
+    it('should register a click listener on the link and track it for cleanup', () => {
+      // Arrange
       const { root, link } = buildNavItem(true, false);
       const component = createComponent(undefined, root);
 
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       expect(rendererMock.listen).toHaveBeenCalledWith(link, 'click', expect.any(Function));
       expect((component as any).listeners.length).toBe(1);
     });
@@ -260,7 +313,13 @@ describe('SidebarComponent', () => {
           return vi.fn();
         });
         component.ngAfterViewInit();
-        return { component, link, submenu, getClickHandler: () => clickHandler, getTransitionHandler: () => transitionHandler };
+        return {
+          component,
+          link,
+          submenu,
+          getClickHandler: () => clickHandler,
+          getTransitionHandler: () => transitionHandler,
+        };
       }
 
       afterEach(() => {
@@ -268,62 +327,90 @@ describe('SidebarComponent', () => {
         vi.useRealTimers();
       });
 
-      it('collapses via the transitionend event', () => {
+      it('should collapse via the transitionend event', () => {
+        // Arrange
         const { link, submenu, getClickHandler, getTransitionHandler } = setup();
         const preventDefault = vi.fn();
 
+        // Act
         getClickHandler()({ preventDefault, target: link } as unknown as Event);
 
+        // Assert
         expect(preventDefault).toHaveBeenCalled();
         expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'height', '120px');
 
-        getTransitionHandler()({ target: submenu, propertyName: 'height' } as unknown as TransitionEvent);
+        getTransitionHandler()({
+          target: submenu,
+          propertyName: 'height',
+        } as unknown as TransitionEvent);
 
         expect(rendererMock.removeClass).toHaveBeenCalledWith(expect.anything(), 'menu-open');
         expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'display', 'none');
       });
 
-      it('ignores a transitionend for a different element or property', () => {
+      it('should ignore a transitionend for a different element or property', () => {
+        // Arrange
         const { link, submenu, getClickHandler, getTransitionHandler } = setup();
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
         rendererMock.removeClass.mockClear();
 
-        getTransitionHandler()({ target: submenu, propertyName: 'opacity' } as unknown as TransitionEvent);
+        // Act
+        getTransitionHandler()({
+          target: submenu,
+          propertyName: 'opacity',
+        } as unknown as TransitionEvent);
         expect(rendererMock.removeClass).not.toHaveBeenCalled();
 
-        getTransitionHandler()({ target: document.createElement('div'), propertyName: 'height' } as unknown as TransitionEvent);
+        getTransitionHandler()({
+          target: document.createElement('div'),
+          propertyName: 'height',
+        } as unknown as TransitionEvent);
+
+        // Assert
         expect(rendererMock.removeClass).not.toHaveBeenCalled();
       });
 
-      it('collapses via the fallback timeout when no transitionend arrives', () => {
+      it('should collapse via the fallback timeout when no transitionend arrives', () => {
+        // Arrange
         const { link, submenu, getClickHandler } = setup();
-        getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
 
+        // Act
+        getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
         vi.advanceTimersByTime(400);
 
+        // Assert
         expect(rendererMock.removeClass).toHaveBeenCalledWith(expect.anything(), 'menu-open');
         expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'display', 'none');
       });
 
-      it('does not finish twice when both the transitionend and the fallback fire', () => {
+      it('should not finish twice when both the transitionend and the fallback fire', () => {
+        // Arrange
         const { link, submenu, getClickHandler, getTransitionHandler } = setup();
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
 
-        getTransitionHandler()({ target: submenu, propertyName: 'height' } as unknown as TransitionEvent);
+        // Act
+        getTransitionHandler()({
+          target: submenu,
+          propertyName: 'height',
+        } as unknown as TransitionEvent);
         rendererMock.removeClass.mockClear();
         vi.advanceTimersByTime(400);
 
+        // Assert
         expect(rendererMock.removeClass).not.toHaveBeenCalled();
       });
 
-      it('clears previous transition cleanups when clicked again', () => {
+      it('should clear previous transition cleanups when clicked again', () => {
+        // Arrange
         const { component, link, getClickHandler } = setup();
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
         expect((component as any).transitionCleanups.length).toBe(1);
         const firstCleanup = (component as any).transitionCleanups[0];
 
+        // Act
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
 
+        // Assert
         expect(firstCleanup).not.toBe((component as any).transitionCleanups[0]);
       });
     });
@@ -347,7 +434,13 @@ describe('SidebarComponent', () => {
           return vi.fn();
         });
         component.ngAfterViewInit();
-        return { component, link, submenu, getClickHandler: () => clickHandler, getTransitionHandler: () => transitionHandler };
+        return {
+          component,
+          link,
+          submenu,
+          getClickHandler: () => clickHandler,
+          getTransitionHandler: () => transitionHandler,
+        };
       }
 
       afterEach(() => {
@@ -355,86 +448,120 @@ describe('SidebarComponent', () => {
         vi.useRealTimers();
       });
 
-      it('expands via the transitionend event', () => {
+      it('should expand via the transitionend event', () => {
+        // Arrange
         const { link, submenu, getClickHandler, getTransitionHandler } = setup();
 
+        // Act
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
 
+        // Assert
         expect(rendererMock.addClass).toHaveBeenCalledWith(expect.anything(), 'menu-open');
         expect(rendererMock.setStyle).toHaveBeenCalledWith(submenu, 'height', '200px');
 
-        getTransitionHandler()({ target: submenu, propertyName: 'height' } as unknown as TransitionEvent);
+        getTransitionHandler()({
+          target: submenu,
+          propertyName: 'height',
+        } as unknown as TransitionEvent);
 
         expect(rendererMock.removeStyle).toHaveBeenCalledWith(submenu, 'height');
         expect(rendererMock.removeStyle).toHaveBeenCalledWith(submenu, 'transform');
       });
 
-      it('ignores a transitionend for a different element or property', () => {
+      it('should ignore a transitionend for a different element or property', () => {
+        // Arrange
         const { link, submenu, getClickHandler, getTransitionHandler } = setup();
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
         rendererMock.removeStyle.mockClear();
 
-        getTransitionHandler()({ target: submenu, propertyName: 'opacity' } as unknown as TransitionEvent);
+        // Act
+        getTransitionHandler()({
+          target: submenu,
+          propertyName: 'opacity',
+        } as unknown as TransitionEvent);
         expect(rendererMock.removeStyle).not.toHaveBeenCalled();
 
-        getTransitionHandler()({ target: document.createElement('div'), propertyName: 'height' } as unknown as TransitionEvent);
+        getTransitionHandler()({
+          target: document.createElement('div'),
+          propertyName: 'height',
+        } as unknown as TransitionEvent);
+
+        // Assert
         expect(rendererMock.removeStyle).not.toHaveBeenCalled();
       });
 
-      it('expands via the fallback timeout when no transitionend arrives', () => {
+      it('should expand via the fallback timeout when no transitionend arrives', () => {
+        // Arrange
         const { link, submenu, getClickHandler } = setup();
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
         rendererMock.removeStyle.mockClear();
 
+        // Act
         vi.advanceTimersByTime(400);
 
+        // Assert
         expect(rendererMock.removeStyle).toHaveBeenCalledWith(submenu, 'height');
       });
 
-      it('does not finish twice when both the transitionend and the fallback fire', () => {
+      it('should not finish twice when both the transitionend and the fallback fire', () => {
+        // Arrange
         const { link, submenu, getClickHandler, getTransitionHandler } = setup();
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
 
-        getTransitionHandler()({ target: submenu, propertyName: 'height' } as unknown as TransitionEvent);
+        // Act
+        getTransitionHandler()({
+          target: submenu,
+          propertyName: 'height',
+        } as unknown as TransitionEvent);
         rendererMock.removeStyle.mockClear();
         vi.advanceTimersByTime(400);
 
+        // Assert
         expect(rendererMock.removeStyle).not.toHaveBeenCalled();
       });
 
-      it('runs the pending open cleanup (unlisten + clearTimeout) when clicked again before it settles', () => {
+      it('should run the pending open cleanup (unlisten + clearTimeout) when clicked again before it settles', () => {
+        // Arrange
         const { component, link, getClickHandler } = setup();
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
         expect((component as any).transitionCleanups.length).toBe(1);
 
+        // Act
         // parentElement now has menu-open (added synchronously by the first click), so this
         // second click takes the CLOSE branch, whose handler starts by invoking every pending
         // transitionCleanups entry - including the still-unresolved OPEN cleanup above.
         getClickHandler()({ preventDefault: vi.fn(), target: link } as unknown as Event);
 
+        // Assert
         expect(rendererMock.listen).toHaveBeenCalled();
       });
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('cleans up registered listeners and transition cleanups without throwing', () => {
+    it('should clean up registered listeners and transition cleanups without throwing', () => {
+      // Arrange
       const component = createComponent();
       const listenerUnsub = vi.fn();
       const transitionCleanup = vi.fn();
       (component as any).listeners = [listenerUnsub];
       (component as any).transitionCleanups = [transitionCleanup];
 
+      // Act
       component.ngOnDestroy();
 
+      // Assert
       expect(listenerUnsub).toHaveBeenCalled();
       expect(transitionCleanup).toHaveBeenCalled();
       expect((component as any).listeners).toEqual([]);
       expect((component as any).transitionCleanups).toEqual([]);
     });
 
-    it('does not throw when there is nothing registered', () => {
+    it('should not throw when there is nothing registered', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });

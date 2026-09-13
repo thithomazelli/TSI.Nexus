@@ -1,5 +1,11 @@
 import { of, throwError } from 'rxjs';
-import { AlertConfig, AlertConfigService, NotificationService, ResponseStatus, TranslationService } from '@nexus/core';
+import {
+  AlertConfig,
+  AlertConfigService,
+  NotificationService,
+  ResponseStatus,
+  TranslationService,
+} from '@nexus/core';
 import { AlertConfigsComponent } from './alert-configs.component';
 
 describe('AlertConfigsComponent', () => {
@@ -27,158 +33,221 @@ describe('AlertConfigsComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('loads all alert configs on init', () => {
+  it('should load all alert configs when ngOnInit is called', () => {
+    // Arrange
     const alerts = [{ key: 'a1' }] as AlertConfig[];
     const component = createComponent();
     alertConfigServiceMock.getAll.mockReturnValue(of({ data: alerts }));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.alerts).toBe(alerts);
     expect(component.loading).toBe(false);
   });
 
-  it('defaults to an empty list and stops loading when the response has no data', () => {
+  it('should default to an empty list and stop loading when the response has no data', () => {
+    // Arrange
     const component = createComponent();
     alertConfigServiceMock.getAll.mockReturnValue(of({ data: null }));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.alerts).toEqual([]);
     expect(component.loading).toBe(false);
   });
 
-  it('stops loading when the load request errors out', () => {
+  it('should stop loading when the load request errors out', () => {
+    // Arrange
     const component = createComponent();
     alertConfigServiceMock.getAll.mockReturnValue(throwError(() => new Error('boom')));
 
+    // Act
     component.ngOnInit();
 
+    // Assert
     expect(component.loading).toBe(false);
   });
 
   describe('toggle', () => {
-    it('does nothing when the alert has no key', () => {
+    it('should do nothing when the alert has no key', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.toggle({ key: '' } as AlertConfig);
 
+      // Assert
       expect(alertConfigServiceMock.setEnabled).not.toHaveBeenCalled();
     });
 
-    it('does nothing while another save is already in flight', () => {
+    it('should do nothing while another save is already in flight', () => {
+      // Arrange
       const component = createComponent();
       component.savingKey = 'other';
 
+      // Act
       component.toggle({ key: 'a1', enabled: false } as AlertConfig);
 
+      // Assert
       expect(alertConfigServiceMock.setEnabled).not.toHaveBeenCalled();
     });
 
-    it('flips enabled, calls the service, and applies the confirmed value on success', () => {
+    it('should flip enabled, call the service, and apply the confirmed value when the request succeeds', () => {
+      // Arrange
       const alert = { key: 'a1', enabled: false } as AlertConfig;
       const response = { status: ResponseStatus.Success, message: 'ok', data: { enabled: true } };
       const component = createComponent();
       alertConfigServiceMock.setEnabled.mockReturnValue(of(response));
 
+      // Act
       component.toggle(alert);
 
+      // Assert
       expect(alertConfigServiceMock.setEnabled).toHaveBeenCalledWith('a1', true);
       expect(alert.enabled).toBe(true);
       expect(component.savingKey).toBeNull();
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        response.status,
+        response.message,
+      );
     });
 
-    it('does not apply the response value when the backend reports a non-success status', () => {
+    it('should not apply the response value when the backend reports a non-success status', () => {
+      // Arrange
       const alert = { key: 'a1', enabled: false } as AlertConfig;
       const response = { status: ResponseStatus.Error, message: 'falhou', data: { enabled: true } };
       const component = createComponent();
       alertConfigServiceMock.setEnabled.mockReturnValue(of(response));
 
+      // Act
       component.toggle(alert);
 
+      // Assert
       expect(alert.enabled).toBe(false);
     });
 
-    it('shows a translated error notification and clears savingKey when the request errors out', () => {
+    it('should show a translated error notification and clear savingKey when the request errors out', () => {
+      // Arrange
       const alert = { key: 'a1', enabled: false } as AlertConfig;
       const component = createComponent();
       alertConfigServiceMock.setEnabled.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.toggle(alert);
 
+      // Assert
       expect(component.savingKey).toBeNull();
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'ALERT_CONFIGS.UPDATE_ERROR');
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        'Error',
+        'ALERT_CONFIGS.UPDATE_ERROR',
+      );
     });
   });
 
   describe('saveThreshold', () => {
-    it('does nothing when the alert has no key', () => {
+    it('should do nothing when the alert has no key', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.saveThreshold({ key: '', thresholdDays: 5 } as AlertConfig);
 
+      // Assert
       expect(alertConfigServiceMock.setThresholdDays).not.toHaveBeenCalled();
     });
 
-    it('does nothing when thresholdDays is missing or below 1', () => {
+    it('should do nothing when thresholdDays is missing or below 1', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.saveThreshold({ key: 'a1', thresholdDays: null } as unknown as AlertConfig);
       component.saveThreshold({ key: 'a1', thresholdDays: 0 } as AlertConfig);
 
+      // Assert
       expect(alertConfigServiceMock.setThresholdDays).not.toHaveBeenCalled();
     });
 
-    it('does nothing while another save is already in flight', () => {
+    it('should do nothing while another save is already in flight', () => {
+      // Arrange
       const component = createComponent();
       component.savingKey = 'other';
 
+      // Act
       component.saveThreshold({ key: 'a1', thresholdDays: 5 } as AlertConfig);
 
+      // Assert
       expect(alertConfigServiceMock.setThresholdDays).not.toHaveBeenCalled();
     });
 
-    it('saves the threshold and applies the confirmed value on success', () => {
+    it('should save the threshold and apply the confirmed value when the request succeeds', () => {
+      // Arrange
       const alert = { key: 'a1', thresholdDays: 5 } as AlertConfig;
-      const response = { status: ResponseStatus.Success, message: 'ok', data: { thresholdDays: 7 } };
+      const response = {
+        status: ResponseStatus.Success,
+        message: 'ok',
+        data: { thresholdDays: 7 },
+      };
       const component = createComponent();
       alertConfigServiceMock.setThresholdDays.mockReturnValue(of(response));
 
+      // Act
       component.saveThreshold(alert);
 
+      // Assert
       expect(alertConfigServiceMock.setThresholdDays).toHaveBeenCalledWith('a1', 5);
       expect(alert.thresholdDays).toBe(7);
       expect(component.savingKey).toBeNull();
     });
 
-    it('shows a translated error notification when the request errors out', () => {
+    it('should show a translated error notification when the request errors out', () => {
+      // Arrange
       const alert = { key: 'a1', thresholdDays: 5 } as AlertConfig;
       const component = createComponent();
       alertConfigServiceMock.setThresholdDays.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.saveThreshold(alert);
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'Error',
         'ALERT_CONFIGS.UPDATE_THRESHOLD_ERROR',
       );
     });
 
-    it('does not apply the response value when the backend reports a non-success status', () => {
+    it('should not apply the response value when the backend reports a non-success status', () => {
+      // Arrange
       const alert = { key: 'a1', thresholdDays: 5 } as AlertConfig;
-      const response = { status: ResponseStatus.Error, message: 'falhou', data: { thresholdDays: 7 } };
+      const response = {
+        status: ResponseStatus.Error,
+        message: 'falhou',
+        data: { thresholdDays: 7 },
+      };
       const component = createComponent();
       alertConfigServiceMock.setThresholdDays.mockReturnValue(of(response));
 
+      // Act
       component.saveThreshold(alert);
 
+      // Assert
       expect(alert.thresholdDays).toBe(5);
-      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(response.status, response.message);
+      expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
+        response.status,
+        response.message,
+      );
     });
   });
 });

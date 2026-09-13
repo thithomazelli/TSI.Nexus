@@ -14,16 +14,23 @@ describe('ServiceOrderService', () => {
     return TestBed.inject(ServiceOrderService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getByDriver hits the expected endpoint', () => {
+  it('should hit the expected endpoint when getByDriver is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getByDriver('d1');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('serviceorders/getByDriver/d1');
   });
 });
