@@ -73,56 +73,80 @@ describe('UserFormComponent', () => {
     localStorage.clear();
   });
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the add-mode form (no password field visible when editing later)', () => {
+    it('should include a password field in the form when adding', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.form.get('password')).not.toBeNull();
     });
 
-    it('detects a privileged viewer (Admin/Master)', () => {
+    it('should detect a privileged viewer when the role is Admin', () => {
+      // Arrange
       const component = createComponent({ roles: ['Admin'] });
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isPrivilegedViewer).toBe(true);
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('treats a non-privileged viewer as such', () => {
+    it('should treat the viewer as non-privileged when the role is User', () => {
+      // Arrange
       const component = createComponent({ roles: ['User'] });
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isPrivilegedViewer).toBe(false);
     });
 
-    it('treats a viewer with no roles at all as non-privileged', () => {
+    it('should treat the viewer as non-privileged when there are no roles at all', () => {
+      // Arrange
       const component = createComponent({});
+
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isPrivilegedViewer).toBe(false);
     });
   });
 
   describe('ngOnChanges', () => {
-    it('patches the form when data changes', () => {
+    it('should patch the form when data changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({
         data: { currentValue: { firstName: 'Ana' }, firstChange: false } as any,
       });
 
+      // Assert
       expect(component.form.value.firstName).toBe('Ana');
     });
 
-    it('does nothing for a data change when the form does not exist yet', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() =>
         component.ngOnChanges({
           data: { currentValue: { firstName: 'Ana' }, firstChange: false } as any,
@@ -130,35 +154,45 @@ describe('UserFormComponent', () => {
       ).not.toThrow();
     });
 
-    it('reinitializes the form when isEdit changes after the first change', () => {
+    it('should reinitialize the form when isEdit changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.isEdit = true;
 
+      // Act
       component.ngOnChanges({ isEdit: { firstChange: false } as any });
 
+      // Assert
       expect(component.form.get('id')).not.toBeNull();
     });
 
-    it('does not reinitialize on the first isEdit change', () => {
+    it('should not reinitialize the form when isEdit changes on the first change', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.form;
 
+      // Act
       component.ngOnChanges({ isEdit: { firstChange: true } as any });
 
+      // Assert
       expect(component.form).toBe(before);
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('does not throw when there is no active timer', () => {
+    it('should not throw when there is no active timer', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
 
-    it('clears the resend-email timer when active', () => {
+    it('should clear the resend-email timer when it is active', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -168,26 +202,32 @@ describe('UserFormComponent', () => {
       );
       component.resendEmailConfirmation();
 
+      // Act
       component.ngOnDestroy();
 
+      // Assert
       expect(() => vi.advanceTimersByTime(2000)).not.toThrow();
       vi.useRealTimers();
     });
   });
 
   describe('submit', () => {
-    it('marks all as touched and returns null when the form is invalid', () => {
+    it('should mark all fields as touched and return null when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       let result: unknown;
 
+      // Act
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.form.get('firstName')!.touched).toBe(true);
     });
 
-    it('adds a new user and calls savePage on success (non-modal, add mode)', () => {
+    it('should add a new user and navigate to it when the save succeeds outside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.patchValue({
@@ -200,13 +240,16 @@ describe('UserFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok', data: { id: 'u1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(userServiceMock.add).toHaveBeenCalled();
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/users/u1');
     });
 
-    it('updates an existing user, merging the raw value into data before saving', () => {
+    it('should update an existing user and merge the raw value into data when saving', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       const data = { id: 'u1', firstName: 'Old' } as User;
@@ -217,8 +260,10 @@ describe('UserFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Salvo', data: { id: 'u1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(userServiceMock.update).toHaveBeenCalled();
       // Object.assign mutates the original `data` object synchronously, before the (also
       // synchronous, via `of`) response replaces `component.data` with the server's copy - so the
@@ -230,7 +275,8 @@ describe('UserFormComponent', () => {
       );
     });
 
-    it('shows the response message and does not save when the backend reports a business error', () => {
+    it('should show the response message and not navigate when the backend reports a business error', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.form.patchValue({
@@ -243,8 +289,10 @@ describe('UserFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'E-mail já cadastrado', data: null }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'E-mail já cadastrado',
@@ -252,7 +300,8 @@ describe('UserFormComponent', () => {
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('shows a generic error notification when the save request errors', () => {
+    it('should show a generic error notification when the save request errors', () => {
+      // Arrange
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
@@ -266,8 +315,10 @@ describe('UserFormComponent', () => {
         });
         userServiceMock.add.mockReturnValue(throwError(() => new Error('fail')));
 
+        // Act
         component.submit().subscribe({ error: () => {} });
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           'error',
           'Erro ao salvar',
@@ -277,7 +328,8 @@ describe('UserFormComponent', () => {
       }
     });
 
-    it('closes the dialog via saveModal when isModal is true', () => {
+    it('should close the dialog and show a notification when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.dialogRef = { close: vi.fn() } as unknown as MatDialogRef<UserDetailsModalComponent>;
@@ -292,35 +344,44 @@ describe('UserFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'ok', data: { id: 'u1' } }),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(component.dialogRef.close).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'ok', ResponseStatus.Success);
     });
   });
 
   describe('cancel', () => {
-    it('hides the modal when isModal is true', () => {
+    it('should hide the modal when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.dialogRef = {} as MatDialogRef<UserDetailsModalComponent>;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(component.dialogRef);
     });
 
-    it('navigates back to the list when isModal is false', () => {
+    it('should navigate back to the list when isModal is false', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/users');
     });
   });
 
   describe('remove', () => {
-    it('deletes the user and shows a success notification (modal)', async () => {
+    it('should delete the user and show a success notification when isModal is true', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.data = { id: 'u1' } as User;
@@ -329,10 +390,12 @@ describe('UserFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(userServiceMock.delete).toHaveBeenCalledWith(component.data);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -341,7 +404,8 @@ describe('UserFormComponent', () => {
       );
     });
 
-    it('navigates back to the list on a successful delete (non-modal)', async () => {
+    it('should navigate back to the list when the delete succeeds outside a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'u1' } as User;
@@ -350,14 +414,17 @@ describe('UserFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/users');
     });
 
-    it('does not navigate when the delete response is not a success (non-modal)', async () => {
+    it('should not navigate when the delete response is not a success', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'u1' } as User;
@@ -366,14 +433,17 @@ describe('UserFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falha' }),
       );
 
+      // Act
       component.remove();
       await Promise.resolve();
       await Promise.resolve();
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('shows a generic error notification when the delete request errors', async () => {
+    it('should show a generic error notification when the delete request errors', async () => {
+      // Arrange
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
@@ -382,10 +452,12 @@ describe('UserFormComponent', () => {
         modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: true });
         userServiceMock.delete.mockReturnValue(throwError(() => new Error('fail')));
 
+        // Act
         component.remove();
         await Promise.resolve();
         await Promise.resolve();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('error', 'Erro ao remover');
 
         await new Promise((resolve) => setTimeout(resolve, 0));
@@ -394,14 +466,17 @@ describe('UserFormComponent', () => {
       }
     });
 
-    it('does nothing further when cancelled and not a modal', async () => {
+    it('should do nothing further when the confirmation is cancelled and not a modal', async () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       modalServiceMock.showSweetConfirmation.mockResolvedValue({ isConfirmed: false });
 
+      // Act
       component.remove();
       await Promise.resolve();
 
+      // Assert
       expect(userServiceMock.delete).not.toHaveBeenCalled();
       expect(modalServiceMock.showTemplateModal).not.toHaveBeenCalled();
     });
@@ -414,17 +489,21 @@ describe('UserFormComponent', () => {
   });
 
   describe('resendEmailConfirmation', () => {
-    it('does nothing while already resending', () => {
+    it('should do nothing when already resending', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.isResendingEmail = true;
 
+      // Act
       component.resendEmailConfirmation();
 
+      // Assert
       expect(accountServiceMock.resendEmailConfirmation).not.toHaveBeenCalled();
     });
 
-    it('sends the confirmation email and shows a notification on success', () => {
+    it('should send the confirmation email and show a notification when it succeeds', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -433,8 +512,10 @@ describe('UserFormComponent', () => {
         of({ value: { title: 'Enviado', message: 'Confira seu e-mail' } }),
       );
 
+      // Act
       component.resendEmailConfirmation();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         true,
@@ -445,7 +526,8 @@ describe('UserFormComponent', () => {
       vi.useRealTimers();
     });
 
-    it('restarts the cooldown countdown when the request errors, eventually clearing it', () => {
+    it('should restart the cooldown countdown and eventually clear it when the request errors', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -453,17 +535,20 @@ describe('UserFormComponent', () => {
         throwError(() => new Error('fail')),
       );
 
+      // Act
       component.resendEmailConfirmation();
       expect(component.resendEmailCountdown).toBe(60);
 
       vi.advanceTimersByTime(60000);
 
+      // Assert
       expect(component.isResendingEmail).toBe(false);
       expect(component.resendEmailCountdown).toBe(0);
       vi.useRealTimers();
     });
 
-    it('restarts the cooldown countdown on complete, eventually clearing it', () => {
+    it('should restart the cooldown countdown and eventually clear it when the request completes', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
       component.ngOnInit();
@@ -471,33 +556,41 @@ describe('UserFormComponent', () => {
         of({ value: { title: '', message: '' } }),
       );
 
+      // Act
       component.resendEmailConfirmation();
       expect(component.resendEmailCountdown).toBe(60);
 
       vi.advanceTimersByTime(60000);
 
+      // Assert
       expect(component.isResendingEmail).toBe(false);
       vi.useRealTimers();
     });
   });
 
   describe('forgotPassword', () => {
-    it('does nothing when there is no email', () => {
+    it('should do nothing when there is no email', () => {
+      // Arrange
       const component = createComponent();
       component.data = {} as User;
 
+      // Act
       component.forgotPassword();
 
+      // Assert
       expect(accountServiceMock.forgotUsernameOrPassword).not.toHaveBeenCalled();
     });
 
-    it('shows a translated success notification when the email is sent', () => {
+    it('should show a translated success notification when the email is sent', () => {
+      // Arrange
       const component = createComponent();
       component.data = { email: 'a@b.com' } as User;
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(of({}));
 
+      // Act
       component.forgotPassword();
 
+      // Assert
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
         'ACCOUNT.RESET_PASSWORD.SENT_MESSAGE',
@@ -505,25 +598,31 @@ describe('UserFormComponent', () => {
       );
     });
 
-    it('shows the response error message on failure', () => {
+    it('should show the response error message when the request fails', () => {
+      // Arrange
       const component = createComponent();
       component.data = { email: 'a@b.com' } as User;
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(
         throwError(() => ({ error: 'Falha no envio' })),
       );
 
+      // Act
       component.forgotPassword();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('error', 'Falha no envio');
     });
 
-    it('falls back to a generic error message when the response has none', () => {
+    it('should fall back to a generic error message when the response has none', () => {
+      // Arrange
       const component = createComponent();
       component.data = { email: 'a@b.com' } as User;
       accountServiceMock.forgotUsernameOrPassword.mockReturnValue(throwError(() => ({})));
 
+      // Act
       component.forgotPassword();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         'error',
         'Erro ao enviar o e-mail.',
@@ -532,37 +631,47 @@ describe('UserFormComponent', () => {
   });
 
   describe('restoreResendEmailCooldown (private, via ngOnInit)', () => {
-    it('does nothing when there is no email yet', () => {
+    it('should do nothing when there is no email yet', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isResendingEmail).toBe(false);
     });
 
-    it('does nothing when there is no stored cooldown timestamp', () => {
+    it('should do nothing when there is no stored cooldown timestamp', () => {
+      // Arrange
       const component = createComponent();
       component.data = { email: 'a@b.com' } as User;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isResendingEmail).toBe(false);
     });
 
-    it('resumes the countdown when the stored cooldown has not expired', () => {
+    it('should resume the countdown when the stored cooldown has not expired', () => {
+      // Arrange
       vi.useFakeTimers();
       localStorage.setItem('resendEmailCooldown_a@b.com', Date.now().toString());
       const component = createComponent();
       component.data = { email: 'a@b.com' } as User;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isResendingEmail).toBe(true);
       expect(component.resendEmailCountdown).toBeGreaterThan(0);
       vi.useRealTimers();
     });
 
-    it('clears an already-expired stored cooldown', () => {
+    it('should clear an already-expired stored cooldown', () => {
+      // Arrange
       localStorage.setItem(
         'resendEmailCooldown_a@b.com',
         (Date.now() - 120000).toString(),
@@ -570,34 +679,43 @@ describe('UserFormComponent', () => {
       const component = createComponent();
       component.data = { email: 'a@b.com' } as User;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.isResendingEmail).toBe(false);
       expect(localStorage.getItem('resendEmailCooldown_a@b.com')).toBeNull();
     });
 
-    it('clears a pre-existing timer before restoring a fresh cooldown (called twice)', () => {
+    it('should clear a pre-existing timer when restoring the cooldown twice', () => {
+      // Arrange
       vi.useFakeTimers();
       localStorage.setItem('resendEmailCooldown_a@b.com', Date.now().toString());
       const component = createComponent();
       component.ngOnInit();
       component.form.patchValue({ email: 'a@b.com' });
 
+      // Act
       (component as any).restoreResendEmailCooldown();
+
+      // Assert
       expect(() => (component as any).restoreResendEmailCooldown()).not.toThrow();
 
       vi.useRealTimers();
     });
 
-    it('counts down to zero and clears state and storage', () => {
+    it('should count down to zero and clear state and storage when the cooldown elapses', () => {
+      // Arrange
       vi.useFakeTimers();
       localStorage.setItem('resendEmailCooldown_a@b.com', Date.now().toString());
       const component = createComponent();
       component.data = { email: 'a@b.com' } as User;
       component.ngOnInit();
 
+      // Act
       vi.advanceTimersByTime(61000);
 
+      // Assert
       expect(component.isResendingEmail).toBe(false);
       expect(component.resendEmailCountdown).toBe(0);
       expect(localStorage.getItem('resendEmailCooldown_a@b.com')).toBeNull();
@@ -606,11 +724,15 @@ describe('UserFormComponent', () => {
   });
 
   describe('resetResendEmailCooldown (private, direct)', () => {
-    it('clears a pre-existing timer before starting a new one (called twice)', () => {
+    it('should clear a pre-existing timer when called twice', () => {
+      // Arrange
       vi.useFakeTimers();
       const component = createComponent();
 
+      // Act
       (component as any).resetResendEmailCooldown();
+
+      // Assert
       expect(() => (component as any).resetResendEmailCooldown()).not.toThrow();
 
       vi.useRealTimers();
@@ -618,18 +740,24 @@ describe('UserFormComponent', () => {
   });
 
   describe('roleOptions / trackByOptionValue', () => {
-    it('exposes the Admin/User role options translated', () => {
+    it('should expose the Admin/User role options translated', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(component.roleOptions).toEqual([
         { label: 'USERS.ROLE_ADMIN', value: 'Admin' },
         { label: 'USERS.ROLE_USER', value: 'User' },
       ]);
     });
 
-    it('tracks options by their value', () => {
+    it('should track options by their value', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
+      // Assert
       expect(component.trackByOptionValue(0, { value: 'Admin', label: 'x' })).toBe('Admin');
     });
   });

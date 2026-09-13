@@ -65,70 +65,103 @@ describe('VehicleFormComponent', () => {
     component.form.patchValue(validRawValue());
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('exposes translated type and status options', () => {
+  it('should expose translated type and status options when instantiated', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act / Assert
     expect(component.typeOptions.length).toBe(5);
     expect(component.statusOptions.length).toBe(4);
   });
 
   describe('ngOnInit', () => {
-    it('builds a form without an id control when adding', () => {
+    it('should build a form without an id control when adding', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('id')).toBeNull();
     });
 
-    it('builds a form with an id control when editing', () => {
+    it('should build a form with an id control when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('id')).toBeTruthy();
     });
 
-    it('patches the form with the provided data', () => {
+    it('should patch the form with the provided data when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
       component.data = { plate: 'XYZ9876' } as Vehicle;
+
+      // Act
       component.ngOnInit();
+
+      // Assert
       expect(component.form.get('plate')!.value).toBe('XYZ9876');
     });
   });
 
   describe('ngOnChanges', () => {
-    it('patches the form when data changes to a new value after init', () => {
+    it('should patch the form when data changes to a new value after init', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       component.data = { plate: 'XYZ9876' } as Vehicle;
 
+      // Act
       component.ngOnChanges({ data: { currentValue: component.data } as never });
 
+      // Assert
       expect(component.form.get('plate')!.value).toBe('XYZ9876');
     });
 
-    it('does nothing when the changed input is not data', () => {
+    it('should do nothing when the changed input is not data', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       component.ngOnChanges({ isEdit: { currentValue: true } as never });
 
+      // Assert
       expect(component.form.get('plate')!.value).toBe('');
     });
 
-    it('does nothing when data has no currentValue', () => {
+    it('should do nothing when data has no currentValue', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act / Assert
       expect(() =>
         component.ngOnChanges({ data: { currentValue: null } as never }),
       ).not.toThrow();
       expect(component.form.get('plate')!.value).toBe('');
     });
 
-    it('does not throw when data changes before the form exists', () => {
+    it('should not throw when data changes before the form exists', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(() =>
         component.ngOnChanges({ data: { currentValue: { plate: 'XYZ9876' } } as never }),
       ).not.toThrow();
@@ -136,19 +169,23 @@ describe('VehicleFormComponent', () => {
   });
 
   describe('submit', () => {
-    it('marks the form as touched and returns null without saving when invalid', () => {
+    it('should mark the form as touched and return null without saving when the form is invalid', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       let result: unknown;
       component.submit().subscribe((r) => (result = r));
 
+      // Assert
       expect(result).toBeNull();
       expect(component.form.get('plate')!.touched).toBe(true);
       expect(vehicleServiceMock.add).not.toHaveBeenCalled();
     });
 
-    it('adds a new vehicle when not editing', () => {
+    it('should add a new vehicle when not editing', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
@@ -156,12 +193,15 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'v1' } } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(vehicleServiceMock.add).toHaveBeenCalled();
     });
 
-    it('merges the raw value into data before saving, and updates when editing', () => {
+    it('should merge the raw value into data and update when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isEdit = true;
       component.data = { id: 'v1' } as Vehicle;
@@ -171,30 +211,39 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'v1' } } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(vehicleServiceMock.update).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'v1', plate: 'ABC1234' }),
       );
     });
 
-    it('notifies without saving when the backend reports a business-rule failure', () => {
+    it('should notify without saving when the backend reports a business-rule failure', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       vehicleServiceMock.add.mockReturnValue(
-        of({ status: ResponseStatus.Error, message: 'Placa duplicada' } as WebApiResponse<Vehicle>),
+        of({
+          status: ResponseStatus.Error,
+          message: 'Placa duplicada',
+        } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'Placa duplicada',
       );
     });
 
-    it('saves via the modal path when isModal is true', () => {
+    it('should save via the modal path when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = { close: vi.fn() };
@@ -202,15 +251,22 @@ describe('VehicleFormComponent', () => {
       component.ngOnInit();
       fillValidForm(component);
       vehicleServiceMock.add.mockReturnValue(
-        of({ status: ResponseStatus.Success, data: { id: 'v1' }, message: 'OK' } as WebApiResponse<Vehicle>),
+        of({
+          status: ResponseStatus.Success,
+          data: { id: 'v1' },
+          message: 'OK',
+        } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
     });
 
-    it('saves via the page path when isModal is false', () => {
+    it('should save via the page path when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -219,19 +275,24 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, data: { id: 'v1' } } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/vehicles/v1');
     });
 
-    it('notifies an error when the save request errors', () => {
+    it('should notify an error when the save request errors', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       fillValidForm(component);
       vehicleServiceMock.add.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.submit().subscribe({ error: () => {} });
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'Erro ao salvar',
@@ -240,38 +301,48 @@ describe('VehicleFormComponent', () => {
   });
 
   describe('cancel', () => {
-    it('hides the modal when isModal is true', () => {
+    it('should hide the modal when isModal is true', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
     });
 
-    it('navigates back to the list when isModal is false', () => {
+    it('should navigate back to the list when isModal is false', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       component.cancel();
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/vehicles');
     });
   });
 
   describe('remove', () => {
-    it('does nothing without data', () => {
+    it('should do nothing when there is no data', () => {
+      // Arrange
       const component = createComponent();
       component.data = null;
 
+      // Act
       component.remove();
 
+      // Assert
       expect(vehicleServiceMock.delete).not.toHaveBeenCalled();
     });
 
-    it('deletes, hides the modal and navigates on success outside a modal', () => {
+    it('should delete, not hide the modal and navigate when the delete succeeds outside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'v1' } as Vehicle;
@@ -279,8 +350,10 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(modalServiceMock.hideModal).not.toHaveBeenCalled();
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
@@ -289,7 +362,8 @@ describe('VehicleFormComponent', () => {
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/vehicles');
     });
 
-    it('hides the modal and does not navigate on success inside a modal', () => {
+    it('should hide the modal and not navigate when the delete succeeds inside a modal', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = {};
@@ -299,13 +373,16 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(modalServiceMock.hideModal).toHaveBeenCalledWith(dialogRefMock);
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('does not navigate when the delete reports an error', () => {
+    it('should not navigate when the delete reports an error', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.data = { id: 'v1' } as Vehicle;
@@ -313,15 +390,18 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.remove();
 
+      // Assert
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('notifies an error when the delete request errors', async () => {
+    it('should notify an error when the delete request errors', async () => {
       // remove() subscribes with no error callback, so RxJS reports the error via a scheduled
       // setTimeout (see reportUnhandledError) after the tap side-effect below runs - silence that
       // reporting until the macrotask has actually fired before restoring the original hook.
+      // Arrange
       const originalOnUnhandledError = config.onUnhandledError;
       config.onUnhandledError = () => {};
       try {
@@ -329,8 +409,10 @@ describe('VehicleFormComponent', () => {
         component.data = { id: 'v1' } as Vehicle;
         vehicleServiceMock.delete.mockReturnValue(throwError(() => new Error('boom')));
 
+        // Act
         component.remove();
 
+        // Assert
         expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
           ResponseStatus.Error,
           'Erro ao remover',
@@ -344,7 +426,8 @@ describe('VehicleFormComponent', () => {
   });
 
   describe('saveModal (via submit)', () => {
-    it('shows a success notification with the edit wording when editing', () => {
+    it('should show a success notification with the edit wording when editing', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.isEdit = true;
@@ -355,8 +438,10 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK' } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         true,
         'VEHICLES.VEHICLE_UPDATED',
@@ -364,7 +449,8 @@ describe('VehicleFormComponent', () => {
       );
     });
 
-    it('shows a success notification with the create wording when adding', () => {
+    it('should show a success notification with the create wording when adding', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.ngOnInit();
@@ -373,8 +459,10 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK' } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(
         true,
         'VEHICLES.VEHICLE_ADDED',
@@ -382,7 +470,8 @@ describe('VehicleFormComponent', () => {
       );
     });
 
-    it('does not throw when there is no dialogRef to close', () => {
+    it('should not throw when there is no dialogRef to close', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       component.dialogRef = undefined;
@@ -392,12 +481,14 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Success, message: 'OK' } as WebApiResponse<Vehicle>),
       );
 
+      // Act / Assert
       expect(() => component.submit().subscribe()).not.toThrow();
     });
   });
 
   describe('savePage (via submit)', () => {
-    it('notifies without navigating when the save reports an error', () => {
+    it('should notify without navigating when the save reports an error', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
       component.ngOnInit();
@@ -406,8 +497,10 @@ describe('VehicleFormComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' } as WebApiResponse<Vehicle>),
       );
 
+      // Act
       component.submit().subscribe();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'Falhou',
@@ -415,15 +508,18 @@ describe('VehicleFormComponent', () => {
       expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
     });
 
-    it('notifies without navigating when adding a new vehicle fails (defensive branch)', () => {
+    it('should notify without navigating when adding a new vehicle fails (defensive branch)', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = false;
 
+      // Act
       (component as any).savePage({
         status: ResponseStatus.Error,
         message: 'Falhou',
       } as WebApiResponse<Vehicle>);
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
         'Falhou',
@@ -433,17 +529,20 @@ describe('VehicleFormComponent', () => {
   });
 
   describe('saveModal (defensive branch)', () => {
-    it('shows a failure notification when the status is not Success', () => {
+    it('should show a failure notification when the status is not Success', () => {
+      // Arrange
       const component = createComponent();
       component.isModal = true;
       const dialogRefMock = { close: vi.fn() };
       component.dialogRef = dialogRefMock as any;
 
+      // Act
       (component as any).saveModal({
         status: ResponseStatus.Error,
         message: 'Falhou',
       } as WebApiResponse<Vehicle>);
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalled();
       expect(modalServiceMock.showNotification).toHaveBeenCalledWith(false, '', 'Falhou');
     });

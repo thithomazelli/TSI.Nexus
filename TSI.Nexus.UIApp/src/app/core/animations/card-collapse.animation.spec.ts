@@ -1,12 +1,16 @@
 import { cardCollapseAnimation } from './card-collapse.animation';
 
 describe('cardCollapseAnimation', () => {
-  it('is registered under the cardCollapse trigger name', () => {
+  it('should be registered under the cardCollapse trigger name', () => {
+    // Act / Assert
     expect(cardCollapseAnimation.name).toBe('cardCollapse');
   });
 
-  it('defines both open and closed states with a transition between them', () => {
+  it('should define both open and closed states with a transition between them', () => {
+    // Act
     const definitions = cardCollapseAnimation.definitions;
+
+    // Assert
     expect(definitions.length).toBeGreaterThan(0);
   });
 });
