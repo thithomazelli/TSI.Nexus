@@ -53,26 +53,36 @@ describe('VehicleMaintenanceListComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('isTopLevelList', () => {
-    it('is true when there is no vehicleId', () => {
+    it('should return true when there is no vehicleId', () => {
+      // Arrange
       const component = createComponent();
+
+      // Assert
       expect(component.isTopLevelList).toBe(true);
     });
 
-    it('is false when a vehicleId is provided', () => {
+    it('should return false when a vehicleId is provided', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
+
+      // Assert
       expect(component.isTopLevelList).toBe(false);
     });
   });
 
   describe('statusMap', () => {
-    it('exposes all statuses with their translated labels and colors', () => {
+    it('should expose all statuses with their translated labels and colors', () => {
+      // Arrange
       const component = createComponent();
+
+      // Assert
       expect(component.statusMap['Scheduled']).toEqual({ label: 'VEHICLES.MAINTENANCE_SCHEDULED', color: 'info' });
       expect(component.statusMap['InProgress']).toEqual({ label: 'VEHICLES.MAINTENANCE_IN_PROGRESS', color: 'warning' });
       expect(component.statusMap['Completed']).toEqual({ label: 'VEHICLES.MAINTENANCE_COMPLETED', color: 'success' });
@@ -82,109 +92,140 @@ describe('VehicleMaintenanceListComponent', () => {
   });
 
   describe('pagedDataSource', () => {
-    it('delegates to vehicleMaintenanceService.getAllPaged', () => {
+    it('should delegate to vehicleMaintenanceService.getAllPaged when called', () => {
+      // Arrange
       const component = createComponent();
       const request = { page: 1 } as any;
       vehicleMaintenanceServiceMock.getAllPaged.mockReturnValue(of({ data: [], total: 0 }));
 
+      // Act
       component.pagedDataSource(request);
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.getAllPaged).toHaveBeenCalledWith(request);
     });
   });
 
   describe('ngOnInit', () => {
-    it('builds the column defs and does not load eagerly for the top-level list', () => {
+    it('should build the column defs and not load eagerly for the top-level list', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.columnDefs.length).toBeGreaterThan(0);
       expect(vehicleMaintenanceServiceMock.getAll).not.toHaveBeenCalled();
       expect(vehicleMaintenanceServiceMock.getByVehicle).not.toHaveBeenCalled();
     });
 
-    it('loads eagerly when embedded for a specific vehicle', () => {
+    it('should load eagerly when embedded for a specific vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.getByVehicle).toHaveBeenCalledWith('v1');
     });
 
-    it('rebuilds the column defs on language change', () => {
+    it('should rebuild the column defs when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).not.toBe(before);
     });
 
-    it('purges the grid cache on maintenanceChanged$ for the top-level list', () => {
+    it('should purge the grid cache on maintenanceChanged$ for the top-level list', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       maintenanceChanged$.next();
 
+      // Assert
       expect(gridRef.gridApi!.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('does not throw when maintenanceChanged$ fires without a gridRef', () => {
+    it('should not throw when maintenanceChanged$ fires without a gridRef', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Assert
       expect(() => maintenanceChanged$.next()).not.toThrow();
     });
 
-    it('reloads when embedded and maintenanceChanged$ fires', () => {
+    it('should reload when embedded and maintenanceChanged$ fires', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       component.ngOnInit();
       vehicleMaintenanceServiceMock.getByVehicle.mockClear();
 
+      // Act
       maintenanceChanged$.next();
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.getByVehicle).toHaveBeenCalledWith('v1');
     });
   });
 
   describe('ngOnChanges', () => {
-    it('reloads when vehicleId changes after the first change', () => {
+    it('should reload when vehicleId changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v2';
 
+      // Act
       component.ngOnChanges({ vehicleId: { firstChange: false } as any });
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.getByVehicle).toHaveBeenCalledWith('v2');
     });
 
-    it('does not reload on the first change', () => {
+    it('should not reload on the first change', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v2';
 
+      // Act
       component.ngOnChanges({ vehicleId: { firstChange: true } as any });
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.getByVehicle).not.toHaveBeenCalled();
     });
 
-    it('loads via getAll when vehicleId changes back to undefined', () => {
+    it('should load via getAll when vehicleId changes back to undefined', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = undefined;
 
+      // Act
       component.ngOnChanges({ vehicleId: { firstChange: false } as any });
 
+      // Assert
       expect(vehicleMaintenanceServiceMock.getAll).toHaveBeenCalled();
       expect(vehicleMaintenanceServiceMock.getByVehicle).not.toHaveBeenCalled();
     });
 
-    it('does nothing when vehicleId is not part of the change set', () => {
+    it('should do nothing when vehicleId is not part of the change set', () => {
+      // Arrange
       const component = createComponent();
 
+      // Assert
       expect(() => component.ngOnChanges({})).not.toThrow();
       expect(vehicleMaintenanceServiceMock.getByVehicle).not.toHaveBeenCalled();
       expect(vehicleMaintenanceServiceMock.getAll).not.toHaveBeenCalled();
@@ -192,41 +233,50 @@ describe('VehicleMaintenanceListComponent', () => {
   });
 
   describe('ngOnDestroy', () => {
-    it('stops reacting to language changes and maintenanceChanged$', () => {
+    it('should stop reacting to language changes and maintenanceChanged$ when destroyed', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
       component.ngOnInit();
 
+      // Act
       component.ngOnDestroy();
       const before = component.columnDefs;
       language$.next('en');
       maintenanceChanged$.next();
 
+      // Assert
       expect(component.columnDefs).toBe(before);
       expect(gridRef.gridApi!.purgeInfiniteCache).not.toHaveBeenCalled();
     });
   });
 
   describe('openModal', () => {
-    it('uses the initialState data vehicleId when present', () => {
+    it('should use the initialState data vehicleId when present', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
 
+      // Act
       component.openModal({ data: { id: 'm1', vehicleId: 'other-vehicle' } });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ vehicleId: 'other-vehicle' }),
       );
     });
 
-    it('falls back to the component vehicleId when initialState has none', () => {
+    it('should fall back to the component vehicleId when initialState has none', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
 
+      // Act
       component.openModal({});
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ vehicleId: 'v1' }),
@@ -235,7 +285,8 @@ describe('VehicleMaintenanceListComponent', () => {
   });
 
   describe('deleteMaintenance', () => {
-    it('purges the grid cache on success for the top-level list', () => {
+    it('should purge the grid cache when the delete succeeds for the top-level list', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -243,8 +294,10 @@ describe('VehicleMaintenanceListComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteMaintenance({ id: 'm1' } as VehicleMaintenance);
 
+      // Assert
       expect(gridRef.gridApi!.purgeInfiniteCache).toHaveBeenCalled();
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -254,7 +307,8 @@ describe('VehicleMaintenanceListComponent', () => {
       );
     });
 
-    it('removes the row locally on success when embedded for a vehicle', () => {
+    it('should remove the row locally when the delete succeeds while embedded for a vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       component.rowData = [{ id: 'm1' } as VehicleMaintenance, { id: 'm2' } as VehicleMaintenance];
@@ -262,12 +316,15 @@ describe('VehicleMaintenanceListComponent', () => {
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteMaintenance({ id: 'm1' } as VehicleMaintenance);
 
+      // Assert
       expect(component.rowData).toEqual([{ id: 'm2' }]);
     });
 
-    it('does not purge or filter rows when the delete reports an error', () => {
+    it('should not purge the cache or filter rows when the delete reports an error', () => {
+      // Arrange
       const component = createComponent();
       const gridRef = mockGridRef();
       (component as any).gridRef = gridRef;
@@ -276,8 +333,10 @@ describe('VehicleMaintenanceListComponent', () => {
         of({ status: ResponseStatus.Error, message: 'Falhou' }),
       );
 
+      // Act
       component.deleteMaintenance({ id: 'm1' } as VehicleMaintenance);
 
+      // Assert
       expect(gridRef.gridApi!.purgeInfiniteCache).not.toHaveBeenCalled();
       expect(component.rowData).toEqual([{ id: 'm1' }]);
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith('', 'Falhou', ResponseStatus.Error);
@@ -285,11 +344,14 @@ describe('VehicleMaintenanceListComponent', () => {
   });
 
   describe('refresh', () => {
-    it('shows a notification without reloading for the top-level list', () => {
+    it('should show a notification without reloading for the top-level list', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.refresh();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         'VEHICLES.MAINTENANCES_REFRESHED',
@@ -297,32 +359,39 @@ describe('VehicleMaintenanceListComponent', () => {
       expect(vehicleMaintenanceServiceMock.getAll).not.toHaveBeenCalled();
     });
 
-    it('reloads with the refresh notification when embedded for a vehicle', () => {
+    it('should reload with the refresh notification when embedded for a vehicle', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       vehicleMaintenanceServiceMock.getByVehicle.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'Atualizado', data: [] }),
       );
 
+      // Act
       component.refresh();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(ResponseStatus.Success, 'Atualizado');
     });
   });
 
   describe('load (private, via ngOnInit/refresh)', () => {
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       vehicleMaintenanceServiceMock.getByVehicle.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       vehicleMaintenanceServiceMock.getByVehicle.mockReturnValue({
@@ -331,73 +400,89 @@ describe('VehicleMaintenanceListComponent', () => {
         }),
       } as any);
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
 
   describe('column defs', () => {
-    it('renders description as a link', () => {
+    it('should render description as a link', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'description')!;
 
+      // Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'Troca de óleo' } as any)).toContain('Troca de óleo');
       expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toContain('></a>');
     });
 
-    it('renders vehicle.plate as a link and hides the column when embedded', () => {
+    it('should render vehicle.plate as a link and hide the column when embedded', () => {
+      // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'vehicle.plate')!;
 
+      // Assert
       expect(column.hide).toBe(true);
       expect((column.cellRenderer as (p: any) => string)({ value: 'ABC-1234' } as any)).toContain('ABC-1234');
       expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toContain('></a>');
     });
 
-    it('shows the vehicle.plate column for the top-level list', () => {
+    it('should show the vehicle.plate column for the top-level list', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'vehicle.plate')!;
 
+      // Assert
       expect(column.hide).toBe(false);
     });
 
     describe('type column', () => {
-      it('renders Preventive with the correct translated label', () => {
+      it('should render Preventive with the correct translated label', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+        // Assert
         expect((column.cellRenderer as (p: any) => string)({ value: 'Preventive' } as any)).toContain('VEHICLES.PREVENTIVE');
       });
 
-      it('renders any non-Preventive value as Corrective', () => {
+      it('should render any non-Preventive value as Corrective', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+        // Assert
         expect((column.cellRenderer as (p: any) => string)({ value: 'Corrective' } as any)).toContain('VEHICLES.CORRECTIVE');
         expect((column.cellRenderer as (p: any) => string)({ value: null } as any)).toContain('VEHICLES.CORRECTIVE');
       });
     });
 
-    it('formats scheduledDate as a BR date', () => {
+    it('should format scheduledDate as a BR date', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'scheduledDate')!;
 
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: '2024-01-15' } as any)).toContain('/');
     });
 
-    it('formats cost as BRL currency', () => {
+    it('should format cost as BRL currency', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'cost')!;
 
+      // Assert
       expect((column.valueFormatter as (p: any) => string)({ value: 250 } as any)).toContain('R$');
     });
 
@@ -408,36 +493,45 @@ describe('VehicleMaintenanceListComponent', () => {
         ['Completed', 'success', 'VEHICLES.MAINTENANCE_COMPLETED'],
         ['Overdue', 'danger', 'VEHICLES.MAINTENANCE_OVERDUE'],
         ['Cancelled', 'secondary', 'VEHICLES.MAINTENANCE_CANCELLED'],
-      ])('renders status %s with the %s color and translated label', (status, color, label) => {
+      ])('should render status %s with the %s color and translated label', (status, color, label) => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: status } as any);
 
+        // Assert
         expect(html).toContain(`bg-${color}`);
         expect(html).toContain(label);
       });
 
-      it('falls back to a secondary badge with the raw value for an unknown status', () => {
+      it('should fall back to a secondary badge with the raw value for an unknown status', () => {
+        // Arrange
         const component = createComponent();
         component.ngOnInit();
         const column = component.columnDefs.find((c) => c.field === 'status')!;
 
+        // Act
         const html = (column.cellRenderer as (p: any) => string)({ value: 'Unknown' } as any);
 
+        // Assert
         expect(html).toContain('bg-secondary');
         expect(html).toContain('Unknown');
       });
     });
 
-    it('renders the actions column with view, edit and delete buttons', () => {
+    it('should render the actions column with view, edit and delete buttons', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as (p: any) => string)({} as any);
 
+      // Assert
       expect(html).toContain('data-action="view"');
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');

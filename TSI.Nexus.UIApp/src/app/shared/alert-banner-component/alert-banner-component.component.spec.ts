@@ -18,16 +18,22 @@ describe('AlertBannerComponentComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the status messages and rebuilds them when the language changes', () => {
+    it('should build the status messages and rebuild them when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.status = 'Pending';
       component.ngOnInit();
 
+      // Act / Assert
       expect(component.statusMessage).toBe('ALERT_BANNER.OPEN_STATUS');
 
       translationServiceMock.instant.mockImplementation((key: string) =>
@@ -38,7 +44,8 @@ describe('AlertBannerComponentComponent', () => {
       expect(component.statusMessage).toBe('traduzido');
     });
 
-    it('uses the feminine wording when the entity is a transaction', () => {
+    it('should use the feminine wording when the entity is a transaction', () => {
+      // Arrange
       const component = createComponent();
       translationServiceMock.instant.mockImplementation((key: string) =>
         key === 'TRANSACTIONS.SINGULAR' ? 'Transação' : key,
@@ -46,12 +53,15 @@ describe('AlertBannerComponentComponent', () => {
       component.entity = 'Transação';
       component.status = 'Approved';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.statusMessage).toBe('ALERT_BANNER.COMPLETED_FEM');
     });
 
-    it('uses the masculine wording for any other entity', () => {
+    it('should use the masculine wording for any other entity', () => {
+      // Arrange
       const component = createComponent();
       translationServiceMock.instant.mockImplementation((key: string) =>
         key === 'TRANSACTIONS.SINGULAR' ? 'Transação' : key,
@@ -59,24 +69,30 @@ describe('AlertBannerComponentComponent', () => {
       component.entity = 'Pedido';
       component.status = 'Approved';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.statusMessage).toBe('ALERT_BANNER.COMPLETED_MASC');
     });
   });
 
   describe('statusIcon', () => {
-    it('maps a known status to its icon', () => {
+    it('should map a known status to its icon', () => {
+      // Arrange
       const component = createComponent();
       component.status = 'Delayed';
 
+      // Act / Assert
       expect(component.statusIcon).toBe('exclamation');
     });
 
-    it('falls back to the default icon for an unknown or missing status', () => {
+    it('should fall back to the default icon for an unknown or missing status', () => {
+      // Arrange
       const component = createComponent();
       component.status = 'SomethingUnknown';
 
+      // Act / Assert
       expect(component.statusIcon).toBe('info');
 
       component.status = undefined;
@@ -85,17 +101,21 @@ describe('AlertBannerComponentComponent', () => {
   });
 
   describe('statusColor', () => {
-    it('maps a known status to its color', () => {
+    it('should map a known status to its color', () => {
+      // Arrange
       const component = createComponent();
       component.status = 'MissingPayments';
 
+      // Act / Assert
       expect(component.statusColor).toBe('danger');
     });
 
-    it('falls back to the default color for an unknown or missing status', () => {
+    it('should fall back to the default color for an unknown or missing status', () => {
+      // Arrange
       const component = createComponent();
       component.status = 'SomethingUnknown';
 
+      // Act / Assert
       expect(component.statusColor).toBe('secondary');
 
       component.status = undefined;
@@ -104,19 +124,27 @@ describe('AlertBannerComponentComponent', () => {
   });
 
   describe('statusMessage', () => {
-    it('falls back to the raw status when there is no mapped message', () => {
+    it('should fall back to the raw status when there is no mapped message', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
+
+      // Act
       component.status = 'SomethingUnknown';
 
+      // Assert
       expect(component.statusMessage).toBe('SomethingUnknown');
     });
 
-    it('falls back to an empty string when there is no status at all', () => {
+    it('should fall back to an empty string when there is no status at all', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
+
+      // Act
       component.status = undefined;
 
+      // Assert
       expect(component.statusMessage).toBe('');
     });
   });

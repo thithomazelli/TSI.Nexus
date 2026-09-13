@@ -22,17 +22,21 @@ describe('UserService', () => {
     return TestBed.inject(UserService);
   }
 
-  it('should be created', () => {
+  it('should be created when injected', () => {
+    // Act / Assert
     expect(createService()).toBeTruthy();
   });
 
-  it('triggers a getAll fetch eagerly on construction', () => {
+  it('should trigger a getAll fetch eagerly on construction', () => {
+    // Act
     createService();
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('users/getAll');
   });
 
-  it('users$/getAll() emits the loaded response once the request resolves', () => {
+  it('should emit the loaded response on users$/getAll() once the request resolves', () => {
+    // Arrange
     const load$ = new Subject<WebApiResponse<User[]>>();
     apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
     apiServiceMock.get.mockReturnValue(load$);
@@ -40,62 +44,77 @@ describe('UserService', () => {
       providers: [{ provide: ApiService, useValue: apiServiceMock }],
     });
     const service = TestBed.inject(UserService);
-
     let response: WebApiResponse<User[]> | undefined;
     service.getAll().subscribe((v) => (response = v));
     TestBed.flushEffects();
     expect(response).toBeUndefined();
 
+    // Act
     const loaded = { data: [{ id: 'u1' } as User] } as WebApiResponse<User[]>;
     load$.next(loaded);
     TestBed.flushEffects();
 
+    // Assert
     expect(response).toBe(loaded);
   });
 
-  it('getAllPaged builds the query string and unwraps response.data', () => {
+  it('should build the query string and unwrap response.data when getAllPaged is called', () => {
+    // Arrange
     const service = createService();
     const paged$ = new Subject<WebApiResponse<unknown>>();
     apiServiceMock.get.mockReturnValue(paged$);
 
+    // Act
     let result: unknown;
     service.getAllPaged({ page: 1, pageSize: 10 } as never).subscribe((r) => (result = r));
     const pagedResult = { items: [], totalCount: 0 };
     paged$.next({ data: pagedResult } as WebApiResponse<unknown>);
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith(expect.stringContaining('users/getAllPaged?'));
     expect(result).toBe(pagedResult);
   });
 
-  it('getById hits the expected endpoint', () => {
+  it('should hit the expected endpoint when getById is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getById('u1');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('users/getById/u1');
   });
 
-  it('refresh re-fetches the shared users$ cache', () => {
+  it('should re-fetch the shared users$ cache when refresh is called', () => {
+    // Arrange
     const service = createService();
     const getCallsBefore = apiServiceMock.get.mock.calls.length;
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.refresh();
 
+    // Assert
     expect(apiServiceMock.get.mock.calls.length).toBe(getCallsBefore + 1);
   });
 
-  it('userChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately to a new subscriber when userChanged$ is subscribed to', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.userChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/update/delete each re-fetch the shared list and notify userChanged$', () => {
+  it('should re-fetch the shared list and notify userChanged$ when add/update/delete are called', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<User>>();
     const updateResponse$ = new Subject<WebApiResponse<User>>();
@@ -104,14 +123,13 @@ describe('UserService', () => {
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
     apiServiceMock.get.mockReturnValue(new Subject());
-
     let changedEmissions = 0;
     service.userChanged$.subscribe(() => changedEmissions++);
     TestBed.flushEffects();
     expect(changedEmissions).toBe(1);
-
     const getCallsBefore = apiServiceMock.get.mock.calls.length;
 
+    // Act / Assert
     service.add({} as User).subscribe();
     addResponse$.next({} as WebApiResponse<User>);
     TestBed.flushEffects();

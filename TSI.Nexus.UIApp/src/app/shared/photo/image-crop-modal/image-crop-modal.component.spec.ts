@@ -39,119 +39,160 @@ describe('ImageCropModalComponent', () => {
   });
 
   it('should create with the source file from dialogData', () => {
+    // Arrange
     const component = createComponent();
+
+    // Assert
     expect(component.source).toBe(source);
   });
 
-  it('starts at zoom 1 with a 300px default frame size', () => {
+  it('should start at zoom 1 with a 300px default frame size', () => {
+    // Arrange
     const component = createComponent();
+
+    // Assert
     expect(component.zoom).toBe(1);
     expect(component.frameSize).toBe(300);
   });
 
   describe('onImageCropped', () => {
-    it('caches the cropped blob for later confirm()', () => {
+    it('should cache the cropped blob for a later confirm() call', () => {
+      // Arrange
       const component = createComponent();
       const blob = new Blob(['x']);
 
+      // Act
       component.onImageCropped({ blob } as ImageCroppedEvent);
-
       component.confirm();
+
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalledWith(blob);
     });
 
-    it('caches null when the event has no blob', () => {
+    it('should cache null when the event has no blob', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onImageCropped({} as ImageCroppedEvent);
       component.confirm();
 
+      // Assert
       expect(dialogRefMock.close).not.toHaveBeenCalled();
     });
   });
 
   describe('confirm', () => {
-    it('does nothing when nothing has been cropped yet', () => {
+    it('should do nothing when nothing has been cropped yet', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.confirm();
 
+      // Assert
       expect(dialogRefMock.close).not.toHaveBeenCalled();
     });
   });
 
   describe('close', () => {
-    it('closes the dialog with no result', () => {
+    it('should close the dialog with no result', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.close();
 
+      // Assert
       expect(dialogRefMock.close).toHaveBeenCalledWith();
     });
   });
 
   describe('zoom controls', () => {
-    it('onZoomChange reads the input value and clamps it into range', () => {
+    it('should read the input value and clamp it into range when onZoomChange is called', () => {
+      // Arrange
       const component = createComponent();
       const event = { target: { value: '10' } } as unknown as Event;
 
+      // Act
       component.onZoomChange(event);
 
+      // Assert
       expect(component.zoom).toBe(3);
     });
 
-    it('does not zoom below the minimum of 1', () => {
+    it('should not zoom below the minimum of 1', () => {
+      // Arrange
       const component = createComponent();
       const event = { target: { value: '0' } } as unknown as Event;
 
+      // Act
       component.onZoomChange(event);
 
+      // Assert
       expect(component.zoom).toBe(1);
     });
 
-    it('onWheelZoom zooms in on scroll-up and prevents default', () => {
+    it('should zoom in and prevent default when onWheelZoom scrolls up', () => {
+      // Arrange
       const component = createComponent();
       const event = { deltaY: -10, preventDefault: vi.fn() } as unknown as WheelEvent;
 
+      // Act
       component.onWheelZoom(event);
 
+      // Assert
       expect(event.preventDefault).toHaveBeenCalled();
       expect(component.zoom).toBeCloseTo(1.05);
     });
 
-    it('onWheelZoom zooms out on scroll-down', () => {
+    it('should zoom out when onWheelZoom scrolls down', () => {
+      // Arrange
       const component = createComponent();
       component.zoom = 2;
       const event = { deltaY: 10, preventDefault: vi.fn() } as unknown as WheelEvent;
 
+      // Act
       component.onWheelZoom(event);
 
+      // Assert
       expect(component.zoom).toBeCloseTo(1.95);
     });
 
-    it('onZoomStep steps zoom by the configured increment in either direction', () => {
+    it('should step zoom by the configured increment in either direction when onZoomStep is called', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onZoomStep(1);
+
+      // Assert
       expect(component.zoom).toBeCloseTo(1.25);
 
+      // Act
       component.onZoomStep(-1);
+
+      // Assert
       expect(component.zoom).toBeCloseTo(1);
     });
   });
 
   describe('onTransformChange / pan clamping', () => {
-    it('passes through translate values unchanged before the image has been measured', () => {
+    it('should pass through translate values unchanged before the image has been measured', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onTransformChange({ scale: 1, translateH: 999, translateV: -999 });
 
+      // Assert
       expect(component.transform.translateH).toBe(999);
       expect(component.transform.translateV).toBe(-999);
       expect(component.transform.translateUnit).toBe('px');
     });
 
-    it('clamps the pan so the image cannot uncover the crop frame', () => {
+    it('should clamp the pan so the image cannot uncover the crop frame', () => {
+      // Arrange
       const component = createComponent();
       // Simulate a measured 500x500 image with a 200px frame at scale 1: max pan is
       // (500*1 - 200) / 2 = 150px on each axis.
@@ -159,38 +200,49 @@ describe('ImageCropModalComponent', () => {
       (component as unknown as { baseImgHeight: number }).baseImgHeight = 500;
       component.frameSize = 200;
 
+      // Act
       component.onTransformChange({ scale: 1, translateH: 999, translateV: -999 });
 
+      // Assert
       expect(component.transform.translateH).toBe(150);
       expect(component.transform.translateV).toBe(-150);
     });
 
-    it('updates zoom to match the new transform scale', () => {
+    it('should update zoom to match the new transform scale', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onTransformChange({ scale: 2.5 });
 
+      // Assert
       expect(component.zoom).toBe(2.5);
     });
 
-    it('keeps the current zoom when the transform carries no scale', () => {
+    it('should keep the current zoom when the transform carries no scale', () => {
+      // Arrange
       const component = createComponent();
       component.zoom = 1.75;
 
+      // Act
       component.onTransformChange({ translateH: 0, translateV: 0 });
 
+      // Assert
       expect(component.zoom).toBe(1.75);
     });
 
-    it('falls back to the current zoom/translate values once measured, when the transform omits them', () => {
+    it('should fall back to the current zoom and translate values when the transform omits them, once measured', () => {
+      // Arrange
       const component = createComponent();
       (component as unknown as { baseImgWidth: number }).baseImgWidth = 500;
       (component as unknown as { baseImgHeight: number }).baseImgHeight = 500;
       component.frameSize = 200;
       component.zoom = 1;
 
+      // Act
       component.onTransformChange({});
 
+      // Assert
       // scale ?? this.zoom -> 1; translateH/V ?? 0 -> already-centered pan needs no clamping.
       expect(component.transform.translateH).toBe(0);
       expect(component.transform.translateV).toBe(0);
@@ -198,28 +250,34 @@ describe('ImageCropModalComponent', () => {
   });
 
   describe('ngAfterViewInit', () => {
-    it('does nothing when the cropper wrapper is not in the DOM yet', () => {
+    it('should do nothing when the cropper wrapper is not in the DOM yet', () => {
+      // Arrange
       const component = createComponent();
 
+      // Assert
       expect(() => component.ngAfterViewInit()).not.toThrow();
       expect((component as unknown as { resizeObserver?: unknown }).resizeObserver).toBeUndefined();
     });
 
-    it('observes the wrapper and re-measures after the dialog finishes opening', () => {
+    it('should observe the wrapper and re-measure after the dialog finishes opening', () => {
+      // Arrange
       const component = createComponent();
       const wrapper = document.createElement('div');
       wrapper.className = 'cropper-wrapper';
       elementRefMock.nativeElement.appendChild(wrapper);
 
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       expect((component as unknown as { resizeObserver?: { observe: unknown } }).resizeObserver).toBeTruthy();
       expect(dialogRefMock.afterOpened).toHaveBeenCalled();
     });
   });
 
   describe('measure (via ngAfterViewInit -> afterOpened)', () => {
-    it('reads the rendered image and wrapper sizes to compute the frame size', () => {
+    it('should read the rendered image and wrapper sizes to compute the frame size', () => {
+      // Arrange
       const component = createComponent();
       const wrapper = document.createElement('div');
       wrapper.className = 'cropper-wrapper';
@@ -237,13 +295,16 @@ describe('ImageCropModalComponent', () => {
         height: 500,
       } as DOMRect);
 
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       // shorterSide = min(500, 500, 400, 300) = 300; frameSize = max(60, 300 - 8) = 292.
       expect(component.frameSize).toBe(292);
     });
 
-    it('leaves frameSize unchanged when the image has not rendered with real dimensions yet', () => {
+    it('should leave frameSize unchanged when the image has not rendered with real dimensions yet', () => {
+      // Arrange
       const component = createComponent();
       const wrapper = document.createElement('div');
       wrapper.className = 'cropper-wrapper';
@@ -252,29 +313,36 @@ describe('ImageCropModalComponent', () => {
       wrapper.appendChild(img);
       elementRefMock.nativeElement.appendChild(wrapper);
       // jsdom's default getBoundingClientRect() returns all-zero dimensions.
-
       const before = component.frameSize;
+
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       expect(component.frameSize).toBe(before);
     });
 
-    it('does not throw when the wrapper has no source image yet', () => {
+    it('should not throw when the wrapper has no source image yet', () => {
+      // Arrange
       const component = createComponent();
       const wrapper = document.createElement('div');
       wrapper.className = 'cropper-wrapper';
       elementRefMock.nativeElement.appendChild(wrapper);
 
+      // Assert
       expect(() => component.ngAfterViewInit()).not.toThrow();
     });
 
-    it('does nothing when there is no wrapper to measure at all', () => {
+    it('should do nothing when there is no wrapper to measure at all', () => {
+      // Arrange
       const component = createComponent();
 
+      // Assert
       expect(() => (component as unknown as { measure: () => void }).measure()).not.toThrow();
     });
 
-    it('re-measures whenever the resize observer fires', () => {
+    it('should re-measure whenever the resize observer fires', () => {
+      // Arrange
       let capturedCallback: (() => void) | undefined;
       vi.stubGlobal(
         'ResizeObserver',
@@ -291,25 +359,33 @@ describe('ImageCropModalComponent', () => {
       wrapper.className = 'cropper-wrapper';
       elementRefMock.nativeElement.appendChild(wrapper);
 
+      // Act
       component.ngAfterViewInit();
 
+      // Assert
       expect(() => capturedCallback!()).not.toThrow();
     });
   });
 
   describe('ngOnDestroy', () => {
-    it('disconnects the resize observer if one was attached', () => {
+    it('should disconnect the resize observer when one was attached', () => {
+      // Arrange
       const component = createComponent();
       const disconnect = vi.fn();
       (component as unknown as { resizeObserver: { disconnect: () => void } }).resizeObserver = { disconnect };
 
+      // Act
       component.ngOnDestroy();
 
+      // Assert
       expect(disconnect).toHaveBeenCalled();
     });
 
-    it('does not throw when no resize observer was ever attached', () => {
+    it('should not throw when no resize observer was ever attached', () => {
+      // Arrange
       const component = createComponent();
+
+      // Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
