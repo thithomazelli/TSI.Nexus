@@ -136,7 +136,7 @@ describe('PhotoComponent', () => {
       expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:fake');
     });
 
-    it('should fall back to the placeholder image when the fetch errors', () => {
+    it('should fall back to the placeholder image and mark for check when the fetch errors', () => {
       // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
@@ -148,6 +148,7 @@ describe('PhotoComponent', () => {
 
       // Assert
       expect(component.imageUrl).toBe('assets/img/no_profile.png');
+      expect(cdMock.detectChanges).toHaveBeenCalled();
     });
 
     it('should set the placeholder image when the entity has no photo set', () => {
@@ -608,7 +609,7 @@ describe('PhotoComponent', () => {
       await Promise.resolve();
     }
 
-    it('should find and delete the matching attachment, then clear the entity photo and notify', async () => {
+    it('should find and delete the matching attachment, then clear the entity photo, notify and mark for check', async () => {
       // Arrange
       const component = createComponent();
       component.entityClass = 'Users';
@@ -630,6 +631,7 @@ describe('PhotoComponent', () => {
         'success',
       );
       expect(photoServiceMock.updateUserPhoto).toHaveBeenCalledWith('', 'u1');
+      expect(cdMock.detectChanges).toHaveBeenCalled();
     });
 
     it('should not delete any attachment when none matches the photo filename', async () => {

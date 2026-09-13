@@ -85,6 +85,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
           },
           error: () => {
             this.imageUrl = this.getNoImage();
+            this.cd.detectChanges();
           },
         });
       return;
@@ -197,6 +198,7 @@ export class PhotoComponent implements OnInit, OnDestroy, OnChanges {
       next: () => {
         this.data.photo = '';
         this.imageUrl = this.getNoImage();
+        this.cd.detectChanges();
 
         this.modalService.showSweetNotification(
           'Foto removida',
