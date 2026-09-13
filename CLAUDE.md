@@ -45,6 +45,34 @@ npx ng test --include='**/trip.service.spec.ts'   # um spec só
 Sempre `npx ng ...` (nunca uma CLI global) para garantir a versão do projeto. Não há linter
 (ESLint) configurado.
 
+**Coverage do frontend** (`npm run coverage` ou `ng test --coverage --watch=false`): provider
+`istanbul` (não o default `v8` do builder `@angular/build:unit-test`), configurado via
+`TSI.Nexus.UIApp/vitest-base.config.ts` + `"runnerConfig": true` no target `test` do
+`angular.json`. Motivo: com o provider `v8`, os contadores de cobertura ficam presos ao ciclo de
+vida interno de bytecode do V8 — sob pressão de memória com muitos workers em paralelo, o V8 pode
+descartar ("flush") bytecode de funções já executadas, zerando silenciosamente a contagem antes do
+relatório final. Isso fazia o `%` de cobertura variar vários pontos entre execuções idênticas (sem
+nenhuma mudança de código), às vezes caindo abaixo do threshold de forma não determinística.
+`istanbul` instrumenta com contadores simples incrementados em código injetado, imune a esse
+problema — o custo é um `ng test --coverage` bem mais lento (~80s vs ~15s com `v8`), aceitável
+porque coverage não roda no loop de dev diário (`npx ng test --include=...` sem `--coverage`
+continua rápido).
+
+**Artefato cosmético conhecido**: linhas com decorator + `implements`/`extends` multi-interface
+(ex.: `@Component({...}) export class Foo implements OnInit, OnDestroy {`) aparecem com uma
+"branch" nunca coberta no relatório HTML, mesmo com `ngOnInit`/`ngOnDestroy` 100% testados. Raiz:
+um bug de mapeamento de posição do parser de TypeScript (decorators legados +
+`implements`/`extends` multi-interface) que existe tanto no provider `v8` quanto no `istanbul` —
+confirmado empiricamente comparando os dois. Não é uma lacuna de teste real e não é corrigível
+escrevendo mais testes; os thresholds abaixo já foram calibrados considerando esse "imposto" fixo
+presente em praticamente toda classe decorada do projeto.
+
+Thresholds atuais (`coverageThresholds` no `angular.json`, provider `istanbul`, com margem de
+segurança sob a baseline real observada em execuções repetidas): `statements: 98`,
+`branches: 93`, `functions: 95`, `lines: 98`. Se precisar reduzir ainda mais no futuro por causa
+de código novo sem teste, prefira isso a voltar pro provider `v8` — a instabilidade não vale a
+velocidade.
+
 Credenciais/segredos **nunca** vão para `appsettings.json`/`appsettings.Development.json` —
 sempre via variável de ambiente, `dotnet user-secrets`, ou `appsettings.Local.json` (gitignored,
 copiar de `appsettings.Local.json.example`). Ver README.md para a tabela completa de
