@@ -95,4 +95,7 @@ _ReSharper*/
 TestResult.xml
 TestResults/
 build/
-packages/.worktrees/
+packages/
+
+# Scratch worktrees used to parallelize background-agent work (not committed)
+/.worktrees/
