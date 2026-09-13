@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import {
   Driver,
   DriverService,
@@ -144,9 +144,13 @@ export class DriversComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private driverService: DriverService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.buildColumnDefs();
-    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+    this.translationService.language$.subscribe(() => {
+      this.buildColumnDefs();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit(): void {

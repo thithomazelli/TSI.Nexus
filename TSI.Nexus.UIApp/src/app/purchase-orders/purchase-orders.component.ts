@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   ApiType,
   Company,
@@ -95,6 +95,7 @@ export class PurchaseOrdersComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private purchaseOrderService: PurchaseOrderService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -102,7 +103,10 @@ export class PurchaseOrdersComponent implements OnInit, OnDestroy {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
 
     // For the top-level list, the grid fetches its own first page once ag-Grid is ready - the
     // BehaviorSubject's immediate replay on subscribe is skipped so it doesn't also trigger a
@@ -163,6 +167,7 @@ export class PurchaseOrdersComponent implements OnInit, OnDestroy {
             this.filteredRowData = this.filteredRowData.filter(
               (p) => p.id !== purchaseOrder.id,
             );
+            this.cdr.markForCheck();
           }
         }
         this.modalService.hideModal();
@@ -381,9 +386,11 @@ export class PurchaseOrdersComponent implements OnInit, OnDestroy {
             this.translationService.instant('PURCHASE_ORDERS.PURCHASE_ORDERS_REFRESHED'),
           );
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

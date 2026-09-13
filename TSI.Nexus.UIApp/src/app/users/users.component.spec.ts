@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import {
   ModalService,
   NotificationService,
@@ -32,6 +33,7 @@ describe('UsersComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): UsersComponent {
     modalServiceMock = {
@@ -50,6 +52,7 @@ describe('UsersComponent', () => {
     photoServiceMock = { getPhoto: vi.fn().mockReturnValue(of(new Blob())) };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new UsersComponent(
       modalServiceMock as unknown as ModalService,
@@ -57,6 +60,7 @@ describe('UsersComponent', () => {
       userServiceMock as unknown as UserService,
       photoServiceMock as unknown as PhotoService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -80,16 +84,18 @@ describe('UsersComponent', () => {
     expect(component.columnDefs.length).toBeGreaterThan(0);
   });
 
-  it('should rebuild the column definitions when the language changes', () => {
+  it('should rebuild the column definitions and mark for check when the language changes', () => {
     // Arrange
     const component = createComponent();
     const before = component.columnDefs;
+    cdrMock.markForCheck.mockClear();
 
     // Act
     language$.next('en');
 
     // Assert
     expect(component.columnDefs).not.toBe(before);
+    expect(cdrMock.markForCheck).toHaveBeenCalled();
   });
 
   describe('ngOnInit / userChanged$', () => {

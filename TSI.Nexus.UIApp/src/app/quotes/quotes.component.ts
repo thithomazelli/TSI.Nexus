@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Observable, Subject, Subscription, skip, takeUntil } from 'rxjs';
 
 import {
@@ -85,6 +85,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private quoteService: QuoteService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   // True for the main Quotes listing screen (server-side paginated); false for the tab embedded
@@ -108,7 +109,10 @@ export class QuotesComponent implements OnInit, OnDestroy {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
 
     const quoteChanged$ = this.isTopLevelList
       ? this.quoteService.quoteChanged$.pipe(skip(1))
@@ -129,6 +133,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this._destroy$))
       .subscribe((enabled) => {
         this.isFleetModuleEnabled = enabled;
+        this.cdr.markForCheck();
       });
   }
 
@@ -193,6 +198,7 @@ export class QuotesComponent implements OnInit, OnDestroy {
             this.filteredRowData = this.filteredRowData.filter(
               (p) => p.id !== quote.id,
             );
+            this.cdr.markForCheck();
           }
         }
         this.modalService.hideModal();
@@ -420,9 +426,11 @@ export class QuotesComponent implements OnInit, OnDestroy {
             this.translationService.instant('QUOTES.QUOTES_REFRESHED'),
           );
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

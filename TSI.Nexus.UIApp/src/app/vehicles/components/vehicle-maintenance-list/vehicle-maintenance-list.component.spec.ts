@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import {
   ModalService,
   NotificationService,
@@ -24,6 +25,7 @@ describe('VehicleMaintenanceListComponent', () => {
   };
   let language$: Subject<string>;
   let translationServiceMock: { instant: ReturnType<typeof vi.fn>; language$: Subject<string> };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function mockGridRef(): GridComponent<VehicleMaintenance> {
     return {
@@ -44,12 +46,14 @@ describe('VehicleMaintenanceListComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new VehicleMaintenanceListComponent(
       notificationServiceMock as unknown as NotificationService,
       vehicleMaintenanceServiceMock as unknown as VehicleMaintenanceService,
       modalServiceMock as unknown as ModalService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -132,17 +136,19 @@ describe('VehicleMaintenanceListComponent', () => {
       expect(vehicleMaintenanceServiceMock.getByVehicle).toHaveBeenCalledWith('v1');
     });
 
-    it('should rebuild the column defs when the language changes', () => {
+    it('should rebuild the column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
+      cdrMock.markForCheck.mockClear();
 
       // Act
       language$.next('en');
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should purge the grid cache on maintenanceChanged$ for the top-level list', () => {
@@ -307,7 +313,7 @@ describe('VehicleMaintenanceListComponent', () => {
       );
     });
 
-    it('should remove the row locally when the delete succeeds while embedded for a vehicle', () => {
+    it('should remove the row locally and mark for check when the delete succeeds while embedded for a vehicle', () => {
       // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
@@ -321,6 +327,7 @@ describe('VehicleMaintenanceListComponent', () => {
 
       // Assert
       expect(component.rowData).toEqual([{ id: 'm2' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not purge the cache or filter rows when the delete reports an error', () => {
@@ -390,7 +397,7 @@ describe('VehicleMaintenanceListComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.vehicleId = 'v1';
@@ -405,6 +412,7 @@ describe('VehicleMaintenanceListComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

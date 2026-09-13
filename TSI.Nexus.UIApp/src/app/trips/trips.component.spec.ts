@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import {
   Company,
   Driver,
@@ -37,6 +38,7 @@ describe('TripsComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): TripsComponent {
     modalServiceMock = {
@@ -57,12 +59,14 @@ describe('TripsComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new TripsComponent(
       modalServiceMock as unknown as ModalService,
       notificationServiceMock as unknown as NotificationService,
       tripServiceMock as unknown as TripService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -138,11 +142,12 @@ describe('TripsComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should build the grid and react to language changes', () => {
+    it('should build the grid, react to language changes and mark for check', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
+      cdrMock.markForCheck.mockClear();
 
       // Act
       language$.next('en');
@@ -150,6 +155,7 @@ describe('TripsComponent', () => {
       // Assert
       expect(before.length).toBeGreaterThan(0);
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should purge the grid cache on tripChanged$, skipping the initial replay, when top-level', () => {
@@ -306,7 +312,7 @@ describe('TripsComponent', () => {
       );
     });
 
-    it('should remove the trip from the filtered rows when the deletion succeeds, when embedded', () => {
+    it('should remove the trip from the filtered rows and mark for check when the deletion succeeds, when embedded', () => {
       // Arrange
       const component = createComponent();
       component.entity = 'Driver';
@@ -321,6 +327,7 @@ describe('TripsComponent', () => {
 
       // Assert
       expect(component.filteredRowData).toEqual([{ id: 't2' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not touch rows when the delete reports an error status', () => {
@@ -616,7 +623,7 @@ describe('TripsComponent', () => {
   });
 
   describe('getTrips (private, direct call)', () => {
-    it('should fall back to tripService.getAll() when not scoped to any parent entity', () => {
+    it('should fall back to tripService.getAll() and mark for check when not scoped to any parent entity', () => {
       // Arrange
       const component = createComponent();
       tripServiceMock.getAll.mockReturnValue(of({ data: [] }));
@@ -627,6 +634,7 @@ describe('TripsComponent', () => {
 
       expect(tripServiceMock.getAll).toHaveBeenCalled();
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -675,7 +683,7 @@ describe('TripsComponent', () => {
       expect(component.rowData).toEqual([]);
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.entity = 'Driver';
@@ -689,6 +697,7 @@ describe('TripsComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

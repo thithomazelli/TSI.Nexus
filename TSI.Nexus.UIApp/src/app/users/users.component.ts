@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   ApiType,
   ModalService,
@@ -188,9 +188,13 @@ export class UsersComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private photoService: PhotoService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.buildColumnDefs();
-    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+    this.translationService.language$.subscribe(() => {
+      this.buildColumnDefs();
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit(): void {

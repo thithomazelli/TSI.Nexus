@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -79,13 +80,17 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
     private fuelLogService: FuelLogService,
     private modalService: ModalService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
     if (!this.isTopLevelList) {
       this.load();
     }
@@ -132,6 +137,7 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
             this.gridRef?.gridApi?.purgeInfiniteCache();
           } else {
             this.rowData = this.rowData.filter((f) => f.id !== fuelLog.id);
+            this.cdr.markForCheck();
           }
         }
         this.modalService.hideModal();
@@ -263,9 +269,11 @@ export class FuelLogListComponent implements OnInit, OnChanges, OnDestroy {
         if (isRefresh) {
           this.notificationService.showMessage(response.status, response.message);
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

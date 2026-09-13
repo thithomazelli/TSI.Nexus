@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   ModalService,
@@ -38,6 +39,7 @@ describe('PaymentsComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): PaymentsComponent {
     queryParams$ = new Subject();
@@ -60,6 +62,7 @@ describe('PaymentsComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new PaymentsComponent(
       modalServiceMock as unknown as ModalService,
@@ -67,6 +70,7 @@ describe('PaymentsComponent', () => {
       paymentServiceMock as unknown as PaymentService,
       routeMock as unknown as ActivatedRoute,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -98,7 +102,7 @@ describe('PaymentsComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should populate filter state when the route query params include filters', () => {
+    it('should populate filter state and mark for check when the route query params include filters', () => {
       // Arrange
       const component = createComponent();
 
@@ -111,6 +115,7 @@ describe('PaymentsComponent', () => {
       expect(component.filterStatus.Pending).toBe(true);
       expect(component.filterStartDate).toBe('2024-01-01');
       expect(component.showFiltersOnInit).toBe(true);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should purge the grid cache on the second paymentChanged$ emission when top-level, skipping the initial replay', () => {
@@ -185,6 +190,23 @@ describe('PaymentsComponent', () => {
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
+    it('should remove the payment from the filtered rows and mark for check when the embedded delete succeeds', () => {
+      // Arrange
+      const component = createComponent();
+      component.entity = 'Order';
+      component.filteredRowData = [{ id: 'p1' } as Payment, { id: 'p2' } as Payment];
+      paymentServiceMock.delete.mockReturnValue(
+        of({ status: ResponseStatus.Success, message: 'Removido' }),
+      );
+
+      // Act
+      component.deleteOrder({ id: 'p1' } as Payment);
+
+      // Assert
+      expect(component.filteredRowData).toEqual([{ id: 'p2' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
+    });
+
     it('should not purge the cache or filter rows when the delete reports an error', () => {
       // Arrange
       const component = createComponent();
@@ -203,21 +225,6 @@ describe('PaymentsComponent', () => {
       expect(component.filteredRowData).toEqual([{ id: 'p1' }]);
     });
 
-    it('should remove the payment from the filtered rows when the embedded delete succeeds', () => {
-      // Arrange
-      const component = createComponent();
-      component.entity = 'Order';
-      component.filteredRowData = [{ id: 'p1' } as Payment, { id: 'p2' } as Payment];
-      paymentServiceMock.delete.mockReturnValue(
-        of({ status: ResponseStatus.Success, message: 'Removido' }),
-      );
-
-      // Act
-      component.deleteOrder({ id: 'p1' } as Payment);
-
-      // Assert
-      expect(component.filteredRowData).toEqual([{ id: 'p2' }]);
-    });
   });
 
   describe('updatePaymentStatus', () => {
@@ -641,18 +648,20 @@ describe('PaymentsComponent', () => {
   });
 
   describe('ngOnInit - additional coverage', () => {
-    it('should rebuild column defs when the language changes', () => {
+    it('should rebuild column defs and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
       queryParams$.next({});
       const before = component.columnDefs;
+      cdrMock.markForCheck.mockClear();
 
       // Act
       language$.next('en');
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should keep showFiltersOnInit false when there are no initial filters', () => {
@@ -856,7 +865,7 @@ describe('PaymentsComponent', () => {
   });
 
   describe('getPayment (private, via ngOnInit/refreshOrders/paymentChanged$)', () => {
-    it('should fetch all payments when there is no entity', () => {
+    it('should fetch all payments and mark for check when there is no entity', () => {
       // Arrange
       const component = createComponent();
       paymentServiceMock.getAll.mockReturnValue(of({ data: [{ id: 'p1' } as Payment] }));
@@ -867,6 +876,7 @@ describe('PaymentsComponent', () => {
       // Assert
       expect(paymentServiceMock.getAll).toHaveBeenCalled();
       expect(component.rowData).toEqual([{ id: 'p1' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should invoke the callback without loading data when embedded without a saved parent yet', () => {
@@ -909,7 +919,7 @@ describe('PaymentsComponent', () => {
       expect(component.loading).toBe(false);
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.entity = 'Order';
@@ -921,6 +931,7 @@ describe('PaymentsComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import {
   ModalService,
   NotificationService,
@@ -156,9 +156,13 @@ export class VehiclesComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private vehicleService: VehicleService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.buildColumnDefs();
-    this.translationService.language$.subscribe(() => this.buildColumnDefs());
+    this.translationService.language$.subscribe(() => {
+      this.buildColumnDefs();
+      this.cdr.markForCheck();
+    });
   }
 
   openModal(initialState: any): void {

@@ -1,3 +1,4 @@
+import { ChangeDetectorRef } from '@angular/core';
 import {
   Company,
   FeatureFlagService,
@@ -35,6 +36,7 @@ describe('QuotesComponent', () => {
     instant: ReturnType<typeof vi.fn>;
     language$: Subject<string>;
   };
+  let cdrMock: { markForCheck: ReturnType<typeof vi.fn> };
 
   function createComponent(): QuotesComponent {
     featureFlagServiceMock = { isEnabled: vi.fn().mockReturnValue(of(true)) };
@@ -54,6 +56,7 @@ describe('QuotesComponent', () => {
     };
     language$ = new Subject();
     translationServiceMock = { instant: vi.fn((key: string) => key), language$ };
+    cdrMock = { markForCheck: vi.fn() };
 
     return new QuotesComponent(
       featureFlagServiceMock as unknown as FeatureFlagService,
@@ -61,6 +64,7 @@ describe('QuotesComponent', () => {
       notificationServiceMock as unknown as NotificationService,
       quoteServiceMock as unknown as QuoteService,
       translationServiceMock as unknown as TranslationService,
+      cdrMock as unknown as ChangeDetectorRef,
     );
   }
 
@@ -104,7 +108,7 @@ describe('QuotesComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should build the grid and read the fleet module flag when initialized', () => {
+    it('should build the grid, read the fleet module flag and mark for check when initialized', () => {
       // Arrange
       const component = createComponent();
 
@@ -115,6 +119,7 @@ describe('QuotesComponent', () => {
       expect(component.columnDefs.length).toBeGreaterThan(0);
       expect(featureFlagServiceMock.isEnabled).toHaveBeenCalled();
       expect(component.isFleetModuleEnabled).toBe(true);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should purge the grid cache on quoteChanged$ skipping the initial replay when top-level', () => {
@@ -166,17 +171,19 @@ describe('QuotesComponent', () => {
       expect(gridRef.gridApi.purgeInfiniteCache).not.toHaveBeenCalled();
     });
 
-    it('should rebuild the grid when the language changes', () => {
+    it('should rebuild the grid and mark for check when the language changes', () => {
       // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
+      cdrMock.markForCheck.mockClear();
 
       // Act
       language$.next('en');
 
       // Assert
       expect(component.columnDefs).not.toBe(before);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
   });
 
@@ -261,7 +268,7 @@ describe('QuotesComponent', () => {
       expect(gridRef.gridApi.purgeInfiniteCache).toHaveBeenCalled();
     });
 
-    it('should remove the quote from the filtered rows when deletion succeeds while embedded', () => {
+    it('should remove the quote from the filtered rows and mark for check when deletion succeeds while embedded', () => {
       // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
@@ -276,6 +283,7 @@ describe('QuotesComponent', () => {
 
       // Assert
       expect(component.filteredRowData).toEqual([{ id: 'q2' }]);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should not touch the grid/rows but still notify when the deletion fails', () => {
@@ -498,7 +506,7 @@ describe('QuotesComponent', () => {
       expect(component.rowData).toEqual([]);
     });
 
-    it('should stop loading without throwing when the request errors', () => {
+    it('should stop loading and mark for check without throwing when the request errors', () => {
       // Arrange
       const component = createComponent();
       component.entity = 'BusinessPartner';
@@ -512,6 +520,7 @@ describe('QuotesComponent', () => {
 
       // Assert
       expect(component.loading).toBe(false);
+      expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
     it('should run without a callback when called directly with none', () => {

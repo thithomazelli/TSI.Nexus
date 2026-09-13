@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   ApiType,
   Company,
@@ -80,6 +80,7 @@ export class TripsComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private tripService: TripService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   // True for the main Trips listing screen (server-side paginated); false for the tab embedded
@@ -113,7 +114,10 @@ export class TripsComponent implements OnInit, OnDestroy {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
 
     // For the top-level list, the grid fetches its own first page once ag-Grid is ready - the
     // BehaviorSubject's immediate replay on subscribe is skipped so it doesn't also trigger a
@@ -182,6 +186,7 @@ export class TripsComponent implements OnInit, OnDestroy {
             this.filteredRowData = this.filteredRowData.filter(
               (p) => p.id !== trip.id,
             );
+            this.cdr.markForCheck();
           }
         }
         this.modalService.hideModal();
@@ -418,9 +423,11 @@ export class TripsComponent implements OnInit, OnDestroy {
             this.translationService.instant('TRIPS.TRIPS_REFRESHED'),
           );
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

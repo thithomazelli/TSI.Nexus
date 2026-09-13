@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -128,6 +129,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     private paymentService: PaymentService,
     private route: ActivatedRoute,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   // True for the main Payments listing screen (server-side paginated); false for every tab
@@ -151,7 +153,10 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     this.initializeColumnDefs();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeColumnDefs());
+      .subscribe(() => {
+        this.initializeColumnDefs();
+        this.cdr.markForCheck();
+      });
     this.route.queryParams.subscribe((params) => {
       this.setFiltersFromQueryParams(params);
       this.showFiltersOnInit = this.hasInitialFilters();
@@ -169,6 +174,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
             this.getPayment(() => this.applyFilters(), false);
           }
         });
+      this.cdr.markForCheck();
     });
   }
 
@@ -206,6 +212,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
             this.filteredRowData = this.filteredRowData.filter(
               (p) => p.id !== payment.id,
             );
+            this.cdr.markForCheck();
           }
         }
 
@@ -525,9 +532,11 @@ export class PaymentsComponent implements OnInit, OnDestroy {
             this.translationService.instant('PAYMENTS.PAYMENTS_REFRESHED'),
           );
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }

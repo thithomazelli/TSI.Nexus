@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   Input,
   OnChanges,
@@ -85,13 +86,17 @@ export class VehicleMaintenanceListComponent
     private vehicleMaintenanceService: VehicleMaintenanceService,
     private modalService: ModalService,
     private translationService: TranslationService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.initializeGrid();
     this.translationService.language$
       .pipe(takeUntil(this._destroy$))
-      .subscribe(() => this.initializeGrid());
+      .subscribe(() => {
+        this.initializeGrid();
+        this.cdr.markForCheck();
+      });
     if (!this.isTopLevelList) {
       this.load();
     }
@@ -134,6 +139,7 @@ export class VehicleMaintenanceListComponent
             this.gridRef?.gridApi?.purgeInfiniteCache();
           } else {
             this.rowData = this.rowData.filter((m) => m.id !== maintenance.id);
+            this.cdr.markForCheck();
           }
         }
         this.modalService.hideModal();
@@ -263,9 +269,11 @@ export class VehicleMaintenanceListComponent
         if (isRefresh) {
           this.notificationService.showMessage(response.status, response.message);
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }
