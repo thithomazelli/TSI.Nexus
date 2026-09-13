@@ -61,6 +61,13 @@ export class UpcomingEventNotificationComponent implements OnInit, OnDestroy {
     return this.total > 0;
   }
 
+  // Caps what actually renders - the dropdown has no natural height limit otherwise, and with
+  // enough upcoming events it would grow past the viewport with no way to scroll to the footer
+  // link below it (see .notification-list in the stylesheet for the scroll fallback).
+  get displayUpcomingEvents(): AgendaEvent[] {
+    return this.upcomingEvents.slice(0, 10);
+  }
+
   openEvent(event: AgendaEvent): void {
     this.modalService.showTemplateModal(EventDetailsModalComponent, {
       isEdit: true,

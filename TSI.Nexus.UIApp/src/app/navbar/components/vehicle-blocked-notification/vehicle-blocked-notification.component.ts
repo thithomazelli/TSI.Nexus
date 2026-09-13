@@ -41,6 +41,13 @@ export class VehicleBlockedNotificationComponent implements OnInit {
     return this.total > 0;
   }
 
+  // Caps what actually renders - the dropdown has no natural height limit otherwise, and with
+  // enough blocked vehicles it would grow past the viewport with no way to scroll to the footer
+  // link below it (see .notification-list in the stylesheet for the scroll fallback).
+  get displayVehicles(): Vehicle[] {
+    return this.vehicles.slice(0, 10);
+  }
+
   openVehicle(vehicle: Vehicle): void {
     this.modalService.showTemplateModal(VehicleDetailsModalComponent, {
       isEdit: true,

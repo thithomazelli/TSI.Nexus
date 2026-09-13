@@ -66,6 +66,15 @@ describe('DriverLicenseNotificationComponent', () => {
     expect(component.showBadge).toBe(true);
   });
 
+  it('should cap displayDrivers at 10 when there are more than 10 drivers', () => {
+    // Arrange
+    const component = createComponent();
+    component.drivers = Array.from({ length: 15 }, (_, i) => ({ id: `d${i}` }) as Driver);
+
+    // Act / Assert
+    expect(component.displayDrivers.length).toBe(10);
+  });
+
   it('should treat a past license expiry date as expired', () => {
     // Arrange
     const component = createComponent();

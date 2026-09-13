@@ -95,6 +95,23 @@ describe('StockAlertNotificationComponent', () => {
     });
   });
 
+  it('should cap displayOutOfStockProducts and displayLowStockProducts at 10 each when there are more than 10', () => {
+    // Arrange
+    const component = createComponent();
+    component.outOfStockProducts = Array.from(
+      { length: 15 },
+      (_, i) => ({ id: `o${i}` }) as Product,
+    );
+    component.lowStockProducts = Array.from(
+      { length: 12 },
+      (_, i) => ({ id: `l${i}` }) as Product,
+    );
+
+    // Act / Assert
+    expect(component.displayOutOfStockProducts.length).toBe(10);
+    expect(component.displayLowStockProducts.length).toBe(10);
+  });
+
   it('should open the purchase order modal preselecting the product when openProduct is called', () => {
     // Arrange
     const component = createComponent();

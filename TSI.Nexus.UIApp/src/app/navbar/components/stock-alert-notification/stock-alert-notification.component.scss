@@ -1,0 +1,15 @@
+// Caps the visible list at ~10 items' worth of height per group (see displayOutOfStockProducts/
+// displayLowStockProducts in the component) so the dropdown never grows past the viewport with no
+// way to reach the footer link below it - the list itself scrolls instead. Scrollbar stays
+// invisible, same treatment as sidebar.component.scss's .sidebar-wrapper: wheel/touch/keyboard
+// scrolling keeps working, there's just nothing drawn for it.
+.notification-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // legacy Edge/IE
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome/Safari/Chromium Edge
+  }
+}

@@ -7,42 +7,44 @@
 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
   <span class="dropdown-item dropdown-header">{{ total }} {{ 'NAVBAR.NOTIFICATIONS' | translate }}</span>
   <div class="dropdown-divider" *ngIf="showBadge"></div>
-  <ng-container *ngFor="let payment of displayPayments">
-    <a
-      href="#"
-      class="dropdown-item px-2 py-2"
-      (click)="openModal(payment); $event.preventDefault()"
-    >
-      <div
-        class="d-flex flex-column align-items-center text-center small w-100"
+  <div class="notification-list">
+    <ng-container *ngFor="let payment of displayPayments">
+      <a
+        href="#"
+        class="dropdown-item px-2 py-2"
+        (click)="openModal(payment); $event.preventDefault()"
       >
         <div
-          class="d-flex align-items-center justify-content-center w-100 mb-1"
+          class="d-flex flex-column align-items-center text-center small w-100"
         >
-          <i class="me-2 fs-5" [ngClass]="getStatusIcon(payment)"></i>
-          <span class="fw-semibold">{{ getStatusText(payment) }}</span>
-        </div>
-        <div
-          class="d-flex justify-content-between align-items-center w-100 small text-muted"
-        >
-          <div class="d-flex flex-column flex-grow-1 min-width-0">
-            <span class="truncate-ellipsis notification-text-col text-start">{{
-              payment.businessPartnerName
-            }}</span>
-            <span
-              class="truncate-ellipsis notification-text-col text-muted text-start"
-              *ngIf="payment.description"
-              >{{ payment.description }}</span
-            >
+          <div
+            class="d-flex align-items-center justify-content-center w-100 mb-1"
+          >
+            <i class="me-2 fs-5" [ngClass]="getStatusIcon(payment)"></i>
+            <span class="fw-semibold">{{ getStatusText(payment) }}</span>
           </div>
-          <span class="truncate-ellipsis notification-date-col text-end">{{
-            getRelativeDate(payment.date)
-          }}</span>
+          <div
+            class="d-flex justify-content-between align-items-center w-100 small text-muted"
+          >
+            <div class="d-flex flex-column flex-grow-1 min-width-0">
+              <span class="truncate-ellipsis notification-text-col text-start">{{
+                payment.businessPartnerName
+              }}</span>
+              <span
+                class="truncate-ellipsis notification-text-col text-muted text-start"
+                *ngIf="payment.description"
+                >{{ payment.description }}</span
+              >
+            </div>
+            <span class="truncate-ellipsis notification-date-col text-end">{{
+              getRelativeDate(payment.date)
+            }}</span>
+          </div>
         </div>
-      </div>
-    </a>
-    <div class="dropdown-divider"></div>
-  </ng-container>
+      </a>
+      <div class="dropdown-divider"></div>
+    </ng-container>
+  </div>
   <a
     href="#"
     class="dropdown-item dropdown-footer"

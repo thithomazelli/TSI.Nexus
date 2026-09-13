@@ -42,6 +42,13 @@ export class DriverLicenseNotificationComponent implements OnInit {
     return this.total > 0;
   }
 
+  // Caps what actually renders - the dropdown has no natural height limit otherwise, and with
+  // enough expiring licenses it would grow past the viewport with no way to scroll to the
+  // "ver mais" link below it (see .notification-list in the stylesheet for the scroll fallback).
+  get displayDrivers(): Driver[] {
+    return this.drivers.slice(0, 10);
+  }
+
   isExpired(driver: Driver): boolean {
     return new Date(driver.licenseExpiryDate) < new Date();
   }

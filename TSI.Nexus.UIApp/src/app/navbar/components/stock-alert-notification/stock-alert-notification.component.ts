@@ -55,6 +55,17 @@ export class StockAlertNotificationComponent implements OnInit, OnDestroy {
     return this.total > 0;
   }
 
+  // Caps what actually renders per group - the dropdown has no natural height limit otherwise,
+  // and with enough alerts it would grow past the viewport with no way to scroll to the footer
+  // link below it (see .notification-list in the stylesheet for the scroll fallback).
+  get displayOutOfStockProducts(): Product[] {
+    return this.outOfStockProducts.slice(0, 10);
+  }
+
+  get displayLowStockProducts(): Product[] {
+    return this.lowStockProducts.slice(0, 10);
+  }
+
   openProduct(product: Product): void {
     this.modalService.showTemplateModal(PurchaseOrderDetailsModalComponent, {
       isEdit: false,

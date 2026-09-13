@@ -143,6 +143,18 @@ describe('UpcomingEventNotificationComponent', () => {
     });
   });
 
+  it('should cap displayUpcomingEvents at 10 when there are more than 10 upcoming events', () => {
+    // Arrange
+    const component = createComponent();
+    component.upcomingEvents = Array.from(
+      { length: 15 },
+      (_, i) => ({ id: `e${i}` }) as AgendaEvent,
+    );
+
+    // Act / Assert
+    expect(component.displayUpcomingEvents.length).toBe(10);
+  });
+
   it('should open the event details modal in edit mode when openEvent is called', () => {
     // Arrange
     const component = createComponent();

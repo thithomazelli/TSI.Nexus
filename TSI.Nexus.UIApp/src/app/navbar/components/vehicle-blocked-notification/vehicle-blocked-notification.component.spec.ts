@@ -70,6 +70,15 @@ describe('VehicleBlockedNotificationComponent', () => {
     expect(component.showBadge).toBe(true);
   });
 
+  it('should cap displayVehicles at 10 when there are more than 10 blocked vehicles', () => {
+    // Arrange
+    const component = createComponent();
+    component.vehicles = Array.from({ length: 15 }, (_, i) => ({ id: `v${i}` }) as Vehicle);
+
+    // Act / Assert
+    expect(component.displayVehicles.length).toBe(10);
+  });
+
   it('should open the vehicle details modal in edit mode when openVehicle is called', () => {
     // Arrange
     const component = createComponent();
