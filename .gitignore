@@ -95,4 +95,4 @@ _ReSharper*/
 TestResult.xml
 TestResults/
 build/
-packages/
+packages/.worktrees/
