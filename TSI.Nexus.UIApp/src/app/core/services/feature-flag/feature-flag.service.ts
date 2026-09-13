@@ -39,7 +39,14 @@ export class FeatureFlagService {
   private load(): void {
     this.apiService
       .get<WebApiResponse<FeatureToggle[]>>(`${this._baseEndPoint}/getAll`)
-      .subscribe((response) => this._toggles.set(response.data ?? []));
+      .subscribe({
+        next: (response) => this._toggles.set(response.data ?? []),
+        // Without this, a single failed request left `_toggles` at null forever: toggles$ never
+        // emits, so isEnabled() never resolves for ANY key and every feature-gated module/route
+        // in the app stays hidden/blocked until refresh() is called. Fail open (empty toggle
+        // set) instead, matching isEnabled()'s own documented fail-open policy.
+        error: () => this._toggles.set([]),
+      });
   }
 
   refresh(): void {

@@ -110,6 +110,30 @@ describe('BusinessPartnerService', () => {
     expect(completed).toBe(true);
   });
 
+  it('should clear the cache and allow a retry instead of hanging forever when the request errors', () => {
+    // Arrange
+    const service = createService();
+    const load$ = new Subject<WebApiResponse<BusinessPartner[]>>();
+    apiServiceMock.get.mockReturnValue(load$);
+    let completed = false;
+    service.getClients().subscribe({ complete: () => (completed = true) });
+
+    // Act
+    load$.error(new Error('fail'));
+    expect(completed).toBe(false); // the errored cache entry never emits/completes itself
+
+    const retry$ = new Subject<WebApiResponse<BusinessPartner[]>>();
+    apiServiceMock.get.mockReturnValue(retry$);
+    let retried = false;
+    service.getClients().subscribe({ complete: () => (retried = true) });
+    retry$.next({ data: [] } as unknown as WebApiResponse<BusinessPartner[]>);
+    TestBed.flushEffects();
+
+    // Assert
+    expect(apiServiceMock.get).toHaveBeenCalledTimes(2);
+    expect(retried).toBe(true);
+  });
+
   it('should clear the cache for that type and re-fetch when refresh is called', () => {
     // Arrange
     const service = createService();

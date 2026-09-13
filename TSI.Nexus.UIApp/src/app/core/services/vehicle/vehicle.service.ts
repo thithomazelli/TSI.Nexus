@@ -1,6 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { ApiService, ApiType, PagedRequest, PagedResult, WebApiResponse } from '@nexus/core';
+import {
+  ApiService,
+  ApiType,
+  PagedRequest,
+  PagedResult,
+  ResponseStatus,
+  WebApiResponse,
+} from '@nexus/core';
 import { Vehicle } from '@nexus/core';
 import { Observable } from 'rxjs';
 import { filter, map, tap } from 'rxjs/operators';
@@ -29,7 +36,14 @@ export class VehicleService {
   private load(): void {
     this.apiService
       .get<WebApiResponse<Vehicle[]>>(`${this._baseEndPoint}/getAll`)
-      .subscribe((response) => this._vehicles.set(response));
+      .subscribe({
+        next: (response) => this._vehicles.set(response),
+        // Without this, a single failed request left `_vehicles` at null forever: vehicles$
+        // never emits, so getAll() hangs forever for every caller until refresh() is called.
+        // Set an empty-but-defined response instead so callers unblock; refresh() can retry.
+        error: () =>
+          this._vehicles.set({ data: [], message: '', status: ResponseStatus.Error }),
+      });
   }
 
   private notifyChanged(): void {

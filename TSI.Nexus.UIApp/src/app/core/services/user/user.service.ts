@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { ApiType } from '../../enums';
+import { ApiType, ResponseStatus } from '../../enums';
 import { Observable } from 'rxjs';
 import { User } from '../../models';
 import { WebApiResponse } from '../../utilities';
@@ -32,7 +32,13 @@ export class UserService {
   private load(): void {
     this.apiService
       .get<WebApiResponse<User[]>>(`${this._baseEndPoint}/getAll`)
-      .subscribe((response) => this._users.set(response));
+      .subscribe({
+        next: (response) => this._users.set(response),
+        // Without this, a single failed request left `_users` at null forever: users$ never
+        // emits, so getAll() hangs forever for every caller until refresh() is called. Set an
+        // empty-but-defined response instead so callers unblock; refresh() can retry.
+        error: () => this._users.set({ data: [], message: '', status: ResponseStatus.Error }),
+      });
   }
 
   private notifyChanged(): void {

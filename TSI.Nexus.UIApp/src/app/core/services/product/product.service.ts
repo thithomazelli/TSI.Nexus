@@ -1,6 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { ApiService, ApiType, PagedRequest, PagedResult, WebApiResponse } from '@nexus/core';
+import {
+  ApiService,
+  ApiType,
+  PagedRequest,
+  PagedResult,
+  ResponseStatus,
+  WebApiResponse,
+} from '@nexus/core';
 import { Product } from '@nexus/core';
 import { Observable } from 'rxjs';
 import { filter, map, tap } from 'rxjs/operators';
@@ -29,7 +36,14 @@ export class ProductService {
   private load(): void {
     this.apiService
       .get<WebApiResponse<Product[]>>(`${this._baseEndPoint}/getAll`)
-      .subscribe((response) => this._products.set(response));
+      .subscribe({
+        next: (response) => this._products.set(response),
+        // Without this, a single failed request left `_products` at null forever: products$
+        // never emits, so getAll() hangs forever for every caller until refresh() is called.
+        // Set an empty-but-defined response instead so callers unblock; refresh() can retry.
+        error: () =>
+          this._products.set({ data: [], message: '', status: ResponseStatus.Error }),
+      });
   }
 
   getAll(): Observable<WebApiResponse<Product[]>> {

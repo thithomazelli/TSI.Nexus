@@ -103,6 +103,19 @@ describe('FeatureFlagService', () => {
     expect(box.value).toBe(true);
   });
 
+  it('should fail open on isEnabled() for every key instead of hanging forever when the initial load fails', () => {
+    // Arrange
+    const service = createService();
+    const box = subscribeLatest(service.isEnabled(FeatureToggleKeys.FleetModule));
+
+    // Act
+    getResponse$.error(new Error('fail'));
+    TestBed.flushEffects();
+
+    // Assert
+    expect(box.value).toBe(true);
+  });
+
   it('should delegate to isEnabled(FleetModule) when isFleetModuleEnabled is called', () => {
     // Arrange
     const service = createService();

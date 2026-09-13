@@ -50,7 +50,18 @@ export class SelectableOptionService {
       this._byGroupState.set(group, state);
       this.apiService
         .get<WebApiResponse<SelectableOption[]>>(`${this._baseEndPoint}/getByGroup/${group}`)
-        .subscribe((response) => state.set(response));
+        .subscribe({
+          next: (response) => state.set(response),
+          // Without this, a single failed request left `state` at null forever: the cached
+          // Observable (toObservable(state).pipe(filter(v => v !== null), take(1))) never
+          // emits, so every later getByGroup(group) call returns the same permanently-hanging
+          // Observable until a write clears the cache. Clear this group's cache entries here so
+          // the next call retries instead of hanging.
+          error: () => {
+            this._byGroupState.delete(group);
+            this._byGroupCache.delete(group);
+          },
+        });
 
       cached = toObservable(state, { injector: this.injector }).pipe(
         filter((v): v is WebApiResponse<SelectableOption[]> => v !== null),

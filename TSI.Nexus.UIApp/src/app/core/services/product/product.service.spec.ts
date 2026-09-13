@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
-import { ApiService, PagedResult, Product, WebApiResponse } from '@nexus/core';
+import { ApiService, PagedResult, Product, ResponseStatus, WebApiResponse } from '@nexus/core';
 import { ProductService } from './product.service';
 
 describe('ProductService', () => {
@@ -101,6 +101,27 @@ describe('ProductService', () => {
 
     // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('products/getById/p1');
+  });
+
+  it('should emit an empty fallback response on products$ instead of hanging forever when the initial load fails', () => {
+    // Arrange
+    const load$ = new Subject<WebApiResponse<Product[]>>();
+    apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
+    apiServiceMock.get.mockReturnValue(load$);
+    TestBed.configureTestingModule({
+      providers: [{ provide: ApiService, useValue: apiServiceMock }],
+    });
+    const service = TestBed.inject(ProductService);
+    let response: WebApiResponse<Product[]> | undefined;
+    service.getAll().subscribe((v) => (response = v));
+    TestBed.flushEffects();
+
+    // Act
+    load$.error(new Error('fail'));
+    TestBed.flushEffects();
+
+    // Assert
+    expect(response).toEqual({ data: [], message: '', status: ResponseStatus.Error });
   });
 
   it('should re-fetch and reflect the updated value on products$ when refresh is called', () => {

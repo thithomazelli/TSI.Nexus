@@ -123,6 +123,34 @@ describe('SelectableOptionService', () => {
     expect(completed).toBe(true);
   });
 
+  it('should clear the group cache and allow a retry instead of hanging forever when the request errors', () => {
+    // Arrange
+    const service = createService();
+    const load$ = new Subject<WebApiResponse<SelectableOption[]>>();
+    apiServiceMock.get.mockReturnValue(load$);
+    let completed = false;
+    service
+      .getByGroup(SelectableOptionGroup.AddressType)
+      .subscribe({ complete: () => (completed = true) });
+
+    // Act
+    load$.error(new Error('fail'));
+    expect(completed).toBe(false); // the errored cache entry never emits/completes itself
+
+    const retry$ = new Subject<WebApiResponse<SelectableOption[]>>();
+    apiServiceMock.get.mockReturnValue(retry$);
+    let retried = false;
+    service
+      .getByGroup(SelectableOptionGroup.AddressType)
+      .subscribe({ complete: () => (retried = true) });
+    retry$.next({ data: [] } as unknown as WebApiResponse<SelectableOption[]>);
+    TestBed.flushEffects();
+
+    // Assert
+    expect(apiServiceMock.get).toHaveBeenCalledTimes(2);
+    expect(retried).toBe(true);
+  });
+
   it('should clear the per-group cache so the next getByGroup re-fetches when add, update or remove completes', () => {
     // Arrange
     const service = createService();

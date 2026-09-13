@@ -250,9 +250,20 @@ export class BusinessPartnerService {
     const route = type === BusinessPartnerType.Client ? 'getAllClients' : 'getAllSuppliers';
     this.apiService
       .get<WebApiResponse<BusinessPartner[]>>(`${this._baseEndPoint}/${route}`)
-      .subscribe((response) => {
-        this._businessPartners.set(response.data ?? []);
-        state.set(response);
+      .subscribe({
+        next: (response) => {
+          this._businessPartners.set(response.data ?? []);
+          state.set(response);
+        },
+        // Without this, a single failed request left `state` at null forever: the cached
+        // Observable (toObservable(state).pipe(filter(v => v !== null), take(1))) never emits,
+        // so every later getClients()/getSuppliers() call for this type returns the same
+        // permanently-hanging Observable until a write clears the cache. Clearing the cache
+        // entries here lets the next call retry instead of hanging.
+        error: () => {
+          this._byTypeState.delete(type);
+          this._byTypeCache.delete(type);
+        },
       });
   }
 }

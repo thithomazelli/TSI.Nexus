@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Subject } from 'rxjs';
-import { ApiService, Vehicle, WebApiResponse } from '@nexus/core';
+import { ApiService, ResponseStatus, Vehicle, WebApiResponse } from '@nexus/core';
 import { VehicleService } from './vehicle.service';
 
 describe('VehicleService', () => {
@@ -57,6 +57,27 @@ describe('VehicleService', () => {
 
     // Assert
     expect(response).toBe(loaded);
+  });
+
+  it('should emit an empty fallback response on vehicles$ instead of hanging forever when the initial load fails', () => {
+    // Arrange
+    const load$ = new Subject<WebApiResponse<Vehicle[]>>();
+    apiServiceMock = { get: vi.fn(), post: vi.fn(), put: vi.fn(), delete: vi.fn() };
+    apiServiceMock.get.mockReturnValue(load$);
+    TestBed.configureTestingModule({
+      providers: [{ provide: ApiService, useValue: apiServiceMock }],
+    });
+    const service = TestBed.inject(VehicleService);
+    let response: WebApiResponse<Vehicle[]> | undefined;
+    service.getAll().subscribe((v) => (response = v));
+    TestBed.flushEffects();
+
+    // Act
+    load$.error(new Error('fail'));
+    TestBed.flushEffects();
+
+    // Assert
+    expect(response).toEqual({ data: [], message: '', status: ResponseStatus.Error });
   });
 
   it('should build the query string and unwrap response.data when getAllPaged is called', () => {
