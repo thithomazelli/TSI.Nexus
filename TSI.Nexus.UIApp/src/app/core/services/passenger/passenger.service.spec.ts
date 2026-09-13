@@ -19,29 +19,41 @@ describe('PassengerService', () => {
     return TestBed.inject(PassengerService);
   }
 
-  it('should create', () => {
-    expect(createService()).toBeTruthy();
+  it('should create the service when instantiated', () => {
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service).toBeTruthy();
   });
 
-  it('getByTrip hits the expected endpoint', () => {
+  it('should hit the getByTrip endpoint when getByTrip is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.get.mockReturnValue(new Subject());
 
+    // Act
     service.getByTrip('t1');
 
+    // Assert
     expect(apiServiceMock.get).toHaveBeenCalledWith('passengers/getByTrip/t1');
   });
 
-  it('passengerChanged$ emits once immediately to a new subscriber', () => {
+  it('should emit once immediately when a new subscriber subscribes to passengerChanged$', () => {
+    // Arrange
     const service = createService();
     let emissions = 0;
+
+    // Act
     service.passengerChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
 
+    // Assert
     expect(emissions).toBe(1);
   });
 
-  it('add/addRange/update/delete each notify passengerChanged$ after the request completes', () => {
+  it('should notify passengerChanged$ when add/addRange/update/delete each complete their request', () => {
+    // Arrange
     const service = createService();
     const addResponse$ = new Subject<WebApiResponse<Passenger>>();
     const addRangeResponse$ = new Subject<WebApiResponse<Passenger[]>>();
@@ -51,30 +63,49 @@ describe('PassengerService', () => {
     apiServiceMock.put.mockReturnValue(updateResponse$);
     apiServiceMock.delete.mockReturnValue(deleteResponse$);
 
+    // Act
     let emissions = 0;
     service.passengerChanged$.subscribe(() => emissions++);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(1);
 
+    // Act
     service.add({} as Passenger).subscribe();
     addResponse$.next({} as WebApiResponse<Passenger>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(2);
 
+    // Act
     service.addRange([{} as Passenger]).subscribe();
+
+    // Assert
     expect(apiServiceMock.post).toHaveBeenCalledWith('passengers/addRange', [{}]);
+
+    // Act
     addRangeResponse$.next({} as WebApiResponse<Passenger[]>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(3);
 
+    // Act
     service.update({} as Passenger).subscribe();
     updateResponse$.next({} as WebApiResponse<Passenger>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(4);
 
+    // Act
     service.delete({} as Passenger).subscribe();
     deleteResponse$.next({} as WebApiResponse<Passenger>);
     TestBed.flushEffects();
+
+    // Assert
     expect(emissions).toBe(5);
   });
 });

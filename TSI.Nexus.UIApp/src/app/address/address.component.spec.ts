@@ -57,21 +57,29 @@ describe('AddressComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
-  it('rebuilds the column definitions when the language changes', () => {
+  it('should rebuild the column definitions when the language changes', () => {
+    // Arrange
     const component = createComponent();
     const before = component.columnDefs;
 
+    // Act
     language$.next('en');
 
+    // Assert
     expect(component.columnDefs).not.toBe(before);
   });
 
   describe('ngOnInit / addressChanged$', () => {
-    it('reloads the addresses whenever addressChanged$ emits', () => {
+    it('should reload the addresses when addressChanged$ emits', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       addressServiceMock.getAllByBusinessPartnerId.mockReturnValue(
@@ -79,37 +87,47 @@ describe('AddressComponent', () => {
       );
       component.ngOnInit();
 
+      // Act
       addressChanged$.next();
 
+      // Assert
       expect(addressServiceMock.getAllByBusinessPartnerId).toHaveBeenCalledWith('bp1');
       expect(component.rowData).toEqual([{ id: 'a1' }]);
     });
 
-    it('stops reloading after ngOnDestroy', () => {
+    it('should stop reloading after ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       component.ngOnInit();
       component.ngOnDestroy();
 
+      // Act
       addressChanged$.next();
 
+      // Assert
       expect(addressServiceMock.getAllByBusinessPartnerId).not.toHaveBeenCalled();
     });
 
-    it('does not throw when destroyed before ngOnInit ever subscribed', () => {
+    it('should not throw when destroyed before ngOnInit ever subscribed', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(() => component.ngOnDestroy()).not.toThrow();
     });
   });
 
   describe('openModal', () => {
-    it('shows the address details modal with the given initial state', () => {
+    it('should show the address details modal with the given initial state', () => {
+      // Arrange
       const component = createComponent();
       const initialState = { address: { id: 'a1' } };
 
+      // Act
       component.openModal(initialState);
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         initialState,
@@ -118,11 +136,14 @@ describe('AddressComponent', () => {
   });
 
   describe('deleteAddress', () => {
-    it('refuses to delete the default address', () => {
+    it('should refuse to delete the default address', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.deleteAddress({ id: 'a1', isDefault: true } as Address);
 
+      // Assert
       expect(addressServiceMock.delete).not.toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
         '',
@@ -131,26 +152,32 @@ describe('AddressComponent', () => {
       );
     });
 
-    it('removes a non-default address from the grid on success', () => {
+    it('should remove a non-default address from the grid when the deletion succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'a1' } as Address, { id: 'a2' } as Address];
       addressServiceMock.delete.mockReturnValue(of({ message: 'OK' }));
 
+      // Act
       component.deleteAddress({ id: 'a1', isDefault: false } as Address);
 
+      // Assert
       expect(component.rowData).toEqual([{ id: 'a2' }]);
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
     });
   });
 
   describe('refreshAddresses', () => {
-    it('reloads the row data and notifies on success', () => {
+    it('should reload the row data and notify when the refresh succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       addressServiceMock.refresh.mockReturnValue(of({ data: [{ id: 'a1' }] }));
 
+      // Act
       component.refreshAddresses();
 
+      // Assert
       expect(component.rowData).toEqual([{ id: 'a1' }]);
       expect(component.loading).toBe(false);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
@@ -159,13 +186,16 @@ describe('AddressComponent', () => {
       );
     });
 
-    it('stops loading and notifies an error on failure', () => {
+    it('should stop loading and notify an error when the refresh fails', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       addressServiceMock.refresh.mockReturnValue(throwError(() => new Error('fail')));
 
+      // Act
       component.refreshAddresses();
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Error,
@@ -173,37 +203,46 @@ describe('AddressComponent', () => {
       );
     });
 
-    it('falls back to an empty string id when there is no parentData yet', () => {
+    it('should fall back to an empty string id when there is no parentData yet', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = null;
       addressServiceMock.refresh.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.refreshAddresses();
 
+      // Assert
       expect(addressServiceMock.refresh).toHaveBeenCalledWith('');
     });
 
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       addressServiceMock.refresh.mockReturnValue(of({}));
 
+      // Act
       component.refreshAddresses();
 
+      // Assert
       expect(component.rowData).toEqual([]);
     });
   });
 
   describe('updateDefaultAddress', () => {
-    it('marks the address as default, saves, and reloads', () => {
+    it('should mark the address as default, save it, and reload when updateDefaultAddress is called', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       const address = { id: 'a1', isDefault: false } as Address;
       addressServiceMock.update.mockReturnValue(of({ message: 'OK' }));
       addressServiceMock.getAllByBusinessPartnerId.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.updateDefaultAddress(address);
 
+      // Assert
       expect(address.isDefault).toBe(true);
       expect(addressServiceMock.update).toHaveBeenCalledWith(address);
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
@@ -211,68 +250,85 @@ describe('AddressComponent', () => {
   });
 
   describe('getAddresses (via ngOnInit trigger)', () => {
-    it('clears the row data when there is no parent id yet', () => {
+    it('should clear the row data when there is no parent id yet', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = null;
       component.ngOnInit();
 
+      // Act
       addressChanged$.next();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(addressServiceMock.getAllByBusinessPartnerId).not.toHaveBeenCalled();
     });
 
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       addressServiceMock.getAllByBusinessPartnerId.mockReturnValue(of({}));
       component.ngOnInit();
 
+      // Act
       addressChanged$.next();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.parentData = { id: 'bp1' } as BusinessPartner;
       addressServiceMock.getAllByBusinessPartnerId.mockReturnValue(throwError(() => new Error('fail')));
       component.ngOnInit();
 
+      // Act
       addressChanged$.next();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
 
   describe('isDefault column cell renderer', () => {
-    it('renders a checked, disabled checkbox for the default address', () => {
+    it('should render a checked, disabled checkbox for the default address', () => {
+      // Arrange
       const component = createComponent();
       const column = component.columnDefs.find((c) => c.field === 'isDefault')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: true });
 
+      // Assert
       expect(html).toContain('checked');
       expect(html).toContain('disabled');
     });
 
-    it('renders an unchecked, enabled checkbox otherwise', () => {
+    it('should render an unchecked, enabled checkbox when the address is not default', () => {
+      // Arrange
       const component = createComponent();
       const column = component.columnDefs.find((c) => c.field === 'isDefault')!;
 
+      // Act
       const html = (column.cellRenderer as (params: any) => string)({ value: false });
 
+      // Assert
       expect(html).not.toContain('checked');
       expect(html).not.toContain('disabled');
     });
   });
 
   describe('type column', () => {
-    it('renders the value as a link, falling back to an empty string when missing', () => {
+    it('should render the value as a link, falling back to an empty string when it is missing', () => {
+      // Arrange
       const component = createComponent();
       const column = component.columnDefs.find((c) => c.field === 'type')!;
 
+      // Act / Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'Residencial' })).toContain('Residencial');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
@@ -289,25 +345,43 @@ describe('AddressComponent', () => {
       component = createComponent();
     });
 
-    it('formats an 8-digit CEP with a dash', () => {
-      expect(formatter({ value: '12345678' })).toBe('12345-678');
+    it('should format an 8-digit CEP with a dash', () => {
+      // Act
+      const result = formatter({ value: '12345678' });
+
+      // Assert
+      expect(result).toBe('12345-678');
     });
 
-    it('strips non-digit characters before checking the length', () => {
-      expect(formatter({ value: '12345-678' })).toBe('12345-678');
+    it('should strip non-digit characters before checking the length', () => {
+      // Act
+      const result = formatter({ value: '12345-678' });
+
+      // Assert
+      expect(result).toBe('12345-678');
     });
 
-    it('returns the raw value when it does not resolve to 8 digits', () => {
-      expect(formatter({ value: '123' })).toBe('123');
+    it('should return the raw value when it does not resolve to 8 digits', () => {
+      // Act
+      const result = formatter({ value: '123' });
+
+      // Assert
+      expect(result).toBe('123');
     });
 
-    it('treats a missing value as an empty string when formatting', () => {
-      expect(formatter({ value: null })).toBeNull();
+    it('should treat a missing value as an empty string when formatting', () => {
+      // Act
+      const result = formatter({ value: null });
+
+      // Assert
+      expect(result).toBeNull();
     });
 
-    it('renders the cell value as a link, falling back to an empty string when missing', () => {
+    it('should render the cell value as a link, falling back to an empty string when it is missing', () => {
+      // Arrange
       const column = component.columnDefs.find((c) => c.field === 'zipCode')!;
 
+      // Act / Assert
       expect((column.cellRenderer as (p: any) => string)({ value: '12345-678' })).toContain('12345-678');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
@@ -324,43 +398,68 @@ describe('AddressComponent', () => {
       component = createComponent();
     });
 
-    it('joins street and number when both are present', () => {
-      expect(valueGetter({ street: 'Rua A', number: '123' })).toBe('Rua A, 123');
+    it('should join street and number when both are present', () => {
+      // Act
+      const result = valueGetter({ street: 'Rua A', number: '123' });
+
+      // Assert
+      expect(result).toBe('Rua A, 123');
     });
 
-    it('treats a numeric zero number as falsy, falling back to just the street', () => {
+    it('should treat a numeric zero number as falsy and fall back to just the street', () => {
       // `street && number` short-circuits on a falsy 0, so it drops through to `street || number`
       // instead of joining - the ", 0" suffix is lost, unlike a real "0" string would be.
-      expect(valueGetter({ street: 'Rua A', number: 0 })).toBe('Rua A');
+      // Act
+      const result = valueGetter({ street: 'Rua A', number: 0 });
+
+      // Assert
+      expect(result).toBe('Rua A');
     });
 
-    it('falls back to just the street when there is no number', () => {
-      expect(valueGetter({ street: 'Rua A', number: null })).toBe('Rua A');
+    it('should fall back to just the street when there is no number', () => {
+      // Act
+      const result = valueGetter({ street: 'Rua A', number: null });
+
+      // Assert
+      expect(result).toBe('Rua A');
     });
 
-    it('falls back to just the number when there is no street', () => {
-      expect(valueGetter({ street: '', number: '123' })).toBe('123');
+    it('should fall back to just the number when there is no street', () => {
+      // Act
+      const result = valueGetter({ street: '', number: '123' });
+
+      // Assert
+      expect(result).toBe('123');
     });
 
-    it('falls back to an empty string when there is no data at all', () => {
-      expect(valueGetter(undefined)).toBe('');
+    it('should fall back to an empty string when there is no data at all', () => {
+      // Act
+      const result = valueGetter(undefined);
+
+      // Assert
+      expect(result).toBe('');
     });
 
-    it('renders the resolved value as a link, falling back to an empty string when missing', () => {
+    it('should render the resolved value as a link, falling back to an empty string when it is missing', () => {
+      // Arrange
       const column = component.columnDefs.find((c) => c.headerName === 'COMMON.ADDRESS')!;
 
+      // Act / Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 'Rua A, 123' })).toContain('Rua A, 123');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
   });
 
   describe('actions column', () => {
-    it('renders the edit and delete buttons', () => {
+    it('should render the edit and delete buttons', () => {
+      // Arrange
       const component = createComponent();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
     });

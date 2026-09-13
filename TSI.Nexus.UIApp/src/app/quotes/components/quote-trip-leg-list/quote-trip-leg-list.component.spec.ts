@@ -52,43 +52,57 @@ describe('QuoteTripLegListComponent', () => {
     );
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit', () => {
-    it('builds the column defs and loads the legs', () => {
+    it('should build the column defs and load the legs when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt1';
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.columnDefs.length).toBeGreaterThan(0);
       expect(quoteTripLegServiceMock.getByQuoteTrip).toHaveBeenCalledWith('qt1');
     });
 
-    it('rebuilds the column defs on language change', () => {
+    it('should rebuild the column defs when the language changes', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const before = component.columnDefs;
 
+      // Act
       language$.next('en');
 
+      // Assert
       expect(component.columnDefs).not.toBe(before);
     });
 
-    it('reloads the legs whenever quoteTripLegChanged$ emits', () => {
+    it('should reload the legs when quoteTripLegChanged$ emits', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt1';
       component.ngOnInit();
       quoteTripLegServiceMock.getByQuoteTrip.mockClear();
 
+      // Act
       quoteTripLegChanged$.next();
 
+      // Assert
       expect(quoteTripLegServiceMock.getByQuoteTrip).toHaveBeenCalledWith('qt1');
     });
 
-    it('stops reacting to language/quoteTripLegChanged$ after ngOnDestroy', () => {
+    it('should stop reacting to language/quoteTripLegChanged$ when ngOnDestroy is called', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt1';
       component.ngOnInit();
@@ -96,53 +110,66 @@ describe('QuoteTripLegListComponent', () => {
       const before = component.columnDefs;
       quoteTripLegServiceMock.getByQuoteTrip.mockClear();
 
+      // Act
       language$.next('en');
       quoteTripLegChanged$.next();
 
+      // Assert
       expect(component.columnDefs).toBe(before);
       expect(quoteTripLegServiceMock.getByQuoteTrip).not.toHaveBeenCalled();
     });
   });
 
   describe('ngOnChanges', () => {
-    it('reloads when quoteTripId changes after the first change', () => {
+    it('should reload when quoteTripId changes after the first change', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt2';
 
+      // Act
       component.ngOnChanges({
         quoteTripId: { firstChange: false } as any,
       });
 
+      // Assert
       expect(quoteTripLegServiceMock.getByQuoteTrip).toHaveBeenCalledWith('qt2');
     });
 
-    it('does not reload on the first change', () => {
+    it('should not reload when it is the first change', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt2';
 
+      // Act
       component.ngOnChanges({
         quoteTripId: { firstChange: true } as any,
       });
 
+      // Assert
       expect(quoteTripLegServiceMock.getByQuoteTrip).not.toHaveBeenCalled();
     });
 
-    it('does nothing when quoteTripId is not part of the change set', () => {
+    it('should do nothing when quoteTripId is not part of the change set', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       expect(() => component.ngOnChanges({})).not.toThrow();
       expect(quoteTripLegServiceMock.getByQuoteTrip).not.toHaveBeenCalled();
     });
   });
 
   describe('openModal', () => {
-    it('adds the quoteTripId and the next sequence number to the initial state', () => {
+    it('should add the quoteTripId and the next sequence number to the initial state when opened', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt1';
       component.rowData = [{ id: 'l1' } as QuoteTripLeg, { id: 'l2' } as QuoteTripLeg];
 
+      // Act
       component.openModal({ isEdit: false });
 
+      // Assert
       expect(modalServiceMock.showTemplateModal).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({ quoteTripId: 'qt1', nextSequenceNumber: 3 }),
@@ -151,13 +178,16 @@ describe('QuoteTripLegListComponent', () => {
   });
 
   describe('refresh', () => {
-    it('reloads and shows a success notification', () => {
+    it('should reload and show a success notification when refresh is called', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt1';
       quoteTripLegServiceMock.getByQuoteTrip.mockReturnValue(of({ data: [] }));
 
+      // Act
       component.refresh();
 
+      // Assert
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith(
         ResponseStatus.Success,
         'TRIPS.LEGS_REFRESHED',
@@ -166,22 +196,28 @@ describe('QuoteTripLegListComponent', () => {
   });
 
   describe('noop', () => {
-    it('does nothing', () => {
+    it('should do nothing when called', () => {
+      // Arrange
       const component = createComponent();
+
+      // Act / Assert
       expect(() => component.noop()).not.toThrow();
     });
   });
 
   describe('deleteQuoteTripLeg', () => {
-    it('removes the leg from the grid on success', () => {
+    it('should remove the leg from the grid when the deletion succeeds', () => {
+      // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'l1' } as QuoteTripLeg, { id: 'l2' } as QuoteTripLeg];
       quoteTripLegServiceMock.delete.mockReturnValue(
         of({ status: ResponseStatus.Success, message: 'Removido' }),
       );
 
+      // Act
       component.deleteQuoteTripLeg({ id: 'l1' } as QuoteTripLeg);
 
+      // Assert
       expect(component.rowData).toEqual([{ id: 'l2' }]);
       expect(modalServiceMock.hideModal).toHaveBeenCalled();
       expect(modalServiceMock.showSweetNotification).toHaveBeenCalledWith(
@@ -191,81 +227,100 @@ describe('QuoteTripLegListComponent', () => {
       );
     });
 
-    it('does not touch the grid rows when the deletion fails', () => {
+    it('should not touch the grid rows when the deletion fails', () => {
+      // Arrange
       const component = createComponent();
       component.rowData = [{ id: 'l1' } as QuoteTripLeg];
       quoteTripLegServiceMock.delete.mockReturnValue(
         of({ status: ResponseStatus.Error, message: 'Falha' }),
       );
 
+      // Act
       component.deleteQuoteTripLeg({ id: 'l1' } as QuoteTripLeg);
 
+      // Assert
       expect(component.rowData).toEqual([{ id: 'l1' }]);
     });
   });
 
   describe('load (private, via ngOnInit)', () => {
-    it('does nothing when there is no quoteTripId', () => {
+    it('should do nothing when there is no quoteTripId', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = '' as any;
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(quoteTripLegServiceMock.getByQuoteTrip).not.toHaveBeenCalled();
       expect(component.loading).toBe(false);
     });
 
-    it('falls back to an empty array when the response has no data', () => {
+    it('should fall back to an empty array when the response has no data', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt1';
       quoteTripLegServiceMock.getByQuoteTrip.mockReturnValue(of({}));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.rowData).toEqual([]);
       expect(component.loading).toBe(false);
     });
 
-    it('stops loading without throwing when the request errors', () => {
+    it('should stop loading without throwing when the request errors', () => {
+      // Arrange
       const component = createComponent();
       component.quoteTripId = 'qt1';
       quoteTripLegServiceMock.getByQuoteTrip.mockReturnValue(
         throwError(() => new Error('fail')),
       );
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(component.loading).toBe(false);
     });
   });
 
   describe('column defs cell renderers', () => {
-    it('renders the sequenceNumber as a link, falling back to an empty string', () => {
+    it('should render the sequenceNumber as a link, falling back to an empty string when there is no value', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'sequenceNumber')!;
 
+      // Act / Assert
       expect((column.cellRenderer as (p: any) => string)({ value: 1 })).toContain('1');
       expect((column.cellRenderer as (p: any) => string)({ value: null })).toContain('ag-link');
     });
 
-    it('formats the departureDate as a BR date/time', () => {
+    it('should format the departureDate as a BR date/time when rendered', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs.find((c) => c.field === 'departureDate')!;
 
+      // Act / Assert
       expect(
         (column.valueFormatter as (p: any) => string)({ value: '2024-01-15T10:00:00' } as any),
       ).toContain('/');
     });
 
-    it('renders the actions column buttons', () => {
+    it('should render the actions column buttons when rendered', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       const column = component.columnDefs[component.columnDefs.length - 1];
 
+      // Act
       const html = (column.cellRenderer as () => string)();
 
+      // Assert
       expect(html).toContain('data-action="edit"');
       expect(html).toContain('data-action="delete"');
     });

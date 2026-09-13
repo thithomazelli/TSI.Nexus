@@ -36,38 +36,51 @@ describe('AreaChartTrendingComponent', () => {
     };
   }
 
-  it('should create', () => {
-    expect(createComponent()).toBeTruthy();
+  it('should create the component when instantiated', () => {
+    // Act
+    const component = createComponent();
+
+    // Assert
+    expect(component).toBeTruthy();
   });
 
   describe('ngOnInit / ngOnChanges', () => {
-    it('loads the chart on init', () => {
+    it('should load the chart when ngOnInit is called', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
 
+      // Act
       component.ngOnInit();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalled();
       expect(component.chartOptions.series[0].data).toEqual([10, 20, 30]);
     });
 
-    it('reloads the chart on changes', () => {
+    it('should reload the chart when ngOnChanges is called', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
 
+      // Act
       component.ngOnChanges();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalled();
     });
   });
 
   describe('loadChart', () => {
-    it('builds the incoming/outgoing series and their trend lines', () => {
+    it('should build the incoming/outgoing series and their trend lines when loadChart is called', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
 
+      // Act
       component.loadChart();
 
+      // Assert
       const series = component.chartOptions.series;
       expect(series).toHaveLength(4);
       expect(series[0].name).toBe('REPORTS.INCOMING');
@@ -82,79 +95,98 @@ describe('AreaChartTrendingComponent', () => {
       expect(cdrMock.markForCheck).toHaveBeenCalled();
     });
 
-    it('formats the yaxis label as BRL currency for numeric values', () => {
+    it('should format the yaxis label as BRL currency when the value is numeric', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
-
       component.loadChart();
 
+      // Act
       const formatted = component.chartOptions.yaxis.labels.formatter(1234.5);
+
+      // Assert
       expect(formatted).toContain('1.234,50');
     });
 
-    it('returns the raw value from the yaxis formatter when it is not a number', () => {
+    it('should return the raw value from the yaxis formatter when it is not a number', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
-
       component.loadChart();
 
+      // Act / Assert
       expect(component.chartOptions.yaxis.labels.formatter('n/a' as any)).toBe('n/a');
     });
 
-    it('resolves the tooltip x label from the matching monthsData entry', () => {
+    it('should resolve the tooltip x label from the matching monthsData entry', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
-
       component.loadChart();
 
+      // Act
       const formatted = component.chartOptions.tooltip.x.formatter('Jan', { dataPointIndex: 0 });
+
+      // Assert
       expect(formatted).toBe('Janeiro 2024');
     });
 
-    it('falls back to the raw value in the tooltip x formatter when the index is negative', () => {
+    it('should fall back to the raw value in the tooltip x formatter when the index is negative', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
-
       component.loadChart();
 
+      // Act
       const formatted = component.chartOptions.tooltip.x.formatter('Jan', { dataPointIndex: -1 });
+
+      // Assert
       expect(formatted).toBe('Jan');
     });
 
-    it('falls back to the raw value in the tooltip x formatter when there is no matching month', () => {
+    it('should fall back to the raw value in the tooltip x formatter when there is no matching month', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
-
       component.loadChart();
 
+      // Act
       const formatted = component.chartOptions.tooltip.x.formatter('Jan', { dataPointIndex: 10 });
+
+      // Assert
       expect(formatted).toBe('Jan');
     });
 
-    it('formats the tooltip y value as BRL currency for numeric values', () => {
+    it('should format the tooltip y value as BRL currency when the value is numeric', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
-
       component.loadChart();
 
+      // Act
       const formatted = component.chartOptions.tooltip.y.formatter(500);
+
+      // Assert
       expect(formatted).toContain('500,00');
     });
 
-    it('returns the raw value from the tooltip y formatter when it is not a number', () => {
+    it('should return the raw value from the tooltip y formatter when it is not a number', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
-
       component.loadChart();
 
+      // Act / Assert
       expect(component.chartOptions.tooltip.y.formatter('n/a' as any)).toBe('n/a');
     });
   });
 
   describe('toggleCollapse', () => {
-    it('flips isCardCollapsed', () => {
+    it('should flip isCardCollapsed when toggleCollapse is called', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act / Assert
       component.toggleCollapse();
       expect(component.isCardCollapsed).toBe(true);
 
@@ -164,47 +196,59 @@ describe('AreaChartTrendingComponent', () => {
   });
 
   describe('getEndPoint (via loadChart)', () => {
-    it('requests the base payments history endpoint when there is no date filter', () => {
+    it('should request the base payments history endpoint when there is no date filter', () => {
+      // Arrange
       const component = createComponent();
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
 
+      // Act
       component.loadChart();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith(`${ApiType.Payments}/GetPaymentsHistory`);
     });
 
-    it('appends only the start date when just startDate is set', () => {
+    it('should append only the start date when just startDate is set', () => {
+      // Arrange
       const component = createComponent();
       component.startDate = new Date('2024-01-01T00:00:00.000Z');
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
 
+      // Act
       component.loadChart();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith(
         `${ApiType.Payments}/GetPaymentsHistory?start=${encodeURIComponent('2024-01-01T00:00:00.000Z')}`,
       );
     });
 
-    it('appends only the end date when just endDate is set', () => {
+    it('should append only the end date when just endDate is set', () => {
+      // Arrange
       const component = createComponent();
       component.endDate = new Date('2024-01-31T00:00:00.000Z');
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
 
+      // Act
       component.loadChart();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith(
         `${ApiType.Payments}/GetPaymentsHistory?end=${encodeURIComponent('2024-01-31T00:00:00.000Z')}`,
       );
     });
 
-    it('appends both dates when startDate and endDate are set', () => {
+    it('should append both dates when startDate and endDate are set', () => {
+      // Arrange
       const component = createComponent();
       component.startDate = new Date('2024-01-01T00:00:00.000Z');
       component.endDate = new Date('2024-01-31T00:00:00.000Z');
       apiServiceMock.get.mockReturnValue(of(mockResponse()));
 
+      // Act
       component.loadChart();
 
+      // Assert
       expect(apiServiceMock.get).toHaveBeenCalledWith(
         `${ApiType.Payments}/GetPaymentsHistory?start=${encodeURIComponent('2024-01-01T00:00:00.000Z')}&end=${encodeURIComponent('2024-01-31T00:00:00.000Z')}`,
       );
