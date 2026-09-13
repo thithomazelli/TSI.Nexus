@@ -27,65 +27,85 @@ describe('UserPreferencesComponent', () => {
     );
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
   describe('onThemeSelect', () => {
-    it('does nothing when selecting the theme already active', () => {
+    it('should do nothing when the selected theme is already active', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onThemeSelect('light' as never);
 
+      // Assert
       expect(themeServiceMock.apply).not.toHaveBeenCalled();
       expect(preferencesServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('applies the new theme and persists the preference', () => {
+    it('should apply the new theme and persist the preference when a different theme is selected', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onThemeSelect('dark' as never);
 
+      // Assert
       expect(themeServiceMock.apply).toHaveBeenCalledWith('dark');
       expect(preferencesServiceMock.update).toHaveBeenCalledWith({ theme: 'light', language: 'pt-BR' });
     });
   });
 
   describe('onLanguageChange', () => {
-    it('does nothing when selecting the language already active', () => {
+    it('should do nothing when the selected language is already active', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onLanguageChange('pt-BR' as never);
 
+      // Assert
       expect(translationServiceMock.use).not.toHaveBeenCalled();
       expect(preferencesServiceMock.update).not.toHaveBeenCalled();
     });
 
-    it('switches the language and persists the preference', () => {
+    it('should switch the language and persist the preference when a different language is selected', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onLanguageChange('en' as never);
 
+      // Assert
       expect(translationServiceMock.use).toHaveBeenCalledWith('en');
       expect(preferencesServiceMock.update).toHaveBeenCalled();
     });
   });
 
   describe('persist', () => {
-    it('tracks saving state around a successful update', () => {
+    it('should reset saving to false when the update succeeds', () => {
+      // Arrange
       const component = createComponent();
 
+      // Act
       component.onThemeSelect('dark' as never);
 
+      // Assert
       expect(component.saving).toBe(false);
     });
 
-    it('shows a translated error notification and still resets saving when the update fails', () => {
+    it('should show a translated error notification and reset saving when the update fails', () => {
+      // Arrange
       const component = createComponent();
       preferencesServiceMock.update.mockReturnValue(throwError(() => new Error('boom')));
 
+      // Act
       component.onThemeSelect('dark' as never);
 
+      // Assert
       expect(component.saving).toBe(false);
       expect(notificationServiceMock.showMessage).toHaveBeenCalledWith('Error', 'PREFERENCES.ERROR');
     });
