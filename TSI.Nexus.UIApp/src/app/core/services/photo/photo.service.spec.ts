@@ -16,38 +16,50 @@ describe('PhotoService', () => {
     return TestBed.inject(PhotoService);
   }
 
-  it('should be created', () => {
+  it('should be created when instantiated', () => {
+    // Act
+    // Assert
     expect(createService()).toBeTruthy();
   });
 
-  it('photo$ starts with an empty photoPath', () => {
+  it('should start with an empty photoPath when subscribed to', () => {
+    // Arrange
     const service = createService();
     let latest: { photoPath: string; userId?: string } | undefined;
+
+    // Act
     service.photo$.subscribe((v) => (latest = v));
     TestBed.flushEffects();
 
+    // Assert
     expect(latest).toEqual({ photoPath: '' });
   });
 
-  it('updateUserPhoto updates photo$ with the new path and userId', () => {
+  it('should update photo$ with the new path and userId when updateUserPhoto is called', () => {
+    // Arrange
     const service = createService();
     let latest: { photoPath: string; userId?: string } | undefined;
     service.photo$.subscribe((v) => (latest = v));
     TestBed.flushEffects();
 
+    // Act
     service.updateUserPhoto('photos/u1.jpg', 'u1');
     TestBed.flushEffects();
 
+    // Assert
     expect(latest).toEqual({ photoPath: 'photos/u1.jpg', userId: 'u1' });
   });
 
-  it('uploadPhoto posts a FormData with entity, entityId, and file', () => {
+  it('should post a FormData with entity, entityId and file when uploadPhoto is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.post.mockReturnValue({ subscribe: vi.fn() });
     const file = new File(['x'], 'photo.png');
 
+    // Act
     service.uploadPhoto('drivers', 'd1', file);
 
+    // Assert
     expect(apiServiceMock.post).toHaveBeenCalledTimes(1);
     const [url, formData] = apiServiceMock.post.mock.calls[0];
     expect(url).toBe('photos/uploadPhoto');
@@ -58,12 +70,15 @@ describe('PhotoService', () => {
     expect(uploadedFile.name).toBe(file.name);
   });
 
-  it('removePhoto posts a FormData with entity/entityId but no file', () => {
+  it('should post a FormData with entity and entityId but no file when removePhoto is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.post.mockReturnValue({ subscribe: vi.fn() });
 
+    // Act
     service.removePhoto('drivers', 'd1');
 
+    // Assert
     expect(apiServiceMock.post).toHaveBeenCalledTimes(1);
     const [url, formData] = apiServiceMock.post.mock.calls[0];
     expect(url).toBe('photos/uploadPhoto');
@@ -72,12 +87,15 @@ describe('PhotoService', () => {
     expect((formData as FormData).get('file')).toBeNull();
   });
 
-  it('getPhoto builds the query string and delegates to getBlob', () => {
+  it('should build the query string and delegate to getBlob when getPhoto is called', () => {
+    // Arrange
     const service = createService();
     apiServiceMock.getBlob.mockReturnValue({ subscribe: vi.fn() });
 
+    // Act
     service.getPhoto('drivers', 'd1', 'photo.png');
 
+    // Assert
     expect(apiServiceMock.getBlob).toHaveBeenCalledWith(
       'photos/getPhoto?entity=drivers&entityId=d1&fileName=photo.png',
     );

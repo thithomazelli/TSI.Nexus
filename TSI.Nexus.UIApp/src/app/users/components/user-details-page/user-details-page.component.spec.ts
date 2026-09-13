@@ -41,34 +41,46 @@ describe('UserDetailsPageComponent', () => {
     return { get: (key: string) => (key === 'id' ? id : null) };
   }
 
-  it('should create', () => {
+  it('should create the component when instantiated', () => {
+    // Act
+    // Assert
     expect(createComponent()).toBeTruthy();
   });
 
-  it('isAgendaEnabled combines the group and entity flags', () => {
+  it('should combine the group and entity flags when isAgendaEnabled is called', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
+    // Assert
     expect(component.isAgendaEnabled()).toBe(true);
   });
 
   describe('ngOnInit', () => {
-    it('sets isEdit=false for a new user', () => {
+    it('should set isEdit to false when creating a new user', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
 
+      // Act
       paramMap$.next(paramMap('new'));
 
+      // Assert
       expect(component.isEdit).toBe(false);
       expect(component.data).toBeNull();
     });
 
-    it('loads an existing user by id', () => {
+    it('should load an existing user by id when ngOnInit runs', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
       userServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       paramMap$.next(paramMap('u1'));
 
+      // Assert
       expect(component.isEdit).toBe(true);
       expect(component.loading).toBe(true);
       expect(userServiceMock.getById).toHaveBeenCalledWith('u1');
@@ -80,19 +92,23 @@ describe('UserDetailsPageComponent', () => {
       expect(component.data).toBe(data);
     });
 
-    it('navigates to not-found when the user does not exist', () => {
+    it('should navigate to not-found when the user does not exist', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
       userServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       paramMap$.next(paramMap('missing'));
       response$.next({ data: null } as unknown as WebApiResponse<User>);
 
+      // Assert
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('updates the loaded user photo from photo$', () => {
+    it('should update the loaded user photo when photo$ emits', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
       userServiceMock.getById.mockReturnValue(response$);
@@ -101,12 +117,15 @@ describe('UserDetailsPageComponent', () => {
       paramMap$.next(paramMap('u1'));
       response$.next({ data: { id: 'u1' } as User } as WebApiResponse<User>);
 
+      // Act
       photoServiceMock.photo$.next({ photoPath: 'photos/u1.jpg', userId: 'u1' });
 
+      // Assert
       expect(component.data?.photo).toBe('photos/u1.jpg');
     });
 
-    it('ignores a photo$ emission with no photoPath', () => {
+    it('should ignore a photo$ emission when it has no photoPath', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
       userServiceMock.getById.mockReturnValue(response$);
@@ -115,44 +134,58 @@ describe('UserDetailsPageComponent', () => {
       paramMap$.next(paramMap('u1'));
       response$.next({ data: { id: 'u1' } as User } as WebApiResponse<User>);
 
+      // Act
       photoServiceMock.photo$.next({ photoPath: '', userId: 'u1' });
 
+      // Assert
       expect(component.data?.photo).toBeUndefined();
     });
 
-    it('navigates to not-found and stops loading when the request errors', () => {
+    it('should navigate to not-found and stop loading when the request errors', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
       userServiceMock.getById.mockReturnValue(response$);
 
+      // Act
       component.ngOnInit();
       paramMap$.next(paramMap('u1'));
       response$.error(new Error('fail'));
 
+      // Assert
       expect(component.loading).toBe(false);
       expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/not-found');
     });
 
-    it('sets isOwnProfile when the current account matches the viewed user', () => {
+    it('should set isOwnProfile when the current account matches the viewed user', () => {
+      // Arrange
       const component = createComponent();
       component.ngOnInit();
       paramMap$.next(paramMap('u1'));
 
+      // Act
       accountServiceMock.user$.next({ id: 'u1' } as User);
       expect(component.isOwnProfile).toBe(true);
 
       accountServiceMock.user$.next({ id: 'other' } as User);
+
+      // Assert
       expect(component.isOwnProfile).toBe(false);
     });
   });
 
-  it('ngOnDestroy does not throw', () => {
+  it('should not throw when ngOnDestroy is called', () => {
+    // Arrange
     const component = createComponent();
+
+    // Act
+    // Assert
     expect(() => component.ngOnDestroy()).not.toThrow();
   });
 
   describe('subscription teardown', () => {
-    it('stops reacting to paramMap/photo$/user$ after ngOnDestroy', () => {
+    it('should stop reacting to paramMap, photo$ and user$ when ngOnDestroy has been called', () => {
+      // Arrange
       const component = createComponent();
       const response$ = new Subject<WebApiResponse<User>>();
       userServiceMock.getById.mockReturnValue(response$);
@@ -162,11 +195,13 @@ describe('UserDetailsPageComponent', () => {
       response$.next({ data: { id: 'u1' } as User } as WebApiResponse<User>);
       component.ngOnDestroy();
 
+      // Act
       // None of these should throw (no live subscribers) and none should mutate state anymore.
       paramMap$.next(paramMap('u2'));
       photoServiceMock.photo$.next({ photoPath: 'photos/u2.jpg', userId: 'u2' });
       accountServiceMock.user$.next({ id: 'u1' } as User);
 
+      // Assert
       expect(component.id).toBe('u1');
       expect(component.data?.photo).toBeUndefined();
       expect(component.isOwnProfile).toBe(false);
