@@ -17,6 +17,7 @@ import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 import esLocale from '@fullcalendar/core/locales/es';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import { AgendaEvent, TranslationService } from '@nexus/core';
 import { Subject, takeUntil } from 'rxjs';
@@ -46,7 +47,7 @@ export class EventCalendarViewComponent implements OnInit, OnChanges, OnDestroy 
   calendarComponent?: FullCalendarComponent;
 
   calendarOptions: CalendarOptions = {
-    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+    plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
     initialView: 'dayGridMonth',
     // Comma-separated items render as one connected Bootstrap-style button-group (no gap, no
     // radius between them) - a space between items instead keeps every button visually distinct

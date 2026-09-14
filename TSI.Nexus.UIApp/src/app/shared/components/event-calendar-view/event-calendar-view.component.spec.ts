@@ -1,6 +1,10 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { Subject } from 'rxjs';
 import { AgendaEvent, TranslationService } from '@nexus/core';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
+import interactionPlugin from '@fullcalendar/interaction';
 import { EventCalendarViewComponent } from './event-calendar-view.component';
 
 describe('EventCalendarViewComponent', () => {
@@ -25,6 +29,19 @@ describe('EventCalendarViewComponent', () => {
 
     // Assert
     expect(component).toBeTruthy();
+  });
+
+  it('should register the list plugin backing the headerToolbar\'s listWeek button', () => {
+    // Arrange
+    const component = createComponent();
+
+    // Act / Assert
+    expect(component.calendarOptions.plugins).toEqual([
+      dayGridPlugin,
+      timeGridPlugin,
+      listPlugin,
+      interactionPlugin,
+    ]);
   });
 
   describe('ngOnInit', () => {
